@@ -138,12 +138,12 @@ while 1
                 i = 1;
                 while i < p && rsd(i) <= newprsd
                     i = i + 1;
-                end
-                Zhat(:,i:p) = [z, Zhat(:,i:p-1)];
-                rsd(i:p) = [newprsd; rsd(i:p-1)];
-                beta = rsd(p);
-            end
-
+                end                  
+                %A = [z, Zhat]                  
+                Zhat(:,i:p) = [z, Zhat(:,i:p-1)];                
+                rsd(i:p) = [newprsd; rsd(i:p-1)];                
+                beta = rsd(p);                
+            end    
             z(1) = z(1) + d(1);
             gamma = R(1,1)*(c(1)-z(1));
             if d(1) > 0

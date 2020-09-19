@@ -1,4 +1,4 @@
-function [Zhat, z] = sils_babai_asyn(R,y)
+function Zhat = sils_babai_asyn(R,y)
 
 n = size(R,1);
 
@@ -26,7 +26,7 @@ path = n*ones(n,1);
 
 % The level at which search starts to move up to a higher level
 ulevel = 0; 
-Zhat = zeros(n,1); 
+
 % Initial squared search radius
 beta = inf; 
 
@@ -45,67 +45,55 @@ while 1
     if newprsd < beta
         if k ~= 1 % move to level k-1
             %Update path  
-            %if ulevel ~= 0 
-            %    path(ulevel:k-1) = k;
-            %    for j = ulevel-1 : -1 : 1
-            %         if path(j) < k
-            %              path(j) = k;
-            %         else
-            %              break;  % Note path(1:j-1) >= path(j)
-            %         end
-            %    end
-            %end
+            if ulevel ~= 0 
+                path(ulevel:k-1) = k;
+                for j = ulevel-1 : -1 : 1
+                     if path(j) < k
+                          path(j) = k;
+                     else
+                          break;  % Note path(1:j-1) >= path(j)
+                     end
+                end
+            end
             
             % Update S
             k = k - 1;
-            s = y(k) - R(k, k + 1:n) * z(k + 1:n);
-            %for j = path(k) : -1 : k+1
-            %    S(k,j-1) = S(k,j) - R(k,j) * z(j);
-            %end
+            %s = y(k) - R(k, k + 1:n) * z(k + 1:n);
+            for j = path(k) : -1 : k+1
+                S(k,j-1) = S(k,j) - R(k,j) * z(j);
+            end
             
             % Update the partial squared residual norm
             prsd(k) = newprsd;
             
             % Find the initial integer
-            %c(k) = S(k,k) / R(k,k);
-            c(k) = s / R(k,k);
+            c(k) = S(k,k) / R(k,k);
+            %c(k) = s / R(k,k);
             z(k) = round(c(k));
             gamma = R(k,k) * (c(k) - z(k));
-            if c(k) > z(k) 
-                d(k) = 1;
-            else
-                d(k) = -1;
-            end
+            d(k) = babai_search_asyn.iif(c(k) > z(k), 1, -1);
             ulevel = 0; 
             
         else % A new point is found, update the set of candidate solutions
+            Zhat(:,1:p) = [z, Zhat(:,i:p-1)];
             beta = newprsd;
-            Zhat = z;
             z(1) = z(1) + d(1);
-            %display(z)
+            display(z)
             gamma = R(1,1)*(c(1)-z(1));
-            if d(1) > 0
-                d(1) = -d(1) - 1;
-            else
-                d(1) = -d(1) + 1;
-            end
+            d(k) = babai_search_asyn.iif(d(1) > 0, -d(1) - 1, -d(1) + 1);
         end
     else  
         if k == n % The p optimal solutions have been found
             break
         else  % Move back to level k+1
-            %if ulevel == 0
-            %   ulevel = k;
-            %end
+            if ulevel == 0
+               ulevel = k;
+            end
             k = k + 1; 
             % Find a new integer at level k  
             z(k) = z(k) + d(k);
             gamma = R(k,k) * (c(k) - z(k));
-            if d(k) > 0
-                d(k) = -d(k) - 1;
-            else
-                d(k) = -d(k) + 1;
-            end           
+            d(k) = babai_search_asyn.iif(d(k) > 0, -d(k) - 1, -d(k) + 1);           
         end 
     end
 end
