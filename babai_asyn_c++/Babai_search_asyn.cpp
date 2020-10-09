@@ -1,11 +1,4 @@
-//#include "Babai_search_asyn.h"
-#include <iostream>
-//#include <Eigen/Dense>
-#include <omp.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <windows.h>
-#include <fstream>
+#include "Babai_search_asyn.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -14,8 +7,9 @@ int main(){
 	int MAX_JOB = omp_get_max_threads();
 	std::cout<<"Max_threads="<< MAX_JOB <<std::endl;
 
-	int n = 500, nswp = 8, n_jobs = 12;	
-	Babai_search_asyn bsa(n, 1);
+	int n = 1000, n_jobs = 12;
+	Babai_search_asyn bsa(n);
+	bsa.init(false, 0.5);
 	VectorXd x_ser = bsa.find_raw_x0();
 	for(int i = 0; i <= n_jobs; i++)
 		VectorXd x_par = bsa.find_raw_x0_OMP(n_jobs, i);
