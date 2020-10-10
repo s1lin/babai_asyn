@@ -80,8 +80,13 @@ public:
 
     void init(bool f, double noise) {
         std::random_device rd;
-        std::mt19937 gen(rd());  //here you could also set a seed
-        std::normal_distribution<double> norm_dis(0, 1);//mean:0, std:1. same as matlab.
+        std::mt19937 gen(rd());
+
+        //mean:0, std:1. same as matlab.
+        std::normal_distribution<double> norm_dis(0, 1);
+
+        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+        std::uniform_int_distribution<int> int_dis(-n, n);
 
         string file_name = "R_" + to_string(n) + ".csv";
 
@@ -92,8 +97,6 @@ public:
             this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
             write_to_file(file_name);
         }
-        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-        std::uniform_int_distribution<int> int_dis(-n, n);
 
         this->x0 = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
         this->y = R * x0 + noise * VectorXd::Zero(n).unaryExpr([&](int dummy) { return norm_dis(gen); });
@@ -103,38 +106,22 @@ public:
 
     VectorXd find_raw_x0_OMP(int n_proc, int nswp) {
 
-        //std::cout << R_sA.size() << std::endl;
+        vector<double> raw_x_A = {};
 
-        VectorXd raw_x = VectorXd(n);
-        raw_x = x0;
-
-        vector<double> raw_x_A;
         raw_x_A.resize(n);
-        VectorXd::Map(&raw_x_A[0], n) = x0;
+        raw_x_A[n - 1] = round(y_A[n - 1] / R_sA[((n - 1) * (n)) / 2 + n - 1]);
 
-        double res = INFINITY, sum = 0;
-
-        raw_x_A[n - 1] = round(y(n - 1) / R(n - 1, n - 1));
-
+#ifdef _OPENMP
         double start = omp_get_wtime();
-#pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x)
+        double sum = 0;
+#pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x_A)
         {
             for (int j = 0; j < nswp; j++) {
-                double sum = 0;
 #pragma omp for nowait //schedule(dynamic, n_proc)
                 for (int i = 1; i < n; i++) {
 #pragma omp simd reduction(+ : sum)
-                    for (int col = n - i; col < n; col++) {
-                        //sum += R(k, col) * raw_x(col);
-                        //sum += R_A[k * n + col] * raw_x_A[col];
+                    for (int col = n - i; col < n; col++)
                         sum += R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * raw_x_A[col];
-                    }
-                    //int k = n - 1 - i;
-                    //int f = k * n - (k * (k + 1)) / 2;
-                    //int f = (n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2;
-                    //#pragma omp parallel reduction(+ : sum)
-                    //raw_x_A[k] = round((y_A[k] - sum) / R(k, k));
-                    //raw_x_A[k] = round((y_A[k] - sum) / R_A[k * n + k]);
                     raw_x_A[n - 1 - i] = round(
                             (y_A[n - 1 - i] - sum) / R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
                     sum = 0;
@@ -142,16 +129,16 @@ public:
             }
         }
         double time = omp_get_wtime() - start;
-
+#endif
         VectorXd x_result = VectorXd(n);
         for (int i = 0; i < n; i++) {
             x_result(i) = raw_x_A[i];
         }
 
-        res = (y - R * x_result).norm();
+        double res = (y - R * x_result).norm();
 //        printf("\\item For %d \"sweeps\", the residual is %.5f, and the running time is %f seconds \n", nswp, res,
 //               time);
-        if (res <= tol && time < max_time/2)
+        if (res - tol < EPSILON && time < max_time*0.8)
             printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, nswp, res, time);
 
         return x_result;
@@ -161,17 +148,16 @@ public:
 
         double res;
         std::cout << "find_raw_x0" << std::endl;
-        //std::cout << x0 << endl;
 
         double s = y(n - 1) / R(n - 1, n - 1);
         double sum = 0, sum1 = 0;
         //vector<double> raw_x0;
         //raw_x0.resize(n);
         //VectorXd::Map(&raw_x0[0], n) = x0;
-        VectorXd raw_x0 = x0;
-        //raw_x0[n - 1] = round(s);
+        VectorXd raw_x0 = VectorXd::Zero(n);//x0;
+        raw_x0(n - 1) = round(s);
 
-        std::clock_t start = std::clock();
+        double start = omp_get_wtime();
         for (int k = n - 2; k >= 0; k--) {
 //            for (int col = k + 1; col < n; col++) {
 //                //sum += R_A[k * n + col] * raw_x0[col];
@@ -189,18 +175,13 @@ public:
             sum = 0;
             //sum1 = 0;
         }
-        double time = (std::clock() - start) / (double) CLOCKS_PER_SEC;
-
-        VectorXd x_result = raw_x0;//VectorXd(n);
-//		for (int i = 0; i < n; i++) {
-//			x_result(i) = raw_x0[i];
-//		}
+        double time = omp_get_wtime() - start;
 
         res = (y - R * raw_x0).norm();
         this->tol = res;
         this->max_time = time;
         printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, max_time);
-        return x_result;
+        return raw_x0;
     }
 };
 
