@@ -4,7 +4,7 @@ project(babai_asyn_cuda CUDA)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 set(CMAKE_CUDA_STANDARD 14)
 
-add_executable(babai_asyn_cuda main.cu Babai_search_asyn.cu Babai_search_asyn.cuh)
+add_executable(babai_asyn_cuda Babai_search_asyn.cu Babai_search_asyn.cuh)
 target_link_libraries (babai_asyn_cuda Eigen3::Eigen)
 set_target_properties(
         babai_asyn_cuda

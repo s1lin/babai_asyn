@@ -1,52 +1,62 @@
 #include "Babai_search_asyn.cuh"
+#include <ctime>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+__global__ void
+find_raw_x0_cuda(int n_proc, int nswp, int n, double *raw_x_A, const double *y_A, const double *R_sA) {
+
+    for (int j = 0; j < nswp; j++) {
+        double sum = 0;
+        for (int i = 1; i < n; i++) {
+            for (int col = n - i; col < n; col++) {
+                //sum += R(k, col) * raw_x(col);
+                //sum += R_A[k * n + col] * raw_x_A[col];
+                sum += R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * raw_x_A[col];
+            }
+            raw_x_A[n - 1 - i] = round(
+                    (y_A[n - 1 - i] - sum) / R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
+            sum = 0;
+        }
+    }
+}
 
 int main(){
-	int MAX_JOB = omp_get_max_threads();
-	std::cout<<"Max_threads="<< MAX_JOB <<std::endl;
 
 	int n = 1000, n_jobs = 50;
 	Babai_search_asyn bsa(n);
 	bsa.init(false, 5);
-	VectorXd x_ser = bsa.find_raw_x0();
+    std::cout << "init_res: " << bsa.init_res << std::endl;
 
-//    matplotlibcpp::plot({1,3,2,4});
-//    matplotlibcpp::show();
-//    matplotlibcpp::save("basic.png");
+    double *x, *y_A, *R_sA;
 
-//    std::cout << "find_raw_x0_OMP" << std::endl;
-//	for(int nswp = 5; nswp <= n_jobs; nswp++)
-//	    for(int j = 10; j <= n_jobs; j++)
-//		    VectorXd x_par = bsa.find_raw_x0_OMP(j, nswp);
+    cudaMallocManaged(&x, n*sizeof(int));
+    cudaMallocManaged(&y_A, n*sizeof(int));
+    cudaMallocManaged(&R_sA, bsa.R_sA.size()*sizeof(int));
 
+    x = bsa.x_A.data();
+    y_A = bsa.y_A.data();
+    R_sA = bsa.R_sA.data();
 
-	//std::cout << "X distance=" << (x_par - x_ser).norm() << std::endl;
+    std::clock_t start = std::clock();
+	find_raw_x0_cuda<<<1, 1>>>(0, 1000, n, x, y_A, R_sA);
+    cudaDeviceSynchronize();
+    double time = (std::clock() - start) / (double) CLOCKS_PER_SEC;
 
-	//Babai_search_cuda bsa_cuda(n, nswp, 1);
-	//VectorXd x_ser = bsa.find_raw_x0();
-	//std::cout << "X distance=" << (x_par - x_ser).norm() << std::endl;
+    double res = 0.0f;
+    VectorXd x_result = VectorXd(n);
+    for (int i = 0; i < n; i++) {
+        x_result(i) = x[i];
+    }
 
-	
-//	int np = 0, id = 0;
-//	omp_set_num_threads(8);
-//
-//#pragma omp parallel
-//	{
-//		for (int j = 0; j <= 5; j++) {
-//
-//#pragma omp for nowait
-//			for (int i = 5; i >= 0; i--) {
-//				np = omp_get_num_threads();
-//				id = omp_get_thread_num();
-//
-//				printf("Hello from thread % d out of % d threads\n", j, i);
-//			}
-//		}
-//
-//	}
-	
-	return 0;
+    res = (bsa.y - bsa.R * x_result).norm();
+    std::cout << "res: " << res << std::endl;
+    std::cout << "time: " << time << std::endl;
+
+    cudaFree(x);
+    cudaFree(y_A);
+    cudaFree(R_sA);
+
+    return 0;
 	
 }

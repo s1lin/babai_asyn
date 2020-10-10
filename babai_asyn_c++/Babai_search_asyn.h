@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <ctime>
 
 #define EPSILON 0.0000001
 
@@ -111,9 +112,10 @@ public:
         raw_x_A.resize(n);
         VectorXd::Map(&raw_x_A[0], n) = x0;
 
-        double res = INFINITY, sum = 0, time = 0;
+        double res = INFINITY, sum = 0;
 
         raw_x_A[n - 1] = round(y(n - 1) / R(n - 1, n - 1));
+
         double start = omp_get_wtime();
 #pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x)
         {
@@ -138,9 +140,8 @@ public:
                     sum = 0;
                 }
             }
-
         }
-        time = omp_get_wtime() - start;
+        double time = omp_get_wtime() - start;
 
         VectorXd x_result = VectorXd(n);
         for (int i = 0; i < n; i++) {
@@ -170,25 +171,25 @@ public:
         VectorXd raw_x0 = x0;
         //raw_x0[n - 1] = round(s);
 
-        double start = omp_get_wtime();
+        std::clock_t start = std::clock();
         for (int k = n - 2; k >= 0; k--) {
-            for (int col = k + 1; col < n; col++) {
-                //sum += R_A[k * n + col] * raw_x0[col];
-                int f = k * n + col - (k * (k + 1)) / 2;
-                sum += R_sA[f] * raw_x0[col];
-                //if(f>= 500500)
-                //	std::cout << f << endl;
-            }
-            //VectorXd d = R.block(k, k + 1, 1, n - k - 1) * raw_x0.block(k + 1, 0, n - k - 1, 1);
+//            for (int col = k + 1; col < n; col++) {
+//                //sum += R_A[k * n + col] * raw_x0[col];
+//                int f = k * n + col - (k * (k + 1)) / 2;
+//                sum += R_sA[f] * raw_x0[col];
+//                //if(f>= 500500)
+//                //	std::cout << f << endl;
+//            }
+            VectorXd d = R.block(k, k + 1, 1, n - k - 1) * raw_x0.block(k + 1, 0, n - k - 1, 1);
             //std::cout << sum - sum1 << endl;
-            //s = (y_A[k] - d(0)) / R_sA[k * n + k - (k * (k + 1)) / 2];
-            s = (y(k) - sum) / R(k, k);
+            s = (y_A[k] - d(0)) / R_sA[k * n + k - (k * (k + 1)) / 2];
+            //s = (y(k) - sum) / R(k, k);
             //s = (y_A[k] - sum) / R_sA[k * n + k - (k * (k + 1)) / 2];
             raw_x0(k) = round(s);
             sum = 0;
             //sum1 = 0;
         }
-        double end = omp_get_wtime();
+        double time = (std::clock() - start) / (double) CLOCKS_PER_SEC;
 
         VectorXd x_result = raw_x0;//VectorXd(n);
 //		for (int i = 0; i < n; i++) {
@@ -197,7 +198,7 @@ public:
 
         res = (y - R * raw_x0).norm();
         this->tol = res;
-        this->max_time = end - start;
+        this->max_time = time;
         printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, max_time);
         return x_result;
     }

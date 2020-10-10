@@ -17,7 +17,7 @@ class Babai_search_asyn {
 public:
     int n;
     double init_res, tol, max_time;
-    vector<double> R_A, R_sA, y_A;
+    vector<double> R_A, R_sA, y_A, x_A;
     Eigen::MatrixXd A, R;
     Eigen::VectorXd y, x0;
 private:
@@ -71,6 +71,7 @@ public:
         this->x0 = VectorXd::Zero(n);//.unaryExpr([&](int dummy) { return round(dis(gen)); });
         this->y = VectorXd::Zero(n);
         this->y_A.resize(y.size());
+        this->x_A.resize(x0.size());
         this->max_time = INFINITY;
         this->init_res = INFINITY;
         this->tol = INFINITY;
@@ -98,25 +99,10 @@ public:
         this->y = R * x0 + noise * VectorXd::Zero(n).unaryExpr([&](int dummy) { return norm_dis(gen); });
         this->init_res = (y - R * x0).norm();
         VectorXd::Map(&y_A[0], n) = y;
+        VectorXd::Map(&x_A[0], n) = x0;
     }
 
-    __global__ static void
-    find_raw_x0_cuda(int n_proc, int nswp, int *raw_x_A, int n, const double *y_A, const double *R_sA) {
 
-        for (int j = 0; j < nswp; j++) {
-            double sum = 0;
-            for (int i = 1; i < n; i++) {
-                for (int col = n - i; col < n; col++) {
-                    //sum += R(k, col) * raw_x(col);
-                    //sum += R_A[k * n + col] * raw_x_A[col];
-                    sum += R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * raw_x_A[col];
-                }
-                raw_x_A[n - 1 - i] = round(
-                        (y_A[n - 1 - i] - sum) / R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
-                sum = 0;
-            }
-        }
-    }
 
 
 };
