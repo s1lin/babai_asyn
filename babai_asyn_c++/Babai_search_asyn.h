@@ -88,7 +88,7 @@ public:
         //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
         std::uniform_int_distribution<int> int_dis(-n, n);
 
-        string file_name = "R_" + to_string(n) + ".csv";
+        string file_name = "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_" + to_string(n) + ".csv";
 
         if (f) {
             read_from_file(file_name);

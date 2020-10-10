@@ -8,9 +8,9 @@ int main(){
 	int MAX_JOB = omp_get_max_threads();
 	std::cout<<"Max_threads="<< MAX_JOB <<std::endl;
 
-	int n = 1000, n_jobs = 50;
+	int n = 2048, n_jobs = 50;
 	Babai_search_asyn bsa(n);
-	bsa.init(false, 5);
+	bsa.init(true, 5);
 	VectorXd x_ser = bsa.find_raw_x0();
 
 //    matplotlibcpp::plot({1,3,2,4});

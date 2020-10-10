@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <ctime>
 
 #define EPSILON 0.0000001
 
@@ -102,7 +103,63 @@ public:
         VectorXd::Map(&x_A[0], n) = x0;
     }
 
+    VectorXd find_raw_x0() {
 
+        double s = y(n - 1) / R(n - 1, n - 1);
+        VectorXd raw_x0 = VectorXd::Zero(n);
+        raw_x0(n - 1) = round(s);
 
+        double start = omp_get_wtime();
+        for (int k = n - 2; k >= 0; k--) {
+            VectorXd d = R.block(k, k + 1, 1, n - k - 1) * raw_x0.block(k + 1, 0, n - k - 1, 1);
+            s = (y_A[k] - d(0)) / R_sA[k * n + k - (k * (k + 1)) / 2];
+            raw_x0(k) = round(s);
+        }
+        double time = omp_get_wtime() - start;
 
+        double res = (y - R * raw_x0).norm();
+        this->tol = res;
+        this->max_time = time;
+        printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, max_time);
+        return raw_x0;
+    }
+
+    VectorXd find_raw_x0_OMP(int n_proc, int nswp) {
+
+        vector<double> raw_x_A = {};
+
+        raw_x_A.resize(n);
+        raw_x_A[n - 1] = round(y_A[n - 1] / R_sA[((n - 1) * (n)) / 2 + n - 1]);
+
+        double start = omp_get_wtime();
+        double sum = 0;
+#pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x_A)
+        {
+            for (int j = 0; j < nswp; j++) {
+#pragma omp for nowait //schedule(dynamic, n_proc)
+                for (int i = 1; i < n; i++) {
+#pragma omp simd reduction(+ : sum)
+                    for (int col = n - i; col < n; col++)
+                        sum += R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * raw_x_A[col];
+                    raw_x_A[n - 1 - i] = round(
+                            (y_A[n - 1 - i] - sum) / R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
+                    sum = 0;
+                }
+            }
+        }
+        double time = omp_get_wtime() - start;
+
+        VectorXd x_result = VectorXd(n);
+        for (int i = 0; i < n; i++) {
+            x_result(i) = raw_x_A[i];
+        }
+
+        double res = (y - R * x_result).norm();
+//        printf("\\item For %d \"sweeps\", the residual is %.5f, and the running time is %f seconds \n", nswp, res,
+//               time);
+        if (res - tol < EPSILON && time < max_time*0.8)
+            printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, nswp, res, time);
+
+        return x_result;
+    }
 };
