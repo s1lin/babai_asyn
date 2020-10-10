@@ -16,7 +16,7 @@ using namespace Eigen;
 class Babai_search_asyn {
 public:
     int n;
-    double init_res, tol;
+    double init_res, tol, max_time;
     vector<double> R_A, R_sA, y_A;
     Eigen::MatrixXd A, R;
     Eigen::VectorXd y, x0;
@@ -71,6 +71,7 @@ public:
         this->x0 = VectorXd::Zero(n);//.unaryExpr([&](int dummy) { return round(dis(gen)); });
         this->y = VectorXd::Zero(n);
         this->y_A.resize(y.size());
+        this->max_time = INFINITY;
         this->init_res = INFINITY;
         this->tol = INFINITY;
 
@@ -91,7 +92,7 @@ public:
             write_to_file(file_name);
         }
         //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-        std::uniform_int_distribution<int> int_dis(-n,n);
+        std::uniform_int_distribution<int> int_dis(-n, n);
 
         this->x0 = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
         this->y = R * x0 + noise * VectorXd::Zero(n).unaryExpr([&](int dummy) { return norm_dis(gen); });
@@ -100,7 +101,7 @@ public:
     }
 
     VectorXd find_raw_x0_OMP(int n_proc, int nswp) {
-        std::cout << "find_raw_x0_OMP" << std::endl;
+
         //std::cout << R_sA.size() << std::endl;
 
         VectorXd raw_x = VectorXd(n);
@@ -116,7 +117,6 @@ public:
         double start = omp_get_wtime();
 #pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x)
         {
-
             for (int j = 0; j < nswp; j++) {
                 double sum = 0;
 #pragma omp for nowait //schedule(dynamic, n_proc)
@@ -148,8 +148,10 @@ public:
         }
 
         res = (y - R * x_result).norm();
-        printf("\\item For %d \"sweeps\", the residual is %.5f, and the running time is %f seconds \n", nswp, res,
-               time);
+//        printf("\\item For %d \"sweeps\", the residual is %.5f, and the running time is %f seconds \n", nswp, res,
+//               time);
+        if (res <= tol && time < max_time/2)
+            printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, nswp, res, time);
 
         return x_result;
     }
@@ -170,17 +172,17 @@ public:
 
         double start = omp_get_wtime();
         for (int k = n - 2; k >= 0; k--) {
-			for (int col = k + 1; col < n; col++) {
-				sum += R_A[k * n + col] * raw_x0[col];
-				//int f = k * n + col - (k * (k + 1)) / 2;
-				//sum += R_sA[f] * raw_x0[col];
-				//if(f>= 500500)
-				//	std::cout << f << endl;
-			}
+            for (int col = k + 1; col < n; col++) {
+                //sum += R_A[k * n + col] * raw_x0[col];
+                int f = k * n + col - (k * (k + 1)) / 2;
+                sum += R_sA[f] * raw_x0[col];
+                //if(f>= 500500)
+                //	std::cout << f << endl;
+            }
             //VectorXd d = R.block(k, k + 1, 1, n - k - 1) * raw_x0.block(k + 1, 0, n - k - 1, 1);
             //std::cout << sum - sum1 << endl;
             //s = (y_A[k] - d(0)) / R_sA[k * n + k - (k * (k + 1)) / 2];
-            s = (y(k) -sum) / R(k, k);
+            s = (y(k) - sum) / R(k, k);
             //s = (y_A[k] - sum) / R_sA[k * n + k - (k * (k + 1)) / 2];
             raw_x0(k) = round(s);
             sum = 0;
@@ -195,7 +197,8 @@ public:
 
         res = (y - R * raw_x0).norm();
         this->tol = res;
-        printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, this->init_res, end - start);
+        this->max_time = end - start;
+        printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, max_time);
         return x_result;
     }
 };

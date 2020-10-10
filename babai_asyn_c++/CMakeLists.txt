@@ -1,14 +1,24 @@
 cmake_minimum_required(VERSION 3.17)
 project(test)
+
+FIND_PACKAGE(PythonInterp 3)
+find_package(PythonLibs 3.8 REQUIRED)
+message("Python_FOUND:${Python_FOUND}")
+find_package(PythonLibs 3.8 COMPONENTS Interpreter NumPy)
 find_package(OpenMP REQUIRED)
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(OpenCV REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 set(CMAKE_CXX_STANDARD 14)
 
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+endif ()
+include_directories(${PYTHON_INCLUDE_DIRS})
 
-add_executable(test Babai_search_asyn.h Babai_search_asyn.cpp)
-target_link_libraries (test Eigen3::Eigen)
+link_libraries(${PYTHON_LIBRARIES})
+link_libraries(Eigen3::Eigen)
+
+add_executable(test Babai_search_asyn.h Babai_search_asyn.cpp matplotlibcpp.h)
+
