@@ -10,7 +10,7 @@ int main(){
 
 	int n = 2048, n_jobs = 50;
 	Babai_search_asyn bsa(n);
-	bsa.init(true, 5);
+	bsa.init(true, false, 0.1);
 	VectorXd x_ser = bsa.find_raw_x0();
 
 //    matplotlibcpp::plot({1,3,2,4});

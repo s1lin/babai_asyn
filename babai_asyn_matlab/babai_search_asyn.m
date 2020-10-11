@@ -40,9 +40,22 @@ classdef babai_search_asyn
             bsa.A = randn(n, n);
             bsa.R = triu(qr(bsa.A));
             bsa.x0 = randi([-n, n], n, 1);
-            bsa.y = bsa.R * bsa.x0 + 10 * randn(n, 1);
+            bsa.y = bsa.R * bsa.x0 + 0.1 * randn(n, 1);
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
             bsa.CompThreads = maxNumCompThreads;
+        end
+        
+        function bsa = init_from_files(bsa)
+            bsa.R = table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_2048.csv'));
+            bsa.x0 =  table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_2048.csv'));
+            bsa.y = table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_2048.csv'));
+            bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
+        end
+        
+        function bsa = write_to_files(bsa)
+            writematrix(bsa.R, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_2048.csv');
+            writematrix(bsa.x0, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_2048.csv');
+            writematrix(bsa.y, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_2048.csv');
         end
 
         %Find raw x0 with parallel pooling CPU ONLY for now.
@@ -120,7 +133,7 @@ classdef babai_search_asyn
 
             %Find raw x0 in serial for loop.
         function [raw_x0, res, tEnd] = find_raw_x0(bsa)
-            raw_x0 = bsa.x0;
+            raw_x0 = zeros(bsa.n,1);
 
             tStart = tic;
             for k = bsa.n:-1:1
@@ -129,7 +142,8 @@ classdef babai_search_asyn
             end
             tEnd = toc(tStart);
 
-            res = norm(bsa.y - bsa.R * raw_x0);            
+            res = norm(bsa.x0 - raw_x0);   
+            
         end
 
     end

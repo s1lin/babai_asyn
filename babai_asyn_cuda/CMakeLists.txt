@@ -18,7 +18,7 @@ if (OPENMP_FOUND)
 endif ()
 
 
-add_executable(babai_asyn_cuda Babai_search_asyn.cu Babai_search_asyn.h)
+add_executable(babai_asyn_cuda Babai_search_asyn.cu ../babai_asyn_c++/Babai_search_asyn.h)
 target_link_libraries(babai_asyn_cuda Eigen3::Eigen)
 target_link_libraries(babai_asyn_cuda OpenMP::OpenMP_CXX)
 set_target_properties(babai_asyn_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

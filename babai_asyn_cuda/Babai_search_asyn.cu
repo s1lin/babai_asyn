@@ -1,4 +1,4 @@
-#include "Babai_search_asyn.h"
+#include "../babai_asyn_c++/Babai_search_asyn.h"
 #include <ctime>
 
 using Eigen::MatrixXd;
@@ -118,7 +118,7 @@ int main() {
     int n = 2048, n_jobs = 50;
     Babai_search_asyn bsa(n);
 
-    bsa.init(true, 5);
+    bsa.init(true, 0.1);
 
     std::cout << "find_raw_x0" << std::endl;
     bsa.find_raw_x0();

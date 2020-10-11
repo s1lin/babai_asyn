@@ -8,6 +8,7 @@
 #include <vector>
 #include <random>
 #include <ctime>
+#include <iomanip>
 
 #define EPSILON 0.0000001
 
@@ -18,7 +19,7 @@ class Babai_search_asyn {
 public:
     int n;
     double init_res, tol, max_time;
-    vector<double> R_A, R_sA, y_A;
+    vector<double> R_A, R_sA, y_A, x_A;
     Eigen::MatrixXd A, R;
     Eigen::VectorXd y, x0;
 private:
@@ -61,6 +62,53 @@ private:
         }
     }
 
+    void read_x_y() {
+        string fy =
+                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_" + to_string(n) + ".csv";
+        string fx =
+                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_" + to_string(n) + ".csv";
+        string row_string, entry;
+        int index = 0;
+        ifstream f1(fy);
+        while (getline(f1, row_string)) {
+            //cout<<row_string
+            double d = stod(row_string);
+            //cout<<setprecision(15)<<d<<endl;
+            this->y_A[index] = d;
+            this->y(index) = d;
+            index++;
+        }
+
+        index = 0;
+        ifstream f2(fx);
+        string row_string2, entry2;
+        while (getline(f2, row_string2)) {
+            double d = stod(row_string2);
+            this->x_A[index] = d;
+            this->x0(index) = d;
+            index++;
+        }
+    }
+
+    void write_x_y() {
+        const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+        string fy =
+                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_" + to_string(n) + ".csv";
+        ofstream file2(fy);
+        if (file2.is_open()) {
+            file2 << y.format(CSVFormat);
+            file2.close();
+        }
+
+        string fx =
+                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_" + to_string(n) + ".csv";
+        ofstream file3(fx);
+        if (file3.is_open()) {
+            file3 << x0.format(CSVFormat);
+            file3.close();
+        }
+    }
+
 public:
     explicit Babai_search_asyn(int n) {
 
@@ -72,13 +120,14 @@ public:
         this->x0 = VectorXd::Zero(n);//.unaryExpr([&](int dummy) { return round(dis(gen)); });
         this->y = VectorXd::Zero(n);
         this->y_A.resize(y.size());
+        this->x_A.resize(x0.size());
         this->max_time = INFINITY;
         this->init_res = INFINITY;
         this->tol = INFINITY;
 
     }
 
-    void init(bool f, double noise) {
+    void init(bool read_r, bool read_xy, double noise) {
         std::random_device rd;
         std::mt19937 gen(rd());
 
@@ -88,20 +137,28 @@ public:
         //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
         std::uniform_int_distribution<int> int_dis(-n, n);
 
-        string file_name = "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_" + to_string(n) + ".csv";
+        string file_name =
+                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_" + to_string(n) + ".csv";
 
-        if (f) {
+        if (read_r) {
             read_from_file(file_name);
+
         } else {
-            this->A = MatrixXd::Zero(n, n).unaryExpr([&](int dummy) { return norm_dis(gen); });
+            this->A = MatrixXd::Zero(n, n).unaryExpr([&](double dummy) { return norm_dis(gen); });
             this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
             write_to_file(file_name);
         }
 
-        this->x0 = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
-        this->y = R * x0 + noise * VectorXd::Zero(n).unaryExpr([&](int dummy) { return norm_dis(gen); });
-        this->init_res = (y - R * x0).norm();
-        VectorXd::Map(&y_A[0], n) = y;
+        if (read_xy) {
+            read_x_y();
+            this->init_res = (y - R * x0).norm();
+        } else {
+            this->x0 = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
+            this->y = R * x0 + noise * VectorXd::Zero(n).unaryExpr([&](double dummy) { return norm_dis(gen); });
+            this->init_res = (y - R * x0).norm();
+            VectorXd::Map(&y_A[0], n) = y;
+            write_x_y();
+        }
     }
 
     VectorXd find_raw_x0_OMP(int n_proc, int nswp) {
@@ -110,9 +167,8 @@ public:
 
         raw_x_A.resize(n);
         raw_x_A[n - 1] = round(y_A[n - 1] / R_sA[((n - 1) * (n)) / 2 + n - 1]);
-
-#ifdef _OPENMP
         double start = omp_get_wtime();
+#ifdef _OPENMP
         double sum = 0;
 #pragma omp parallel num_threads(n_proc) private(sum) shared(raw_x_A)
         {
@@ -128,8 +184,8 @@ public:
                 }
             }
         }
-        double time = omp_get_wtime() - start;
 #endif
+        double end_time = omp_get_wtime() - start;
         VectorXd x_result = VectorXd(n);
         for (int i = 0; i < n; i++) {
             x_result(i) = raw_x_A[i];
@@ -138,8 +194,8 @@ public:
         double res = (y - R * x_result).norm();
 //        printf("\\item For %d \"sweeps\", the residual is %.5f, and the running time is %f seconds \n", nswp, res,
 //               time);
-        if (res - tol < EPSILON && time < max_time*0.8)
-            printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, nswp, res, time);
+        if (res - tol < EPSILON && end_time < max_time)
+            printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, nswp, res, end_time);
 
         return x_result;
     }
@@ -149,33 +205,46 @@ public:
         double res;
         std::cout << "find_raw_x0" << std::endl;
 
-        double s = y(n - 1) / R(n - 1, n - 1);
+        double s = y_A[n - 1] / R(n - 1, n - 1);
         double sum = 0, sum1 = 0;
         //vector<double> raw_x0;
         //raw_x0.resize(n);
         //VectorXd::Map(&raw_x0[0], n) = x0;
         VectorXd raw_x0 = VectorXd::Zero(n);//x0;
         raw_x0(n - 1) = round(s);
-
+        //cout<<R<<endl;
+//        cout<<x0.transpose()<<endl;
         double start = omp_get_wtime();
         for (int k = n - 2; k >= 0; k--) {
 //            for (int col = k + 1; col < n; col++) {
 //                //sum += R_A[k * n + col] * raw_x0[col];
 //                int f = k * n + col - (k * (k + 1)) / 2;
-//                sum += R_sA[f] * raw_x0[col];
+//                sum1 += R_sA[f] * raw_x0[col];
 //                //if(f>= 500500)
 //                //	std::cout << f << endl;
+//                //cout<<R_sA[f]<<"*"<< raw_x0[col]<<"    ";
 //            }
             VectorXd d = R.block(k, k + 1, 1, n - k - 1) * raw_x0.block(k + 1, 0, n - k - 1, 1);
-            //std::cout << sum - sum1 << endl;
+//            sum = (y(k) - d(0)) / R(k, k);
             s = (y_A[k] - d(0)) / R_sA[k * n + k - (k * (k + 1)) / 2];
+
+            //cout<<endl<<raw_x0.block(k + 1, 0, n - k - 1, 1)<<endl;
+            //cout << s << endl;
+            //cout<<"---------------------"<<endl;
+
+            //std::cout << sum - sum1 << endl;
+
             //s = (y(k) - sum) / R(k, k);
-            //s = (y_A[k] - sum) / R_sA[k * n + k - (k * (k + 1)) / 2];
+//            double dff = sum - s;
+//            if (dff > 0)
+
+
             raw_x0(k) = round(s);
-            sum = 0;
-            //sum1 = 0;
+//            sum = 0;
+//            sum1 = 0;
         }
         double time = omp_get_wtime() - start;
+//        cout<<raw_x0.transpose()<<endl;
 
         res = (y - R * raw_x0).norm();
         this->tol = res;
