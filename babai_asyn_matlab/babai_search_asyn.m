@@ -46,16 +46,16 @@ classdef babai_search_asyn
         end
         
         function bsa = init_from_files(bsa)
-            bsa.R = table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_2048.csv'));
-            bsa.x0 =  table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_2048.csv'));
-            bsa.y = table2array(readtable('/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_2048.csv'));
+            bsa.R = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/R_',int2str(bsa.n),'.csv')));
+            bsa.x0 =  table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_',int2str(bsa.n),'.csv')));
+            bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_',int2str(bsa.n),'.csv')));
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
         end
         
         function bsa = write_to_files(bsa)
-            writematrix(bsa.R, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/R_2048.csv');
-            writematrix(bsa.x0, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/x_2048.csv');
-            writematrix(bsa.y, '/home/shilei/CLionProjects/babai_asyn/babai_asyn_cuda/cmake-build-debug/y_2048.csv');
+            writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_',int2str(bsa.n),'.csv'));
+            writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_',int2str(bsa.n),'.csv'));
+            writematrix(bsa.y, append('/home/shilei/CLionProjects/babai_asyn/data/y_',int2str(bsa.n),'.csv'));
         end
 
         %Find raw x0 with parallel pooling CPU ONLY for now.
@@ -108,27 +108,14 @@ classdef babai_search_asyn
             delete(p);
         end
 
-        function x = deploy(bsa, x)
-        %s = (b(i) - bsa.R(i, i + 1:bsa.bsa.n) * x(i + 1:bsa.n, j)) / bsa.R(i, i);
-
-        %             disp('   task  i  j  x_prev   x_next');
-        %             %task = get(getCurrentTask(), 'ID');
-        %             %i = m - i + 1;
-        %             disp([i, j])
-        %             %if i == u(j)
-        %             s = bsa.R(i, i + 1:bsa.bsa.n) * x(i + 1:bsa.bsa.n, j);
-        %             x(i, j + 1) = round((b(i) - s) / bsa.R(i, i));
-        %             %k_next(i) = k(i) - 1;
-        %             %disp([task, i, j, x(i, j), x(i, j+1)])
-        %             %else
-        %             %x(i, j + 1) = x(i, j);
-        %             %end
-        %             %end
-            for k = bsa.n:-1:1
-                    x(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.bsa.n) * x(k + 1:bsa.bsa.n)) / bsa.R(k, k);
-                    x(k) = round(x(k));
+        function x = deploy(bsa)
+            res_tim = zeros(20, 1);
+            res_res = zeros(20, 1);
+            for i = 1:20
+                [~, res_res(i), res_tim(i)] = find_raw_x0(bsa);    
             end
-
+            writematrix(res_tim, append('/home/shilei/CLionProjects/babai_asyn/data/Tim_',int2str(bsa.n),'.csv'));
+            writematrix(res_res, append('/home/shilei/CLionProjects/babai_asyn/data/Res_',int2str(bsa.n),'.csv'));
         end
 
             %Find raw x0 in serial for loop.
@@ -138,12 +125,12 @@ classdef babai_search_asyn
             tStart = tic;
             for k = bsa.n:-1:1
                 raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
-                raw_x0(k) = round(raw_x0(k));
+                raw_x0(k) = round(raw_x0(k));                
             end
             tEnd = toc(tStart);
-
-            res = norm(bsa.x0 - raw_x0);   
-            
+            %res = zeros(2,1);
+            %res(1) = norm(bsa.x0 - raw_x0);   
+            res = norm(bsa.y - bsa.R * raw_x0);
         end
 
     end

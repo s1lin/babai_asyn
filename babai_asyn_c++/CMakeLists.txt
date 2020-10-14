@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(test)
+project(babai_asyn)
 
 FIND_PACKAGE(PythonInterp 3)
 find_package(PythonLibs 3.8 REQUIRED)
@@ -15,10 +15,13 @@ if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif ()
+
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 link_libraries(${PYTHON_LIBRARIES})
 link_libraries(Eigen3::Eigen)
 
-add_executable(test Babai_search_asyn.h Babai_search_asyn.cpp matplotlibcpp.h)
 
+add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn.cpp matplotlibcpp.h)
+target_link_libraries(babai_asyn Eigen3::Eigen)
+target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)

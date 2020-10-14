@@ -4,6 +4,7 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+namespace plt = matplotlibcpp;
 __global__ void
 find_raw_x0_cuda(int n, double *x_A, double *x_Next_A, const double *y_A, const double *R_sA) {
 
@@ -22,19 +23,22 @@ find_raw_x0_cuda(int n, double *x_A, double *x_Next_A, const double *y_A, const 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < n) {
         double sum = 0.0;
-
-        // store index in register
-        // Multiplication is not executed in every iteration.
-        //int idx_Ai = idx * n;
+//
+//        // store index in register
+//        // Multiplication is not executed in every iteration.
+//        //int idx_Ai = idx * n;
         for (int col = idx + 1; col < n; col++)
             sum += R_sA[idx * n + col] * x_A[col];
         x_A[idx] = round((y_A[idx] - sum) / R_sA[idx * n + idx]);
+
+
+//        int idx_Ai = idx * n;
+//        for (int j = 0; j < n; j++)
+//            if (idx != j)
+//                sum += R_sA[idx_Ai + j] * x_A[j];
+//        x_Next_A[idx] = round((y_A[idx] - sum) / R_sA[idx * n + idx]);
     }
 
-//int idx_Ai = idx * n;
-//    for (int j=0; j<Nj; j++)
-//        if (idx != j)
-//            sum += R_sA[idx_Ai + j] * x_A[j];
 }
 
 void testDevice(int devID) {
@@ -49,7 +53,7 @@ void testDevice(int devID) {
         printf("Using GPU device number %d.\n", devID);
 }
 
-void run(int n, int nswp, Babai_search_asyn bsa){
+double run(int n, int nswp, Babai_search_asyn bsa) {
     double *x, *x_A, *x_Next_A, *y_A, *R_sA;
 
     x = (double *) malloc(n * sizeof(double));
@@ -64,13 +68,13 @@ void run(int n, int nswp, Babai_search_asyn bsa){
     for (int i = 0; i < n; i++) {
         y_A[i] = bsa.y_A[i];
     }
-    for (int i = 0; i < bsa.R_A.size(); i++){
+    for (int i = 0; i < bsa.R_A.size(); i++) {
         R_sA[i] = bsa.R_A[i];
     }
     x_A[n - 1] = x_Next_A[n - 1] = x[n - 1];
 
     cudaMemcpy(y_A, bsa.y_A.data(), n * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(R_sA, bsa.R_A.data(),  bsa.R_A.size()*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(R_sA, bsa.R_A.data(), bsa.R_A.size() * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(x_A, x, n * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(x_Next_A, x, n * sizeof(double), cudaMemcpyHostToDevice);
 
@@ -85,11 +89,13 @@ void run(int n, int nswp, Babai_search_asyn bsa){
     std::clock_t start = std::clock();
     for (int k = 0; k < nswp; k++) {
         //if (k % 2)
-        find_raw_x0_cuda<<<nTiles, tileSize>>>(n, x_A, x_Next_A, y_A, R_sA);
+            find_raw_x0_cuda<<<nTiles, tileSize>>>(n, x_A, x_Next_A, y_A, R_sA);
         //else
-        //    find_raw_x0_cuda<<<nTiles, tileSize>>>(n, x_Next_A, x_A, y_A, R_sA);
+            //find_raw_x0_cuda<<<nTiles, tileSize>>>(n, x_Next_A, x_A, y_A, R_sA);
+
 
     }
+
     cudaDeviceSynchronize();
     double time = (std::clock() - start) / (double) CLOCKS_PER_SEC;
 
@@ -109,6 +115,7 @@ void run(int n, int nswp, Babai_search_asyn bsa){
     cudaFree(y_A);
     cudaFree(R_sA);
     free(x);
+    return res;
 }
 
 int main() {
@@ -118,19 +125,76 @@ int main() {
     int n = 2048, n_jobs = 50;
     Babai_search_asyn bsa(n);
 
-    bsa.init(true, 0.1);
+    bsa.init(true, true, 0.1);
 
     std::cout << "find_raw_x0" << std::endl;
     bsa.find_raw_x0();
 
-    std::cout << "find_raw_x0_OMP" << std::endl;
-    for(int nswp = 5; nswp <= n_jobs; nswp++)
-        for(int j = 10; j <= n_jobs; j++)
-            VectorXd x_par = bsa.find_raw_x0_OMP(j, nswp);
+//    std::cout << "find_raw_x0_OMP" << std::endl;
+//    for(int nswp = 5; nswp <= n_jobs; nswp++)
+//        for(int j = 10; j <= n_jobs; j++)
+//            VectorXd x_par = bsa.find_raw_x0_OMP(j, nswp);
 
-    for(int nswp = 10; nswp < 200; nswp += 10) {
-        run(n, nswp, bsa);
+    std::vector<double> nswp_pl(20), res_pl(20), tim_pl(20);
+    for (int nswp = 0; nswp < 20; nswp++) {
+        nswp_pl.push_back(nswp);
+        res_pl.push_back(bsa.init_res);
+        tim_pl.push_back(bsa.find_raw_x0());
     }
+
+    const std::map<std::string, std::string> keyword_arg{
+            {"marker",     "o"},
+            {"markersize", "5"},
+            {"label",      "Serial"}
+    };
+
+    plt::xlim(1, 20);
+    plt::plot(nswp_pl, tim_pl, keyword_arg);
+
+    const std::map<std::string, std::string> keyword_arg2{
+            {"marker",     "1"},
+            {"markersize", "5"},
+            {"label",      "Matlab"}
+    };
+
+    string tim =
+            "/home/shilei/CLionProjects/babai_asyn/data/Res_" + to_string(n) + ".csv";
+    string row_string, entry;
+    int index = 0;
+    vector<double> nswp_pl2(20), tim_pl2(20);
+    ifstream f1(tim);
+    while (getline(f1, row_string)) {
+        double d = stod(row_string);
+        nswp_pl2.push_back(index);
+        tim_pl2.push_back(d);
+        index++;
+    }
+
+    plt::xlim(1, 20);
+    plt::plot(nswp_pl2, tim_pl2, keyword_arg2);
+
+    std::cout << "find_raw_x0_CUDA" << std::endl;
+    vector<double> nswp_pl3(20), tim_pl3(20);
+    for (int nswp = 10; nswp <= 200; nswp += 10) {
+        double time = run(n, nswp, bsa);
+        tim_pl3.push_back(time);
+    }
+
+
+    const std::map<std::string, std::string> keyword_arg3{
+            {"marker",     "x"},
+            {"markersize", "5"},
+            {"label",      "GPU"}
+    };
+
+    plt::xlim(1, 20);
+    plt::plot(nswp_pl, tim_pl3, keyword_arg3);
+
+    plt::title("Residual with GPU");
+    plt::legend();
+    plt::xlabel("Num of iterations x 10");
+    plt::ylabel("Residual");
+    plt::save("./resCUDA.png");
 
     return 0;
 
