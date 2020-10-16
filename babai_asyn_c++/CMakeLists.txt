@@ -22,6 +22,6 @@ link_libraries(${PYTHON_LIBRARIES})
 link_libraries(Eigen3::Eigen)
 
 
-add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn.cpp matplotlibcpp.h)
+add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn.cpp matplotlibcpp.h Babai_search_temp.h)
 target_link_libraries(babai_asyn Eigen3::Eigen)
 target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)
