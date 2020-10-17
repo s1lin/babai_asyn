@@ -119,20 +119,40 @@ classdef babai_search_asyn
         end
 
             %Find raw x0 in serial for loop.
-        function [raw_x0, res, tEnd] = find_raw_x0(bsa)
-            raw_x0 = zeros(bsa.n,1);
+        function [raw_x0, res, avg] = find_raw_x0(bsa)
+            avg = 0;
+            res = 0;
+            for i = 1:20
+                raw_x0 = zeros(bsa.n,1);
 
-            tStart = tic;
-            for k = bsa.n:-1:1
-                raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
-                raw_x0(k) = round(raw_x0(k));                
+                tStart = tic;
+                for k = bsa.n:-1:1
+                    raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
+                    raw_x0(k) = round(raw_x0(k));                
+                end
+                tEnd = toc(tStart);
+                avg = avg + tEnd;
+                res = res + norm(bsa.y - bsa.R * raw_x0);
             end
-            tEnd = toc(tStart);
+            avg = avg/20;
             %res = zeros(2,1);
             %res(1) = norm(bsa.x0 - raw_x0);   
-            res = norm(bsa.y - bsa.R * raw_x0);
+            res = res/20;
         end
 
+         function [raw_x0, res, avg] = find_raw_x0_2(bsa)
+                raw_x0 = zeros(bsa.n,1);
+
+                tStart = tic;
+                for k = bsa.n:-1:1
+                    raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
+                    raw_x0(k) = round(raw_x0(k));                
+                end
+                tEnd = toc(tStart);
+                avg = tEnd;
+                res = norm(bsa.y - bsa.R * raw_x0);
+            
+        end
     end
 
 end
