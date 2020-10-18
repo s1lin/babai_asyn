@@ -21,8 +21,8 @@ namespace plt = matplotlibcpp;
 class Babai_search_asyn {
 public:
     int n;
-    double init_res, tol, max_time;
-    double *R_sA, *x_A, *y_A;
+    double init_res, max_time;
+    double *R_A, *x_A, *y_A;
     vector<vector<double>> R_V;
     Eigen::MatrixXd A, R;
     Eigen::VectorXd y, x_t;
@@ -38,7 +38,7 @@ private:
             while (getline(row_stream, entry, ',')) {
                 double d = stod(entry);
                 if (d != 0) {
-                    this->R_sA[i] = d;
+                    this->R_A[i] = d;
                     i++;
                 }
                 this->R_V[j].push_back(d);
@@ -65,7 +65,7 @@ private:
             while (getline(row_stream, entry, ',')) {
                 double d = stod(entry);
                 if (d != 0) {
-                    this->R_sA[i] = d;
+                    this->R_A[i] = d;
                     i++;
                 }
                 this->R_V[j].push_back(d);
@@ -122,24 +122,22 @@ private:
 
 public:
     explicit Babai_search_asyn(int n) {
-
         this->n = n;
         this->A = MatrixXd::Zero(n, n);
         this->R = Eigen::MatrixXd::Zero(n, n);
         this->R_V = vector<vector<double>>();
-        this->R_sA = (double *) calloc(n * n, sizeof(double));
+        this->R_V.resize(n * n);
+        this->R_A = (double *) calloc(n * n, sizeof(double));
         this->x_A = (double *) calloc(n, sizeof(double));
         this->y_A = (double *) calloc(n, sizeof(double));
         this->x_t = VectorXd::Zero(n);
         this->y = VectorXd::Zero(n);
         this->max_time = INFINITY;
         this->init_res = INFINITY;
-        this->tol = INFINITY;
-        this->R_V.resize(n * n);
     }
 
     ~Babai_search_asyn() {
-        free(R_sA);
+        free(R_A);
         free(x_A);
         free(y_A);
     }
@@ -178,51 +176,50 @@ public:
         }
     }
 
-    double search_omp(int n_proc, int nswp, int init_value) {
-        double sum = 0, dist = INFINITY;
-        int i = 0, j = 0, count = 0;
+    tuple<double, double, int> search_omp(int n_proc, int nswp, int init_value) {
+
+        double sum = 0;
+        int count = 0, num_iter = 0;
 
         auto *z_B = (double *) calloc(n, sizeof(double));
         auto *z_B_p = (double *) calloc(n, sizeof(double));
         auto *update = (double *) calloc(n, sizeof(double));
 
-#pragma omp for
         for (int i = 0; i < n; i++) {
             z_B[i] = init_value;
             z_B_p[i] = init_value;
             update[i] = 0;
         }
         double start = omp_get_wtime();
-        z_B[n - 1] = round(y_A[n - 1] / R_sA[((n - 1) * n) / 2 + n - 1]);
-#pragma omp parallel num_threads(n_proc) private(sum, i, j, count) shared(update)
+        z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
+#pragma omp parallel num_threads(n_proc) private(sum, count) shared(update)
         {
             for (int j = 0; j < nswp; j++) {
-
 #pragma omp for nowait schedule(dynamic)
                 for (int i = 0; i < n; i++) {
 #pragma omp simd reduction(+ : sum)
                     for (int col = n - i; col < n; col++) {
-                        sum += R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
+                        sum += R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
                     }
                     int x_c = round(
-                            (y_A[n - 1 - i] - sum) / R_sA[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
+                            (y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
                     int x_p = z_B_p[n - 1 - i];
                     z_B[n - 1 - i] = x_c;
 
                     if (x_c != x_p) {
                         update[n - 1 - i] = 0;
                         z_B_p[n - 1 - i] = x_c;
-                    }else{
+                    } else {
                         update[n - 1 - i] = 1;
                     }
                     sum = 0;
-
                 }
 #pragma omp simd reduction(+ : count)
                 for (int col = 0; col < n; col++) {
                     count += update[col];
                 }
-                if(count == n){
+                if (count == n) {
+                    num_iter = j;
                     break;
                 }
                 count = 0;
@@ -234,11 +231,12 @@ public:
         double res = (y - R * x_result).norm();
 
         //if (res - tol < EPSILON)// && end_time < max_time)
-        printf("Thread: %d, Sweep: %d, Res: %.5f, count :%d, Run time: %fs\n", n_proc, j, res, count, end_time);
+        //printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
         free(z_B);
         free(z_B_p);
         free(update);
-        return end_time;
+
+        return {res, end_time, num_iter};
 
 //            if(n_proc == 0) {
 //                for (int nswp = 0; nswp < 20; nswp++) {
@@ -299,22 +297,10 @@ public:
 //    plt::save("./resOMP.png");
     }
 
-    double search_eigen(int init_value) {
-        VectorXd z_B;
-        switch (init_value) {
-            case -1:
-                z_B = VectorXd::Zero(n);
-                z_B.setConstant(n, -1);
-                break;
-            case 1:
-                z_B = VectorXd::Ones(n);
-                break;
-            default:
-                z_B = VectorXd::Zero(n);//x_t;
-        }
-        cout << z_B[0];
+    tuple<double, double> search_eigen(int init_value) {
+        VectorXd z_B = VectorXd(n);
+        z_B.setConstant(n, init_value);
         double start = omp_get_wtime();
-
         double s = y(n - 1) / R(n - 1, n - 1);
         z_B(n - 1) = round(s);
         for (int k = n - 2; k >= 0; k--) {
@@ -325,14 +311,14 @@ public:
         double time = omp_get_wtime() - start;
 
         double res = (y - R * z_B).norm();
-        printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, time);
-        return time;
+        printf("Res = %.5f, init_res = %.5f %f seconds\n", res, init_res, time);
+        return {res, time};
     }
 
-    double search_vec(int init_value) {
+    tuple<double, double> search_vec(int init_value) {
         vector<double> z_B(n, init_value);
-        cout << z_B[0];
         double sum = 0;
+
         double start = omp_get_wtime();
         z_B[n - 1] = round(y_A[n - 1] / R_V[n - 1][n - 1]);
         for (int i = 1; i < n; i++) {
@@ -348,13 +334,9 @@ public:
         Eigen::Map<Eigen::VectorXd> x_result(z_B.data(), n);
         double res = (y - R * x_result).norm();
 
-        this->tol = res;
         this->max_time = time;
 
-        printf("For %d steps, res = %.5f, init_res = %.5f %f seconds\n", n, res, init_res, max_time);
-        return res;
-
+        printf("Res = %.5f, init_res = %.5f %f seconds\n", res, init_res, max_time);
+        return {res, time};
     }
-
-
 };
