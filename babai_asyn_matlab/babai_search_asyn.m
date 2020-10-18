@@ -141,7 +141,7 @@ classdef babai_search_asyn
         end
 
          function [raw_x0, res, avg] = find_raw_x0_2(bsa)
-                raw_x0 = ones(bsa.n,1);
+                raw_x0 = zeros(bsa.n,1);
 
                 tStart = tic;
                 for k = bsa.n:-1:1
