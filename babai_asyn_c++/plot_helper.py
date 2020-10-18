@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 def plot_time(ser_time, mat_time, n_proc, omp_time, init_value):
     axes = plt.gca()
-    axes.set_xlim([1, 90])
-    axes.set_ylim([0, 3])
+    axes.set_xlim([5, 215])
+    #    axes.set_ylim([0.4, 2.7])
     left, width = .25, .75
-    bottom, height = .20, .75
+    bottom, height = -.75, .75
     right = left + width
     top = bottom + height
     plt.axhline(y=ser_time, xmin=0.0, xmax=1.0, color='b', linestyle='dashed', label='Serial')
@@ -23,14 +23,15 @@ def plot_time(ser_time, mat_time, n_proc, omp_time, init_value):
     plt.ylabel('Running Time')
     plt.title('Average Running Time For 10 Iterations')
 
-    plt.legend(loc='center right')
-    plt.show()
+    plt.legend(loc='center left')
+    plt.savefig('../figures/20201018/' + str(n) + '_tim_' + str(init_value))
+    plt.close()
 
 
 def plot_res(ser_res, mat_res, n_proc, omp_res, init_value):
     axes = plt.gca()
-    axes.set_xlim([1, 90])
-    axes.set_ylim([0, 3])
+    axes.set_xlim([5, 215])
+    #    axes.set_ylim([5, 7])
     left, width = .25, .75
     bottom, height = .20, .75
     right = left + width
@@ -48,38 +49,28 @@ def plot_res(ser_res, mat_res, n_proc, omp_res, init_value):
     plt.ylabel('Residual')
     plt.title('Average Residual Time For 10 Iterations')
 
-    plt.legend(loc='center right')
-    plt.show()
+    plt.legend(loc='upper left')
+    plt.savefig('../figures/20201018/' + str(n) + '_res_' + str(init_value))
+    plt.close()
 
 
 def plot_res_time(n):
-    file1 = open('cmake-build-debug/res_16384.csv', 'r')
+    file1 = open('cmake-build-debug/res_' + str(n) + '.csv', 'r')
     lines = file1.readlines()
     init_value = -2
-    n_proc = np.arange(21)
-    omp_res = np.arange(21, dtype=np.double)
-    omp_time = np.arange(21, dtype=np.double)
-    num_iter = np.arange(21, dtype=np.double)
-    eig_res = ser_res = ser_time = eig_time = ser_time = 0
+    n_proc = np.arange(20)
+    omp_res = np.arange(20, dtype=np.double)
+    omp_time = np.arange(20, dtype=np.double)
+    num_iter = np.arange(20, dtype=np.double)
+    eig_res = ser_res = ser_time = eig_time = ser_time = mat_time = mat_res = 0
 
     index = i = 0
     for line in lines:
         line_str = line.split(",")
         print(line_str)
         if line == "Next,\n":
-            if n == 16384 and init_value == 0:
-                mat_time = 2.4668
-                mat_res = 12.9352
-            if n == 16384 and init_value == 1:
-                mat_time = 2.4668
-                mat_res = 12.9352
-            if n == 16384 and init_value == 0:
-                mat_time = 2.4668
-                mat_res = 12.9352
-
             plot_time(ser_time, mat_time, n_proc, omp_time, init_value)
             plot_res(ser_res, mat_res, n_proc, omp_res, init_value)
-
             index = i = 0
         else:
             init_value = int(line_str[0])
@@ -89,15 +80,20 @@ def plot_res_time(n):
             elif index == 1:
                 ser_res = float(line_str[1])
                 ser_time = float(line_str[2])
+            elif index == 2:
+                mat_res = float(line_str[1])
+                mat_time = float(line_str[2])
             else:
                 n_proc[i] = int(line_str[1])
                 omp_res[i] = float(line_str[2])
                 omp_time[i] = float(line_str[3])
                 num_iter[i] = float(line_str[4])
-            i = i + 1
+                i = i + 1
             index = index + 1
 
 
 if __name__ == "__main__":
-    n = 16384
-    plot_res_time(n)
+    n = 4096
+    while n <= 16384:
+        plot_res_time(n)
+        n = n * 2

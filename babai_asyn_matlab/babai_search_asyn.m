@@ -44,18 +44,18 @@ classdef babai_search_asyn
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
             bsa.CompThreads = maxNumCompThreads;
         end
-        
+
         function bsa = init_from_files(bsa)
-            bsa.R = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/R_',int2str(bsa.n),'.csv')));
-            bsa.x0 =  table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_',int2str(bsa.n),'.csv')));
-            bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_',int2str(bsa.n),'.csv')));
+            bsa.R = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv')));
+            bsa.x0 = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv')));
+            bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv')));
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
         end
-        
+
         function bsa = write_to_files(bsa)
-            writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_',int2str(bsa.n),'.csv'));
-            writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_',int2str(bsa.n),'.csv'));
-            writematrix(bsa.y, append('/home/shilei/CLionProjects/babai_asyn/data/y_',int2str(bsa.n),'.csv'));
+            writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.y, append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv'));
         end
 
         %Find raw x0 with parallel pooling CPU ONLY for now.
@@ -66,88 +66,98 @@ classdef babai_search_asyn
             B = eye(bsa.n) - bsa.R ./ diag(bsa.R, 0);
             C = D .* bsa.y;
             raw_x0 = bsa.x0;
-            tStart = tic;            
+            tStart = tic;
             spmd(np)
-                vet = codistributor1d(1, codistributor1d.unsetPartition, [bsa.n, 1]);
-                mat = codistributor1d(1, codistributor1d.unsetPartition, [bsa.n, bsa.n]);
+            vet = codistributor1d(1, codistributor1d.unsetPartition, [bsa.n, 1]);
+            mat = codistributor1d(1, codistributor1d.unsetPartition, [bsa.n, bsa.n]);
 
-                Rm = codistributed(bsa.R, mat);
-                yv = codistributed(bsa.y, vet);
-                x = codistributed(Rm * raw_x0 - yv, vet);
+            Rm = codistributed(bsa.R, mat);
+            yv = codistributed(bsa.y, vet);
+            x = codistributed(Rm * raw_x0 - yv, vet);
 
-                j = 1;
-                tol_x = tol;
-                %norm(x - raw_x0, Inf) > norm(raw_x0, Inf) * TOLX && 
-                while (j < nswp)
+            j = 1;
+            tol_x = tol;
+            %norm(x - raw_x0, Inf) > norm(raw_x0, Inf) * TOLX &&
+            while (j < nswp)
 
-                    if (tol * norm(x, Inf) > realmin)
-                        tol_x = norm(x, Inf) * tol;
-                    else
-                        tol_x = realmin;
-                    end
-                    disp(tol_x)
-                    
-                    %raw_x0 = x;
-                    for k = bsa.n:-1:1
-                        x(k) = (yv(k) - Rm(k, k + 1:bsa.n) * x(k + 1:bsa.n)) / Rm(k, k);
-                        x(k) = round(x(k));
-                    end
-%                     raw_x0 = x;
-%                     x = round(yv - Rm*x.*D);
-                    %x = round(B * raw_x0 + C);
-                    j = j + 1;
+                if (tol * norm(x, Inf) > realmin)
+                    tol_x = norm(x, Inf) * tol;
+                else
+                    tol_x = realmin;
                 end
+
+                disp(tol_x)
+
+                %raw_x0 = x;
+                for k = bsa.n:-1:1
+                    x(k) = (yv(k) - Rm(k, k + 1:bsa.n) * x(k + 1:bsa.n)) / Rm(k, k);
+                    x(k) = round(x(k));
+                end
+
+                %                     raw_x0 = x;
+                %                     x = round(yv - Rm*x.*D);
+                %x = round(B * raw_x0 + C);
+                j = j + 1;
             end
-            tEnd = toc(tStart);
-            j = j{1};
-            x = gather(x);
-            %disp([t1, tEnd - tStart]);
-            %disp(x)
-            res = norm(bsa.y - bsa.R * x);
-            disp([res tol]);
-            delete(p);
+
+        end
+
+        tEnd = toc(tStart);
+        j = j{1};
+        x = gather(x);
+        %disp([t1, tEnd - tStart]);
+        %disp(x)
+        res = norm(bsa.y - bsa.R * x);
+        disp([res tol]);
+        delete(p);
         end
 
         function x = deploy(bsa)
             res_tim = zeros(20, 1);
             res_res = zeros(20, 1);
+
             for i = 1:20
-                [~, res_res(i), res_tim(i)] = find_raw_x0(bsa);    
+                [~, res_res(i), res_tim(i)] = find_raw_x0(bsa);
             end
-            writematrix(res_tim, append('/home/shilei/CLionProjects/babai_asyn/data/Tim_',int2str(bsa.n),'.csv'));
-            writematrix(res_res, append('/home/shilei/CLionProjects/babai_asyn/data/Res_',int2str(bsa.n),'.csv'));
+
+            writematrix(res_tim, append('/home/shilei/CLionProjects/babai_asyn/data/Tim_', int2str(bsa.n), '.csv'));
+            writematrix(res_res, append('/home/shilei/CLionProjects/babai_asyn/data/Res_', int2str(bsa.n), '.csv'));
         end
 
             %Find raw x0 in serial for loop.
         function [raw_x0, res, avg] = find_raw_x0(bsa)
-            avg = 0;
-            res = 0;
-            for i = 1:20
-                raw_x0 = zeros(bsa.n,1);
+            
+            for init = -2:2
+                avg = 0;
+                res = 0;
+                for i = 1:10
+                    raw_x0 = zeros(bsa.n, 1) + init;                   
+                    tStart = tic;
 
-                tStart = tic;
-                for k = bsa.n:-1:1
-                    raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
-                    raw_x0(k) = round(raw_x0(k));                
+                    for k = bsa.n:-1:1
+                        raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
+                        raw_x0(k) = round(raw_x0(k));
+                    end
+
+                    tEnd = toc(tStart);
+                    avg = avg + tEnd;
+                    res = res + norm(bsa.y - bsa.R * raw_x0);
                 end
-                tEnd = toc(tStart);
-                avg = avg + tEnd;
-                res = res + norm(bsa.y - bsa.R * raw_x0);
+                disp([init, avg / 10, res / 10]);
+                
             end
-            avg = avg/20;
-            %res = zeros(2,1);
-            %res(1) = norm(bsa.x0 - raw_x0);   
-            res = res/20;
         end
-
-         function [raw_x0, res, avg] = find_raw_x0_2(bsa)
-                raw_x0 = zeros(bsa.n,1);
+        
+        function [raw_x0, res, avg] = find_raw_x0_2(bsa)
+                raw_x0 = zeros(bsa.n, 1);
 
                 tStart = tic;
+
                 for k = bsa.n:-1:1
                     raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
-                    raw_x0(k) = round(raw_x0(k));                
+                    raw_x0(k) = round(raw_x0(k));
                 end
+
                 tEnd = toc(tStart);
                 avg = tEnd;
                 res = norm(bsa.y - bsa.R * raw_x0);

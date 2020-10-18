@@ -178,7 +178,7 @@ public:
 
     tuple<double, double, int> search_omp(int n_proc, int nswp, int init_value) {
 
-        double sum = 0;
+        double sum = 0, dist = 0;
         int count = 0, num_iter = 0;
 
         auto *z_B = (double *) calloc(n, sizeof(double));
@@ -192,9 +192,10 @@ public:
         }
         double start = omp_get_wtime();
         z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
-#pragma omp parallel num_threads(n_proc) private(sum, count) shared(update)
+#pragma omp parallel num_threads(n_proc) private(sum, count, dist) shared(update)
         {
-            for (int j = 0; j < nswp; j++) {
+            for (int j = 0; j < nswp && count < 16; j++) {
+                count = 0;
 #pragma omp for nowait schedule(dynamic)
                 for (int i = 0; i < n; i++) {
 #pragma omp simd reduction(+ : sum)
@@ -214,15 +215,24 @@ public:
                     }
                     sum = 0;
                 }
+//#pragma omp simd reduction(+ : dist)
+//                for (int col = 0; col < n; col++) {
+//                    dist += abs(z_B[col] - z_B_p[col]);
+//                    z_B_p[col] = z_B[col];
+//                }
+//                if (dist == 0 && j != 0) {
+//                    num_iter = j;
+//                    break;
+//                }
+//                dist = 0;
+
+
 #pragma omp simd reduction(+ : count)
-                for (int col = 0; col < n; col++) {
+                for (int col = 0; col < 32; col++) {
                     count += update[col];
                 }
-                if (count == n) {
-                    num_iter = j;
-                    break;
-                }
-                count = 0;
+                num_iter = j;
+
             }
         }
         double end_time = omp_get_wtime() - start;
@@ -230,71 +240,12 @@ public:
         Eigen::Map<Eigen::VectorXd> x_result(z_B, n);
         double res = (y - R * x_result).norm();
 
-        //if (res - tol < EPSILON)// && end_time < max_time)
-        //printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
+        printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
         free(z_B);
         free(z_B_p);
         free(update);
 
         return {res, end_time, num_iter};
-
-//            if(n_proc == 0) {
-//                for (int nswp = 0; nswp < 20; nswp++) {
-//                    nswp_pl.push_back(nswp);
-//                    res_pl.push_back(init_res);
-//                    tim_pl.push_back(find_raw_x0());
-//                }
-//
-//                const std::map<std::string, std::string> keyword_arg{
-//                        {"marker",     "o"},
-//                        {"markersize", "5"},
-//                        {"label",      "Serial"}
-//                };
-//
-//                plt::xlim(1, 20);
-//                plt::plot(nswp_pl, tim_pl, keyword_arg);
-//
-//                const std::map<std::string, std::string> keyword_arg2{
-//                        {"marker",     "1"},
-//                        {"markersize", "5"},
-//                        {"label",      "Matlab"}
-//                };
-//
-//                string tim =
-//                        "/home/shilei/CLionProjects/babai_asyn/data/Res_" + to_string(n) + ".csv";
-//                string row_string, entry;
-//                int index = 0;
-//                vector<double> nswp_pl2(20), tim_pl2(20);
-//                ifstream f1(tim);
-//                while (getline(f1, row_string)) {
-//                    double d = stod(row_string);
-//                    nswp_pl2.push_back(index);
-//                    tim_pl2.push_back(d);
-//                    index++;
-//                }
-//
-//                plt::xlim(1, 20);
-//                plt::plot(nswp_pl2, tim_pl2, keyword_arg2);
-//
-//            }else{
-//                const std::map<std::string, std::string> keyword_arg{
-//                        {"marker",     "x"},
-//                        {"markersize", "5"},
-//                        {"label",      "num_thread:" + to_string(n_proc)}
-//                };
-//
-//                plt::xlim(1, 20);
-//                plt::plot(nswp_pl, res_pl, keyword_arg);
-//            }
-//    }
-//
-//    plt::title("Residual with Threads by OpenMP");
-//
-//    plt::legend();
-//
-//    plt::xlabel("Num of iterations");
-//    plt::ylabel("Residual");
-//    plt::save("./resOMP.png");
     }
 
     tuple<double, double> search_eigen(int init_value) {
@@ -338,5 +289,86 @@ public:
 
         printf("Res = %.5f, init_res = %.5f %f seconds\n", res, init_res, max_time);
         return {res, time};
+    }
+
+    void search_omp_plot(int n_proc, int init_value) {
+        int max_iter = 20;
+        vector<double> nswp_pl(20, 0), res_pl(20, 0);
+        for (int nswp = 0; nswp < 20; nswp++) {
+
+            double sum = 0, dist = 0;
+            int count = 0, num_iter = 0;
+            auto *z_B = (double *) calloc(n, sizeof(double));
+            auto *z_B_p = (double *) calloc(n, sizeof(double));
+            auto *update = (double *) calloc(n, sizeof(double));
+
+            for (int i = 0; i < n; i++) {
+                z_B[i] = init_value;
+                z_B_p[i] = init_value;
+                update[i] = 0;
+            }
+            double start = omp_get_wtime();
+            z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
+
+#pragma omp parallel num_threads(n_proc) private(sum, count, dist) shared(update)
+            {
+                for (int j = 0; j < nswp; j++) {
+                    count = 0;
+#pragma omp for nowait schedule(dynamic)
+                    for (int i = 0; i < n; i++) {
+#pragma omp simd reduction(+ : sum)
+                        for (int col = n - i; col < n; col++) {
+                            sum += R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
+                        }
+                        int x_c = round(
+                                (y_A[n - 1 - i] - sum) /
+                                R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
+                        int x_p = z_B_p[n - 1 - i];
+                        z_B[n - 1 - i] = x_c;
+
+                        if (x_c != x_p) {
+                            update[n - 1 - i] = 0;
+                            z_B_p[n - 1 - i] = x_c;
+                        } else {
+                            update[n - 1 - i] = 1;
+                        }
+                        sum = 0;
+                    }
+#pragma omp simd reduction(+ : count)
+                    for (int col = 0; col < 32; col++) {
+                        count += update[col];
+                    }
+                    num_iter = j;
+                }
+            }
+            double end_time = omp_get_wtime() - start;
+
+            Eigen::Map<Eigen::VectorXd> x_result(z_B, n);
+            double res = (y - R * x_result).norm();
+
+            //if (res - tol < EPSILON)// && end_time < max_time)
+            printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
+            free(z_B);
+            free(z_B_p);
+            free(update);
+
+            nswp_pl.push_back(nswp);
+            res_pl.push_back(res);
+        }
+        const std::map<std::string, std::string> keyword_arg{
+                {"marker",     "x"},
+                {"markersize", "5"},
+                {"label",      "num_thread:" + to_string(n_proc)}
+        };
+
+        plt::xlim(1, max_iter + 1);
+        plt::plot(nswp_pl, res_pl, keyword_arg);
+        plt::title("Residual with Threads by OpenMP");
+
+        plt::legend();
+
+        plt::xlabel("Num of iterations");
+        plt::ylabel("Residual");
+        plt::save("./resOMP_" + to_string(init_value) + "_" + to_string(n) +".png");
     }
 };
