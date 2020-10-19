@@ -66,6 +66,17 @@ void plot_run() {
     }
 }
 
+void plot_convergence(){
+    for (int n = 4096; n <= 16384; n *= 2) {
+        std::cout << "Init, size: " << n << std::endl;
+        Babai_search_asyn bsa(n);
+        bsa.init(true, true, 0.1);
+        std::cout << "Finish Init" << std::endl;
+
+        std::cout << "OpenMP:" << std::endl;
+        bsa.search_omp_plot();
+    }
+}
 
 int main() {
 //    int n = 4096;
@@ -81,9 +92,7 @@ int main() {
 //    std::cout << "Vector Serial:" << std::endl;
 //    auto[ser_res, ser_time] = bsa.search_vec(0);
 //
-//    std::cout << "OpenMP:" << std::endl;
-//    bsa.search_omp(40, 1000, 0);
-//    bsa.search_omp_plot(40, 0);
+    //plot_convergence();
 
     plot_run();
 
