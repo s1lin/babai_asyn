@@ -1,7 +1,7 @@
 classdef babai_search_asyn
 
     properties
-        A, R, x0, y, n, z, init_res, CompThreads
+        A, R, x0, x0_R, y, n, z, init_res, CompThreads
     end
 
     methods (Static)
@@ -39,6 +39,7 @@ classdef babai_search_asyn
             bsa.z = ones(n, 1);
             bsa.A = randn(n, n);
             bsa.R = triu(qr(bsa.A));
+            bsa.x0_R = zeros(n, 1);
             bsa.x0 = randi([-n, n], n, 1);
             bsa.y = bsa.R * bsa.x0 + 0.1 * randn(n, 1);
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
@@ -47,7 +48,7 @@ classdef babai_search_asyn
 
         function bsa = init_from_files(bsa)
             bsa.R = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv')));
-            bsa.x0 = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv')));
+            bsa.x0 = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv')));            
             bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv')));
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
         end
@@ -55,6 +56,7 @@ classdef babai_search_asyn
         function bsa = write_to_files(bsa)
             writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv'));
             writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.x0_R, append('/home/shilei/CLionProjects/babai_asyn/data/x_R_', int2str(bsa.n), '.csv'));
             writematrix(bsa.y, append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv'));
         end
 
@@ -125,43 +127,44 @@ classdef babai_search_asyn
         end
 
             %Find raw x0 in serial for loop.
-        function [raw_x0, res, avg] = find_raw_x0(bsa)
+        function [raw_x0, res, avg] = find_raw_x0(bsa, x)
             
-            for init = -2:2
+            for init = -1:1
                 avg = 0;
                 res = 0;
-                for i = 1:10
-                    raw_x0 = zeros(bsa.n, 1) + init;                   
+                for i = 1:20
+                    if init ~= -1
+                        raw_x0 = zeros(bsa.n, 1) + init;
+                    else
+                        raw_x0 = x;
+                    end
+                    
                     tStart = tic;
-
                     for k = bsa.n:-1:1
                         raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
                         raw_x0(k) = round(raw_x0(k));
                     end
-
                     tEnd = toc(tStart);
+                    
                     avg = avg + tEnd;
                     res = res + norm(bsa.y - bsa.R * raw_x0);
                 end
-                disp([init, avg / 10, res / 10]);
+                disp([init, avg / 20, res / 20]);
                 
             end
         end
         
-        function [raw_x0, res, avg] = find_raw_x0_2(bsa)
-                raw_x0 = zeros(bsa.n, 1);
+        function [x_R, res, avg] = find_real_x0(bsa)
 
                 tStart = tic;
 
                 for k = bsa.n:-1:1
-                    raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
-                    raw_x0(k) = round(raw_x0(k));
+                    bsa.x0_R(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * bsa.x0_R(k + 1:bsa.n)) / bsa.R(k, k);
                 end
-
                 tEnd = toc(tStart);
+                x_R = round(bsa.x0_R);
                 avg = tEnd;
-                res = norm(bsa.y - bsa.R * raw_x0);
-            
+                res = norm(bsa.y - bsa.R *  x_R);            
         end
     end
 

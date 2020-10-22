@@ -128,7 +128,7 @@ int main() {
     bsa.init(true, true, 0.1);
 
     std::cout << "find_raw_x0" << std::endl;
-    bsa.find_raw_x0();
+    bsa.search_vec(0);
 
 //    std::cout << "find_raw_x0_OMP" << std::endl;
 //    for(int nswp = 5; nswp <= n_jobs; nswp++)
@@ -139,7 +139,7 @@ int main() {
     for (int nswp = 0; nswp < 20; nswp++) {
         nswp_pl.push_back(nswp);
         res_pl.push_back(bsa.init_res);
-        tim_pl.push_back(bsa.find_raw_x0());
+        tim_pl.push_back(bsa.search_vec(0));
     }
 
     const std::map<std::string, std::string> keyword_arg{

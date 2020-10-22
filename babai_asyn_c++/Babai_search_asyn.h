@@ -22,7 +22,7 @@ class Babai_search_asyn {
 public:
     int n;
     double init_res, max_time;
-    double *R_A, *x_A, *y_A;
+    double *R_A, *y_A, *x_R;
     vector<vector<double>> R_V;
     Eigen::MatrixXd A, R;
     Eigen::VectorXd y, x_t;
@@ -79,6 +79,8 @@ private:
                 "/home/shilei/CLionProjects/babai_asyn/data/y_" + to_string(n) + ".csv";
         string fx =
                 "/home/shilei/CLionProjects/babai_asyn/data/x_" + to_string(n) + ".csv";
+        string fxR =
+                "/home/shilei/CLionProjects/babai_asyn/data/x_R_" + to_string(n) + ".csv";
         string row_string, entry;
         int index = 0;
         ifstream f1(fy);
@@ -97,6 +99,15 @@ private:
         while (getline(f2, row_string2)) {
             double d = stod(row_string2);
             this->x_t(index) = d;
+            index++;
+        }
+
+        index = 0;
+        ifstream f3(fxR);
+        string row_string3, entry3;
+        while (getline(f3, row_string3)) {
+            double d = stod(row_string3);
+            this->x_R[index] = d;
             index++;
         }
     }
@@ -128,7 +139,7 @@ public:
         this->R_V = vector<vector<double>>();
         this->R_V.resize(n * n);
         this->R_A = (double *) calloc(n * n, sizeof(double));
-        this->x_A = (double *) calloc(n, sizeof(double));
+        this->x_R = (double *) calloc(n, sizeof(double));
         this->y_A = (double *) calloc(n, sizeof(double));
         this->x_t = VectorXd::Zero(n);
         this->y = VectorXd::Zero(n);
@@ -138,7 +149,7 @@ public:
 
     ~Babai_search_asyn() {
         free(R_A);
-        free(x_A);
+        free(x_R);
         free(y_A);
     }
 
@@ -185,11 +196,21 @@ public:
         auto *z_B_p = (double *) calloc(n, sizeof(double));
         auto *update = (double *) calloc(n, sizeof(double));
 
-        for (int i = 0; i < n; i++) {
-            z_B[i] = init_value;
-            z_B_p[i] = init_value;
-            update[i] = 0;
+        if(init_value == -1){
+            for (int i = 0; i < n; i++) {
+                z_B[i] = x_R[i];
+                z_B_p[i] = x_R[i];
+                update[i] = 0;
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                z_B[i] = init_value;
+                z_B_p[i] = init_value;
+                update[i] = 0;
+            }
         }
+        if (n_proc == 0)
+            n_proc = 5;
         double start = omp_get_wtime();
         z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel num_threads(n_proc) private(sum, count, dist) shared(update)
@@ -269,7 +290,11 @@ public:
     tuple<double, double> search_vec(int init_value) {
         vector<double> z_B(n, init_value);
         double sum = 0;
-
+        if (init_value == -1){
+            for (int i = 0; i < n; i++) {
+                z_B[i] = x_R[i];
+            }
+        }
         double start = omp_get_wtime();
         z_B[n - 1] = round(y_A[n - 1] / R_V[n - 1][n - 1]);
         for (int i = 1; i < n; i++) {
@@ -293,25 +318,33 @@ public:
 
     void search_omp_plot() {
         int max_iter = 16;
-        for (int n_proc = 10; n_proc <= 210; n_proc += 20) {
-            for (int init_value = -2; init_value <= 2; init_value++) {
+        int n_proc[] = {10, 30, 60, 110, 160, 210};
+        for (int k = 0; k < 6; k++) {
+            for (int init_value = -1; init_value <= 1; init_value++) {
                 vector<double> nswp_pl(max_iter, 0), res_pl(max_iter, 0);
-                //for (int nswp = 1; nswp < 21; nswp++) {
+
                 double sum = 0, dist = 0;
                 int count = 0, num_iter = 0;
                 auto *z_B = (double *) calloc(n, sizeof(double));
                 auto *z_B_p = (double *) calloc(n, sizeof(double));
                 auto *update = (double *) calloc(n, sizeof(double));
-
-                for (int i = 0; i < n; i++) {
-                    z_B[i] = init_value;
-                    z_B_p[i] = init_value;
-                    update[i] = 0;
+                if(init_value == -1){
+                    for (int i = 0; i < n; i++) {
+                        z_B[i] = x_R[i];
+                        z_B_p[i] = x_R[i];
+                        update[i] = 0;
+                    }
+                } else {
+                    for (int i = 0; i < n; i++) {
+                        z_B[i] = init_value;
+                        z_B_p[i] = init_value;
+                        update[i] = 0;
+                    }
                 }
                 double start = omp_get_wtime();
                 z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
 
-#pragma omp parallel num_threads(n_proc) private(sum, count, dist) shared(update)
+#pragma omp parallel num_threads(k) private(sum, count, dist) shared(update)
                 {
                     for (int j = 0; j < max_iter; j++) {
                         count = 0;
@@ -353,26 +386,34 @@ public:
                 free(z_B);
                 free(z_B_p);
                 free(update);
-
-                //}
-                const std::map<std::string, std::string> keyword_arg{
-                        {"marker",     "x"},
-                        {"markersize", "5"},
-                        {"label",      "init value:" + to_string(init_value)}
-                };
-
                 plt::xlim(0, max_iter);
-                plt::plot(nswp_pl, res_pl, keyword_arg);
+
+                if(init_value != -1) {
+                    const std::map<std::string, std::string> keyword_arg{
+                            {"marker",     "x"},
+                            {"markersize", "5"},
+                            {"label",      "Init Guess:" + to_string(init_value)}
+                    };
+                    plt::plot(nswp_pl, res_pl, keyword_arg);
+                }else{
+                    const std::map<std::string, std::string> keyword_arg{
+                            {"marker",     "x"},
+                            {"markersize", "5"},
+                            {"label",      "Init Guess: the round of real solution" }
+                    };
+                    plt::plot(nswp_pl, res_pl, keyword_arg);
+                }
+
             }
-            plt::title("Convergence of residual with " + to_string(n_proc) + " Threads by OpenMP");
+            plt::title("Convergence of residual with " + to_string(n_proc[k]) + " Threads by OpenMP");
 
             plt::legend();
 
             plt::xlabel("Num of iterations");
             plt::ylabel("Residual");
-            plt::save("./resOMP_" + to_string(n_proc) + "_" + to_string(n) + ".png");
+            plt::save("./resOMP_" + to_string(n_proc[k]) + "_" + to_string(n) + ".png");
             plt::close();
-            cout << "./resOMP_" + to_string(n_proc) + "_" + to_string(n) + ".png" << endl;
+            cout << "./resOMP_" + to_string(n_proc[k]) + "_" + to_string(n) + ".png" << endl;
         }
     }
 };
