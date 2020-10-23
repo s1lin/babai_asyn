@@ -76,11 +76,11 @@ private:
 
     void read_x_y() {
         string fy =
-                "/home/shilei/CLionProjects/babai_asyn/data/y_" + to_string(n) + ".csv";
+                "../../data/y_" + to_string(n) + ".csv";
         string fx =
-                "/home/shilei/CLionProjects/babai_asyn/data/x_" + to_string(n) + ".csv";
+                "../../data/x_" + to_string(n) + ".csv";
         string fxR =
-                "/home/shilei/CLionProjects/babai_asyn/data/x_R_" + to_string(n) + ".csv";
+                "../../data/x_R_" + to_string(n) + ".csv";
         string row_string, entry;
         int index = 0;
         ifstream f1(fy);
@@ -115,7 +115,7 @@ private:
     void write_x_y() {
         const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
         string fy =
-                "/home/shilei/CLionProjects/babai_asyn/data/y_" + to_string(n) + ".csv";
+                "../../data/y_" + to_string(n) + ".csv";
         ofstream file2(fy);
         if (file2.is_open()) {
             file2 << y.format(CSVFormat);
@@ -123,7 +123,7 @@ private:
         }
 
         string fx =
-                "/home/shilei/CLionProjects/babai_asyn/data/x_" + to_string(n) + ".csv";
+                "../../data/x_" + to_string(n) + ".csv";
         ofstream file3(fx);
         if (file3.is_open()) {
             file3 << x_t.format(CSVFormat);
@@ -164,7 +164,7 @@ public:
         std::uniform_int_distribution<int> int_dis(-n, n);
 
         string file_name =
-                "/home/shilei/CLionProjects/babai_asyn/data/R_" + to_string(n) + ".csv";
+                "../../data/R_" + to_string(n) + ".csv";
 
         if (read_r) {
             read_from_file(file_name);
