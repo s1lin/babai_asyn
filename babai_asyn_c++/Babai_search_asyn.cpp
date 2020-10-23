@@ -100,6 +100,7 @@ void plot_convergence() {
 }
 
 int main() {
+    cout << omp_get_max_threads() << endl;
 //    int n = 4096;
 //    std::cout << "Init, size: " << n << std::endl;
 //    Babai_search_asyn bsa(n);
