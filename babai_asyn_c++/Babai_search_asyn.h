@@ -175,10 +175,8 @@ public:
             int index = 0;
 
             for (int i = 0; i < n; i++) {
-                vector<double> temp(0, n);
                 for (int j = 0; j < n; j++) {
                     this->R_V[i].push_back(R(i, j));
-                    temp.push_back(R(i, j));
                     if (this->R(i, j) != 0) {
                         this->R_A[index] = this->R(i, j);
                         index++;
