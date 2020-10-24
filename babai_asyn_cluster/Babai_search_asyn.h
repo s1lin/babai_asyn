@@ -9,14 +9,12 @@
 #include <random>
 #include <ctime>
 #include <iomanip>
-//#include "matplotlibcpp.h"
 
 #define EPSILON 0.01
 
 using namespace std;
 using namespace Eigen;
 
-//namespace plt = matplotlibcpp;
 
 class Babai_search_asyn {
 public:
@@ -175,7 +173,6 @@ public:
             int index = 0;
 
             for (int i = 0; i < n; i++) {
-                vector<double> temp(0, n);
                 for (int j = 0; j < n; j++) {
                     this->R_V[i].push_back(R(i, j));
                     temp.push_back(R(i, j));
@@ -184,10 +181,8 @@ public:
                         index++;
                     }
                 }
-//                this->R_V.push_back(temp);
             }
 
-//            write_to_file(file_name);
         }
 
 
@@ -197,14 +192,11 @@ public:
         } else {
             this->x_t = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
             this->y = R * x_t + noise * VectorXd::Zero(n).unaryExpr([&](double dummy) { return norm_dis(gen); });
-            //this->y_A = y.data();
             this->init_res = (y - R * x_t).norm();
             VectorXd::Map(&y_A[0], n) = y;
-//            write_x_y();
         }
     }
 
-//    tuple<double, double, int>
     void search_omp(int n_proc, int nswp, int init_value) {
 
         double sum = 0, dist = 0;
@@ -284,30 +276,8 @@ public:
         free(z_B_p);
         free(update);
 
-        //return {res, end_time, num_iter};
     }
 
-    //tuple<double, double>
-//    void search_eigen(int init_value) {
-//        VectorXd z_B = VectorXd(n);
-//        z_B.setConstant(n, init_value);
-//        double start = omp_get_wtime();
-//        double s = y(n - 1) / R(n - 1, n - 1);
-//
-//        for (int k = n - 2; k >= 0; k--) {
-//            VectorXd d = R.block(k, k + 1, 1, n - k - 1) * z_B.block(k + 1, 0, n - k - 1, 1);
-//            s = (y(k) - d(0)) / R(k, k);
-//            cout << d(0) << endl;
-//            z_B(k) = round(s);
-//        }
-//        double time = omp_get_wtime() - start;
-//        cout << z_B.transpose();
-//        double res = (y - R * z_B).norm();
-//        printf("Res = %.5f, init_res = %.5f %f seconds\n", res, init_res, time);
-//        //return {res, time};
-//    }
-
-//    tuple<double, double>
     void search_vec(int init_value) {
 
         vector<double> z_B(n, init_value);
@@ -337,113 +307,8 @@ public:
         double time = omp_get_wtime() - start;
 
         Eigen::Map<Eigen::VectorXd> x_result(z_B.data(), n);
-//        cout << x_result.transpose();
         double res = (y - R * x_result).norm();
-
         this->max_time = time;
-
         printf("Res = %.5f, init_res = %.5f %f seconds\n", res, init_res, max_time);
-        //return {res, time};
     }
-
-//    void search_omp_plot() {
-//        int max_iter = 16;
-//        int n_proc[] = {10, 30, 60, 110, 160, 210};
-//        for (int k = 0; k < 6; k++) {
-//            for (int init_value = -1; init_value <= 1; init_value++) {
-//                vector<double> nswp_pl(max_iter, 0), res_pl(max_iter, 0);
-//
-//                double sum = 0, dist = 0;
-//                int count = 0, num_iter = 0;
-//                auto *z_B = (double *) calloc(n, sizeof(double));
-//                auto *z_B_p = (double *) calloc(n, sizeof(double));
-//                auto *update = (double *) calloc(n, sizeof(double));
-//                if(init_value == -1){
-//                    for (int i = 0; i < n; i++) {
-//                        z_B[i] = x_R[i];
-//                        z_B_p[i] = x_R[i];
-//                        update[i] = 0;
-//                    }
-//                } else {
-//                    for (int i = 0; i < n; i++) {
-//                        z_B[i] = init_value;
-//                        z_B_p[i] = init_value;
-//                        update[i] = 0;
-//                    }
-//                }
-//                double start = omp_get_wtime();
-//                z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
-//
-//#pragma omp parallel num_threads(k) private(sum, count, dist) shared(update)
-//                {
-//                    for (int j = 0; j < max_iter; j++) {
-//                        count = 0;
-//#pragma omp for nowait schedule(dynamic)
-//                        for (int i = 0; i < n; i++) {
-//#pragma omp simd reduction(+ : sum)
-//                            for (int col = n - i; col < n; col++) {
-//                                sum += R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
-//                            }
-//                            int x_c = round(
-//                                    (y_A[n - 1 - i] - sum) /
-//                                    R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
-//                            int x_p = z_B_p[n - 1 - i];
-//                            z_B[n - 1 - i] = x_c;
-//
-//                            if (x_c != x_p) {
-//                                update[n - 1 - i] = 0;
-//                                z_B_p[n - 1 - i] = x_c;
-//                            } else {
-//                                update[n - 1 - i] = 1;
-//                            }
-//                            sum = 0;
-//                        }
-//#pragma omp single
-//                        {
-//                            nswp_pl.push_back(j);
-//                            Eigen::Map<Eigen::VectorXd> x_result(z_B, n);
-//                            res_pl.push_back((y - R * x_result).norm());
-//                        }
-//                    }
-//                }
-//                double end_time = omp_get_wtime() - start;
-//
-//                Eigen::Map<Eigen::VectorXd> x_result(z_B, n);
-//                double res = (y - R * x_result).norm();
-//
-//                //if (res - tol < EPSILON)// && end_time < max_time)
-//                //printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
-//                free(z_B);
-//                free(z_B_p);
-//                free(update);
-//                plt::xlim(0, max_iter);
-//
-//                if(init_value != -1) {
-//                    const std::map<std::string, std::string> keyword_arg{
-//                            {"marker",     "x"},
-//                            {"markersize", "5"},
-//                            {"label",      "Init Guess:" + to_string(init_value)}
-//                    };
-//                    plt::plot(nswp_pl, res_pl, keyword_arg);
-//                }else{
-//                    const std::map<std::string, std::string> keyword_arg{
-//                            {"marker",     "x"},
-//                            {"markersize", "5"},
-//                            {"label",      "Init Guess: the round of real solution" }
-//                    };
-//                    plt::plot(nswp_pl, res_pl, keyword_arg);
-//                }
-//
-//            }
-//            plt::title("Convergence of residual with " + to_string(n_proc[k]) + " Threads by OpenMP");
-//
-//            plt::legend();
-//
-//            plt::xlabel("Num of iterations");
-//            plt::ylabel("Residual");
-//            plt::save("./resOMP_" + to_string(n_proc[k]) + "_" + to_string(n) + ".png");
-//            plt::close();
-//            cout << "./resOMP_" + to_string(n_proc[k]) + "_" + to_string(n) + ".png" << endl;
-//        }
-//    }
 };
