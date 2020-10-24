@@ -10,7 +10,11 @@ find_package(OpenMP REQUIRED)
 #find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
+#find_package (netCDFCxx REQUIRED)
+
+
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lnetcdf")
 
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -20,10 +24,13 @@ endif ()
 #include_directories(${PYTHON_INCLUDE_DIRS})
 #include_directories(${MPI_INCLUDE_PATH})
 include_directories("${EIGEN3_INCLUDE_DIR}")
+#INCLUDE_DIRECTORIES("${NetCDF_INCLUDE_DIRS}")
+
 
 link_libraries(${PYTHON_LIBRARIES})
 
 add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn_massive.h Babai_search_asyn.cpp)#matplotlibcpp.h)
 #target_link_libraries(babai_asyn Eigen3::Eigen)
 target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)
+target_link_libraries(babai_asyn netcdf)
 #target_link_libraries(babai_asyn ${MPI_C_LIBRARIES})

@@ -100,7 +100,7 @@ using Eigen::VectorXd;
 
 int main() {
     cout << omp_get_max_threads() << endl;
-    int n = 1024;
+    int n = 4096;
     std::cout << "Init, size: " << n << std::endl;
     Babai_search_asyn bsa(n);
     //Babai_search_asyn_massive bsa(n);

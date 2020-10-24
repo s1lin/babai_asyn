@@ -52,7 +52,18 @@ classdef babai_search_asyn
             bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv')));
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
         end
-
+        
+        function bsa = write_to_nc(bsa)
+            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'R', 'Dimensions', {'x',bsa.n,'y',bsa.n});
+            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'x', 'Dimensions', {'x',bsa.n});
+            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'x0_R', 'Dimensions', {'x',bsa.n});
+            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'y', 'Dimensions', {'x',bsa.n});
+            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'R',bsa.R);
+            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'x',bsa.x0);
+            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'x0_R',bsa.x0_R);
+            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'y',bsa.y);
+        end
+        
         function bsa = write_to_files(bsa)
             writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv'));
             writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv'));

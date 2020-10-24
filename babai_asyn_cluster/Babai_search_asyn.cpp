@@ -6,10 +6,10 @@ using Eigen::VectorXd;
 int main() {
     cout << omp_get_max_threads() << endl;
 
-    int n = 1024;
+    int n = 4096;
     std::cout << "Init, size: " << n << std::endl;
     Babai_search_asyn bsa(n);
-    bsa.init(false, false, 0.1);
+    bsa.init(true, true, 0.1);
 
     std::cout << "Vector Serial:" << std::endl;
     bsa.search_vec(0);
