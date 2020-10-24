@@ -184,11 +184,6 @@ int main() {
     search_omp(12, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
                bsa.R, bsa.y);
 
-    free(z_B);
-    free(z_B_p);
-    free(update);
-
-
     auto *z_B2 = (double *) malloc(n * sizeof(double));
     auto *z_B_p2 = (double *) malloc(n * sizeof(double));
     auto *update2 = (int *) malloc(n * sizeof(int));
@@ -199,33 +194,71 @@ int main() {
         update2[i] = 0;
     }
 
-    search_omp(6, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
+    search_omp(9, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
                bsa.R, bsa.y);
 
-    free(z_B2);
-    free(z_B_p2);
-    free(update2);
 
-    for (int i = 3; i<=12; i+=3) {
-
-        auto *z_B3 = (double *) malloc(n * sizeof(double));
-        auto *z_B_p3 = (double *) malloc(n * sizeof(double));
-        auto *update3 = (int *) malloc(n * sizeof(int));
-
-        for (int i = 0; i < n; i++) {
-            z_B3[i] = 0;
-            z_B_p3[i] = 0;
-            update3[i] = 0;
-        }
-
-        search_omp(i, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
-                   bsa.R, bsa.y);
-
-        free(z_B3);
-        free(z_B_p3);
-        free(update3);
+    for (int i = 0; i < n; i++) {
+        z_B[i] = 0;
+        z_B_p[i] = 0;
+        update[i] = 0;
     }
 
+    search_omp(6, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
+               bsa.R, bsa.y);
+
+    for (int i = 0; i < n; i++) {
+        z_B[i] = 0;
+        z_B_p[i] = 0;
+        update[i] = 0;
+    }
+
+    search_omp(3, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
+               bsa.R, bsa.y);
+
+    free(z_B);
+    free(z_B_p);
+    free(update);
+
+
+//    auto *z_B2 = (double *) malloc(n * sizeof(double));
+//    auto *z_B_p2 = (double *) malloc(n * sizeof(double));
+//    auto *update2 = (int *) malloc(n * sizeof(int));
+//
+//    for (int i = 0; i < n; i++) {
+//        z_B2[i] = 0;
+//        z_B_p2[i] = 0;
+//        update2[i] = 0;
+//    }
+//
+//    search_omp(6, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
+//               bsa.R, bsa.y);
+//
+//    free(z_B2);
+//    free(z_B_p2);
+//    free(update2);
+//
+//    auto *z_B3 = (double *) malloc(n * sizeof(double));
+//    auto *z_B_p3 = (double *) malloc(n * sizeof(double));
+//    auto *update3 = (int *) malloc(n * sizeof(int));
+//    for (int i = 3; i<=12; i+=3) {
+//
+//
+//
+//        for (int i = 0; i < n; i++) {
+//            z_B3[i] = 0;
+//            z_B_p3[i] = 0;
+//            update3[i] = 0;
+//        }
+//
+//        search_omp(i, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
+//                   bsa.R, bsa.y);
+//
+//
+//    }
+//    free(z_B3);
+//    free(z_B_p3);
+//    free(update3);
     return 0;
 }
 
