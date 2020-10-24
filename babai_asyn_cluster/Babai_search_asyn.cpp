@@ -108,14 +108,14 @@ inline double do_solve(const int n, const int i, const double *R_A, const double
     return round((y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
 }
 
-void search_omp(const int n_proc, const int nswp, const int n, const double *R_A, const double *y_A,
-                int *update, double *z_B, double *z_B_p,
-                const MatrixXd &R, const VectorXd &y) {
+double *search_omp(const int n_proc, const int nswp, const int n, const double *R_A, const double *y_A,
+                   const bool eigen, int *update, double *z_B, double *z_B_p) {
 
     int count = 0, num_iter = 0;
     int chunk = std::log2(n);
+    double res = 0;
 
-    double start = omp_get_wtime();
+
     z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
     {
@@ -141,24 +141,23 @@ void search_omp(const int n_proc, const int nswp, const int n, const double *R_A
         }
     }
 
-    double end_time = omp_get_wtime() - start;
 
-    Eigen::Map<Eigen::VectorXd> x_result(z_B, n);
-    double res = (y - R * x_result).norm();
-
-    printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, num_iter, res, end_time);
-    //return {res, end_time, num_iter};
+    return z_B;
 }
-
 
 int main() {
     cout << omp_get_max_threads() << endl;
-    int n = 4096;
+    int n = 32768;
+    bool eigen = false;
     std::cout << "Init, size: " << n << std::endl;
-    Babai_search_asyn bsa(n);
-    //Babai_search_asyn_massive bsa(n);
-    bsa.init(true, true, 0.1);
-//    std::cout << "Finish Init" << std::endl;
+    Babai_search_asyn bsa(n, eigen);
+
+    double start = omp_get_wtime();
+    bsa.init(false, true, true, 0.1);
+//    bsa.init(true, false, true, 0.1);
+    double end_time = omp_get_wtime() - start;
+
+    std::cout << "Finish Init, time: " << end_time << std::endl;
 //
 //    std::cout << "Eigen Serial:" << std::endl;
 //    auto[eig_res, eig_time] =
@@ -180,13 +179,14 @@ int main() {
         update[i] = 0;
     }
 
-    search_omp(30, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
-               bsa.R, bsa.y);
-
+    start = omp_get_wtime();
+    z_B = search_omp(50, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update, z_B, z_B_p);
+    end_time = omp_get_wtime() - start;
+    double res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+    printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 12, 0, res, end_time);
     free(z_B);
     free(z_B_p);
     free(update);
-
 
     auto *z_B2 = (double *) malloc(n * sizeof(double));
     auto *z_B_p2 = (double *) malloc(n * sizeof(double));
@@ -198,13 +198,14 @@ int main() {
         update2[i] = 0;
     }
 
-    search_omp(15, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
-               bsa.R, bsa.y);
-
+    start = omp_get_wtime();
+    z_B = search_omp(30, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update2, z_B2, z_B_p2);
+    end_time = omp_get_wtime() - start;
+    res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+    printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 6, 0, res, end_time);
     free(z_B2);
     free(z_B_p2);
     free(update2);
-
 
     auto *z_B3 = (double *) malloc(n * sizeof(double));
     auto *z_B_p3 = (double *) malloc(n * sizeof(double));
@@ -216,14 +217,38 @@ int main() {
         update3[i] = 0;
     }
 
-    search_omp(5, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
-               bsa.R, bsa.y);
-
+    start = omp_get_wtime();
+    z_B = search_omp(10, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update3, z_B3, z_B_p3);
+    end_time = omp_get_wtime() - start;
+    res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+    printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 3, 0, res, end_time);
     free(z_B3);
     free(z_B_p3);
     free(update3);
 
 
+//
+//    auto *z_B3 = (double *) malloc(n * sizeof(double));
+//    auto *z_B_p3 = (double *) malloc(n * sizeof(double));
+//    auto *update3 = (int *) malloc(n * sizeof(int));
+//    for (int i = 3; i<=12; i+=3) {
+//
+//
+//
+//        for (int i = 0; i < n; i++) {
+//            z_B3[i] = 0;
+//            z_B_p3[i] = 0;
+//            update3[i] = 0;
+//        }
+//
+//        search_omp(i, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
+//                   bsa.R, bsa.y);
+//
+//
+//    }
+//    free(z_B3);
+//    free(z_B_p3);
+//    free(update3);
     return 0;
 }
 

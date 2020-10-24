@@ -41,7 +41,7 @@ classdef babai_search_asyn
             bsa.R = triu(qr(bsa.A));
             bsa.x0_R = zeros(n, 1);
             bsa.x0 = randi([-n, n], n, 1);
-            bsa.y = bsa.R * bsa.x0 + 0.1 * randn(n, 1);
+            bsa.y = bsa.R * bsa.x0 + 0.05 * randn(n, 1);
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
             bsa.CompThreads = maxNumCompThreads;
         end
