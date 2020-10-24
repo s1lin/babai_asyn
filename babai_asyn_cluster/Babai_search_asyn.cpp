@@ -15,9 +15,8 @@ int main() {
     bsa.search_vec(0);
 
     std::cout << "OPENMP:" << std::endl;
-    bsa.search_omp(10, 10, 0);
-    bsa.search_omp(20, 10, 0);
-    bsa.search_omp(30, 10, 0);
+    for (int n_proc = 5; n_proc <= 40; n_proc += 5)
+        bsa.search_omp(n_proc, 10, 0);
 
     return 0;
 }
