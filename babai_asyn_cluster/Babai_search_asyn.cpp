@@ -119,7 +119,7 @@ void search_omp(const int n_proc, const int nswp, const int n, const double *R_A
     z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
     {
-        for (int j = 0; j < nswp ; j++) {//&& count < 16
+        for (int j = 0; j < nswp; j++) {//&& count < 16
             //count = 0;
 #pragma omp for schedule(dynamic, chunk) nowait
             for (int i = 0; i < n; i++) {
@@ -151,7 +151,6 @@ void search_omp(const int n_proc, const int nswp, const int n, const double *R_A
 }
 
 
-
 int main() {
     cout << omp_get_max_threads() << endl;
     int n = 4096;
@@ -181,7 +180,7 @@ int main() {
         update[i] = 0;
     }
 
-    search_omp(12, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
+    search_omp(30, 10, bsa.n, bsa.R_A, bsa.y_A, update, z_B, z_B_p,
                bsa.R, bsa.y);
 
     free(z_B);
@@ -199,32 +198,31 @@ int main() {
         update2[i] = 0;
     }
 
-    search_omp(6, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
+    search_omp(15, 10, bsa.n, bsa.R_A, bsa.y_A, update2, z_B2, z_B_p2,
                bsa.R, bsa.y);
 
     free(z_B2);
     free(z_B_p2);
     free(update2);
 
-    for (int i = 3; i<=12; i+=3) {
 
-        auto *z_B3 = (double *) malloc(n * sizeof(double));
-        auto *z_B_p3 = (double *) malloc(n * sizeof(double));
-        auto *update3 = (int *) malloc(n * sizeof(int));
+    auto *z_B3 = (double *) malloc(n * sizeof(double));
+    auto *z_B_p3 = (double *) malloc(n * sizeof(double));
+    auto *update3 = (int *) malloc(n * sizeof(int));
 
-        for (int i = 0; i < n; i++) {
-            z_B3[i] = 0;
-            z_B_p3[i] = 0;
-            update3[i] = 0;
-        }
-
-        search_omp(i, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
-                   bsa.R, bsa.y);
-
-        free(z_B3);
-        free(z_B_p3);
-        free(update3);
+    for (int i = 0; i < n; i++) {
+        z_B3[i] = 0;
+        z_B_p3[i] = 0;
+        update3[i] = 0;
     }
+
+    search_omp(5, 10, bsa.n, bsa.R_A, bsa.y_A, update3, z_B3, z_B_p3,
+               bsa.R, bsa.y);
+
+    free(z_B3);
+    free(z_B_p3);
+    free(update3);
+
 
     return 0;
 }
