@@ -242,7 +242,7 @@ namespace babai {
             } else {
                 assert(!use_eigen && "Error! You have to enable Eigen.");
                 this->A = MatrixXd::Zero(n, n).unaryExpr([&](scalar dummy) { return norm_dis(gen); });
-                this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
+//                this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
                 index rI = 0;
                 for (index i = 0; i < n; i++) {
                     for (index j = i; j < n; j++) {
