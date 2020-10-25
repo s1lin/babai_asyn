@@ -187,6 +187,7 @@ namespace babai {
             this->init_res = INFINITY;
             this->noise = noise;
             this->size_R_A = 0;
+            this->init();
         }
 
         ~Babai_search_asyn() {
