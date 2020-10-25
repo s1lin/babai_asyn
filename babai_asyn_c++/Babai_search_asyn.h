@@ -237,7 +237,7 @@ namespace babai {
                 else
                     this->init_res = find_residual(n, R_A, y_A, x_tA);
 
-                cout <<"init_res:"<< this->init_res << endl;
+                cout << "init_res:" << this->init_res << endl;
 
             } else {
                 assert(!use_eigen && "Error! You have to enable Eigen.");
@@ -281,28 +281,30 @@ namespace babai {
             z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
             {
-                for (index j = 0; j < nswp; j++) {//&& count < 16
-                    //count = 0;
-#pragma omp for schedule(dynamic, chunk) nowait
+                for (index j = 0; j < nswp && count < 16; j++) {//&& count < 16
+                    count = 0;
+#pragma omp for schedule(dynamic) nowait
                     for (index i = 0; i < n; i++) {
-                        z_B[n - 1 - i] = do_solve(i, z_B);
-//                if (x_c != x_p) {
-//                    update[n - 1 - i] = 0;
-//                    z_B_p[n - 1 - i] = x_c;
-//                } else {
-//                    update[n - 1 - i] = 1;
-//                }
-//                sum = 0;
+                        int x_c = do_solve(i, z_B);
+                        int x_p = z_B[n - 1 - i];
+                        z_B[n - 1 - i] = x_c;
+
+                        if (x_c != x_p) {
+                            update[n - 1 - i] = 0;
+                            z_B_p[n - 1 - i] = x_c;
+                        } else {
+                            update[n - 1 - i] = 1;
+                        }
                     }
-//#pragma omp simd reduction(+ : count)
-//            for (index col = 0; col < 32; col++) {
-//                count += update[col];
-//            }
-//            num_iter = j;
-//
+#pragma omp simd reduction(+ : count)
+                    for (index col = 0; col < 32; col++) {
+                        count += update[col];
+                    }
+                    num_iter = j;
+
                 }
             }
-
+            cout<<num_iter<<endl;
 
             return z_B;
         }

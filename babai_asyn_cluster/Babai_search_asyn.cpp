@@ -29,7 +29,7 @@ int main() {
             update[i] = 0;
         }
         start = omp_get_wtime();
-        z_B = bsa.search_omp(proc, 8, update, z_B, z_B_p);
+        z_B = bsa.search_omp(proc, 9, update, z_B, z_B_p);
         end_time = omp_get_wtime() - start;
         res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
         printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", proc, 0, res, end_time);
