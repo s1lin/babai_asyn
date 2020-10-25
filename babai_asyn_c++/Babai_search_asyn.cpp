@@ -51,7 +51,7 @@ int main() {
     }
 
     start = omp_get_wtime();
-    z_B = bsa.search_omp(n_proc[1], 10, update, z_B, z_B_p);
+    z_B = bsa.search_omp(n_proc[1], 10, update2, z_B2, z_B_p2);
     end_time = omp_get_wtime() - start;
     res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc[1], 0, res, end_time);
@@ -70,7 +70,7 @@ int main() {
     }
 
     start = omp_get_wtime();
-    z_B = bsa.search_omp(n_proc[2], 10, update, z_B, z_B_p);
+    z_B = bsa.search_omp(n_proc[2], 10, update3, z_B3, z_B_p3);
     end_time = omp_get_wtime() - start;
     res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc[2], 0, res, end_time);
