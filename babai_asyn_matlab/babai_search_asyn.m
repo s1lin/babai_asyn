@@ -64,6 +64,11 @@ classdef babai_search_asyn
             ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'y',bsa.y);
         end
         
+        function bsa = write_to_hdf5(bsa)
+            h5create(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.h5'), '/R',[bsa.n bsa.n])         
+            h5write(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.h5'),'/R',bsa.R);
+        end
+        
         function bsa = write_to_files(bsa)
             writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv'));
             writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv'));

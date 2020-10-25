@@ -147,7 +147,7 @@ double *search_omp(const int n_proc, const int nswp, const int n, const double *
 
 int main() {
     cout << omp_get_max_threads() << endl;
-    int n = 32768;
+    int n = 16384;
     bool eigen = false;
     std::cout << "Init, size: " << n << std::endl;
     Babai_search_asyn bsa(n, eigen);
