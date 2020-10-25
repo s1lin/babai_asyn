@@ -50,7 +50,7 @@ int main() {
     std::cout << "OPENMP:" << std::endl;
 //    int n_proc[4] = {16, 8, 4, 2};
 
-    for(int proc =16; proc>=2; proc/=2) {
+    for(int proc =40; proc>=5; proc/=2) {
         auto *z_B = (double *) malloc(n * sizeof(double));
         auto *z_B_p = (double *) malloc(n * sizeof(double));
         auto *update = (int *) malloc(n * sizeof(int));
