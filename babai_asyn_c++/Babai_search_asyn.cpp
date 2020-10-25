@@ -3,7 +3,7 @@
 
 int main() {
     cout << omp_get_max_threads() << endl;
-    int n = 4096;
+    int n = 32768;
     std::cout << "Init, size: " << n << std::endl;
 
     //bool read_r, bool read_ra, bool read_xy
