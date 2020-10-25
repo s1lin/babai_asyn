@@ -1,173 +1,27 @@
 #include "Babai_search_asyn.h"
-//#include "Babai_search_asyn_massive.h"
-//#include "matplotlibcpp.h"
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-
-//namespace plt = matplotlibcpp;
-//void plot_run() {
-//    for (int n = 4096; n <= 16384; n *= 2) {
-//        std::cout << "Init, size: " << n << std::endl;
-//        Babai_search_asyn bsa(n);
-//        //Babai_search_asyn_massive bsa(n);
-//        bsa.init(true, true, 0.1);
-//        std::cout << "Finish Init" << std::endl;
-//
-//        string fx = "res_" + to_string(n) + ".csv";
-//        ofstream file(fx);
-//        if (file.is_open()) {
-//            for (int init_value = -1; init_value <= 1; init_value++) {
-//                vector<double> res(50, 0), tim(50, 0), itr(50, 0);
-//                double omp_res = 0, omp_time = 0, num_iter = 0;
-////                double eig_res = 0, eig_time = 0;
-//                double ser_res = 0, ser_time = 0;
-//
-//                std::cout << "Vector Serial:" << std::endl;
-//                for (int i = 0; i < 10; i++) {
-////                    std::cout << "Eigen Serial:" << std::endl;
-////                    auto[eig_res, eig_time] = bsa.search_eigen(init_value);
-////                    res[0] += eig_res;
-////                    tim[0] += eig_time;
-//
-//                    auto[ser_res, ser_time] = bsa.search_vec(init_value);
-//                    res[0] += ser_res;
-//                    tim[0] += ser_time;
-//                }
-//
-//                file << init_value << "," << res[0] / 10 << "," << tim[0] / 10 << ",\n";
-//                if (n == 4096) {
-//                    if (init_value == -1)
-//                        file << "-1,6.4299,0.1032,\n";
-//                    else if (init_value == 0)
-//                        file << "0,6.4299,0.0998,\n";
-//                    else
-//                        file << "1,6.4299,0.0998,\n";
-//                } else if (n == 8192) {
-//                    if (init_value == -1)
-//                        file << "-1,9.06945,0.4765,\n";
-//                    else if (init_value == 0)
-//                        file << "0,9.06945,0.4788,\n";
-//                    else
-//                        file << "1,9.06945,0.4804,\n";
-//                } else if (n == 16384) {
-//                    if (init_value == -1)
-//                        file << "-1,12.8879,2.3311,\n";
-//                    else if (init_value == 0)
-//                        file << "0,12.8879,2.3205,\n";
-//                    else
-//                        file << "1,12.8879,2.3278,\n";
-//                }
-//
-//                std::cout << "OpenMP" << std::endl;
-//                for (int i = 0; i < 10; i++) {
-//                    for (int n_proc = 0; n_proc <= 210; n_proc += 10) {
-//                        auto[omp_res, omp_time, num_iter] = bsa.search_omp(n_proc, 1000, init_value);
-//                        res[n_proc / 10 + 1] += omp_res;
-//                        tim[n_proc / 10 + 1] += omp_time;
-//                        itr[n_proc / 10 + 1] += num_iter;
-//                    }
-//                }
-//
-//                for (int n_proc = 10; n_proc <= 210; n_proc += 10) {
-//                    file << init_value << "," << n_proc << ","
-//                         << res[n_proc / 10 + 1] / 10 << ","
-//                         << tim[n_proc / 10 + 1] / 10 << ","
-//                         << itr[n_proc / 10 + 1] / 10 << ",\n";
-//
-//                    printf("Init value: %d, n_proc: %d, res :%f, num_iter: %f, Average time: %fs\n", init_value, n_proc,
-//                           res[n_proc / 10 + 1] / 10,
-//                           itr[n_proc / 10 + 1] / 10,
-//                           tim[n_proc / 10 + 1] / 10);
-//                }
-//                file << "Next,\n";
-//            }
-//        }
-//        file.close();
-//    }
-//}
-//
-//void plot_convergence() {
-//    for (int n = 4096; n <= 16384; n *= 2) {
-//        std::cout << "Init, size: " << n << std::endl;
-//        Babai_search_asyn bsa(n);
-//        bsa.init(true, true, 0.1);
-//        std::cout << "Finish Init" << std::endl;
-//
-//        std::cout << "OpenMP:" << std::endl;
-////        bsa.search_omp_plot();
-//    }
-//}
-inline double do_solve(const int n, const int i, const double *R_A, const double *y_A, const double *z_B) {
-    double sum = 0;
-#pragma omp simd reduction(+ : sum)
-    for (int col = n - i; col < n; col++) {
-        sum += R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
-    }
-
-    return round((y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
-}
-
-double *search_omp(const int n_proc, const int nswp, const int n, const double *R_A, const double *y_A,
-                   const bool eigen, int *update, double *z_B, double *z_B_p) {
-
-    int count = 0, num_iter = 0;
-    int chunk = std::log2(n);
-    double res = 0;
-
-
-    z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
-#pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
-    {
-        for (int j = 0; j < nswp; j++) {//&& count < 16
-            //count = 0;
-#pragma omp for schedule(dynamic, chunk) nowait
-            for (int i = 0; i < n; i++) {
-                z_B[n - 1 - i] = do_solve(n, i, R_A, y_A, z_B);
-//                if (x_c != x_p) {
-//                    update[n - 1 - i] = 0;
-//                    z_B_p[n - 1 - i] = x_c;
-//                } else {
-//                    update[n - 1 - i] = 1;
-//                }
-//                sum = 0;
-            }
-//#pragma omp simd reduction(+ : count)
-//            for (int col = 0; col < 32; col++) {
-//                count += update[col];
-//            }
-//            num_iter = j;
-//
-        }
-    }
-
-
-    return z_B;
-}
 
 int main() {
     cout << omp_get_max_threads() << endl;
-    int n = 16384;
+    int n = 4096;
     bool eigen = false;
     std::cout << "Init, size: " << n << std::endl;
-    Babai_search_asyn bsa(n, eigen);
+    //bool read_r, bool read_ra, bool read_xy
+
+    babai::Babai_search_asyn<double, int, false, true, false> bsa(n, 0.1);
 
     double start = omp_get_wtime();
-    bsa.init(false, true, true, 0.1);
+
 //    bsa.init(true, false, true, 0.1);
     double end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %f seconds\n", end_time);
 
-    std::cout << "Finish Init, time: " << end_time << std::endl;
-//
-//    std::cout << "Eigen Serial:" << std::endl;
-//    auto[eig_res, eig_time] =
-//    bsa.search_eigen(0);
-//
     std::cout << "Vector Serial:" << std::endl;
-//    auto[ser_res, ser_time] =
-    bsa.search_vec(0);
-
-    std::cout << "OPENMP:" << std::endl;
+    start = omp_get_wtime();
+    vector<double> z_BV = bsa.search_vec();
+    end_time = omp_get_wtime() - start;
+    double res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_BV.data());
+    printf("Res = %.5f, %f seconds\n", res, end_time);
 
     auto *z_B = (double *) malloc(n * sizeof(double));
     auto *z_B_p = (double *) malloc(n * sizeof(double));
@@ -180,9 +34,10 @@ int main() {
     }
 
     start = omp_get_wtime();
-    z_B = search_omp(12, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update, z_B, z_B_p);
+    z_B = bsa.search_omp(12, 10, update, z_B, z_B_p);
     end_time = omp_get_wtime() - start;
-    double res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+
+    res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 12, 0, res, end_time);
     free(z_B);
     free(z_B_p);
@@ -199,9 +54,9 @@ int main() {
     }
 
     start = omp_get_wtime();
-    z_B = search_omp(6, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update2, z_B2, z_B_p2);
+    z_B = bsa.search_omp(6, 10, update, z_B, z_B_p);
     end_time = omp_get_wtime() - start;
-    res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+    res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 6, 0, res, end_time);
     free(z_B2);
     free(z_B_p2);
@@ -218,9 +73,9 @@ int main() {
     }
 
     start = omp_get_wtime();
-    z_B = search_omp(3, 10, bsa.n, bsa.R_A, bsa.y_A, eigen, update3, z_B3, z_B_p3);
+    z_B = bsa.search_omp(3, 10, update, z_B, z_B_p);
     end_time = omp_get_wtime() - start;
-    res = Babai_search_asyn::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
+    res = babai::find_residual(bsa.n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", 3, 0, res, end_time);
     free(z_B3);
     free(z_B_p3);
