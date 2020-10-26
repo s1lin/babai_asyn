@@ -47,33 +47,33 @@ classdef babai_search_asyn
         end
 
         function bsa = init_from_files(bsa)
-            bsa.R = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv')));
-            bsa.x0 = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv')));            
-            bsa.y = table2array(readtable(append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv')));
+            bsa.R = table2array(readtable(append('../data/R_', int2str(bsa.n), '.csv')));
+            bsa.x0 = table2array(readtable(append('../data/x_', int2str(bsa.n), '.csv')));            
+            bsa.y = table2array(readtable(append('../data/y_', int2str(bsa.n), '.csv')));
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
         end
         
         function bsa = write_to_nc(bsa)
-            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'R', 'Dimensions', {'x',bsa.n,'y',bsa.n});
-            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'x', 'Dimensions', {'x',bsa.n});
-            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'x0_R', 'Dimensions', {'x',bsa.n});
-            nccreate(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'), 'y', 'Dimensions', {'x',bsa.n});
-            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'R',bsa.R);
-            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'x',bsa.x0);
-            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'x0_R',bsa.x0_R);
-            ncwrite(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.nc'),'y',bsa.y);
+            nccreate(append('../data/', int2str(bsa.n), '.nc'), 'R', 'Dimensions', {'x',bsa.n,'y',bsa.n});
+            nccreate(append('../data/', int2str(bsa.n), '.nc'), 'x', 'Dimensions', {'x',bsa.n});
+            nccreate(append('../data/', int2str(bsa.n), '.nc'), 'x0_R', 'Dimensions', {'x',bsa.n});
+            nccreate(append('../data/', int2str(bsa.n), '.nc'), 'y', 'Dimensions', {'x',bsa.n});
+            ncwrite(append('../data/', int2str(bsa.n), '.nc'),'R',bsa.R);
+            ncwrite(append('../data/', int2str(bsa.n), '.nc'),'x',bsa.x0);
+            ncwrite(append('../data/', int2str(bsa.n), '.nc'),'x0_R',bsa.x0_R);
+            ncwrite(append('../data/', int2str(bsa.n), '.nc'),'y',bsa.y);
         end
         
         function bsa = write_to_hdf5(bsa)
-            h5create(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.h5'), '/R',[bsa.n bsa.n])         
-            h5write(append('/home/shilei/CLionProjects/babai_asyn/data/', int2str(bsa.n), '.h5'),'/R',bsa.R);
+            h5create(append('../data/', int2str(bsa.n), '.h5'), '/R',[bsa.n bsa.n])         
+            h5write(append('../data/', int2str(bsa.n), '.h5'),'/R',bsa.R);
         end
         
         function bsa = write_to_files(bsa)
-            writematrix(bsa.R, append('/home/shilei/CLionProjects/babai_asyn/data/R_', int2str(bsa.n), '.csv'));
-            writematrix(bsa.x0, append('/home/shilei/CLionProjects/babai_asyn/data/x_', int2str(bsa.n), '.csv'));
-            writematrix(bsa.x0_R, append('/home/shilei/CLionProjects/babai_asyn/data/x_R_', int2str(bsa.n), '.csv'));
-            writematrix(bsa.y, append('/home/shilei/CLionProjects/babai_asyn/data/y_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.R, append('../data/R_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.x0, append('../data/x_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.x0_R, append('../data/x_R_', int2str(bsa.n), '.csv'));
+            writematrix(bsa.y, append('../data/y_', int2str(bsa.n), '.csv'));
         end
 
         %Find raw x0 with parallel pooling CPU ONLY for now.
@@ -138,8 +138,8 @@ classdef babai_search_asyn
                 [~, res_res(i), res_tim(i)] = find_raw_x0(bsa);
             end
 
-            writematrix(res_tim, append('/home/shilei/CLionProjects/babai_asyn/data/Tim_', int2str(bsa.n), '.csv'));
-            writematrix(res_res, append('/home/shilei/CLionProjects/babai_asyn/data/Res_', int2str(bsa.n), '.csv'));
+            writematrix(res_tim, append('../data/Tim_', int2str(bsa.n), '.csv'));
+            writematrix(res_res, append('../data/Res_', int2str(bsa.n), '.csv'));
         end
 
             %Find raw x0 in serial for loop.
