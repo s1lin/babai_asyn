@@ -8,9 +8,7 @@
 #include <string>
 #include <vector>
 #include <random>
-#include <ctime>
 #include <iomanip>
-//#include <netcdfcpp.h>
 
 using namespace std;
 using namespace Eigen;
@@ -309,7 +307,7 @@ int main() {
     double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_BV.data());
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
-    for (int proc = 16; proc >= 2; proc /= 2) {
+    for (int proc = 40; proc >= 5; proc /= 2) {
         auto *z_B = (double *) malloc(n * sizeof(double));
         auto *z_B_p = (double *) malloc(n * sizeof(double));
         auto *update = (int *) malloc(n * sizeof(int));

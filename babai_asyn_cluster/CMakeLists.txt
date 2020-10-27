@@ -8,7 +8,7 @@ project(babai_asyn)
 find_package(OpenMP REQUIRED)
 #find_package(MPI REQUIRED)
 #find_package(OpenCV REQUIRED)
-#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 set(CMAKE_CXX_STANDARD 17)
 
