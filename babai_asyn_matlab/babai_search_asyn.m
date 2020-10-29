@@ -40,7 +40,7 @@ classdef babai_search_asyn
             bsa.A = randn(n, n);
             bsa.R = triu(qr(bsa.A));
             bsa.x0 = randi([-n, n], n, 1);
-            bsa.y = bsa.R * bsa.x0 + 10 * randn(n, 1);
+            bsa.y = bsa.R * bsa.x0 + 0.1 * randn(n, 1);
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
             bsa.CompThreads = maxNumCompThreads;
         end
@@ -120,16 +120,20 @@ classdef babai_search_asyn
 
             %Find raw x0 in serial for loop.
         function [raw_x0, res, tEnd] = find_raw_x0(bsa)
-            raw_x0 = bsa.x0;
-
+            raw_x0 = zeros(bsa.n, 1);
+            bsa.R
             tStart = tic;
             for k = bsa.n:-1:1
+                %disp(k)
+                %disp(bsa.R(k, k + 1:bsa.n))
+                %disp(raw_x0(k + 1:bsa.n))
                 raw_x0(k) = (bsa.y(k) - bsa.R(k, k + 1:bsa.n) * raw_x0(k + 1:bsa.n)) / bsa.R(k, k);
                 raw_x0(k) = round(raw_x0(k));
             end
             tEnd = toc(tStart);
-
-            res = norm(bsa.y - bsa.R * raw_x0);            
+            res = zeros(2,1);
+            res(1) = norm(bsa.y - bsa.R * raw_x0);    
+            res(2) = norm(raw_x0 - bsa.x0);
         end
 
     end
