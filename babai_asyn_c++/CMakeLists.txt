@@ -1,0 +1,60 @@
+cmake_minimum_required(VERSION 3.8.2)
+project(babai_asyn)
+
+#FIND_PACKAGE(PythonInterp 3)
+#find_package(PythonLibs 3.8 REQUIRED)
+#message("Python_FOUND:${Python_FOUND}")
+#find_package(PythonLibs 3.8 COMPONENTS Interpreter NumPy)
+find_package(OpenMP REQUIRED)
+#find_package(MPI REQUIRED)
+#find_package(OpenCV REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+#find_package (netCDFCxx REQUIRED)
+
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Basic options
+if(CXX_COMPILER_GNUCLANG OR CXX_COMPILER_INTEL)
+    set (CMAKE_CXX_FLAGS "-std=c++14 -Wall -Werror")
+    set (CMAKE_C_FLAGS "-std=c11 -Wall -Werror")
+    set (CMAKE_CXX_FLAGS_DEBUG "-g")
+     if(CXX_COMPILER_GNUCLANG)
+     	set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+     	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+     else()
+     set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O1")
+     set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O1")
+     endif()
+    set (CMAKE_CXX_FLAGS_RELEASE "-O3")
+elseif(CXX_COMPILER_PGI)
+    set (CMAKE_CXX_FLAGS "-std=c++14")
+    set (CMAKE_C_FLAGS "-std=c11")
+    set (CMAKE_CXX_FLAGS_DEBUG "-g")
+    set (CMAKE_CXX_FLAGS_RELEASE "-O2")
+elseif(CXX_COMPILER_CRAY)
+    set (CMAKE_CXX_FLAGS "-h std=c++14 -h error_on_warning")
+    set (CMAKE_C_FLAGS "-h std=c11 -h error_on_warning")
+    set (CMAKE_CXX_FLAGS_DEBUG "-g -O1")
+    set (CMAKE_CXX_FLAGS_RELEASE "-O2")
+endif()
+
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif ()
+
+#include_directories(${PYTHON_INCLUDE_DIRS})
+#include_directories(${MPI_INCLUDE_PATH})
+include_directories("${EIGEN3_INCLUDE_DIR}")
+#INCLUDE_DIRECTORIES("${NetCDF_INCLUDE_DIRS}")
+
+
+link_libraries(${PYTHON_LIBRARIES})
+
+add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn.cpp)#matplotlibcpp.h)
+#target_link_libraries(babai_asyn Eigen3::Eigen)
+target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)
+#target_link_libraries(babai_asyn netcdf)
+#target_link_libraries(babai_asyn ${MPI_C_LIBRARIES})
