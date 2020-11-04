@@ -41,7 +41,7 @@ classdef babai_search_asyn
             bsa.R = triu(qr(bsa.A));
             bsa.x0_R = zeros(n, 1);
             bsa.x0 = randi([-n, n], n, 1);
-            bsa.y = bsa.R * bsa.x0 + 0.05 * randn(n, 1);
+            bsa.y = bsa.R * bsa.x0 + 0.1 * randn(n, 1);
             bsa.init_res = norm(bsa.y - bsa.R * bsa.x0);
             bsa.CompThreads = maxNumCompThreads;
         end
@@ -70,9 +70,22 @@ classdef babai_search_asyn
         end
         
         function bsa = write_to_files(bsa)
+            [x_R, res, avg] = find_real_x0(bsa);
+            disp([res, avg]);
+            R_A = zeros(bsa.n * (bsa.n + 1)/2,1);
+            index = 1;
+            for i=1:bsa.n
+                for j=i:bsa.n
+                    if bsa.R(i,j)~=0
+                        R_A(index) = bsa.R(i,j);
+                        index = index + 1;
+                    end
+                end
+            end
             writematrix(bsa.R, append('../data/R_', int2str(bsa.n), '.csv'));
+            writematrix(R_A, append('../data/R_A_', int2str(bsa.n), '.csv'));
             writematrix(bsa.x0, append('../data/x_', int2str(bsa.n), '.csv'));
-            writematrix(bsa.x0_R, append('../data/x_R_', int2str(bsa.n), '.csv'));
+            writematrix(x_R, append('../data/x_R_', int2str(bsa.n), '.csv'));
             writematrix(bsa.y, append('../data/y_', int2str(bsa.n), '.csv'));
         end
 
@@ -143,7 +156,7 @@ classdef babai_search_asyn
         end
 
             %Find raw x0 in serial for loop.
-        function [raw_x0, res, avg] = find_raw_x0(bsa, x)
+        function [raw_x0, res, avg] = find_raw_x0(bsa)
             
             for init = -1:1
                 avg = 0;
@@ -152,7 +165,7 @@ classdef babai_search_asyn
                     if init ~= -1
                         raw_x0 = zeros(bsa.n, 1) + init;
                     else
-                        raw_x0 = x;
+                        [raw_x0, ~, ~] = find_real_x0(bsa);
                     end
                     
                     tStart = tic;
