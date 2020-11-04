@@ -1,3 +1,4 @@
+#include <cstring>
 #include "Babai_search_asyn.h"
 
 using namespace std;
@@ -172,17 +173,112 @@ namespace babai {
         }
         return z_B;
     }
+
+    template<typename scalar, typename index, bool is_read, bool is_write, index n>
+    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_search(scalar *z_B) {
+
+        auto *prsd = (scalar *) calloc(n, sizeof(scalar));
+        auto *c = (scalar *) calloc(n, sizeof(scalar));
+        auto *z_H = (scalar *) calloc(n, sizeof(scalar));
+        auto *d = (index *) calloc(n, sizeof(index));
+
+        scalar newprsd, gamma, b_R;
+        index k = n - 1, i, j, r_tmp, loop_ub;
+
+        //  Initial squared search radius
+        double beta = INFINITY;
+
+        c[n - 1] = y_A[n - 1] / R_A[size_R_A - 1];
+        z_B[n - 1] = round(c[n - 1]);
+        gamma = R_A[size_R_A - 1] * (c[n - 1] - z_B[n - 1]);
+
+        //  Determine enumeration direction at level n
+        d[n - 1] = c[n - 1] > z_B[n - 1] ? 1 : -1;
+
+        while (true) {
+            newprsd = prsd[k] + gamma * gamma;
+            if (newprsd < beta) {
+                if (k != 0) {
+                    k--;
+                    double sum = 0;
+                    for (index col = k + 1; col < n; col++) {
+                        sum += R_A[(n * k) + col - ((k * (k + 1)) / 2)] * z_B[col];
+                    }
+                    scalar s = y_A[k] - sum;
+                    prsd[k] = newprsd;
+                    c[k] = s / R_A[(n * k) + k - ((k * (k + 1)) / 2)];
+
+                    z_B[k] = round(c[k]);
+                    gamma = R_A[(n * k) + k - ((k * (k + 1)) / 2)] * (c[k] - z_B[k]);
+                    d[k] = c[k] > z_B[k] ? 1 : -1;
+
+                } else {
+                    beta = newprsd;
+                    //Deep Copy of the result
+                    std::memcpy(z_H, z_B, sizeof(scalar) * n);
+                    z_B[0] += d[0];
+                    gamma = R_A[0] * (c[0] - z_B[0]);
+                    d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
+                }
+            } else {
+                if (k == n - 1) break;
+                else {
+                    k++;
+                    z_B[k] += d[k];
+                    gamma = R_A[(n * k) + k - ((k * (k + 1)) / 2)] * (c[k] - z_B[k]);
+                    d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
+                }
+            }
+        }
+        std::memcpy(z_B, z_H, sizeof(scalar) * n);
+        free(c);
+        free(d);
+        free(prsd);
+        free(z_H);
+
+        return z_B;
+    }
 }
 
 void test_run(int init_value);
 
 void plot_run();
 
-const int n = 4096;
+void test_ils_search();
+
+const int n = 20;
+
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    plot_run();
+    //plot_run();
+    test_ils_search();
+
     return 0;
+}
+
+void test_ils_search() {
+    std::cout << "Init, size: " << n << std::endl;
+
+    //bool read_r, bool read_ra, bool read_xy
+    double start = omp_get_wtime();
+    babai::Babai_search_asyn<double, int, true, false, n> bsa(0.1);
+    double end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %f seconds\n", end_time);
+
+    auto *z_B = (double *) malloc(n * sizeof(double));
+    start = omp_get_wtime();
+    z_B = bsa.sils_search(z_B);
+    end_time = omp_get_wtime() - start;
+    double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+    printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
+    vector<double> z_BV(n, 0);
+    start = omp_get_wtime();
+    vector<double> z = bsa.search_vec(z_BV);
+    end_time = omp_get_wtime() - start;
+    res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
+    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
 }
 
 void test_run(int init_value) {
@@ -307,7 +403,7 @@ void plot_run() {
                 index = 0;
             }
             index = 0;
-            for (int n_proc = 80; n_proc >= 2; n_proc /= 2){
+            for (int n_proc = 80; n_proc >= 2; n_proc /= 2) {
                 file << init_value << "," << n_proc << ","
                      << res[index] / 10 << ","
                      << tim[index] / 10 << ","

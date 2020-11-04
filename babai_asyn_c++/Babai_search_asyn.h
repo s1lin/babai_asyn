@@ -11,6 +11,7 @@
 #include <random>
 #include <ctime>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -56,6 +57,8 @@ namespace babai {
         scalar *search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
 
         vector<scalar> search_vec(vector<scalar> z_B);
+
+        scalar *sils_search(scalar *z_B);
     };
 
 

@@ -55,6 +55,7 @@ while 1
             else
                 d(k) = -1;
             end
+            disp(s);
             
         else % A new point is found, update the set of candidate solutions
             beta = newprsd;
@@ -83,9 +84,11 @@ while 1
                 d(k) = -d(k) - 1;
             else
                 d(k) = -d(k) + 1;
-            end           
+            end    
+            disp(['z(k) = ', num2str(z(k))])
         end 
     end
+    z
 end
 
 
