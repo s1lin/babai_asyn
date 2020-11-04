@@ -54,13 +54,16 @@ namespace babai {
             return round((y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
         }
 
-        scalar *search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
+        scalar *sils_search(const scalar *R, const scalar *y, scalar *z_B, index block_size);
 
-        vector<scalar> search_vec(vector<scalar> z_B);
+        scalar *sils_babai_search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
 
-        scalar *sils_search(scalar *z_B);
+        vector<scalar> sils_babai_search_serial(vector<scalar> z_B);
+
+        vector<scalar> sils_babai_block_search_serial(vector<scalar> z_B, int block_size);
+
+        scalar *sils_babai_block_search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
+
     };
-
-
 }
 #endif

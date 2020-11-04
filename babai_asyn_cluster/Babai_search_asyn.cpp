@@ -230,9 +230,9 @@ namespace babai {
 
     template<typename scalar, typename index, bool use_eigen, bool is_read, bool is_write, index n>
     scalar *
-    Babai_search_asyn<scalar, index, use_eigen, is_read, is_write, n>::search_omp(const index n_proc, const index nswp,
-                                                                                  index *update, scalar *z_B,
-                                                                                  scalar *z_B_p) {
+    Babai_search_asyn<scalar, index, use_eigen, is_read, is_write, n>::sils_babai_search_omp(const index n_proc, const index nswp,
+                                                                                             index *update, scalar *z_B,
+                                                                                             scalar *z_B_p) {
 
         index count = 0, num_iter = 0;
         index chunk = std::log2(n);
