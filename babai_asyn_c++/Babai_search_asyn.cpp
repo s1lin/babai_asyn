@@ -1,4 +1,6 @@
 #include <cstring>
+#include <algorithm>
+
 #include "Babai_search_asyn.h"
 
 using namespace std;
@@ -160,8 +162,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    vector<scalar>
-    Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_search_serial(vector<scalar> z_B) {
+    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_search_serial(scalar *z_B) {
         scalar sum = 0;
         z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
         for (index i = 1; i < n; i++) {
@@ -179,7 +180,9 @@ namespace babai {
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_search(const scalar *R,
                                                                                 const scalar *y,
-                                                                                scalar *z_B, index block_size) {
+                                                                                scalar *z_B,
+                                                                                index block_size,
+                                                                                index block_size_R_A) {
 
         auto *prsd = (scalar *) calloc(block_size, sizeof(scalar));
         auto *c = (scalar *) calloc(block_size, sizeof(scalar));
@@ -209,11 +212,12 @@ namespace babai {
                         sum += R_A[(block_size * k) + col - ((k * (k + 1)) / 2)] * z_B[col];
                     }
                     scalar s = y_A[k] - sum;
+                    scalar R_kk = R_A[(block_size * k) + k - ((k * (k + 1)) / 2)];
                     prsd[k] = newprsd;
-                    c[k] = s / R_A[(block_size * k) + k - ((k * (k + 1)) / 2)];
+                    c[k] = s / R_kk;
 
                     z_B[k] = round(c[k]);
-                    gamma = R_A[(block_size * k) + k - ((k * (k + 1)) / 2)] * (c[k] - z_B[k]);
+                    gamma = R_kk * (c[k] - z_B[k]);
                     d[k] = c[k] > z_B[k] ? 1 : -1;
 
                 } else {
@@ -267,12 +271,12 @@ namespace babai {
                     //                    int x_p = z_B[n - 1 - i];
                     z_B[n - 1 - i] = x_c;
 
-                    //                    if (x_c != x_p) {
-                    //                        update[n - 1 - i] = 0;
-                    //                        z_B_p[n - 1 - i] = x_c;
-                    //                    } else {
-                    //                        update[n - 1 - i] = 1;
-                    //                    }
+                    // if (x_c != x_p) {
+                    //     update[n - 1 - i] = 0;
+                    //     z_B_p[n - 1 - i] = x_c;
+                    // } else {
+                    //     update[n - 1 - i] = 1;
+                    // }
                 }
                 //#pragma omp simd reduction(+ : count)
                 //                for (index col = 0; col < 32; col++) {
@@ -288,193 +292,62 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    vector<scalar>
-    Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_block_search_serial(vector<scalar> z_B,
-                                                                                           int block_size) {
-        index q = size_R_A / 2;
-        scalar* xx1 = sils_search(R_A, y_A, z_B.data(), q);
-
-    }
-}
-
-void test_run(int init_value);
-
-void plot_run();
-
-void test_ils_search();
-
-const int n = 20;
-
-int main() {
-    std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    //plot_run();
-    test_ils_search();
-
-    return 0;
-}
-
-void test_ils_search() {
-    std::cout << "Init, size: " << n << std::endl;
-
-    //bool read_r, bool read_ra, bool read_xy
-    double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, n> bsa(0.1);
-    double end_time = omp_get_wtime() - start;
-    printf("Finish Init, time: %f seconds\n", end_time);
-
-    auto *z_B = (double *) malloc(n * sizeof(double));
-    start = omp_get_wtime();
-    z_B = bsa.sils_search(bsa.R_A, bsa.y_A, z_B, n);
-    end_time = omp_get_wtime() - start;
-    double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
-    printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
-
-    vector<double> z_BV(n, 0);
-    start = omp_get_wtime();
-    vector<double> z = bsa.sils_babai_search_serial(z_BV);
-    end_time = omp_get_wtime() - start;
-    res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
-    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
-
-}
-
-void test_run(int init_value) {
-
-    std::cout << "Init, value: " << init_value << std::endl;
-    std::cout << "Init, size: " << n << std::endl;
-
-    //bool read_r, bool read_ra, bool read_xy
-    double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, n> bsa(0.1);
-    double end_time = omp_get_wtime() - start;
-    printf("Finish Init, time: %f seconds\n", end_time);
-
-    vector<double> z_BV(n, init_value);
-    if (init_value == -1) {
-        for (int i = 0; i < n; i++) {
-            z_BV[i] = bsa.x_R[i];
-        }
-    }
-
-    start = omp_get_wtime();
-    vector<double> z = bsa.sils_babai_search_serial(z_BV);
-    end_time = omp_get_wtime() - start;
-    double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
-    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
-
-    for (int proc = 80; proc >= 2; proc /= 2) {
-        auto *z_B = (double *) malloc(n * sizeof(double));
-        auto *z_B_p = (double *) malloc(n * sizeof(double));
-        auto *update = (int *) malloc(n * sizeof(int));
-
-        for (int i = 0; i < n; i++) {
-            if (init_value != -1) {
-                z_B[i] = init_value;
-                z_B_p[i] = init_value;
-
+    scalar *
+    Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalar *R_B,
+                                                                                     scalar *y_B,
+                                                                                     scalar *z_B,
+                                                                                     vector<index> d,
+                                                                                     index n_R_B) {
+        index ds = d.size();
+        if (ds == 1) {
+            if (d[0] == 1) {
+                return x_R;
             } else {
-                z_B[i] = bsa.x_R[i];
-                z_B_p[i] = bsa.x_R[i];
+                //todo: determine the right size
+                return sils_search(R_B, y_B, z_B, n, size_R_A);
             }
-            update[i] = 0;
-        }
+        } else {
+            //Find the Babai point
+            if (ds == n) {
+                return sils_babai_search_serial(z_B);
+            } else {
+                index q = d[0];
+                //new_d = d[2:ds];
+                vector<index> new_d(d.begin() + 1, d.end());
 
-        start = omp_get_wtime();
-        z_B = bsa.sils_babai_search_omp(proc, 10, update, z_B, z_B_p);
-        end_time = omp_get_wtime() - start;
-        res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
-        printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", proc, 0, res, end_time);
-        free(z_B);
-        free(z_B_p);
-        free(update);
-    }
+                //todo: create R_B
+                auto *R_b = babai::find_block_R(R_B, q, n_R_B, q, n_R_B, n_R_B - q, n_R_B);
+                auto *y_b = (scalar *) calloc(n_R_B - q, sizeof(scalar));
 
-}
-
-void plot_run() {
-
-    std::cout << "Init, size: " << n << std::endl;
-
-    //bool read_r, bool read_ra, bool read_xy
-    double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, 4096> bsa(0.1);
-    double end_time = omp_get_wtime() - start;
-    printf("Finish Init, time: %f seconds\n", end_time);
-
-    string fx = "res_" + to_string(n) + ".csv";
-    ofstream file(fx);
-    if (file.is_open()) {
-        for (int init_value = -1; init_value <= 1; init_value++) {
-            std::cout << "Init, value: " << init_value << std::endl;
-            vector<double> res(50, 0), tim(50, 0), itr(50, 0);
-            double omp_res = 0, omp_time = 0, num_iter = 0;
-            double ser_res = 0, ser_time = 0;
-
-            std::cout << "Vector Serial:" << std::endl;
-            for (int i = 0; i < 10; i++) {
-                vector<double> z_BV(n, init_value);
-                if (init_value == -1) {
-                    for (int l = 0; l < n; l++) {
-                        z_BV[l] = bsa.x_R[l];
-                    }
+                for (int i = q; i < n_R_B; i++) {
+                    y_b[i - q] = y_B[i];
                 }
-                start = omp_get_wtime();
-                vector<double> z = bsa.sils_babai_search_serial(z_BV);
-                ser_time = omp_get_wtime() - start;
-                ser_res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
-                printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", ser_res, ser_time);
-                res[0] += ser_res;
-                tim[0] += ser_time;
-            }
 
-            file << init_value << "," << res[0] / 10 << "," << tim[0] / 10 << ",\n";
+                index n_R_b = sizeof(R_b) / sizeof(R_b[0]);
+                scalar *xx1 = sils_block_search_serial(R_b, y_b, z_B, new_d, n_R_b);
 
-            std::cout << "OpenMP" << std::endl;
-            int index = 0;
-            for (int i = 0; i < 10; i++) {
-                for (int n_proc = 80; n_proc >= 2; n_proc /= 2) {
-                    auto *z_B = (double *) malloc(n * sizeof(double));
-                    auto *z_B_p = (double *) malloc(n * sizeof(double));
-                    auto *update = (int *) malloc(n * sizeof(int));
+                auto *y_b_2 = (scalar *) calloc(q, sizeof(scalar));
+                auto *xx2 = (scalar *) calloc(q, sizeof(scalar));
 
-                    for (int m = 0; m < n; m++) {
-                        z_B[m] = init_value;
-                        z_B_p[m] = init_value;
-                        update[m] = init_value;
+
+                for (int row = 0; row < q; row++) {
+                    scalar sum = 0;
+                    for (int col = q; col < n_R_B; col++) {
+                        int i = (n_R_B * row) + col - ((row * (row + 1)) / 2);
+                        sum += R_B[i] * xx1[col - q - 1];
                     }
-
-                    start = omp_get_wtime();
-                    z_B = bsa.sils_babai_search_omp(n_proc, 10, update, z_B, z_B_p);
-                    omp_time = omp_get_wtime() - start;
-                    omp_res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
-                    printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, 0, omp_res, omp_time);
-                    free(z_B);
-                    free(z_B_p);
-                    free(update);
-
-                    res[index] += omp_res;
-                    tim[index] += omp_time;
-                    itr[index] += 10;
-                    index++;
+                    y_b_2[row] = y_B[row] - sum;
                 }
-                index = 0;
-            }
-            index = 0;
-            for (int n_proc = 80; n_proc >= 2; n_proc /= 2) {
-                file << init_value << "," << n_proc << ","
-                     << res[index] / 10 << ","
-                     << tim[index] / 10 << ","
-                     << itr[index] / 10 << ",\n";
+                if (q == 1) {
+                    xx2[0] = round(y_b_2[0] / R_B[0]);
+                } else {
+                    auto *R_b = babai::find_block_R(R_B, 0, q, 0, q, q, n_R_B);
+                    xx2 = sils_search(R_b, y_b_2, z_B);
+                }
 
-                printf("Init value: %d, n_proc: %d, res :%f, num_iter: %f, Average time: %fs\n", init_value, n_proc,
-                       res[index] / 10,
-                       itr[index] / 10,
-                       tim[index] / 10);
-                index++;
+                return babai::concatenate_array<scalar, index>(xx2, xx1);
             }
-            file << "Next,\n";
         }
     }
-    file.close();
-
 }
+
