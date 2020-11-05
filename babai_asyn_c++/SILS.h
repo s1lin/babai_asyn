@@ -17,34 +17,49 @@ using namespace std;
 
 namespace sils {
 
+    template<typename scalar, typename index>
+    struct scalarType {
+        scalar *x;
+        index size;
+    };
+
     template<typename scalar, typename index, index n>
     scalar find_residual(const scalar *R, const scalar *y, const scalar *x, double *pDouble);
 
-    template<typename scalar, typename index, index n>
-    inline scalar *find_block_R(const scalar *R_B,
-                                const index row_begin,
-                                const index row_end,
-                                const index col_begin,
-                                const index col_end,
-                                const index block_size,
-                                const index n_R_B) {
-        auto *R_b = (scalar *) calloc(block_size * block_size / 2, sizeof(scalar));
-        index counter = 0;
-        for (int row = row_begin; row < row_end; row++) {
-            for (int col = col_begin; col < col_end; col++) {
-                int i = (n_R_B * row) + col - ((row * (row + 1)) / 2);
-                R_b[counter] = R_B[i];
-                counter++;
-            }
+    template<typename scalar, typename index>
+    void display_vector(scalarType<scalar, index> x) {
+        for (int i = 0; i < x.size; i++) {
+            cout << x.x[i] << endl;
         }
-        return R_b;
     }
 
-    template<typename scalar, typename index, index n>
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> find_block_R(const scalar *R_B,
+                                                  const index begin,
+                                                  const index block_size,
+                                                  const index n) {
+        scalarType<scalar, index> R_b_s;
+        R_b_s.size = block_size * (1 + block_size) / 2;
+        R_b_s.x = (scalar *) calloc(R_b_s.size, sizeof(scalar));
+
+        index counter = 0, prev_i = 0, i;
+        for (index row = begin; row < begin + block_size; row++) {
+            i = (n * row) + row - ((row * (row + 1)) / 2);
+            for (index col = 0; col < block_size - prev_i; col++) {
+                R_b_s.x[counter] = R_B[i + col];
+                counter++;
+            }
+            prev_i++;
+        }
+
+        return R_b_s;
+    }
+
+    template<typename scalar, typename index>
     inline scalar *concatenate_array(const scalar *first, const scalar *second) {
         index fir_size = sizeof(first) / sizeof(first[0]);
         index sec_size = sizeof(second) / sizeof(second[0]);
-        auto z = malloc((fir_size + sec_size) * sizeof(scalar));
+        auto *z = (scalar *) calloc(fir_size + sec_size, sizeof(scalar));
         for (int i = 0; i < fir_size; i++) {
             z[i] = first[i];
         }
@@ -99,7 +114,7 @@ namespace sils {
                                          scalar *y_B,
                                          scalar *z_B,
                                          vector<index> d,
-                                         index n_R_B);
+                                         index block_size);
 
         scalar *sils_babai_block_search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
 

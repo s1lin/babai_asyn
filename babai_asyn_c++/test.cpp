@@ -5,7 +5,34 @@
 
 using namespace std;
 
-const int n = 20;
+const int n = 10;
+
+void test_ils_block_search() {
+    std::cout << "Init, size: " << n << std::endl;
+
+    //bool read_r, bool read_ra, bool read_xy
+    double start = omp_get_wtime();
+    sils::SILS<double, int, true, false, n> bsa(0.1);
+    double end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %f seconds\n", end_time);
+
+    auto *z_B = (double *) calloc(n, sizeof(double));
+    vector<int> d(2, 5);
+    start = omp_get_wtime();
+
+    z_B = bsa.sils_block_search_serial(bsa.R_A, bsa.y_A, z_B, d, n);
+
+    end_time = omp_get_wtime() - start;
+    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+    printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
+    auto *z_BS = (double *) calloc(n, sizeof(double));
+    start = omp_get_wtime();
+    z_BS = bsa.sils_babai_search_serial(z_BS);
+    end_time = omp_get_wtime() - start;
+    res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
+    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+}
 
 void test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
@@ -16,14 +43,14 @@ void test_ils_search() {
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
-    auto *z_B = (double *) malloc(n * sizeof(double));
+    auto *z_B = (double *) calloc(n, sizeof(double));
     start = omp_get_wtime();
     z_B = bsa.sils_search(bsa.R_A, bsa.y_A, z_B, n, bsa.size_R_A);
     end_time = omp_get_wtime() - start;
     double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
-    auto *z_BS = (double *) malloc(n * sizeof(double));
+    auto *z_BS = (double *) calloc(n, sizeof(double));
     start = omp_get_wtime();
     z_BS = bsa.sils_babai_search_serial(z_BS);
     end_time = omp_get_wtime() - start;
@@ -181,7 +208,8 @@ void plot_run() {
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     //plot_run();
-    test_ils_search();
+    test_ils_block_search();
+//    test_ils_search();
 
     return 0;
 }

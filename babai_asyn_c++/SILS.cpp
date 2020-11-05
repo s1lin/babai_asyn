@@ -297,11 +297,14 @@ namespace sils {
                                                                         scalar *y_B,
                                                                         scalar *z_B,
                                                                         vector<index> d,
-                                                                        index n_R_B) {
+                                                                        index block_size) {
         index ds = d.size();
+        cout << ds << endl;
         if (ds == 1) {
             if (d[0] == 1) {
-                return x_R;
+                scalar x[1];
+                x[0] = round(y_B[0] / R_B[0]);
+                return x;
             } else {
                 //todo: determine the right size
                 return sils_search(R_B, y_B, z_B, n, size_R_A);
@@ -315,16 +318,16 @@ namespace sils {
                 //new_d = d[2:ds];
                 vector<index> new_d(d.begin() + 1, d.end());
 
-                //todo: create R_B
-                auto *R_b = sils::find_block_R(R_B, q, n_R_B, q, n_R_B, n_R_B - q, n_R_B);
-                auto *y_b = (scalar *) calloc(n_R_B - q, sizeof(scalar));
+                auto R_b_s = sils::find_block_R<double, int>(R_B, q, n, block_size);
+                sils::display_vector<double, int>(R_b_s);
 
-                for (int i = q; i < n_R_B; i++) {
+                auto *y_b = (scalar *) calloc(block_size - q, sizeof(scalar));
+
+                for (int i = q; i < block_size - q; i++) {
                     y_b[i - q] = y_B[i];
                 }
 
-                index n_R_b = sizeof(R_b) / sizeof(R_b[0]);
-                scalar *xx1 = sils_block_search_serial(R_b, y_b, z_B, new_d, n_R_b);
+                scalar *xx1 = sils_block_search_serial(R_b_s.x, y_b, z_B, new_d, block_size - q);
 
                 auto *y_b_2 = (scalar *) calloc(q, sizeof(scalar));
                 auto *xx2 = (scalar *) calloc(q, sizeof(scalar));
@@ -332,8 +335,8 @@ namespace sils {
 
                 for (int row = 0; row < q; row++) {
                     scalar sum = 0;
-                    for (int col = q; col < n_R_B; col++) {
-                        int i = (n_R_B * row) + col - ((row * (row + 1)) / 2);
+                    for (int col = q; col < block_size; col++) {
+                        int i = (block_size * row) + col - ((row * (row + 1)) / 2);
                         sum += R_B[i] * xx1[col - q - 1];
                     }
                     y_b_2[row] = y_B[row] - sum;
@@ -341,8 +344,9 @@ namespace sils {
                 if (q == 1) {
                     xx2[0] = round(y_b_2[0] / R_B[0]);
                 } else {
-                    auto *R_b = sils::find_block_R(R_B, 0, q, 0, q, q, n_R_B);
-                    xx2 = sils_search(R_b, y_b_2, z_B);
+                    auto R_b_s = sils::find_block_R<double, int>(R_B, 0, q, block_size);
+                    //todo::find the right size
+                    xx2 = sils_search(R_b_s.x, y_b_2, z_B, block_size - q, R_b_s.size);
                 }
 
                 return sils::concatenate_array<scalar, index>(xx2, xx1);
