@@ -1,7 +1,7 @@
 //
 // Created by shilei on 2020-11-04.
 //
-#include "Babai_search_asyn.cpp"
+#include "SILS.cpp"
 
 using namespace std;
 
@@ -12,22 +12,22 @@ void test_ils_search() {
 
     //bool read_r, bool read_ra, bool read_xy
     double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, n> bsa(0.1);
+    sils::SILS<double, int, true, false, n> bsa(0.1);
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
     auto *z_B = (double *) malloc(n * sizeof(double));
     start = omp_get_wtime();
-    z_B = bsa.sils_search(bsa.R_A, bsa.y_A, z_B, n);
+    z_B = bsa.sils_search(bsa.R_A, bsa.y_A, z_B, n, bsa.size_R_A);
     end_time = omp_get_wtime() - start;
-    double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
     printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
-    vector<double> z_BV(n, 0);
+    auto *z_BS = (double *) malloc(n * sizeof(double));
     start = omp_get_wtime();
-    vector<double> z = bsa.sils_babai_search_serial(z_BV);
+    z_BS = bsa.sils_babai_search_serial(z_BS);
     end_time = omp_get_wtime() - start;
-    res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
+    res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
 }
@@ -39,21 +39,23 @@ void test_run(int init_value) {
 
     //bool read_r, bool read_ra, bool read_xy
     double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, n> bsa(0.1);
+    sils::SILS<double, int, true, false, n> bsa(0.1);
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
-    vector<double> z_BV(n, init_value);
-    if (init_value == -1) {
-        for (int i = 0; i < n; i++) {
-            z_BV[i] = bsa.x_R[i];
+    auto *z_BS = (double *) malloc(n * sizeof(double));
+    for (int i = 0; i < n; i++) {
+        if (init_value != -1) {
+            z_BS[i] = init_value;
+        } else {
+            z_BS[i] = bsa.x_R[i];
         }
     }
 
     start = omp_get_wtime();
-    vector<double> z = bsa.sils_babai_search_serial(z_BV);
+    z_BS = bsa.sils_babai_search_serial(z_BS);
     end_time = omp_get_wtime() - start;
-    double res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
+    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
     for (int proc = 80; proc >= 2; proc /= 2) {
@@ -76,7 +78,7 @@ void test_run(int init_value) {
         start = omp_get_wtime();
         z_B = bsa.sils_babai_search_omp(proc, 10, update, z_B, z_B_p);
         end_time = omp_get_wtime() - start;
-        res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+        res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
         printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", proc, 0, res, end_time);
         free(z_B);
         free(z_B_p);
@@ -91,7 +93,7 @@ void plot_run() {
 
     //bool read_r, bool read_ra, bool read_xy
     double start = omp_get_wtime();
-    babai::Babai_search_asyn<double, int, true, false, 4096> bsa(0.1);
+    sils::SILS<double, int, true, false, 4096> bsa(0.1);
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
@@ -106,16 +108,19 @@ void plot_run() {
 
             std::cout << "Vector Serial:" << std::endl;
             for (int i = 0; i < 10; i++) {
-                vector<double> z_BV(n, init_value);
-                if (init_value == -1) {
-                    for (int l = 0; l < n; l++) {
-                        z_BV[l] = bsa.x_R[l];
+                auto *z_BS = (double *) malloc(n * sizeof(double));
+                for (int l = 0; l < n; l++) {
+                    if (init_value != -1) {
+                        z_BS[l] = init_value;
+                    } else {
+                        z_BS[l] = bsa.x_R[l];
                     }
                 }
+
                 start = omp_get_wtime();
-                vector<double> z = bsa.sils_babai_search_serial(z_BV);
+                z_BS = bsa.sils_babai_search_serial(z_BS);
                 ser_time = omp_get_wtime() - start;
-                ser_res = babai::find_residual(n, bsa.R_A, bsa.y_A, z.data());
+                ser_res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
                 printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", ser_res, ser_time);
                 res[0] += ser_res;
                 tim[0] += ser_time;
@@ -140,7 +145,7 @@ void plot_run() {
                     start = omp_get_wtime();
                     z_B = bsa.sils_babai_search_omp(n_proc, 10, update, z_B, z_B_p);
                     omp_time = omp_get_wtime() - start;
-                    omp_res = babai::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+                    omp_res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
                     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, 0, omp_res, omp_time);
                     free(z_B);
                     free(z_B_p);

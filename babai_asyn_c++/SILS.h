@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace babai {
+namespace sils {
 
     template<typename scalar, typename index, index n>
     scalar find_residual(const scalar *R, const scalar *y, const scalar *x, double *pDouble);
@@ -55,7 +55,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    class Babai_search_asyn {
+    class SILS {
     public:
         index size_R_A;
         scalar init_res, noise, *R_A, *y_A, *x_R, *x_tA;
@@ -69,9 +69,9 @@ namespace babai {
         void write_R_A();
 
     public:
-        explicit Babai_search_asyn(scalar noise);
+        explicit SILS(scalar noise);
 
-        ~Babai_search_asyn() {
+        ~SILS() {
             free(R_A);
             free(x_R);
             free(y_A);

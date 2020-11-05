@@ -1,11 +1,11 @@
 #include <cstring>
 #include <algorithm>
 
-#include "Babai_search_asyn.h"
+#include "SILS.h"
 
 using namespace std;
 
-namespace babai {
+namespace sils {
 
     template<typename scalar, typename index>
     scalar find_residual(const index n, const scalar *R, const scalar *y, const scalar *x) {
@@ -21,7 +21,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    Babai_search_asyn<scalar, index, is_read, is_write, n>::Babai_search_asyn(scalar noise) {
+    SILS<scalar, index, is_read, is_write, n>::SILS(scalar noise) {
         this->R_A = (scalar *) calloc(n * n, sizeof(scalar));
         this->x_R = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA = (scalar *) calloc(n, sizeof(scalar));
@@ -34,7 +34,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void Babai_search_asyn<scalar, index, is_read, is_write, n>::read_from_RA() {
+    void SILS<scalar, index, is_read, is_write, n>::read_from_RA() {
         string fxR = "../../data/R_A_" + to_string(n) + ".csv";
         index i = 0;
         ifstream f3(fxR);
@@ -48,7 +48,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void Babai_search_asyn<scalar, index, is_read, is_write, n>::read_x_y() {
+    void SILS<scalar, index, is_read, is_write, n>::read_x_y() {
         string fy =
                 "../../data/y_" + to_string(n) + ".csv";
         string fx =
@@ -84,7 +84,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void Babai_search_asyn<scalar, index, is_read, is_write, n>::write_R_A() {
+    void SILS<scalar, index, is_read, is_write, n>::write_R_A() {
         string fR = "../../data/R_A_" + to_string(n) + ".csv";
         ofstream file3(fR);
         if (file3.is_open()) {
@@ -95,7 +95,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void Babai_search_asyn<scalar, index, is_read, is_write, n>::init() {
+    void SILS<scalar, index, is_read, is_write, n>::init() {
         std::random_device rd;
         std::mt19937 gen(rd());
         //mean:0, std:1. same as matlab.
@@ -119,11 +119,11 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_search_omp(const index n_proc,
-                                                                                          const index nswp,
-                                                                                          index *update,
-                                                                                          scalar *z_B,
-                                                                                          scalar *z_B_p) {
+    scalar *SILS<scalar, index, is_read, is_write, n>::sils_babai_search_omp(const index n_proc,
+                                                                             const index nswp,
+                                                                             index *update,
+                                                                             scalar *z_B,
+                                                                             scalar *z_B_p) {
 
         index count = 0, num_iter = 0;
         index chunk = std::log2(n);
@@ -162,7 +162,7 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_search_serial(scalar *z_B) {
+    scalar *SILS<scalar, index, is_read, is_write, n>::sils_babai_search_serial(scalar *z_B) {
         scalar sum = 0;
         z_B[n - 1] = round(y_A[n - 1] / R_A[((n - 1) * n) / 2 + n - 1]);
         for (index i = 1; i < n; i++) {
@@ -178,11 +178,11 @@ namespace babai {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_search(const scalar *R,
-                                                                                const scalar *y,
-                                                                                scalar *z_B,
-                                                                                index block_size,
-                                                                                index block_size_R_A) {
+    scalar *SILS<scalar, index, is_read, is_write, n>::sils_search(const scalar *R,
+                                                                   const scalar *y,
+                                                                   scalar *z_B,
+                                                                   index block_size,
+                                                                   index block_size_R_A) {
 
         auto *prsd = (scalar *) calloc(block_size, sizeof(scalar));
         auto *c = (scalar *) calloc(block_size, sizeof(scalar));
@@ -249,11 +249,11 @@ namespace babai {
 
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalar *Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_babai_block_search_omp(const index n_proc,
-                                                                                                const index nswp,
-                                                                                                index *update,
-                                                                                                scalar *z_B,
-                                                                                                scalar *z_B_p) {
+    scalar *SILS<scalar, index, is_read, is_write, n>::sils_babai_block_search_omp(const index n_proc,
+                                                                                   const index nswp,
+                                                                                   index *update,
+                                                                                   scalar *z_B,
+                                                                                   scalar *z_B_p) {
 
         index count = 0, num_iter = 0;
         index chunk = std::log2(n);
@@ -293,11 +293,11 @@ namespace babai {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalar *
-    Babai_search_asyn<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalar *R_B,
-                                                                                     scalar *y_B,
-                                                                                     scalar *z_B,
-                                                                                     vector<index> d,
-                                                                                     index n_R_B) {
+    SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalar *R_B,
+                                                                        scalar *y_B,
+                                                                        scalar *z_B,
+                                                                        vector<index> d,
+                                                                        index n_R_B) {
         index ds = d.size();
         if (ds == 1) {
             if (d[0] == 1) {
@@ -316,7 +316,7 @@ namespace babai {
                 vector<index> new_d(d.begin() + 1, d.end());
 
                 //todo: create R_B
-                auto *R_b = babai::find_block_R(R_B, q, n_R_B, q, n_R_B, n_R_B - q, n_R_B);
+                auto *R_b = sils::find_block_R(R_B, q, n_R_B, q, n_R_B, n_R_B - q, n_R_B);
                 auto *y_b = (scalar *) calloc(n_R_B - q, sizeof(scalar));
 
                 for (int i = q; i < n_R_B; i++) {
@@ -341,11 +341,11 @@ namespace babai {
                 if (q == 1) {
                     xx2[0] = round(y_b_2[0] / R_B[0]);
                 } else {
-                    auto *R_b = babai::find_block_R(R_B, 0, q, 0, q, q, n_R_B);
+                    auto *R_b = sils::find_block_R(R_B, 0, q, 0, q, q, n_R_B);
                     xx2 = sils_search(R_b, y_b_2, z_B);
                 }
 
-                return babai::concatenate_array<scalar, index>(xx2, xx1);
+                return sils::concatenate_array<scalar, index>(xx2, xx1);
             }
         }
     }
