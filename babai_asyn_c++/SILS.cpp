@@ -35,60 +35,58 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::read() {
-        string fy =
-                "../../data/y_" + to_string(n) + ".csv";
-        string fx =
-                "../../data/x_" + to_string(n) + ".csv";
-        string fxR =
-                "../../data/x_R_" + to_string(n) + ".csv";
-        string fRA =
-                "../../data/R_A_" + to_string(n) + ".csv";
+        string fy = "../../data/y_" + to_string(n) + ".csv";
+        string fx = "../../data/x_" + to_string(n) + ".csv";
+        string fR = "../../data/R_A_" + to_string(n) + ".csv";
+        string fxR = "../../data/x_R_" + to_string(n) + ".csv";
 
         index i = 0;
-        ifstream fR(fRA);
+        ifstream f(fR), f1(fy), f2(fx), f3(fxR);
         string row_string, entry;
-        while (getline(fR, row_string)) {
+        while (getline(f, row_string)) {
             scalar d = stod(row_string);
             this->R_A[i] = d;
             i++;
         }
         this->size_R_A = i;
-        fR.close();
+        f.close();
 
         i = 0;
-        ifstream f1(fy);
         while (getline(f1, row_string)) {
             scalar d = stod(row_string);
             this->y_A[i] = d;
             i++;
         }
+        f1.close();
 
         i = 0;
-        ifstream f2(fx);
         while (getline(f2, row_string)) {
             scalar d = stod(row_string);
             this->x_tA[i] = d;
             i++;
         }
+        f2.close();
 
         i = 0;
-        ifstream f3(fxR);
         while (getline(f3, row_string)) {
             scalar d = stod(row_string);
             this->x_R[i] = d;
             i++;
         }
+        f3.close();
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void SILS<scalar, index, is_read, is_write, n>::write_R_A() {
+    void SILS<scalar, index, is_read, is_write, n>::write() {
         string fR = "../../data/R_A_" + to_string(n) + ".csv";
-        ofstream file3(fR);
-        if (file3.is_open()) {
+        ofstream f(fR);
+        if (f.is_open()) {
             for (index i = 0; i < size_R_A; i++)
-                file3 << setprecision(15) << R_A[i] << ",";
-            file3.close();
+                f << setprecision(15) << R_A[i] << ",";
+            f.close();
         }
+
+
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>

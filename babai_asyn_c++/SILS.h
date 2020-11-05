@@ -132,27 +132,18 @@ namespace sils {
         scalar init_res, noise, *R_A, *y_A, *x_R, *x_tA;
 
     private:
-        //Utils:
         /**
          * read the problem from files
          */
         void read();
 
-        void write_R_A();
-
-    public:
-        explicit SILS(scalar noise);
-
-        ~SILS() {
-            free(R_A);
-            free(x_R);
-            free(y_A);
-        }
-
-        void init();
+        /**
+         * Write ONLY the R_A array into files.
+         */
+        void write();
 
         /**
-         *
+         * Warning: OPENMP enabled.
          * @param i
          * @param z_B
          * @return
@@ -165,6 +156,18 @@ namespace sils {
 
             return round((y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
         }
+
+    public:
+        explicit SILS(scalar noise);
+
+        ~SILS() {
+            free(R_A);
+            free(x_R);
+            free(y_A);
+        }
+
+        void init();
+
 
         /**
          *
