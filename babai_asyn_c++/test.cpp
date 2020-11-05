@@ -32,6 +32,7 @@ void test_ils_block_search() {
     end_time = omp_get_wtime() - start;
     res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
 }
 
 void test_ils_search() {

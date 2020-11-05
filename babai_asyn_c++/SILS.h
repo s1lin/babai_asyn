@@ -1,5 +1,23 @@
-﻿#ifndef BABAI_SEARCH_ASYN_H
-#define BABAI_SEARCH_ASYN_H
+﻿/** \file
+ * \brief Computation of integer least square problem
+ * \author Shilei Lin
+ * This file is part of SILS.
+ *   SILS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   BLASTed is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with SILS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef SILS_H
+#define SILS_H
 
 #include <iostream>
 #include <omp.h>
