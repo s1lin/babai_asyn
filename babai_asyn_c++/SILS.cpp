@@ -34,29 +34,28 @@ namespace sils {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void SILS<scalar, index, is_read, is_write, n>::read_from_RA() {
-        string fxR = "../../data/R_A_" + to_string(n) + ".csv";
-        index i = 0;
-        ifstream f3(fxR);
-        string row_string3, entry3;
-        while (getline(f3, row_string3)) {
-            scalar d = stod(row_string3);
-            this->R_A[i] = d;
-            i++;
-        }
-        this->size_R_A = i;
-    }
-
-    template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    void SILS<scalar, index, is_read, is_write, n>::read_x_y() {
+    void SILS<scalar, index, is_read, is_write, n>::read() {
         string fy =
                 "../../data/y_" + to_string(n) + ".csv";
         string fx =
                 "../../data/x_" + to_string(n) + ".csv";
         string fxR =
                 "../../data/x_R_" + to_string(n) + ".csv";
-        string row_string, entry;
+        string fRA =
+                "../../data/R_A_" + to_string(n) + ".csv";
+
         index i = 0;
+        ifstream fR(fRA);
+        string row_string, entry;
+        while (getline(fR, row_string)) {
+            scalar d = stod(row_string);
+            this->R_A[i] = d;
+            i++;
+        }
+        this->size_R_A = i;
+        fR.close();
+
+        i = 0;
         ifstream f1(fy);
         while (getline(f1, row_string)) {
             scalar d = stod(row_string);
@@ -66,18 +65,16 @@ namespace sils {
 
         i = 0;
         ifstream f2(fx);
-        string row_string2, entry2;
-        while (getline(f2, row_string2)) {
-            scalar d = stod(row_string2);
+        while (getline(f2, row_string)) {
+            scalar d = stod(row_string);
             this->x_tA[i] = d;
             i++;
         }
 
         i = 0;
         ifstream f3(fxR);
-        string row_string3, entry3;
-        while (getline(f3, row_string3)) {
-            scalar d = stod(row_string3);
+        while (getline(f3, row_string)) {
+            scalar d = stod(row_string);
             this->x_R[i] = d;
             i++;
         }
@@ -107,8 +104,7 @@ namespace sils {
 //              read_from_R();
 //              write_R_A();
 //              compare_R_RA();
-            read_from_RA();
-            read_x_y();
+            read();
             this->init_res = find_residual(n, R_A, y_A, x_tA);
 
             cout << "init_res:" << this->init_res << endl;
@@ -319,9 +315,9 @@ namespace sils {
                 vector<index> new_d(d.begin() + 1, d.end());
 
                 auto R_b_s = sils::find_block_R<double, int>(R_B, q, n, block_size);
-                sils::display_vector<double, int>(R_b_s);
-
                 auto *y_b = (scalar *) calloc(block_size - q, sizeof(scalar));
+
+                sils::display_vector<double, int>(R_b_s);
 
                 for (int i = q; i < block_size - q; i++) {
                     y_b[i - q] = y_B[i];
