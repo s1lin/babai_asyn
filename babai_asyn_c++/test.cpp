@@ -16,22 +16,25 @@ void test_ils_block_search() {
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
-    auto *z_B = (double *) calloc(n, sizeof(double));
+    sils::scalarType<double, int> z_B{(double *) calloc(n, sizeof(double)), n};
     vector<int> d(2, 5);
     start = omp_get_wtime();
 
-    z_B = bsa.sils_block_search_serial(bsa.R_A, bsa.y_A, z_B, d, n);
+    auto z_B_s = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, d);
 
     end_time = omp_get_wtime() - start;
-    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+    auto res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, z_B_s);
     printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
-    auto *z_BS = (double *) calloc(n, sizeof(double));
+    sils::scalarType<double, int> z_BS = {(double *) calloc(n, sizeof(double)), n};
     start = omp_get_wtime();
-    z_BS = bsa.sils_babai_search_serial(z_BS);
+    z_BS = *bsa.sils_babai_search_serial(&z_BS);
     end_time = omp_get_wtime() - start;
-    res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
+    res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
+    free(z_B_s);
+    free(z_BS.x);
 
 }
 
@@ -44,18 +47,18 @@ void test_ils_search() {
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
-    auto *z_B = (double *) calloc(n, sizeof(double));
+    sils::scalarType<double, int> z_B{(double *) calloc(n, sizeof(double)), n};
     start = omp_get_wtime();
-    z_B = bsa.sils_search(bsa.R_A, bsa.y_A, z_B, n, bsa.size_R_A);
+    z_B = *(bsa.sils_search(&bsa.R_A, &bsa.y_A, &z_B));
     end_time = omp_get_wtime() - start;
-    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+    auto res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_B);
     printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
-    auto *z_BS = (double *) calloc(n, sizeof(double));
+    sils::scalarType<double, int> z_BS = {(double *) calloc(n, sizeof(double)), n};
     start = omp_get_wtime();
-    z_BS = bsa.sils_babai_search_serial(z_BS);
+    z_BS = *bsa.sils_babai_search_serial(&z_BS);
     end_time = omp_get_wtime() - start;
-    res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
+    res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
 }
@@ -71,45 +74,45 @@ void test_run(int init_value) {
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
-    auto *z_BS = (double *) malloc(n * sizeof(double));
+    sils::scalarType<double, int> z_BS = {(double *) calloc(n, sizeof(double)), n};
     for (int i = 0; i < n; i++) {
         if (init_value != -1) {
-            z_BS[i] = init_value;
+            z_BS.x[i] = init_value;
         } else {
-            z_BS[i] = bsa.x_R[i];
+            z_BS.x[i] = bsa.x_R.x[i];
         }
     }
 
     start = omp_get_wtime();
-    z_BS = bsa.sils_babai_search_serial(z_BS);
+    z_BS = *bsa.sils_babai_search_serial(&z_BS);
     end_time = omp_get_wtime() - start;
-    double res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
+    auto res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BS);
     printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
     for (int proc = 80; proc >= 2; proc /= 2) {
-        auto *z_B = (double *) malloc(n * sizeof(double));
-        auto *z_B_p = (double *) malloc(n * sizeof(double));
+        sils::scalarType<double, int> z_B = {(double *) calloc(n, sizeof(double)), n};
+        sils::scalarType<double, int> z_B_p = {(double *) calloc(n, sizeof(double)), n};
         auto *update = (int *) malloc(n * sizeof(int));
 
         for (int i = 0; i < n; i++) {
             if (init_value != -1) {
-                z_B[i] = init_value;
-                z_B_p[i] = init_value;
+                z_B.x[i] = init_value;
+                z_B_p.x[i] = init_value;
 
             } else {
-                z_B[i] = bsa.x_R[i];
-                z_B_p[i] = bsa.x_R[i];
+                z_B.x[i] = bsa.x_R.x[i];
+                z_B_p.x[i] = bsa.x_R.x[i];
             }
             update[i] = 0;
         }
 
         start = omp_get_wtime();
-        z_B = bsa.sils_babai_search_omp(proc, 10, update, z_B, z_B_p);
+        z_B = *bsa.sils_babai_search_omp(proc, 10, update, &z_B, &z_B_p);
         end_time = omp_get_wtime() - start;
-        res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+        res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_B);
         printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", proc, 0, res, end_time);
-        free(z_B);
-        free(z_B_p);
+        free(z_B.x);
+        free(z_B_p.x);
         free(update);
     }
 
@@ -121,7 +124,7 @@ void plot_run() {
 
     //bool read_r, bool read_ra, bool read_xy
     double start = omp_get_wtime();
-    sils::SILS<double, int, true, false, 4096> bsa(0.1);
+    sils::SILS<double, int, true, false, n> bsa(0.1);
     double end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
 
@@ -136,19 +139,21 @@ void plot_run() {
 
             std::cout << "Vector Serial:" << std::endl;
             for (int i = 0; i < 10; i++) {
-                auto *z_BS = (double *) malloc(n * sizeof(double));
+                sils::scalarType<double, int> z_BS{};
+                z_BS.x = (double *) calloc(n, sizeof(double));
+                z_BS.size = n;
                 for (int l = 0; l < n; l++) {
                     if (init_value != -1) {
-                        z_BS[l] = init_value;
+                        z_BS.x[l] = init_value;
                     } else {
-                        z_BS[l] = bsa.x_R[l];
+                        z_BS.x[l] = bsa.x_R.x[l];
                     }
                 }
-
+//                sils::display_scalarType(z_BS);
                 start = omp_get_wtime();
-                z_BS = bsa.sils_babai_search_serial(z_BS);
+                z_BS = *bsa.sils_babai_search_serial(&z_BS);
                 ser_time = omp_get_wtime() - start;
-                ser_res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_BS);
+                ser_res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BS);
                 printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", ser_res, ser_time);
                 res[0] += ser_res;
                 tim[0] += ser_time;
@@ -160,23 +165,23 @@ void plot_run() {
             int index = 0;
             for (int i = 0; i < 10; i++) {
                 for (int n_proc = 80; n_proc >= 2; n_proc /= 2) {
-                    auto *z_B = (double *) malloc(n * sizeof(double));
-                    auto *z_B_p = (double *) malloc(n * sizeof(double));
+                    sils::scalarType<double, int> z_B = {(double *) calloc(n, sizeof(double)), n};
+                    sils::scalarType<double, int> z_B_p = {(double *) calloc(n, sizeof(double)), n};
                     auto *update = (int *) malloc(n * sizeof(int));
 
                     for (int m = 0; m < n; m++) {
-                        z_B[m] = init_value;
-                        z_B_p[m] = init_value;
+                        z_B.x[m] = init_value;
+                        z_B_p.x[m] = init_value;
                         update[m] = init_value;
                     }
 
                     start = omp_get_wtime();
-                    z_B = bsa.sils_babai_search_omp(n_proc, 10, update, z_B, z_B_p);
+                    z_B = *bsa.sils_babai_search_omp(n_proc, 10, update, &z_B, &z_B_p);
                     omp_time = omp_get_wtime() - start;
-                    omp_res = sils::find_residual(n, bsa.R_A, bsa.y_A, z_B);
+                    omp_res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_B);
                     printf("Thread: %d, Sweep: %d, Res: %.5f, Run time: %fs\n", n_proc, 0, omp_res, omp_time);
-                    free(z_B);
-                    free(z_B_p);
+                    free(z_B.x);
+                    free(z_B_p.x);
                     free(update);
 
                     res[index] += omp_res;
@@ -210,7 +215,7 @@ int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     //plot_run();
     test_ils_block_search();
-//    test_ils_search();
+    //test_ils_search();
 
     return 0;
 }

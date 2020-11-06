@@ -14,4 +14,4 @@ Usage
 Currently, only build the c++ files under babai_asyn_c++ folder. More details are coming
 
 Copyright © 2020, [Shilei Lin](https://s1lin.github.io/).
-Released under the [GNU License](LICENSE).
+Released under the [GNU License](LICENSE.md).

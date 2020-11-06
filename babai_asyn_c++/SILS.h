@@ -57,11 +57,22 @@ namespace sils {
      * @param R
      * @param y
      * @param x
-     * @param pDouble
      * @return residual
      */
     template<typename scalar, typename index, index n>
-    scalar find_residual(const scalar *R, const scalar *y, const scalar *x, double *pDouble);
+    inline scalar find_residual(scalarType<scalar, index> *R,
+                                scalarType<scalar, index> *y,
+                                scalarType<scalar, index> *x) {
+        scalar res = 0;
+        for (index i = 0; i < n; i++) {
+            scalar sum = 0;
+            for (index j = i; j < n; j++) {
+                sum += x->x[j] * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
+            }
+            res += (y->x[i] - sum) * (y->x[i] - sum);
+        }
+        return std::sqrt(res);
+    }
 
     /**
      * Simple function for displaying the struct scalarType
@@ -70,10 +81,26 @@ namespace sils {
      * @param x
      */
     template<typename scalar, typename index>
-    void display_vector(scalarType<scalar, index> x) {
-        for (int i = 0; i < x.size; i++) {
-            cout << x.x[i] << endl;
+    inline void display_scalarType(scalarType<scalar, index> *x) {
+        for (int i = 0; i < x->size; i++) {
+            cout << x->x[i] << " ";
         }
+        cout << endl;
+    }
+
+
+    /**
+     * Simple function for displaying the struct scalarType
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     */
+    template<typename scalar, typename index>
+    inline void display_array(scalar *x, index size) {
+        for (int i = 0; i < size; i++) {
+            cout << x[i] << " ";
+        }
+        cout << endl;
     }
 
     /**
@@ -87,30 +114,83 @@ namespace sils {
      * @return scalarType
      */
     template<typename scalar, typename index>
-    inline scalarType<scalar, index> find_block_R(const scalar *R_B,
-                                                  const index begin,
-                                                  const index end,
-                                                  const index n) {
-        index block_size = end - begin;
-        scalarType<scalar, index> R_b_s;
-        R_b_s.size = block_size * (1 + block_size) / 2;
-        R_b_s.x = (scalar *) calloc(R_b_s.size, sizeof(scalar));
-
-        index counter = 0, prev_i = 0, i;
+    inline scalarType<scalar, index> *find_block_R(scalarType<scalar, index> *R_B,
+                                                   const index row_begin, const index row_end,
+                                                   const index col_begin, const index col_end,
+                                                   const index block_size) {
+        auto *R_b_s = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        index size = col_end - col_begin;
+        index R_b_s_size = size * (1 + size) / 2;
+        R_b_s->x = (scalar *) calloc(R_b_s_size, sizeof(scalar));
+        R_b_s->size = R_b_s_size;
+        index counter = 0, i = 0;
 
         //The block operation
-        for (index row = begin; row < end; row++) {
-
+        for (index row = row_begin; row < row_end; row++) {
             //Translating the index from R(matrix) to R_B(compressed array).
-            i = (n * row) + row - ((row * (row + 1)) / 2);
-            for (index col = 0; col < block_size - prev_i; col++) {
+            for (index col = row; col < col_end; col++) {
+                i = (block_size * row) + col - ((row * (row + 1)) / 2);
                 //Put the value into the R_b_s.x
-                R_b_s.x[counter] = R_B[i + col];
+                R_b_s->x[counter] = R_B->x[i];
                 counter++;
             }
-            prev_i++;
         }
         return R_b_s;
+    }
+
+
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> block_residual_vector(scalarType<scalar, index> *R_B,
+                                                           scalarType<scalar, index> *x,
+                                                           scalarType<scalar, index> *y,
+                                                           const index row_begin, const index row_end,
+                                                           const index col_begin, const index col_end) {
+        index block_size = row_end - row_begin;
+        scalarType<scalar, index> y_b_s;
+        y_b_s.size = block_size;
+        y_b_s.x = (scalar *) calloc(block_size, sizeof(scalar));
+
+        index counter = 0, prev_i = 0, i;
+        scalar sum = 0;
+
+        //The block operation
+        for (index row = row_begin; row < row_end; row++) {
+            //Translating the index from R(matrix) to R_B(compressed array).
+            for (index col = col_begin; col < col_end; col++) {
+                i = (col_end * row) + col - ((row * (row + 1)) / 2);
+                sum += R_B->x[i] * x->x[counter];
+                counter++;
+//                cout<<R_B->x[i]<<' ';
+            }
+//            cout<<endl;
+            y_b_s.x[prev_i] = y->x[row] - sum;
+            prev_i++;
+            sum = counter = 0;
+        }
+        return y_b_s;
+    }
+
+    /**
+     * Block Operation on vector.
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     * @param begin: the starting index of the nxn block
+     * @param end: the end index of the nxn block
+     * @return scalarType
+     */
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> find_block_x(scalarType<scalar, index> *x,
+                                                  const index begin,
+                                                  const index end) {
+        scalarType<scalar, index> x_b_s;
+        x_b_s.size = end - begin;
+        x_b_s.x = (scalar *) calloc(end - begin, sizeof(scalar));
+
+        for (index i = begin; i < end; i++) {
+            x_b_s.x[i - begin] = x->x[i];
+        }
+        return x_b_s;
     }
 
     /**
@@ -122,15 +202,18 @@ namespace sils {
      * @return
      */
     template<typename scalar, typename index>
-    inline scalar *concatenate_array(const scalar *first, const scalar *second) {
-        index fir_size = sizeof(first) / sizeof(first[0]);
-        index sec_size = sizeof(second) / sizeof(second[0]);
-        auto *z = (scalar *) calloc(fir_size + sec_size, sizeof(scalar));
-        for (int i = 0; i < fir_size; i++) {
-            z[i] = first[i];
+    inline scalarType<scalar, index> *concatenate_array(scalarType<scalar, index> *first,
+                                                        scalarType<scalar, index> *second) {
+        auto *z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        index size = first->size + second->size;
+        z->x = (scalar *) calloc(size, sizeof(scalar));
+        z->size = size;
+
+        for (int i = 0; i < first->size; i++) {
+            z->x[i] = first->x[i];
         }
-        for (int i = fir_size; i < fir_size + sec_size; i++) {
-            z[i] = second[i];
+        for (int i = first->size; i < size; i++) {
+            z->x[i] = second->x[i - first->size];
         }
         return z;
     }
@@ -146,9 +229,8 @@ namespace sils {
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     class SILS {
     public:
-        index size_R_A;
-        scalar init_res, noise, *R_A, *y_A, *x_R, *x_tA;
-
+        scalar init_res, noise;
+        scalarType<scalar, index> R_A, y_A, x_R, x_tA;
     private:
         /**
          * read the problem from files
@@ -170,18 +252,19 @@ namespace sils {
             scalar sum = 0;
 #pragma omp simd reduction(+ : sum)
             for (index col = n - i; col < n; col++)
-                sum += R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
+                sum += R_A.x[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + col] * z_B[col];
 
-            return round((y_A[n - 1 - i] - sum) / R_A[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
+            return round((y_A.x[n - 1 - i] - sum) / R_A.x[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
         }
 
     public:
         explicit SILS(scalar noise);
 
         ~SILS() {
-            free(R_A);
-            free(x_R);
-            free(y_A);
+            free(R_A.x);
+            free(x_R.x);
+            free(y_A.x);
+            free(x_tA.x);
         }
 
         void init();
@@ -189,14 +272,15 @@ namespace sils {
 
         /**
          *
-         * @param R
-         * @param y
+         * @param R_B
+         * @param y_B
          * @param z_B
-         * @param block_size
-         * @param block_size_R_A
          * @return
          */
-        scalar *sils_search(const scalar *R, const scalar *y, scalar *z_B, index block_size, index block_size_R_A);
+        scalarType<scalar, index> *
+        sils_search(scalarType<scalar, index> *R_B,
+                    scalarType<scalar, index> *y_B,
+                    scalarType<scalar, index> *z_B);
 
         /**
          *
@@ -207,14 +291,16 @@ namespace sils {
          * @param z_B_p
          * @return
          */
-        scalar *sils_babai_search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
+        scalarType<scalar, index> *sils_babai_search_omp(index n_proc, index nswp, index *update,
+                                                         scalarType<scalar, index> *z_B,
+                                                         scalarType<scalar, index> *z_B_p);
 
         /**
          *
          * @param z_B
          * @return
          */
-        scalar *sils_babai_search_serial(scalar *z_B);
+        scalarType<scalar, index> *sils_babai_search_serial(scalarType<scalar, index> *z_B);
 
         /**
          *
@@ -225,11 +311,11 @@ namespace sils {
          * @param block_size
          * @return
          */
-        scalar *sils_block_search_serial(scalar *R_B,
-                                         scalar *y_B,
-                                         scalar *z_B,
-                                         vector<index> d,
-                                         index block_size);
+        scalarType<scalar, index> *
+        sils_block_search_serial(scalarType<scalar, index> *R_B,
+                                 scalarType<scalar, index> *y_B,
+                                 scalarType<scalar, index> *z_B,
+                                 vector<index> d);
 
         /**
          *
