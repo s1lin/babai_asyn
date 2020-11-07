@@ -3,6 +3,8 @@
 
 #include "SILS.h"
 
+#define VERBOSE_LEVEL = 1;
+
 using namespace std;
 
 namespace sils {
@@ -162,13 +164,22 @@ namespace sils {
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalarType<scalar, index> *
     SILS<scalar, index, is_read, is_write, n>::sils_search(scalarType<scalar, index> *R_B,
-                                                           scalarType<scalar, index> *y_B,
-                                                           scalarType<scalar, index> *z_B) {
+                                                           scalarType<scalar, index> *y_B) {
+
+
         index block_size = y_B->size;
+
+#ifdef VERBOSE
+        cout << "sils_search" << endl;
+        cout << "Block_size:" << block_size << endl;
+#endif
+        auto *z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        z->x = (scalar *) calloc(block_size, sizeof(scalar));
+        z->size = block_size;
 
         auto *prsd = (scalar *) calloc(block_size, sizeof(scalar));
         auto *c = (scalar *) calloc(block_size, sizeof(scalar));
-        auto *z = (scalar *) calloc(block_size, sizeof(scalar));
+        auto *z_H = (scalar *) calloc(block_size, sizeof(scalar));
         auto *d = (index *) calloc(block_size, sizeof(index));
 
         scalar newprsd, gamma, b_R;
@@ -178,11 +189,11 @@ namespace sils {
         double beta = INFINITY;
 
         c[block_size - 1] = y_B->x[block_size - 1] / R_B->x[R_B->size - 1];
-        z_B->x[block_size - 1] = round(c[block_size - 1]);
-        gamma = R_B->x[R_B->size - 1] * (c[block_size - 1] - z_B->x[block_size - 1]);
+        z->x[block_size - 1] = round(c[block_size - 1]);
+        gamma = R_B->x[R_B->size - 1] * (c[block_size - 1] - z->x[block_size - 1]);
 
         //  Determine enumeration direction at level block_size
-        d[block_size - 1] = c[block_size - 1] > z_B->x[block_size - 1] ? 1 : -1;
+        d[block_size - 1] = c[block_size - 1] > z->x[block_size - 1] ? 1 : -1;
 
         while (true) {
             newprsd = prsd[k] + gamma * gamma;
@@ -191,49 +202,44 @@ namespace sils {
                     k--;
                     double sum = 0;
                     for (index col = k + 1; col < block_size; col++) {
-                        sum += R_B->x[(block_size * k) + col - ((k * (k + 1)) / 2)] * z_B->x[col];
+                        sum += R_B->x[(block_size * k) + col - ((k * (k + 1)) / 2)] * z->x[col];
                     }
                     scalar s = y_B->x[k] - sum;
                     scalar R_kk = R_B->x[(block_size * k) + k - ((k * (k + 1)) / 2)];
                     prsd[k] = newprsd;
                     c[k] = s / R_kk;
 
-                    z_B->x[k] = round(c[k]);
-                    gamma = R_kk * (c[k] - z_B->x[k]);
-                    d[k] = c[k] > z_B->x[k] ? 1 : -1;
+                    z->x[k] = round(c[k]);
+                    gamma = R_kk * (c[k] - z->x[k]);
+                    d[k] = c[k] > z->x[k] ? 1 : -1;
 
                 } else {
                     beta = newprsd;
                     //Deep Copy of the result
-                    std::memcpy(z, z_B->x, sizeof(scalar) * block_size);
+                    std::memcpy(z_H, z->x, sizeof(scalar) * block_size);
 
-                    z_B->x[0] += d[0];
-                    gamma = R_B->x[0] * (c[0] - z_B->x[0]);
+                    z->x[0] += d[0];
+                    gamma = R_B->x[0] * (c[0] - z->x[0]);
                     d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
                 }
             } else {
                 if (k == block_size - 1) break;
                 else {
                     k++;
-                    z_B->x[k] += d[k];
-                    gamma = R_B->x[(block_size * k) + k - ((k * (k + 1)) / 2)] * (c[k] - z_B->x[k]);
+                    z->x[k] += d[k];
+                    gamma = R_B->x[(block_size * k) + k - ((k * (k + 1)) / 2)] * (c[k] - z->x[k]);
                     d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
                 }
             }
         }
-        std::memcpy(z_B->x, z, sizeof(scalar) * block_size);
-        cout << "inner" << endl;
-        display_array(z, block_size);
-        cout << "inner" << endl;
-        display_scalarType(z_B);
-        cout << "inner" << endl;
+        std::memcpy(z->x, z_H, sizeof(scalar) * block_size);
 
-        free(z);
+        free(z_H);
         free(c);
         free(d);
         free(prsd);
 
-        return z_B;
+        return z;
     }
 
 
@@ -282,13 +288,13 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalarType<scalar, index> *
-    SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalarType<scalar, index> *R_B,
-                                                                        scalarType<scalar, index> *y_B,
-                                                                        scalarType<scalar, index> *z_B,
-                                                                        vector<index> d) {
+    SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial_recursive(scalarType<scalar, index> *R_B,
+                                                                                  scalarType<scalar, index> *y_B,
+                                                                                  scalarType<scalar, index> *z_B,
+                                                                                  vector<index> d) {
         index ds = d.size();
         index block_size = y_B->size;
-        cout << block_size << endl;
+//        cout << block_size << endl;
 
         if (ds == 1) {
             if (d[0] == 1) {
@@ -296,7 +302,7 @@ namespace sils {
                 x.x[0] = round(y_B->x[0] / R_B->x[0]);
                 return &x;
             } else {
-                return sils_search(R_B, y_B, z_B);
+                return sils_search(R_B, y_B);
             }
         } else {
             //Find the Babai point
@@ -307,46 +313,111 @@ namespace sils {
                 //new_d = d[2:ds];
                 vector<index> new_d(d.begin() + 1, d.end());
 
-                auto R_b_s = sils::find_block_R<double, int>(R_B, q, block_size, q, block_size, y_B->size);
-                cout << "R_b" << endl;
-                sils::display_scalarType<double, int>(R_b_s);
+                auto R_b_s = sils::find_block_Rii<double, int>(R_B, q, block_size, q, block_size, y_B->size);
+//                cout << "R_b" << endl;
+//                sils::display_scalarType<double, int>(R_b_s);
 
                 auto y_b_s = sils::find_block_x<double, int>(y_B, q, block_size);
-                cout << "\n y_b" << endl;
-                sils::display_scalarType<double, int>(&y_b_s);
+//                cout << "\n y_b" << endl;
+//                sils::display_scalarType<double, int>(y_b_s);
 
                 auto z_b_s = sils::find_block_x<double, int>(z_B, q, block_size);
 
-                auto x_b_s = sils_block_search_serial(R_b_s, &y_b_s, &z_b_s, new_d);
-                cout << "x_b_s," << z_B->size << endl;
-                sils::display_scalarType<double, int>(x_b_s);
-
-                cout << "y_b_s_2," << endl;
+                auto x_b_s = sils_block_search_serial_recursive(R_b_s, y_b_s, z_b_s, new_d);
+//                cout << "x_b_s," << z_B->size << endl;
+//                sils::display_scalarType<double, int>(x_b_s);
+//
+//                cout << "y_b_s_2" << endl;
                 scalarType<scalar, index> *x_b_s_2, z_b_s_2;
                 auto y_b_s_2 = block_residual_vector(R_B, x_b_s, y_B, 0, q, q, block_size);
-                sils::display_scalarType<double, int>(&y_b_s_2);
+//                sils::display_scalarType<double, int>(y_b_s_2);
 
                 if (q == 1) {
                     x_b_s_2 = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
                     x_b_s_2->x = (scalar *) calloc(q, sizeof(scalar));
                     x_b_s_2->size = 1;
-                    x_b_s_2->x[0] = round(y_b_s_2.x[0] / R_B->x[0]);
+                    x_b_s_2->x[0] = round(y_b_s_2->x[0] / R_B->x[0]);
                 } else {
-                    cout << "y_b_s_2," << endl;
-                    z_b_s_2 = sils::find_block_x<double, int>(z_B, 0, q);
-                    R_b_s = sils::find_block_R<double, int>(R_B, 0, q, 0, q, y_B->size);
-                    sils::display_scalarType<double, int>(R_b_s);
-                    x_b_s_2 = sils_search(R_b_s, &y_b_s_2, &z_b_s_2);
-                    sils::display_scalarType<double, int>(x_b_s_2);
+
+                    R_b_s = sils::find_block_Rii<double, int>(R_B, 0, q, 0, q, y_B->size);
+//                    cout << "R_b_s" << endl;
+//                    sils::display_scalarType<double, int>(R_b_s);
+
+                    x_b_s_2 = sils_search(R_b_s, y_b_s_2);
+//                    cout << "x_b_s_2" << endl;
+//                    sils::display_scalarType<double, int>(x_b_s_2);
                 }
-                free(R_b_s);
-                free(y_b_s.x);
-                free(y_b_s_2.x);
+
                 z_B = sils::concatenate_array<scalar, index>(x_b_s_2, x_b_s);
-                sils::display_scalarType<double, int>(z_B);
+                free(R_b_s);
+                free(y_b_s);
+                free(y_b_s_2);
+                free(x_b_s);
+                free(x_b_s_2);
                 return z_B;
             }
         }
+    }
+
+    template<typename scalar, typename index, bool is_read, bool is_write, index n>
+    scalarType<scalar, index> *
+    SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalarType<scalar, index> *R_B,
+                                                                        scalarType<scalar, index> *y_B,
+                                                                        scalarType<scalar, index> *z_B,
+                                                                        vector<index> d) {
+        index ds = d.size();
+        //special cases:
+        if (ds == 1) {
+            if (d[0] == 1) {
+                z_B->x[0] = round(y_B->x[0] / R_B->x[0]);
+                return z_B;
+            } else {
+                return sils_search(R_B, y_B);
+            }
+        } else if (ds == n) {
+            //Find the Babai point
+            return sils_babai_search_serial(z_B);
+        }
+
+        //last block:
+        index q = d[ds - 1];
+
+        //If the last block has size 1, then it just round y[n]/R[n,n]
+        //if not, then find by sils_search
+
+        auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
+        auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
+        auto x = sils_search(R_ii, y_b_s);
+
+        //Therefore, skip the last block, start from the second-last block till the first block.
+        for (index i = ds - 2; i >= 0; i--) {
+            //accumulate the block size
+            q += d[i];
+            y_b_s = sils::find_block_x<double, int>(y_B, n - q, n - q + d[i]);
+            y_b_s = sils::block_residual_vector(R_B, x, y_b_s, n - q, n - q + d[i], n - q + d[i], n);
+            R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n - q + d[i], n - q, n - q + d[i], n);
+
+            x = concatenate_array(sils_search(R_ii, y_b_s), x);
+
+#ifdef VERBOSE
+            cout << "y_b_s" << endl;
+            sils::display_scalarType<double, int>(&y_b_s);
+            cout << "R_ii" << endl;
+            sils::display_scalarType<double, int>(R_ii);
+            cout << "y_b_s_2" << endl;
+            sils::display_scalarType<double, int>(&y_b_s_2);
+            cout << "x" << endl;
+            sils::display_scalarType<double, int>(x);
+#endif
+//            free(R_b_s);
+        }
+        std::memcpy(z_B->x, x->x, sizeof(scalar) * q);
+
+        free(R_ii);
+        free(y_b_s);
+        free(x);
+
+        return z_B;
     }
 }
 
