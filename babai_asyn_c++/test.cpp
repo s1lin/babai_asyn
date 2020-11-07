@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int n = 100;
+const int n = 10;
 
 void test_ils_block_search() {
     std::cout << "Init, size: " << n << std::endl;
@@ -18,10 +18,10 @@ void test_ils_block_search() {
 
     sils::scalarType<double, int> z_B{(double *) calloc(n, sizeof(double)), n};
     vector<int> d(4, 0);
-    d[0] = 20;
-    d[1] = 30;
-    d[2] = 30;
-    d[3] = 20;
+    d[0] = 2;
+    d[1] = 3;
+    d[2] = 3;
+    d[3] = 2;
 
     start = omp_get_wtime();
     auto z_B_s = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, d);

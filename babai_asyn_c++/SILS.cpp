@@ -400,41 +400,47 @@ namespace sils {
         //the last block
         auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
         auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
-        auto x = sils_search(R_ii, y_b_s);
+        auto x_b_s = sils_search(R_ii, y_b_s);
+        for (int l = n - q; l < n; l++) {
+            z_B[n - q] = x_b_s[l - n + q];
+        }
 
-#pragma omp parallel default(shared) num_threads(n_proc) private(q)
+#pragma omp parallel default(shared) num_threads(n_proc) private(q, y_b_s, R_ii, x_b_s)
         {
+            q = d[ds - 1];
             for (index j = 0; j < nswp; j++) {
-#pragma omp for schedule(dynamic)
+#pragma omp for nowait //schedule(dynamic) nowait
                 for (index i = ds - 2; i >= 0; i--) {
                     //accumulate the block size
                     q += d[i];
                     y_b_s = sils::find_block_x<double, int>(y_B, n - q, n - q + d[i]);
-                    y_b_s = sils::block_residual_vector(R_B, x, y_b_s, n - q, n - q + d[i], n - q + d[i], n);
+                    x_b_s = sils::find_block_x<double, int>(z_B, n - q, n - q + d[i]);
+                    y_b_s = sils::block_residual_vector(R_B, x_b_s, y_b_s, n - q, n - q + d[i], n - q + d[i], n);
                     R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n - q + d[i], n - q, n - q + d[i], n);
+                    x_b_s = sils_search(R_ii, y_b_s);
 
-                    x = concatenate_array(sils_search(R_ii, y_b_s), x);
+                    for (int l = n - q; l < n - q + d[i]; l++) {
+                        z_B[n - q] = x_b_s[l - n + q];
+                    }
+                    //x = concatenate_array(≈, x);
 
-#ifdef VERBOSE
                     cout << "y_b_s" << endl;
-                    sils::display_scalarType<double, int>(&y_b_s);
+                    sils::display_scalarType<double, int>(y_b_s);
                     cout << "R_ii" << endl;
                     sils::display_scalarType<double, int>(R_ii);
-                    cout << "y_b_s_2" << endl;
-                    sils::display_scalarType<double, int>(&y_b_s_2);
-                    cout << "x" << endl;
-                    sils::display_scalarType<double, int>(x);
-#endif
+                    cout << "z_B" << endl;
+                    sils::display_scalarType<double, int>(z_B);
                 }
                 num_iter = j;
             }
         }
-        //cout << num_iter << endl;
+        cout << num_iter << endl;
 
         free(R_ii);
         free(y_b_s);
+        free(x_b_s);
 
-        return x;
+        return z_B;
     }
 }
 
