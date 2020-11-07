@@ -244,49 +244,6 @@ namespace sils {
 
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalar *SILS<scalar, index, is_read, is_write, n>::sils_babai_block_search_omp(const index n_proc,
-                                                                                   const index nswp,
-                                                                                   index *update,
-                                                                                   scalar *z_B,
-                                                                                   scalar *z_B_p) {
-
-        index count = 0, num_iter = 0;
-        index chunk = std::log2(n);
-        scalar res = 0;
-
-
-        z_B[n - 1] = round(y_A.x[n - 1] / R_A.x[((n - 1) * n) / 2 + n - 1]);
-#pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
-        {
-            for (index j = 0; j < nswp; j++) {//&& count < 16
-                count = 0;
-#pragma omp for schedule(dynamic) nowait
-                for (index i = 0; i < n; i++) {
-                    int x_c = do_solve(i, z_B);
-                    //                    int x_p = z_B[n - 1 - i];
-                    z_B[n - 1 - i] = x_c;
-
-                    // if (x_c != x_p) {
-                    //     update[n - 1 - i] = 0;
-                    //     z_B_p[n - 1 - i] = x_c;
-                    // } else {
-                    //     update[n - 1 - i] = 1;
-                    // }
-                }
-                //#pragma omp simd reduction(+ : count)
-                //                for (index col = 0; col < 32; col++) {
-                //                    count += update[col];
-                //                }
-                num_iter = j;
-                //
-            }
-        }
-        //cout << num_iter << endl;
-
-        return z_B;
-    }
-
-    template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalarType<scalar, index> *
     SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial_recursive(scalarType<scalar, index> *R_B,
                                                                                   scalarType<scalar, index> *y_B,
@@ -382,9 +339,7 @@ namespace sils {
         //last block:
         index q = d[ds - 1];
 
-        //If the last block has size 1, then it just round y[n]/R[n,n]
-        //if not, then find by sils_search
-
+        //the last block
         auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
         auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
         auto x = sils_search(R_ii, y_b_s);
@@ -409,15 +364,77 @@ namespace sils {
             cout << "x" << endl;
             sils::display_scalarType<double, int>(x);
 #endif
-//            free(R_b_s);
+
         }
-        std::memcpy(z_B->x, x->x, sizeof(scalar) * q);
 
         free(R_ii);
         free(y_b_s);
-        free(x);
 
-        return z_B;
+        return x;
+    }
+
+    template<typename scalar, typename index, bool is_read, bool is_write, index n>
+    scalarType<scalar, index> *
+    SILS<scalar, index, is_read, is_write, n>::sils_block_search_omp(index n_proc, index nswp,
+                                                                     scalarType<scalar, index> *R_B,
+                                                                     scalarType<scalar, index> *y_B,
+                                                                     scalarType<scalar, index> *z_B,
+                                                                     vector<index> d) {
+        index ds = d.size();
+        //special cases:
+        if (ds == 1) {
+            if (d[0] == 1) {
+                z_B->x[0] = round(y_B->x[0] / R_B->x[0]);
+                return z_B;
+            } else {
+                return sils_search(R_B, y_B);
+            }
+        } else if (ds == n) {
+            //Find the Babai point
+            return sils_babai_search_serial(z_B);
+        }
+
+        //last block:
+        index q = d[ds - 1], num_iter = 0;
+
+        //the last block
+        auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
+        auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
+        auto x = sils_search(R_ii, y_b_s);
+
+#pragma omp parallel default(shared) num_threads(n_proc) private(q)
+        {
+            for (index j = 0; j < nswp; j++) {
+#pragma omp for schedule(dynamic)
+                for (index i = ds - 2; i >= 0; i--) {
+                    //accumulate the block size
+                    q += d[i];
+                    y_b_s = sils::find_block_x<double, int>(y_B, n - q, n - q + d[i]);
+                    y_b_s = sils::block_residual_vector(R_B, x, y_b_s, n - q, n - q + d[i], n - q + d[i], n);
+                    R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n - q + d[i], n - q, n - q + d[i], n);
+
+                    x = concatenate_array(sils_search(R_ii, y_b_s), x);
+
+#ifdef VERBOSE
+                    cout << "y_b_s" << endl;
+                    sils::display_scalarType<double, int>(&y_b_s);
+                    cout << "R_ii" << endl;
+                    sils::display_scalarType<double, int>(R_ii);
+                    cout << "y_b_s_2" << endl;
+                    sils::display_scalarType<double, int>(&y_b_s_2);
+                    cout << "x" << endl;
+                    sils::display_scalarType<double, int>(x);
+#endif
+                }
+                num_iter = j;
+            }
+        }
+        //cout << num_iter << endl;
+
+        free(R_ii);
+        free(y_b_s);
+
+        return x;
     }
 }
 

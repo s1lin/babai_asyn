@@ -326,12 +326,19 @@ namespace sils {
          *
          * @param n_proc
          * @param nswp
-         * @param update
+         * @param R_B
+         * @param y_B
          * @param z_B
-         * @param z_B_p
+         * @param d
          * @return
          */
-        scalar *sils_babai_block_search_omp(index n_proc, index nswp, index *update, scalar *z_B, scalar *z_B_p);
+        scalarType<scalar, index> *
+        sils_block_search_omp(index n_proc, index nswp,
+                              scalarType<scalar, index> *R_B,
+                              scalarType<scalar, index> *y_B,
+                              scalarType<scalar, index> *z_B,
+                              vector<index> d);
+
 
     };
 }
