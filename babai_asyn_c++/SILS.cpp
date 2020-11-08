@@ -432,8 +432,23 @@ namespace sils {
                                                         n);
                     R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q],
                                                              n - d->x[q + 1], n);
-                    x_b_s = sils_search(R_ii, y_b_s);
 
+                    index block_size = d->x[q + 1] - d->x[q];
+                    index counter = n - d->x[q + 1];
+                    scalar sum = 0;
+
+                    //The block operation
+                    for (index row = n - d->x[q]; row < n - d->x[q + 1]; row++) {
+                        //Translating the index from R(matrix) to R_B(compressed array).
+                        for (index col = n - d->x[q + 1]; col < n; col++) {
+                            sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[counter];
+                            counter++;
+                        }
+                        y_B->x[n - d->x[q] + row] -= sum;
+                        sum = 0;
+                        counter = n - d->x[q + 1];
+                    }
+                    x_b_s = sils_search(R_ii, y_b_s);
                     for (int l = n - d->x[q]; l < n - d->x[q + 1]; l++) {
                         z_B->x[l] = x_b_s->x[l - n + d->x[q]];
                     }

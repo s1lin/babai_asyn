@@ -235,8 +235,8 @@ void plot_run() {
 
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    //plot_run();
-    test_ils_block_search();
+    plot_run();
+    //test_ils_block_search();
     //test_ils_search();
 
     return 0;
