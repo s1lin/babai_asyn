@@ -425,14 +425,6 @@ namespace sils {
                 for (index i = 0; i < ds - 1; i++) {
                     index q = ds - 2 - i;
                     //accumulate the block size
-                    y_b_s = sils::find_block_x<double, int>(y_B, n - d->x[q], n - d->x[q + 1]);
-                    x_b_s = sils::find_block_x<double, int>(z_B, n - d->x[q + 1], n);
-                    y_b_s = sils::block_residual_vector(R_B, x_b_s, y_b_s, n - d->x[q], n - d->x[q + 1],
-                                                        n - d->x[q + 1],
-                                                        n);
-                    R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q],
-                                                             n - d->x[q + 1], n);
-
                     index block_size = d->x[q + 1] - d->x[q];
                     index counter = n - d->x[q + 1];
                     scalar sum = 0;
@@ -448,7 +440,11 @@ namespace sils {
                         sum = 0;
                         counter = n - d->x[q + 1];
                     }
+
+                    y_b_s = sils::find_block_x<double, int>(y_B, n - d->x[q], n - d->x[q + 1]);
+                    R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q], n - d->x[q + 1], n);
                     x_b_s = sils_search(R_ii, y_b_s);
+
                     for (int l = n - d->x[q]; l < n - d->x[q + 1]; l++) {
                         z_B->x[l] = x_b_s->x[l - n + d->x[q]];
                     }

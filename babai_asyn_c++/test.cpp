@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int n = 4096;
+const int n = 10;
 
 void test_ils_block_search() {
     std::cout << "Init, size: " << n << std::endl;
@@ -17,14 +17,14 @@ void test_ils_block_search() {
     printf("Finish Init, time: %f seconds\n", end_time);
 
     sils::scalarType<double, int> z_B{(double *) calloc(n, sizeof(double)), n};
-    vector<int> d(256, 16); //256*16=4096
+//    vector<int> d(256, 16); //256*16=4096
+    vector<int> d(5, 2); //256*16=4096
     sils::scalarType<int, int> d_s{d.data(), (int)d.size()};
     sils::scalarType<double, int> z_BV{(double *) calloc(n, sizeof(double)), n};
     for (int i = d_s.size - 2; i >= 0; i--) {
         d_s.x[i] += d_s.x[i + 1];
     }
 
-//    vector<int> d(5, 2); //256*16=4096
 
     start = omp_get_wtime();
     auto z_B_s = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, &d_s);
@@ -41,7 +41,7 @@ void test_ils_block_search() {
 
 
     start = omp_get_wtime();
-    z_BV = *bsa.sils_block_search_omp(40, 16, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
+    z_BV = *bsa.sils_block_search_omp(1, 1, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
     end_time = omp_get_wtime() - start;
     res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BV);
     printf("Thread: ILS_OP, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
@@ -235,8 +235,8 @@ void plot_run() {
 
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    plot_run();
-    //test_ils_block_search();
+    //plot_run();
+    test_ils_block_search();
     //test_ils_search();
 
     return 0;
