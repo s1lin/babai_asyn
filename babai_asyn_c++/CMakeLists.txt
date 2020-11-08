@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8.2)
-project(babai_asyn)
+project(sils)
 
 #FIND_PACKAGE(PythonInterp 3)
 #find_package(PythonLibs 3.8 REQUIRED)
@@ -43,6 +43,7 @@ endif()
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
 #include_directories(${PYTHON_INCLUDE_DIRS})
@@ -52,9 +53,8 @@ include_directories("${EIGEN3_INCLUDE_DIR}")
 
 
 link_libraries(${PYTHON_LIBRARIES})
-
-add_executable(babai_asyn SILS.h SILS.cpp test.cpp)#matplotlibcpp.h)
-target_link_libraries(babai_asyn Eigen3::Eigen)
-target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)
+add_executable(sils test.cpp SILS.h SILS.cpp)#matplotlibcpp.h)
+#target_link_libraries(sils Eigen3::Eigen)
+target_link_libraries(sils OpenMP::OpenMP_CXX)
 #target_link_libraries(babai_asyn netcdf)
 #target_link_libraries(babai_asyn ${MPI_C_LIBRARIES})
