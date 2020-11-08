@@ -29,10 +29,10 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::read() {
-        string fy = "../../data/y_" + to_string(n) + ".csv";
-        string fx = "../../data/x_" + to_string(n) + ".csv";
-        string fR = "../../data/R_A_" + to_string(n) + ".csv";
-        string fxR = "../../data/x_R_" + to_string(n) + ".csv";
+        string fy = "data/y_" + to_string(n) + ".csv";
+        string fx = "data/x_" + to_string(n) + ".csv";
+        string fR = "data/R_A_" + to_string(n) + ".csv";
+        string fxR ="data/x_R_" + to_string(n) + ".csv";
 
         index i = 0;
         ifstream f(fR), f1(fy), f2(fx), f3(fxR);

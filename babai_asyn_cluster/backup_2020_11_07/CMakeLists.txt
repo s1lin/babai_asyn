@@ -19,11 +19,11 @@ endif ()
 
 #include_directories(${PYTHON_INCLUDE_DIRS})
 #include_directories(${MPI_INCLUDE_PATH})
-#include_directories("${EIGEN3_INCLUDE_DIR}")
+include_directories("${EIGEN3_INCLUDE_DIR}")
 
 link_libraries(${PYTHON_LIBRARIES})
 
-add_executable(babai_asyn SILS.cpp SILS.h test.cpp)#matplotlibcpp.h)
+add_executable(babai_asyn Babai_search_asyn.h Babai_search_asyn.cpp)#matplotlibcpp.h)
 #target_link_libraries(babai_asyn Eigen3::Eigen)
 target_link_libraries(babai_asyn OpenMP::OpenMP_CXX)
 #target_link_libraries(babai_asyn ${MPI_C_LIBRARIES})
