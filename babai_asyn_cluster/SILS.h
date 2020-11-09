@@ -103,6 +103,7 @@ namespace sils {
         cout << endl;
     }
 
+
     /**
      * Block Operation on R_B (compressed array).
      * @tparam scalar
@@ -138,6 +139,37 @@ namespace sils {
         return R_b_s;
     }
 
+    /**
+     * Block Operation on R_B (compressed array).
+     * @tparam scalar
+     * @tparam index
+     * @param R_B
+     * @param begin: the starting index of the nxn block
+     * @param end: the end index of the nxn block
+     * @param n: the size of R_B.
+     * @return scalarType
+     */
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> *find_block_Rii_omp(scalarType<scalar, index> *R_B,
+                                                         const index row_begin, const index row_end,
+                                                         const index col_begin, const index col_end,
+                                                         const index block_size) {
+        auto *R_b_s = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        index size = col_end - col_begin;
+        index R_b_s_size = size * (1 + size) / 2;
+        R_b_s->x = (scalar *) calloc(R_b_s_size, sizeof(scalar));
+        R_b_s->size = R_b_s_size;
+        index counter = 0;
+
+#pragma omp parallel for
+        for (index row = row_begin; row < row_end; row++) {
+            for (index col = row; col < col_end; col++) {
+                R_b_s->x[counter] = R_B->x[(block_size * row) + col - ((row * (row + 1)) / 2)];
+                counter++;
+            }
+        }
+        return R_b_s;
+    }
 
     template<typename scalar, typename index>
     inline scalarType<scalar, index> *block_residual_vector(scalarType<scalar, index> *R_B,
@@ -160,6 +192,7 @@ namespace sils {
                 i = (col_end * row) + col - ((row * (row + 1)) / 2);
                 sum += R_B->x[i] * x->x[counter];
                 counter++;
+//                cout<<sum<<endl;
 //                cout<<R_B->x[i]<<' ';
             }
 //            cout<<endl;
@@ -187,6 +220,29 @@ namespace sils {
         z->size = end - begin;
         z->x = (scalar *) calloc(end - begin, sizeof(scalar));
 
+        for (index i = begin; i < end; i++) {
+            z->x[i - begin] = x->x[i];
+        }
+        return z;
+    }
+
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
+     * @param x*
+     * @param begin
+     * @param end
+     * @return scalarType*
+     */
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> *find_block_x_omp(scalarType<scalar, index> *x,
+                                                       const index begin,
+                                                       const index end) {
+        auto *z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        z->size = end - begin;
+        z->x = (scalar *) calloc(end - begin, sizeof(scalar));
+#pragma omp parallel for
         for (index i = begin; i < end; i++) {
             z->x[i - begin] = x->x[i];
         }
@@ -230,7 +286,7 @@ namespace sils {
     class SILS {
     public:
         scalar init_res, noise;
-        scalarType<scalar, index> R_A, y_A, x_R, x_tA;
+        scalarType<scalar, index> R_A, y_A, y, x_R, x_tA;
     private:
         /**
          * read the problem from files
@@ -264,6 +320,7 @@ namespace sils {
             free(R_A.x);
             free(x_R.x);
             free(y_A.x);
+            free(y.x);
             free(x_tA.x);
         }
 

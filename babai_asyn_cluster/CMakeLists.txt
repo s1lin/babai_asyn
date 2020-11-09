@@ -54,7 +54,7 @@ endif ()
 
 link_libraries(${PYTHON_LIBRARIES})
 
-add_executable(sils SILS.h SILS.cpp)#matplotlibcpp.h)
+add_executable(sils test.cpp SILS.h SILS.cpp)#matplotlibcpp.h)
 #target_link_libraries(babai_asyn Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(sils PUBLIC OpenMP::OpenMP_CXX)
