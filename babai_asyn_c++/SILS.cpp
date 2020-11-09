@@ -502,22 +502,19 @@ namespace sils {
             return sils_babai_search_serial(z_B);
         }
 
-        //the last block
-        auto y_b_s = sils::find_block_x<double, int>(y_B, n - dx, n);
-        z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n - dx, n, n);
 
 #pragma omp parallel default(shared) num_threads(n_proc)
         {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait
-                for (index i = 0; i < ds - 1; i++) {
-                    z_B = do_block_solve(n - d->x[ds - 2 - i], n - d->x[ds - 1 - i], z_B);
+                for (index i = 0; i < ds; i++) {
+                    if (i == ds - 1)
+                        z_B = do_block_solve(n - dx, n, z_B);
+                    else
+                        z_B = do_block_solve(n - d->x[ds - 2 - i], n - d->x[ds - 1 - i], z_B);
                 }
-//                num_iter = j;
             }
-
         }
-        free(y_b_s);
         return z_B;
     }
 }
