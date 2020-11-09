@@ -33,7 +33,7 @@ void test_ils_block_search() {
     printf("Thread: ILS_SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
     start = omp_get_wtime();
-    z_BV = *bsa.sils_block_search_omp(10, 10, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
+    z_BV = *bsa.sils_block_search_omp(16, 11, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
     end_time = omp_get_wtime() - start;
     res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BV);
     printf("Thread: ILS_OP, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);

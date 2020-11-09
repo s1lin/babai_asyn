@@ -47,7 +47,7 @@ namespace sils {
                     k--;
                     sum = 0;
                     row_k = k + begin;
-#pragma omp simd reduction(+ : sum)
+//#pragma omp simd reduction(+ : sum)
                     for (index col = k + 1; col < block_size; col++) {
                         sum += R_B->x[(r_block_size * row_k) + col + begin - ((row_k * (row_k + 1)) / 2)] * z[col];
                     }
@@ -63,7 +63,7 @@ namespace sils {
                 } else {
                     beta = newprsd;
                     //Deep Copy of the result
-#pragma omp parallel for
+//#pragma omp parallel for
                     for (int l = begin; l < end; l++) {
                         z_B->x[l] = z[l - begin];
                     }
@@ -488,8 +488,7 @@ namespace sils {
                                                                      scalarType<scalar, index> *y_B,
                                                                      scalarType<scalar, index> *z_B,
                                                                      scalarType<index, index> *d) {
-        cout << "sils_block_search_omp" << endl;
-        index ds = d->size;
+        index ds = d->size, dx = d->x[ds - 1];
         //special cases:
         if (ds == 1) {
             if (d->x[0] == 1) {
@@ -503,40 +502,19 @@ namespace sils {
             return sils_babai_search_serial(z_B);
         }
 
-        //last block:
-        index dx = d->x[ds - 1], num_iter = 0, q, n_dx_q_0, n_dx_q_1;
 
-        //the last block
-        auto y_b_s = sils::find_block_x<double, int>(y_B, n - dx, n);
-        z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n - dx, n, n);
-        scalar sum = 0;
-
-
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b_s, dx, sum, q, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc)
         {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait
-                for (index i = 0; i < ds - 1; i++) {
-                    n_dx_q_0 = n - d->x[ds - 2 - i];
-                    n_dx_q_1 = n - d->x[ds - 1 - i];
-                    //The block operation
-                    y_b_s = sils::find_block_x_omp<double, int>(y_B, n_dx_q_0, n_dx_q_1);
-#pragma omp simd reduction(+ : sum)
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                        //Translating the index from R(matrix) to R_B(compressed array).
-                        for (index col = n_dx_q_1; col < n; col++) {
-                            sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
-                        }
-                        y_b_s->x[row - n_dx_q_0] = y_B->x[row] - sum;
-                        sum = 0;
-                    }
-                    sum = 0;
-                    z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n_dx_q_0, n_dx_q_1, n);
+                for (index i = 0; i < ds; i++) {
+                    if (i == ds - 1)
+                        z_B = do_block_solve(n - dx, n, z_B);
+                    else
+                        z_B = do_block_solve(n - d->x[ds - 2 - i], n - d->x[ds - 1 - i], z_B);
                 }
-//                num_iter = j;
             }
         }
-        free(y_b_s);
         return z_B;
     }
 }
