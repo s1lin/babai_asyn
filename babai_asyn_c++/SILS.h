@@ -249,6 +249,15 @@ namespace sils {
         return z;
     }
 
+
+    template<typename scalar, typename index>
+    inline scalarType<scalar, index> *create_scalarType(const index block_size) {
+        auto *z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        z->size = block_size;
+        z->x = (scalar *) calloc(block_size, sizeof(scalar));
+        return z;
+    }
+
     /**
      *
      * @tparam scalar

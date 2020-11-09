@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int n = 8192;
+const int n = 10;
 
 void test_ils_block_search() {
     std::cout << "Init, size: " << n << std::endl;
@@ -17,8 +17,8 @@ void test_ils_block_search() {
     printf("Finish Init, time: %f seconds\n", end_time);
 
     sils::scalarType<double, int> z_B{(double *) calloc(n, sizeof(double)), n};
-    vector<int> d(1024, 8); //256*16=4096
-//    vector<int> d(5, 2); //10
+//    vector<int> d(1024, 8); //256*16=4096
+    vector<int> d(5, 2); //10
 //    vector<int> d(5, 6); //30
     sils::scalarType<int, int> d_s{d.data(), (int) d.size()};
     sils::scalarType<double, int> z_BV{(double *) calloc(n, sizeof(double)), n};
@@ -33,7 +33,7 @@ void test_ils_block_search() {
     printf("Thread: ILS_SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 
     start = omp_get_wtime();
-    z_BV = *bsa.sils_block_search_omp(10, 10, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
+    z_BV = *bsa.sils_block_search_omp(1, 1, &bsa.R_A, &bsa.y_A, &z_BV, &d_s);
     end_time = omp_get_wtime() - start;
     res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BV);
     printf("Thread: ILS_OP, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);

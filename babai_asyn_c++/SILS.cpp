@@ -519,19 +519,88 @@ namespace sils {
                 for (index i = 0; i < ds - 1; i++) {
                     n_dx_q_0 = n - d->x[ds - 2 - i];
                     n_dx_q_1 = n - d->x[ds - 1 - i];
+                    index block_size = n_dx_q_1 - n_dx_q_0;
+
                     //The block operation
-                    y_b_s = sils::find_block_x_omp<double, int>(y_B, n_dx_q_0, n_dx_q_1);
+                    auto *y_b_s = (scalar *) calloc(block_size, sizeof(scalar));
 #pragma omp simd reduction(+ : sum)
                     for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                         //Translating the index from R(matrix) to R_B(compressed array).
                         for (index col = n_dx_q_1; col < n; col++) {
                             sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                         }
-                        y_b_s->x[row - n_dx_q_0] = y_B->x[row] - sum;
+                        y_b_s[row - n_dx_q_0] = y_B->x[row] - sum;
                         sum = 0;
                     }
-                    sum = 0;
-                    z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n_dx_q_0, n_dx_q_1, n);
+
+                    //partial residual
+                    auto *p = (scalar *) calloc(block_size, sizeof(scalar));
+                    auto *c = (scalar *) calloc(block_size, sizeof(scalar));
+                    auto *z = (scalar *) calloc(block_size, sizeof(scalar));
+                    auto *dd = (index *) calloc(block_size, sizeof(index));
+
+                    scalar newprsd, gamma, beta = INFINITY;
+                    index k = block_size - 1;
+                    index end_1 = n_dx_q_1 - 1;
+                    index row_k = k + n_dx_q_0;
+
+                    //  Initial squared search radius
+                    scalar R_kk = R_B->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
+                    c[block_size - 1] = y_b_s[block_size - 1] / R_kk;
+                    z[block_size - 1] = round(c[block_size - 1]);
+                    gamma = R_kk * (c[block_size - 1] - z[block_size - 1]);
+
+                    //  Determine enumeration direction at level block_size
+                    dd[block_size - 1] = c[block_size - 1] > z[block_size - 1] ? 1 : -1;
+
+                    while (true) {
+                        newprsd = p[k] + gamma * gamma;
+                        if (newprsd < beta) {
+                            if (k != 0) {
+                                k--;
+                                sum = 0;
+                                row_k = k + n_dx_q_0;
+#pragma omp simd reduction(+ : sum)
+                                for (index col = k + 1; col < block_size; col++) {
+                                    sum += R_B->x[(n * row_k) + col + n_dx_q_0 - ((row_k * (row_k + 1)) / 2)] * z[col];
+                                }
+                                R_kk = R_B->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
+
+                                p[k] = newprsd;
+                                c[k] = (y_b_s[k] - sum) / R_kk;
+                                z[k] = round(c[k]);
+                                gamma = R_kk * (c[k] - z[k]);
+
+                                dd[k] = c[k] > z[k] ? 1 : -1;
+
+                            } else {
+                                beta = newprsd;
+                                //Deep Copy of the result
+#pragma omp parallel for
+                                for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
+                                    z_B->x[l] = z[l - n_dx_q_0];
+                                }
+
+                                z[0] += d[0];
+                                gamma = R_B->x[0] * (c[0] - z[0]);
+                                dd[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
+                            }
+                        } else {
+                            if (k == block_size - 1) break;
+                            else {
+                                k++;
+                                z[k] += d[k];
+                                row_k = k + n_dx_q_0;
+                                gamma = R_B->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
+                                dd[k] = dd[k] > 0 ? -dd[k] - 1 : -dd[k] + 1;
+                            }
+                        }
+                    }
+                    free(z);
+                    free(c);
+                    free(dd);
+                    free(p);
+                    //z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n_dx_q_0, n_dx_q_1, n);
                 }
 //                num_iter = j;
             }
