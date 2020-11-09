@@ -139,38 +139,6 @@ namespace sils {
         return R_b_s;
     }
 
-    /**
-     * Block Operation on R_B (compressed array).
-     * @tparam scalar
-     * @tparam index
-     * @param R_B
-     * @param begin: the starting index of the nxn block
-     * @param end: the end index of the nxn block
-     * @param n: the size of R_B.
-     * @return scalarType
-     */
-    template<typename scalar, typename index>
-    inline scalarType<scalar, index> *find_block_Rii_omp(scalarType<scalar, index> *R_B,
-                                                         const index row_begin, const index row_end,
-                                                         const index col_begin, const index col_end,
-                                                         const index block_size) {
-        auto *R_b_s = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-        index size = col_end - col_begin;
-        index R_b_s_size = size * (1 + size) / 2;
-        R_b_s->x = (scalar *) calloc(R_b_s_size, sizeof(scalar));
-        R_b_s->size = R_b_s_size;
-        index counter = 0;
-
-#pragma omp parallel for
-        for (index row = row_begin; row < row_end; row++) {
-            for (index col = row; col < col_end; col++) {
-                R_b_s->x[counter] = R_B->x[(block_size * row) + col - ((row * (row + 1)) / 2)];
-                counter++;
-            }
-        }
-        return R_b_s;
-    }
-
     template<typename scalar, typename index>
     inline scalarType<scalar, index> *block_residual_vector(scalarType<scalar, index> *R_B,
                                                             scalarType<scalar, index> *x,
@@ -322,6 +290,93 @@ namespace sils {
             return round((y_A.x[n - 1 - i] - sum) / R_A.x[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
         }
 
+
+        inline scalarType<scalar, index> *do_block_solve(const index n_dx_q_0,
+                                                         const index n_dx_q_1,
+                                                         scalarType<scalar, index> *z_B) {
+            scalar sum = 0;
+            index dx = n_dx_q_1 - n_dx_q_0;
+
+            auto *p = (scalar *) calloc(dx, sizeof(scalar));
+            auto *c = (scalar *) calloc(dx, sizeof(scalar));
+            auto *z = (scalar *) calloc(dx, sizeof(scalar));
+            auto *dd = (index *) calloc(dx, sizeof(index));
+            auto *yy = (scalar *) calloc(dx, sizeof(scalar));
+
+            //The block operation
+#pragma omp simd reduction(+ : sum)
+            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                //Translating the index from R(matrix) to R_B(compressed array).
+                for (index col = n_dx_q_1; col < n; col++) {
+                    sum += R_A.x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                }
+                yy[row - n_dx_q_0] = y_A.x[row] - sum;
+                sum = 0;
+            }
+
+            //partial residual
+            scalar newprsd, gamma, beta = INFINITY;
+            index k = dx - 1;
+            index end_1 = n_dx_q_1 - 1;
+            index row_k = k + n_dx_q_0;
+
+            //  Initial squared search radius
+            scalar R_kk = R_A.x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
+            c[dx - 1] = yy[dx - 1] / R_kk;
+            z[dx - 1] = round(c[dx - 1]);
+            gamma = R_kk * (c[dx - 1] - z[dx - 1]);
+
+            //  Determine enumeration direction at level block_size
+            dd[dx - 1] = c[dx - 1] > z[dx - 1] ? 1 : -1;
+
+            while (true) {
+                newprsd = p[k] + gamma * gamma;
+                if (newprsd < beta) {
+                    if (k != 0) {
+                        k--;
+                        sum = 0;
+                        row_k = k + n_dx_q_0;
+
+#pragma omp simd reduction(+ : sum)
+                        for (index col = k + 1; col < dx; col++) {
+                            sum += R_A.x[(n * row_k) + col + n_dx_q_0 - ((row_k * (row_k + 1)) / 2)] * z[col];
+                        }
+                        R_kk = R_A.x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
+
+                        p[k] = newprsd;
+                        c[k] = (yy[k] - sum) / R_kk;
+                        z[k] = round(c[k]);
+                        gamma = R_kk * (c[k] - z[k]);
+
+                        dd[k] = c[k] > z[k] ? 1 : -1;
+
+                    } else {
+                        beta = newprsd;
+                        //Deep Copy of the result
+#pragma omp parallel for
+                        for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            z_B->x[l] = z[l - n_dx_q_0];
+                        }
+
+                        z[0] += dd[0];
+                        gamma = R_A.x[0] * (c[0] - z[0]);
+                        dd[0] = dd[0] > 0 ? -dd[0] - 1 : -dd[0] + 1;
+                    }
+                } else {
+                    if (k == dx - 1) break;
+                    else {
+                        k++;
+                        z[k] += dd[k];
+                        row_k = k + n_dx_q_0;
+                        gamma = R_A.x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
+                        dd[k] = dd[k] > 0 ? -dd[k] - 1 : -dd[k] + 1;
+                    }
+                }
+            }
+            return z_B;
+        }
+
+
     public:
         explicit SILS(scalar noise);
 
@@ -343,9 +398,8 @@ namespace sils {
          * @param z_B
          * @return
          */
-        scalarType<scalar, index> *
-        sils_search(scalarType<scalar, index> *R_B,
-                    scalarType<scalar, index> *y_B);
+        scalarType<scalar, index> *sils_search(scalarType<scalar, index> *R_B,
+                                               scalarType<scalar, index> *y_B);
 
         /**
          *
@@ -368,7 +422,7 @@ namespace sils {
         scalarType<scalar, index> *sils_babai_search_serial(scalarType<scalar, index> *z_B);
 
         /**
-         *
+         * @deprecated
          * @param R_B
          * @param y_B
          * @param z_B
