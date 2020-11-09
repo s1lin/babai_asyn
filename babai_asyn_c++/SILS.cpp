@@ -8,6 +8,88 @@
 using namespace std;
 
 namespace sils {
+    template<typename scalar, typename index>
+    scalarType<scalar, index> *sils_search_omp(scalarType<scalar, index> *R_B,
+                                               scalarType<scalar, index> *y_B,
+                                               scalarType<scalar, index> *z_B,
+                                               index begin, index end, index r_block_size) {
+
+        index block_size = y_B->size;
+
+#ifdef VERBOSE
+        cout << "sils_search" << endl;
+        cout << "Block_size:" << block_size << endl;
+#endif
+        //partial residual
+        auto *p = (scalar *) calloc(block_size, sizeof(scalar));
+        auto *c = (scalar *) calloc(block_size, sizeof(scalar));
+        auto *z = (scalar *) calloc(block_size, sizeof(scalar));
+        auto *d = (index *) calloc(block_size, sizeof(index));
+
+        scalar newprsd, gamma, sum = 0, beta = INFINITY;
+        index k = block_size - 1;
+        index end_1 = end - 1;
+        index row_k = k + begin;
+
+        //  Initial squared search radius
+        scalar R_kk = R_B->x[(r_block_size * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
+        c[block_size - 1] = y_B->x[block_size - 1] / R_kk;
+        z[block_size - 1] = round(c[block_size - 1]);
+        gamma = R_kk * (c[block_size - 1] - z[block_size - 1]);
+
+        //  Determine enumeration direction at level block_size
+        d[block_size - 1] = c[block_size - 1] > z[block_size - 1] ? 1 : -1;
+
+        while (true) {
+            newprsd = p[k] + gamma * gamma;
+            if (newprsd < beta) {
+                if (k != 0) {
+                    k--;
+                    sum = 0;
+                    row_k = k + begin;
+#pragma omp simd reduction(+ : sum)
+                    for (index col = k + 1; col < block_size; col++) {
+                        sum += R_B->x[(r_block_size * row_k) + col + begin - ((row_k * (row_k + 1)) / 2)] * z[col];
+                    }
+                    R_kk = R_B->x[(r_block_size * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
+
+                    p[k] = newprsd;
+                    c[k] = (y_B->x[k] - sum) / R_kk;
+                    z[k] = round(c[k]);
+                    gamma = R_kk * (c[k] - z[k]);
+
+                    d[k] = c[k] > z[k] ? 1 : -1;
+
+                } else {
+                    beta = newprsd;
+                    //Deep Copy of the result
+#pragma omp parallel for
+                    for (int l = begin; l < end; l++) {
+                        z_B->x[l] = z[l - begin];
+                    }
+
+                    z[0] += d[0];
+                    gamma = R_B->x[0] * (c[0] - z[0]);
+                    d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
+                }
+            } else {
+                if (k == block_size - 1) break;
+                else {
+                    k++;
+                    z[k] += d[k];
+                    row_k = k + begin;
+                    gamma = R_B->x[(r_block_size * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
+                    d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
+                }
+            }
+        }
+        free(z);
+        free(c);
+        free(d);
+        free(p);
+
+        return z_B;
+    }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     SILS<scalar, index, is_read, is_write, n>::SILS(scalar noise) {
@@ -15,6 +97,7 @@ namespace sils {
         this->x_R.x = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA.x = (scalar *) calloc(n, sizeof(scalar));
         this->y_A.x = (scalar *) calloc(n, sizeof(scalar));
+        this->y.x = (scalar *) calloc(n, sizeof(scalar));
 
         this->init_res = INFINITY;
         this->noise = noise;
@@ -23,6 +106,7 @@ namespace sils {
         this->x_R.size = n;
         this->x_tA.size = n;
         this->y_A.size = n;
+        this->y.size = n;
 
         this->init();
     }
@@ -49,6 +133,7 @@ namespace sils {
         while (getline(f1, row_string)) {
             scalar d = stod(row_string);
             this->y_A.x[i] = d;
+            this->y.x[i] = d;
             i++;
         }
         f1.close();
@@ -177,13 +262,13 @@ namespace sils {
         z->x = (scalar *) calloc(block_size, sizeof(scalar));
         z->size = block_size;
 
-        auto *prsd = (scalar *) calloc(block_size, sizeof(scalar));
+        auto *p = (scalar *) calloc(block_size, sizeof(scalar));
         auto *c = (scalar *) calloc(block_size, sizeof(scalar));
         auto *z_H = (scalar *) calloc(block_size, sizeof(scalar));
         auto *d = (index *) calloc(block_size, sizeof(index));
 
         scalar newprsd, gamma, b_R;
-        index k = block_size - 1, i, j, r_tmp, loop_ub;
+        index k = block_size - 1, i, j;
 
         //  Initial squared search radius
         double beta = INFINITY;
@@ -196,7 +281,7 @@ namespace sils {
         d[block_size - 1] = c[block_size - 1] > z->x[block_size - 1] ? 1 : -1;
 
         while (true) {
-            newprsd = prsd[k] + gamma * gamma;
+            newprsd = p[k] + gamma * gamma;
             if (newprsd < beta) {
                 if (k != 0) {
                     k--;
@@ -206,7 +291,7 @@ namespace sils {
                     }
                     scalar s = y_B->x[k] - sum;
                     scalar R_kk = R_B->x[(block_size * k) + k - ((k * (k + 1)) / 2)];
-                    prsd[k] = newprsd;
+                    p[k] = newprsd;
                     c[k] = s / R_kk;
 
                     z->x[k] = round(c[k]);
@@ -237,12 +322,25 @@ namespace sils {
         free(z_H);
         free(c);
         free(d);
-        free(prsd);
+        free(p);
 
         return z;
     }
 
 
+    /**
+     * @deprecated
+     * @tparam scalar
+     * @tparam index
+     * @tparam is_read
+     * @tparam is_write
+     * @tparam n
+     * @param R_B
+     * @param y_B
+     * @param z_B
+     * @param d
+     * @return
+     */
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     scalarType<scalar, index> *
     SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial_recursive(scalarType<scalar, index> *R_B,
@@ -343,8 +441,8 @@ namespace sils {
         auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
         auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
         auto x_b_s = sils_search(R_ii, y_b_s);
-        for (int l = n - d->x[ds - 1]; l < n; l++) {
-            z_B->x[l] = x_b_s->x[l - n + d->x[ds - 1]];
+        for (int l = n - q; l < n; l++) {
+            z_B->x[l] = x_b_s->x[l - n + q];
         }
 
         //Therefore, skip the last block, start from the second-last block till the first block.
@@ -406,61 +504,39 @@ namespace sils {
         }
 
         //last block:
-        index q = d->x[ds - 1], num_iter = 0;
+        index dx = d->x[ds - 1], num_iter = 0, q, n_dx_q_0, n_dx_q_1;
 
         //the last block
-        auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
-        auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
-        auto x_b_s = sils_search(R_ii, y_b_s);
-
-        for (int l = n - d->x[ds - 1]; l < n; l++) {
-            z_B->x[l] = x_b_s->x[l - n + d->x[ds - 1]];
-        }
+        auto y_b_s = sils::find_block_x<double, int>(y_B, n - dx, n);
+        z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n - dx, n, n);
+        scalar sum = 0;
 
 
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b_s, R_ii, x_b_s, q)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b_s, dx, sum, q, n_dx_q_0, n_dx_q_1)
         {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds - 1; i++) {
-                    index q = ds - 2 - i;
-                    //accumulate the block size
-                    index block_size = d->x[q + 1] - d->x[q];
-                    index counter = n - d->x[q + 1];
-                    scalar sum = 0;
-
+                    n_dx_q_0 = n - d->x[ds - 2 - i];
+                    n_dx_q_1 = n - d->x[ds - 1 - i];
                     //The block operation
-                    for (index row = n - d->x[q]; row < n - d->x[q + 1]; row++) {
+                    y_b_s = sils::find_block_x_omp<double, int>(y_B, n_dx_q_0, n_dx_q_1);
+#pragma omp simd reduction(+ : sum)
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                         //Translating the index from R(matrix) to R_B(compressed array).
-                        for (index col = n - d->x[q + 1]; col < n; col++) {
-                            sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[counter];
-                            counter++;
+                        for (index col = n_dx_q_1; col < n; col++) {
+                            sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                         }
-                        y_B->x[n - d->x[q] + row] -= sum;
+                        y_b_s->x[row - n_dx_q_0] = y_B->x[row] - sum;
                         sum = 0;
-                        counter = n - d->x[q + 1];
                     }
-
-                    y_b_s = sils::find_block_x<double, int>(y_B, n - d->x[q], n - d->x[q + 1]);
-                    R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q], n - d->x[q + 1], n);
-                    x_b_s = sils_search(R_ii, y_b_s);
-
-                    for (int l = n - d->x[q]; l < n - d->x[q + 1]; l++) {
-                        z_B->x[l] = x_b_s->x[l - n + d->x[q]];
-                    }
-//                    cout << "z_B" << endl;
-//                    sils::display_scalarType<double, int>(x_b_s);
+                    sum = 0;
+                    z_B = sils::sils_search_omp<double, int>(R_B, y_b_s, z_B, n_dx_q_0, n_dx_q_1, n);
                 }
 //                num_iter = j;
             }
         }
-//        cout << num_iter << endl;
-//        cout << "z_B" << endl;
-//        sils::display_scalarType<double, int>(z_B);
-        free(R_ii);
         free(y_b_s);
-        free(x_b_s);
-
         return z_B;
     }
 }
