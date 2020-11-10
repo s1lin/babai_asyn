@@ -1,7 +1,7 @@
 #include <cstring>
 #include <algorithm>
 
-#include "SILS.h"
+#include "../include/SILS.h"
 
 #define VERBOSE_LEVEL = 1;
 
@@ -97,7 +97,6 @@ namespace sils {
         this->x_R.x = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA.x = (scalar *) calloc(n, sizeof(scalar));
         this->y_A.x = (scalar *) calloc(n, sizeof(scalar));
-        this->y.x = (scalar *) calloc(n, sizeof(scalar));
 
         this->init_res = INFINITY;
         this->noise = noise;
@@ -106,7 +105,6 @@ namespace sils {
         this->x_R.size = n;
         this->x_tA.size = n;
         this->y_A.size = n;
-        this->y.size = n;
 
         this->init();
     }
@@ -133,7 +131,6 @@ namespace sils {
         while (getline(f1, row_string)) {
             scalar d = stod(row_string);
             this->y_A.x[i] = d;
-            this->y.x[i] = d;
             i++;
         }
         f1.close();

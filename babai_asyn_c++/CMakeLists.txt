@@ -8,7 +8,7 @@ project(sils)
 find_package(OpenMP REQUIRED)
 #find_package(MPI REQUIRED)
 #find_package(OpenCV REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 #find_package (netCDFCxx REQUIRED)
 
@@ -48,12 +48,13 @@ endif ()
 
 #include_directories(${PYTHON_INCLUDE_DIRS})
 #include_directories(${MPI_INCLUDE_PATH})
-include_directories("${EIGEN3_INCLUDE_DIR}")
+#include_directories("${EIGEN3_INCLUDE_DIR}")
 #INCLUDE_DIRECTORIES("${NetCDF_INCLUDE_DIRS}")
 
 
-link_libraries(${PYTHON_LIBRARIES})
-add_executable(sils test.cpp SILS.h SILS.cpp)#matplotlibcpp.h)
+#link_libraries(${PYTHON_LIBRARIES})
+
+add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/SILS.h src/source/SILS.cpp src/example/ils_babai_search.cpp)#matplotlibcpp.h)
 #target_link_libraries(sils Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(sils PUBLIC OpenMP::OpenMP_CXX)

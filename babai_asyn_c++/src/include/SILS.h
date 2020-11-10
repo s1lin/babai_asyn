@@ -263,7 +263,7 @@ namespace sils {
     class SILS {
     public:
         scalar init_res, noise;
-        scalarType<scalar, index> R_A, y_A, y, x_R, x_tA;
+        scalarType<scalar, index> R_A, y_A, x_R, x_tA;
     private:
         /**
          * read the problem from files
@@ -294,14 +294,15 @@ namespace sils {
         inline scalarType<scalar, index> *do_block_solve(const index n_dx_q_0,
                                                          const index n_dx_q_1,
                                                          scalarType<scalar, index> *z_B) {
-            scalar sum = 0;
-            index dx = n_dx_q_1 - n_dx_q_0;
+            scalar sum = 0, newprsd, gamma, beta = INFINITY;
+            index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
+            index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
             auto *p = (scalar *) calloc(dx, sizeof(scalar));
             auto *c = (scalar *) calloc(dx, sizeof(scalar));
             auto *z = (scalar *) calloc(dx, sizeof(scalar));
-            auto *dd = (index *) calloc(dx, sizeof(index));
-            auto *yy = (scalar *) calloc(dx, sizeof(scalar));
+            auto *d = (index *) calloc(dx, sizeof(index));
+            auto *y = (scalar *) calloc(dx, sizeof(scalar));
 
             //The block operation
 #pragma omp simd reduction(+ : sum)
@@ -310,32 +311,27 @@ namespace sils {
                 for (index col = n_dx_q_1; col < n; col++) {
                     sum += R_A.x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                 }
-                yy[row - n_dx_q_0] = y_A.x[row] - sum;
+                y[row - n_dx_q_0] = y_A.x[row] - sum;
                 sum = 0;
             }
 
-            //partial residual
-            scalar newprsd, gamma, beta = INFINITY;
-            index k = dx - 1;
-            index end_1 = n_dx_q_1 - 1;
-            index row_k = k + n_dx_q_0;
-
             //  Initial squared search radius
             scalar R_kk = R_A.x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
-            c[dx - 1] = yy[dx - 1] / R_kk;
-            z[dx - 1] = round(c[dx - 1]);
-            gamma = R_kk * (c[dx - 1] - z[dx - 1]);
+            c[k] = y[k] / R_kk;
+            z[k] = round(c[k]);
+            gamma = R_kk * (c[k] - z[k]);
 
             //  Determine enumeration direction at level block_size
-            dd[dx - 1] = c[dx - 1] > z[dx - 1] ? 1 : -1;
+            d[dx - 1] = c[dx - 1] > z[dx - 1] ? 1 : -1;
 
+            //ILS search process
             while (true) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
                         k--;
+                        row_k--;
                         sum = 0;
-                        row_k = k + n_dx_q_0;
 
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
@@ -344,32 +340,31 @@ namespace sils {
                         R_kk = R_A.x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
 
                         p[k] = newprsd;
-                        c[k] = (yy[k] - sum) / R_kk;
+                        c[k] = (y[k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         gamma = R_kk * (c[k] - z[k]);
 
-                        dd[k] = c[k] > z[k] ? 1 : -1;
+                        d[k] = c[k] > z[k] ? 1 : -1;
 
                     } else {
                         beta = newprsd;
-                        //Deep Copy of the result
 #pragma omp parallel for
                         for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
                             z_B->x[l] = z[l - n_dx_q_0];
                         }
 
-                        z[0] += dd[0];
+                        z[0] += d[0];
                         gamma = R_A.x[0] * (c[0] - z[0]);
-                        dd[0] = dd[0] > 0 ? -dd[0] - 1 : -dd[0] + 1;
+                        d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
                     }
                 } else {
                     if (k == dx - 1) break;
                     else {
                         k++;
-                        z[k] += dd[k];
-                        row_k = k + n_dx_q_0;
+                        row_k++;
+                        z[k] += d[k];
                         gamma = R_A.x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
-                        dd[k] = dd[k] > 0 ? -dd[k] - 1 : -dd[k] + 1;
+                        d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
                     }
                 }
             }
@@ -384,7 +379,6 @@ namespace sils {
             free(R_A.x);
             free(x_R.x);
             free(y_A.x);
-            free(y.x);
             free(x_tA.x);
         }
 
