@@ -1,5 +1,6 @@
-SILS
+CILS
 =======
+(C++ Solver for Integer Least Square)
 
 Building
 --------

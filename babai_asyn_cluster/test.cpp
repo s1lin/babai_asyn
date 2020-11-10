@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const int n = 4096;
+const int n = 16384;
 //void test_ils_search() {
 //    std::cout << "Init, size: " << n << std::endl;
 //

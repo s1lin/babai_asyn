@@ -76,7 +76,7 @@ void plot_run() {
     if (file.is_open()) {
         sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
 
-        for (index size = 8; size <= 32; size *= 2) {
+        for (index size = 8; size <= 16; size *= 2) {
             std::cout << "Init, size: " << size << std::endl;
             vector<index> d(n / size, size);
             sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
@@ -121,10 +121,10 @@ void plot_run() {
             std::cout << "OpenMP" << std::endl;
             index l = 2;
             for (index i = 0; i < 10; i++) {
-                for (index n_proc = 80; n_proc >= 2; n_proc /= 2) {
+                for (index n_proc = 40; n_proc >= 2; n_proc /= 2) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                    index iter = size == 32 ? 8 : 11;
+                    index iter = 15 - i;
                     start = omp_get_wtime();
                     z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                     omp_time = omp_get_wtime() - start;
