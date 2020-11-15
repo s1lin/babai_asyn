@@ -4,6 +4,12 @@ classdef sils_class
         A, R, x0, x0_R, y, n, k, SNR, z, init_res, sigma;
     end
 
+    methods(Static)
+        function auto_gen()
+            for k = 1:3
+                for SNR = 15:10:45
+        end
+    end
     methods
         %Constructor
         function sils = sils_class(k, m, SNR)
@@ -42,14 +48,14 @@ classdef sils_class
                 end
             end
             filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2ste(sils.k),'.nc');
-            nccreate(filename, 'R', 'Dimensions', {'x',sils.n,'y',sils.n});
-            nccreate(filename, 'x', 'Dimensions', {'x',sils.n});
-            nccreate(append('../data/', int2str(sils.n), '.nc'), 'x0_R', 'Dimensions', {'x',sils.n});
-            nccreate(append('../data/', int2str(sils.n), '.nc'), 'y', 'Dimensions', {'x',sils.n});
-            ncwrite(append('../data/', int2str(sils.n), '.nc'),'R',sils.R);
-            ncwrite(append('../data/', int2str(sils.n), '.nc'),'x',sils.x0);
-            ncwrite(append('../data/', int2str(sils.n), '.nc'),'x0_R',sils.x0_R);
-            ncwrite(append('../data/', int2str(sils.n), '.nc'),'y',sils.y);
+            nccreate(filename, 'R_A', 'Dimensions', {'y',index});
+            nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
+            nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
+            nccreate(filename, 'x_R', 'Dimensions', {'x',sils.n});
+            ncwrite(filename,'R_A',R_A);
+            ncwrite(filename,'x_t',sils.x0);
+            ncwrite(filename,'x_R',x_R);
+            ncwrite(filename,'y',sils.y);
         end
         
         function sils = write_to_files(sils)

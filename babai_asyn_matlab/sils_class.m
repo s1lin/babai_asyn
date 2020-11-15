@@ -1,7 +1,31 @@
 classdef sils_class
 
 properties
-        A, R, x0, y, n, k, SNR, z, init_res, sigma;
+        A, R, x0, x0_R, y, n, k, SNR, z, init_res, sigma;
+
+end
+
+methods(Static)
+
+function auto_gen()
+
+for
+k = 1
+:3
+for
+SNR = 15
+:10:45
+for
+m = 12
+:15
+s = sils_class(k, m, SNR);
+s.
+write_to_nc;
+end
+        end
+end
+        end
+
 end
 
         methods
@@ -21,6 +45,8 @@ sils.
 A = randn(sils.n, sils.n);
 sils.
 R = triu(qr(sils.A));
+sils.
+x0_R = zeros(sils.n, 1);
 sils.
 x0 = randi([0, 2 ^ k - 1], sils.n, 1);
 sils.
@@ -46,46 +72,51 @@ end
 
         function
 sils = write_to_nc(sils)
-       [z_R, res, avg] = sils_seach_round(sils);
+       [x_R, res, avg] = sils_seach_round(sils);
 disp([res, avg]);
 R_A = zeros(sils.n * (sils.n + 1) / 2, 1);
 index = 1;
+
 for
 i = 1
 :sils.n
+
 for
 j = i
 :sils.n
+
 if sils.
 R(i, j
-)~=0
+) ~= 0
 R_A(index) = sils.R(i, j);
 index = index + 1;
 end
+
         end
+
 end
+
         filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_', int2str(sils.k), '.nc');
 nccreate(filename,
 'R_A', 'Dimensions', {
-'x',index});
+'y', index});
 nccreate(filename,
 'x_t', 'Dimensions', {
-'y',sils.n});
-nccreate(filename,
-'x_R', 'Dimensions', {
-'y',sils.n});
+'x', sils.n});
 nccreate(filename,
 'y', 'Dimensions', {
-'y',sils.n});
-
+'x', sils.n});
+nccreate(filename,
+'x_R', 'Dimensions', {
+'x', sils.n});
 ncwrite(filename,
-'R_A',R_A);
+'R_A', R_A);
 ncwrite(filename,
-'x_t',sils.x0);
+'x_t', sils.x0);
 ncwrite(filename,
-'x_R',z_R);
+'x_R', x_R);
 ncwrite(filename,
-'y',sils.y);
+'y', sils.y);
 end
 
         function
@@ -94,21 +125,26 @@ sils = write_to_files(sils)
 disp([res, avg]);
 R_A = zeros(sils.n * (sils.n + 1) / 2, 1);
 index = 1;
+
 for
 i = 1
 :sils.n
+
 for
 j = i
 :sils.n
+
 if sils.
 R(i, j
-)~=0
+) ~= 0
 R_A(index) = sils.R(i, j);
 index = index + 1;
 end
+
         end
 
 end
+
 writematrix(sils
 
 .R, append('../data/R_',
@@ -150,6 +186,7 @@ find_real_x0(sils);
 end
 
         tStart = tic;
+
 for
 j = sils.n
 :-1:1
@@ -161,6 +198,7 @@ R(j, j
 );
 z_B(j) = round(z_B(j));
 end
+
         tEnd = toc(tStart);
 res = norm(sils.y - sils.R * z_B);
 end
@@ -169,24 +207,26 @@ end
 round the
 real solution
 .
-function [z_R, res, avg] =
+function [x_R, res, avg] =
 sils_seach_round(sils)
-z_R = zeros(sils.n, 1);
 tStart = tic;
+
 for
 j = sils.n
 :-1:1
-z_R(j) = (sils.y(j) - sils.R(j, j + 1
-:sils.n) *
-z_R(j
+sils.
+x0_R(j) = (sils.y(j) - sils.R(j, j + 1
+:sils.n) * sils.
+x0_R(j
 + 1:sils.n)) / sils.
 R(j, j
 );
 end
+
         tEnd = toc(tStart);
-z_R = round(z_R);
+x_R = round(sils.x0_R);
 avg = tEnd;
-res = norm(sils.x0 - z_R);
+res = norm(sils.x0 - x_R);
 end
 
 %Search -
@@ -204,6 +244,7 @@ vector d
 size(d);
 %1 dimension
 if ds == 1
+
 if d == 1
 x = round(yb / Rb);
 return
@@ -228,6 +269,7 @@ yb(q
 yb2 = yb(1
 :q) - Rb(1:q, q + 1:l) *
 xx1;
+
 if q == 1%
 Babai
         xx2 = round(yb2 / Rb(1, 1));
@@ -236,14 +278,16 @@ Rb(1:q, 1:q)
 xx2 = sils_search(Rb(1
 :q, 1:q), yb2, 1);
 end
+
         x = [xx2;
 xx1];
 end
+
         end
+
 res = norm(yb - Rb * x);
 
 end
-
 
         end
 
