@@ -3,6 +3,7 @@
 //
 #include "../source/SILS.cpp"
 
+
 template<typename scalar, typename index, index n>
 void ils_block_search() {
 
@@ -32,9 +33,9 @@ void ils_block_search() {
             z_B = *bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, &d_s);
             end_time = omp_get_wtime() - start;
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", res, size, end_time);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, end_time);
 
-            for (index n_proc = 16; n_proc >= 4; n_proc /= 2) {
+            for (index n_proc = 12; n_proc >= 3; n_proc /= 2) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
                 index iter = 11;
@@ -43,9 +44,9 @@ void ils_block_search() {
                 end_time = omp_get_wtime() - start;
 //                res = sils::norm<scalar, index, n>(&bsa.x_tA, &z_B);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
-                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %fs\n", res,
-                       n_proc, size, iter,
-                       end_time);
+                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %fs\n",
+                       n_proc,
+                       size, iter, res, end_time);
             }
 
             free(z_B.x);
