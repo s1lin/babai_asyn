@@ -38,8 +38,8 @@ const int n = 4096;
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     //plot_run();
-
-    plot_run<double, int, n>();
+    ils_block_search<double, int, n>();
+    //plot_run<double, int, n>();
 
     //test_ils_search();
 

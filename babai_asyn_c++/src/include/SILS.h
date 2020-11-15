@@ -75,6 +75,26 @@ namespace sils {
     }
 
     /**
+     * Return the result of norm2(y-R*x).
+     * @tparam scalar
+     * @tparam index
+     * @tparam n
+     * @param R
+     * @param y
+     * @param x
+     * @return residual
+     */
+    template<typename scalar, typename index, index n>
+    inline scalar norm(scalarType<scalar, index> *x,
+                       scalarType<scalar, index> *y) {
+        scalar res = 0;
+        for (index i = 0; i < n; i++) {
+            res += (y->x[i] - x->x[i]) * (y->x[i] - x->x[i]);
+        }
+        return std::sqrt(res);
+    }
+
+    /**
      * Simple function for displaying the struct scalarType
      * @tparam scalar
      * @tparam index

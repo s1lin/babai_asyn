@@ -16,7 +16,7 @@ void ils_block_search() {
 
     sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
 
-    for (index size = 8; size <= 32; size *= 2) {
+    for (index size = 8; size <= 16; size *= 2) {
         //Initialize the block vector
         vector<index> d(n / size, size);
         sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
@@ -34,13 +34,14 @@ void ils_block_search() {
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", res, size, end_time);
 
-            for (index n_proc = 80; n_proc >= 2; n_proc /= 2) {
+            for (index n_proc = 16; n_proc >= 4; n_proc /= 2) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                index iter = size == 32 ? 8 : 11;
+                index iter = 11;
                 start = omp_get_wtime();
                 z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                 end_time = omp_get_wtime() - start;
+//                res = sils::norm<scalar, index, n>(&bsa.x_tA, &z_B);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
                 printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %fs\n", res,
                        n_proc, size, iter,
