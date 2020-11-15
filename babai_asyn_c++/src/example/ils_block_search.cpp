@@ -17,7 +17,7 @@ void ils_block_search() {
 
     sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
 
-    for (index size = 8; size <= 16; size *= 2) {
+    for (index size = 8; size <= 32; size *= 2) {
         //Initialize the block vector
         vector<index> d(n / size, size);
         sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
@@ -38,7 +38,7 @@ void ils_block_search() {
             for (index n_proc = 12; n_proc >= 3; n_proc /= 2) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                index iter = 11;
+                index iter = 10;
                 start = omp_get_wtime();
                 z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                 end_time = omp_get_wtime() - start;

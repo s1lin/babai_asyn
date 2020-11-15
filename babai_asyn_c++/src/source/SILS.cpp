@@ -33,7 +33,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::read() {
-        string filename = "../../data/" + to_string(n) + "_30_3.nc";
+        string filename = "../../data/" + to_string(n) + "_40_3.nc";
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
 
