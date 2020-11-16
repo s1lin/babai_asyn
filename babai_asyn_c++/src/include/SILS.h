@@ -293,7 +293,8 @@ namespace sils {
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     class SILS {
     public:
-        scalar init_res, noise;
+        index qam, snr;
+        scalar init_res;
         scalarType<scalar, index> R_A, y_A, x_R, x_tA;
     private:
         /**
@@ -404,7 +405,7 @@ namespace sils {
 
 
     public:
-        explicit SILS(scalar noise);
+        explicit SILS(index qam, index snr);
 
         ~SILS() {
             free(R_A.x);

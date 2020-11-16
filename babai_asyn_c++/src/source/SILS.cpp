@@ -14,14 +14,15 @@ using namespace std;
 namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    SILS<scalar, index, is_read, is_write, n>::SILS(scalar noise) {
+    SILS<scalar, index, is_read, is_write, n>::SILS(index qam, index snr) {
         this->R_A.x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
         this->x_R.x = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA.x = (scalar *) calloc(n, sizeof(scalar));
         this->y_A.x = (scalar *) calloc(n, sizeof(scalar));
 
         this->init_res = INFINITY;
-        this->noise = noise;
+        this->qam = qam;
+        this->snr = snr;
 
         this->R_A.size = n * (n + 1) / 2;
         this->x_R.size = n;
@@ -33,7 +34,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::read() {
-        string filename = "../../data/" + to_string(n) + "_40_3.nc";
+        string filename = "../../data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
 

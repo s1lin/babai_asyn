@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const int n = 32768;
+const int n = 4096;
 //void test_ils_search() {
 //    std::cout << "Init, size: " << n << std::endl;
 //
@@ -38,7 +38,13 @@ const int n = 32768;
 int main() {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     //plot_run();
-    ils_block_search<double, int, n>();
+    for (int k = 1; k<=3; k++){
+        for(int SNR = 15; SNR<=45; SNR+= 10){
+            plot_run<double, int, n>(k, SNR);
+        }
+    }
+
+
     //plot_run<double, int, n>();
 
     //test_ils_search();

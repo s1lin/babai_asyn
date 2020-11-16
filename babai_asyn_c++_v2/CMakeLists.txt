@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 
 # Variables that can/must be passed to the cmake command:
 #
-# - EIGEN3_ROOT needs to be set to the path of the Eigen top-level directory.
 # - -DWITH_PETSC=1 to compile with PETSc support; in which case
 #     PETSC_LIB and PETSC_ARCH variables are required.
 #     Note that in this case, MPI is required too.
@@ -14,7 +13,6 @@ cmake_minimum_required(VERSION 3.0)
 # - -DZEN=1 to compiler for AMD Zen with AVX 2.0.
 # - -DSKYLAKE=1 to compile with AVX-512 instructions for Xeon Skylake CPUs.
 # - -DKNL=1 to compile for Xeon Phi Knights Landing
-# - -DMICKNC=1 to compile for Xeon Phi Knights Corner (deprecated).
 # - -DPROFILE=1 for profiling with gprof.
 # - -DSLURM=1 for running the automated tests on a system managed by Slurm
 # - -DSLURMTESTTHREADS=<n> for configuring multi-threaded tests to use n threads in case of Slurm

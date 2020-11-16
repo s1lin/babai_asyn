@@ -3,105 +3,28 @@
 
 #include "../include/SILS.h"
 
+#define FILE_NAME "simple_xy.nc"
+#define ERRCODE 2
+#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
+
 #define VERBOSE_LEVEL = 1;
 
 using namespace std;
 
 namespace sils {
-    template<typename scalar, typename index>
-    scalarType<scalar, index> *sils_search_omp(scalarType<scalar, index> *R_B,
-                                               scalarType<scalar, index> *y_B,
-                                               scalarType<scalar, index> *z_B,
-                                               index begin, index end, index r_block_size) {
-
-        index block_size = y_B->size;
-
-#ifdef VERBOSE
-        cout << "sils_search" << endl;
-        cout << "Block_size:" << block_size << endl;
-#endif
-        //partial residual
-        auto *p = (scalar *) calloc(block_size, sizeof(scalar));
-        auto *c = (scalar *) calloc(block_size, sizeof(scalar));
-        auto *z = (scalar *) calloc(block_size, sizeof(scalar));
-        auto *d = (index *) calloc(block_size, sizeof(index));
-
-        scalar newprsd, gamma, sum = 0, beta = INFINITY;
-        index k = block_size - 1;
-        index end_1 = end - 1;
-        index row_k = k + begin;
-
-        //  Initial squared search radius
-        scalar R_kk = R_B->x[(r_block_size * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
-        c[block_size - 1] = y_B->x[block_size - 1] / R_kk;
-        z[block_size - 1] = round(c[block_size - 1]);
-        gamma = R_kk * (c[block_size - 1] - z[block_size - 1]);
-
-        //  Determine enumeration direction at level block_size
-        d[block_size - 1] = c[block_size - 1] > z[block_size - 1] ? 1 : -1;
-
-        while (true) {
-            newprsd = p[k] + gamma * gamma;
-            if (newprsd < beta) {
-                if (k != 0) {
-                    k--;
-                    sum = 0;
-                    row_k = k + begin;
-//#pragma omp simd reduction(+ : sum)
-                    for (index col = k + 1; col < block_size; col++) {
-                        sum += R_B->x[(r_block_size * row_k) + col + begin - ((row_k * (row_k + 1)) / 2)] * z[col];
-                    }
-                    R_kk = R_B->x[(r_block_size * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
-
-                    p[k] = newprsd;
-                    c[k] = (y_B->x[k] - sum) / R_kk;
-                    z[k] = round(c[k]);
-                    gamma = R_kk * (c[k] - z[k]);
-
-                    d[k] = c[k] > z[k] ? 1 : -1;
-
-                } else {
-                    beta = newprsd;
-                    //Deep Copy of the result
-//#pragma omp parallel for
-                    for (int l = begin; l < end; l++) {
-                        z_B->x[l] = z[l - begin];
-                    }
-
-                    z[0] += d[0];
-                    gamma = R_B->x[0] * (c[0] - z[0]);
-                    d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
-                }
-            } else {
-                if (k == block_size - 1) break;
-                else {
-                    k++;
-                    z[k] += d[k];
-                    row_k = k + begin;
-                    gamma = R_B->x[(r_block_size * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
-                    d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
-                }
-            }
-        }
-        free(z);
-        free(c);
-        free(d);
-        free(p);
-
-        return z_B;
-    }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    SILS<scalar, index, is_read, is_write, n>::SILS(scalar noise) {
-        this->R_A.x = (scalar *) calloc(n * n, sizeof(scalar));
+    SILS<scalar, index, is_read, is_write, n>::SILS(index qam, index snr) {
+        this->R_A.x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
         this->x_R.x = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA.x = (scalar *) calloc(n, sizeof(scalar));
         this->y_A.x = (scalar *) calloc(n, sizeof(scalar));
 
         this->init_res = INFINITY;
-        this->noise = noise;
+        this->qam = qam;
+        this->snr = snr;
 
-        this->R_A.size = n * n;
+        this->R_A.size = n * (n + 1) / 2;
         this->x_R.size = n;
         this->x_tA.size = n;
         this->y_A.size = n;
@@ -111,46 +34,35 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::read() {
-        string fy = "data/y_" + to_string(n) + ".csv";
-        string fx = "data/x_" + to_string(n) + ".csv";
-        string fR = "data/R_A_" + to_string(n) + ".csv";
-        string fxR ="data/x_R_" + to_string(n) + ".csv";
+        string filename = "data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
+        index ncid, varid, retval;
+        if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
 
-        index i = 0;
-        ifstream f(fR), f1(fy), f2(fx), f3(fxR);
-        string row_string, entry;
-        while (getline(f, row_string)) {
-            scalar d = stod(row_string);
-            this->R_A.x[i] = d;
-            i++;
-        }
-        this->R_A.size = i;
-        f.close();
+        /* Get the varid of the data variable, based on its name. */
+        if ((retval = nc_inq_varid(ncid, "x_t", &varid))) ERR(retval);
 
-        i = 0;
-        while (getline(f1, row_string)) {
-            scalar d = stod(row_string);
-            this->y_A.x[i] = d;
-            i++;
-        }
-        f1.close();
+        /* Read the data. */
+        if ((retval = nc_get_var_double(ncid, varid, &x_tA.x[0]))) ERR(retval);
 
-        i = 0;
-        while (getline(f2, row_string)) {
-            scalar d = stod(row_string);
-            this->x_tA.x[i] = d;
-            i++;
-        }
-        f2.close();
+        /* Get the varid of the data variable, based on its name. */
+        if ((retval = nc_inq_varid(ncid, "y", &varid))) ERR(retval);
 
-        i = 0;
-        while (getline(f3, row_string)) {
-            scalar d = stod(row_string);
-            this->x_R.x[i] = d;
-            i++;
-        }
-        f3.close();
+        /* Read the data. */
+        if ((retval = nc_get_var_double(ncid, varid, &y_A.x[0]))) ERR(retval);
+
+        /* Get the varid of the data variable, based on its name. */
+        if ((retval = nc_inq_varid(ncid, "x_R", &varid))) ERR(retval);
+
+        /* Read the data. */
+        if ((retval = nc_get_var_double(ncid, varid, &x_R.x[0]))) ERR(retval);
+
+        /* Get the varid of the data variable, based on its name. */
+        if ((retval = nc_inq_varid(ncid, "R_A", &varid))) ERR(retval);
+
+        /* Read the data. */
+        if ((retval = nc_get_var_double(ncid, varid, &R_A.x[0]))) ERR(retval);
     }
+
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     void SILS<scalar, index, is_read, is_write, n>::write() {
@@ -444,7 +356,7 @@ namespace sils {
 
         //Therefore, skip the last block, start from the second-last block till the first block.
         for (index i = 0; i < ds - 1; i++) {
-            index q = ds - 2 - i;
+            q = ds - 2 - i;
             //accumulate the block size
             y_b_s = sils::find_block_x<double, int>(y_B, n - d->x[q], n - d->x[q + 1]);
             x_b_s = sils::find_block_x<double, int>(z_B, n - d->x[q + 1], n);

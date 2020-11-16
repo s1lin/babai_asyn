@@ -1,19 +1,19 @@
 ﻿/** \file
  * \brief Computation of integer least square problem
  * \author Shilei Lin
- * This file is part of SILS.
- *   SILS is free software: you can redistribute it and/or modify
+ * This file is part of CILS.
+ *   CILS is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
  *
- *   SILS is distributed in the hope that it will be useful,
+ *   CILS is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with SILS.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef SILS_H
@@ -30,6 +30,7 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
+#include <netcdf.h>
 
 using namespace std;
 
@@ -70,6 +71,26 @@ namespace sils {
                 sum += x->x[j] * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
             }
             res += (y->x[i] - sum) * (y->x[i] - sum);
+        }
+        return std::sqrt(res);
+    }
+
+    /**
+     * Return the result of norm2(y-R*x).
+     * @tparam scalar
+     * @tparam index
+     * @tparam n
+     * @param R
+     * @param y
+     * @param x
+     * @return residual
+     */
+    template<typename scalar, typename index, index n>
+    inline scalar norm(scalarType<scalar, index> *x,
+                       scalarType<scalar, index> *y) {
+        scalar res = 0;
+        for (index i = 0; i < n; i++) {
+            res += (y->x[i] - x->x[i]) * (y->x[i] - x->x[i]);
         }
         return std::sqrt(res);
     }
@@ -139,6 +160,19 @@ namespace sils {
         return R_b_s;
     }
 
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
+     * @param R_B
+     * @param x
+     * @param y
+     * @param row_begin
+     * @param row_end
+     * @param col_begin
+     * @param col_end
+     * @return
+     */
     template<typename scalar, typename index>
     inline scalarType<scalar, index> *block_residual_vector(scalarType<scalar, index> *R_B,
                                                             scalarType<scalar, index> *x,
@@ -160,10 +194,7 @@ namespace sils {
                 i = (col_end * row) + col - ((row * (row + 1)) / 2);
                 sum += R_B->x[i] * x->x[counter];
                 counter++;
-//                cout<<sum<<endl;
-//                cout<<R_B->x[i]<<' ';
             }
-//            cout<<endl;
             y_b_s->x[prev_i] = y->x[row - row_begin] - sum;
             prev_i++;
             sum = counter = 0;
@@ -262,7 +293,8 @@ namespace sils {
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     class SILS {
     public:
-        scalar init_res, noise;
+        index qam, snr;
+        scalar init_res;
         scalarType<scalar, index> R_A, y_A, x_R, x_tA;
     private:
         /**
@@ -373,7 +405,7 @@ namespace sils {
 
 
     public:
-        explicit SILS(scalar noise);
+        explicit SILS(index qam, index snr);
 
         ~SILS() {
             free(R_A.x);
