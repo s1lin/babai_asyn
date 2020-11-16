@@ -126,7 +126,7 @@ void plot_run(index k, index SNR) {
                 for (index n_proc = 40; n_proc >= 2; n_proc /= 2) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                    index iter = size == 32 ? 8 : 11;
+                    index iter = 12;
                     start = omp_get_wtime();
                     z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                     omp_time = omp_get_wtime() - start;
@@ -139,7 +139,7 @@ void plot_run(index k, index SNR) {
                 l = 2;
             }
             l = 2;
-            for (index n_proc = 80; n_proc >= 2; n_proc /= 2) {
+            for (index n_proc = 40; n_proc >= 2; n_proc /= 2) {
                 file << size << "," << n_proc << ","
                      << res[l] / 10 << ","
                      << tim[l] / 10 << ","

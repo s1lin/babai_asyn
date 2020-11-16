@@ -126,7 +126,7 @@ void plot_run(index k, index SNR) {
                 for (index n_proc = 40; n_proc >= 2; n_proc /= 2) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                    index iter = size == 32 ? 8 : 11;
+                    index iter = 12;
                     start = omp_get_wtime();
                     z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                     omp_time = omp_get_wtime() - start;
@@ -139,7 +139,7 @@ void plot_run(index k, index SNR) {
                 l = 2;
             }
             l = 2;
-            for (index n_proc = 80; n_proc >= 2; n_proc /= 2) {
+            for (index n_proc = 40; n_proc >= 2; n_proc /= 2) {
                 file << size << "," << n_proc << ","
                      << res[l] / 10 << ","
                      << tim[l] / 10 << ","
@@ -159,4 +159,28 @@ void plot_run(index k, index SNR) {
     }
     file.close();
     printf("-------------------------------------------\n");
+}
+
+template<typename scalar, typename index, index n>
+void test_ils_search() {
+    std::cout << "Init, size: " << n << std::endl;
+
+    //bool read_r, bool read_ra, bool read_xy
+    double start = omp_get_wtime();
+    sils::SILS<double, int, true, false, n> bsa(0.1);
+    double end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %f seconds\n", end_time);
+
+    start = omp_get_wtime();
+    auto z_B = bsa.sils_search(&bsa.R_A, &bsa.y_A);
+    end_time = omp_get_wtime() - start;
+    auto res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, z_B);
+    printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
+
+    sils::scalarType<double, int> z_BS = {(double *) calloc(n, sizeof(double)), n};
+    start = omp_get_wtime();
+    z_BS = *bsa.sils_babai_search_serial(&z_BS);
+    end_time = omp_get_wtime() - start;
+    res = sils::find_residual<double, int, n>(&bsa.R_A, &bsa.y_A, &z_BS);
+    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %fs\n", res, end_time);
 }
