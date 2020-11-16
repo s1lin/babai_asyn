@@ -1,19 +1,21 @@
 #include "../source/SILS.cpp"
 
 template<typename scalar, typename index, index n>
-void ils_block_search() {
+void ils_block_search(index k, index SNR) {
 
     std::cout << "Init, size: " << n << std::endl;
+    std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
+    std::cout << "Init, SNR: " << SNR << std::endl;
 
     scalar start = omp_get_wtime();
-    sils::SILS<scalar, index, true, false, n> bsa(0.1);
+    sils::SILS<scalar, index, true, false, n> bsa(k, SNR);
     scalar end_time = omp_get_wtime() - start;
     printf("Finish Init, time: %f seconds\n", end_time);
-
+    printf("-------------------------------------------\n");
 
     sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
 
-    for (index size = 8; size <= 32; size *= 2) {
+    for (index size = 32; size <= 32; size *= 2) {
         //Initialize the block vector
         vector<index> d(n / size, size);
         sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
@@ -22,7 +24,7 @@ void ils_block_search() {
         }
 
         for (index i = 0; i < 10; i++) {
-
+            printf("++++++++++++++++++++++++++++++++++++++\n");
             free(z_B.x);
             z_B.x = (scalar *) calloc(n, sizeof(scalar));
             start = omp_get_wtime();
@@ -31,9 +33,12 @@ void ils_block_search() {
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, end_time);
 
-            for (index n_proc = 12; n_proc >= 3; n_proc /= 2) {
+            for (index n_proc = 3; n_proc <= 12; n_proc *= 2) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
+                for (index t = 0; t < n; t++) {
+                    z_B.x[t] = pow(2, k) / 2;
+                }
                 index iter = 10;
                 start = omp_get_wtime();
                 z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
@@ -125,10 +130,10 @@ void plot_run(index k, index SNR) {
             index l = 2;
             scalar min_res = INFINITY;
             for (index i = 0; i < 10; i++) {
-                for (index n_proc = 2; n_proc <= 64; n_proc *= 2) {
+                for (index n_proc = 4; n_proc <= 64; n_proc *= 2) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                    index iter = 16;
+                    index iter = 12;
                     start = omp_get_wtime();
                     z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
                     omp_time = omp_get_wtime() - start;
@@ -144,7 +149,7 @@ void plot_run(index k, index SNR) {
             }
             cout << "min_res:" << min_res << endl;
             l = 2;
-            for (index n_proc = 2; n_proc <= 64; n_proc *= 2) {
+            for (index n_proc = 4; n_proc <= 64; n_proc *= 2) {
                 file << size << "," << n_proc << ","
                      << res[l] / 10 << ","
                      << tim[l] / 10 << ","

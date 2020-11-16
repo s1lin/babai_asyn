@@ -339,8 +339,7 @@ namespace sils {
             //The block operation
 #pragma omp simd reduction(+ : sum)
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                //Translating the index from R(matrix) to R_B(compressed array).
-                for (index col = n_dx_q_1; col < n; col++) {
+                for (index col = n_dx_q_1; col < n; col++) {//Translating the index from R(matrix) to R_B(compressed array).
                     sum += R_A.x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                 }
                 y[row - n_dx_q_0] = y_A.x[row] - sum;
@@ -361,7 +360,9 @@ namespace sils {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
+#pragma omp atomic
                         k--;
+#pragma omp atomic
                         row_k--;
                         sum = 0;
 
@@ -400,6 +401,11 @@ namespace sils {
                     }
                 }
             }
+//            free(p);
+//            free(c);
+//            free(z);
+//            free(d);
+//            free(y);
             return z_B;
         }
 

@@ -3,6 +3,7 @@
 
 #include "../include/SILS.h"
 
+#define FILE_NAME "simple_xy.nc"
 #define ERRCODE 2
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
 
@@ -414,7 +415,7 @@ namespace sils {
 #pragma omp parallel default(shared) num_threads(n_proc)
         {
             for (index j = 0; j < nswp; j++) {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic, dx) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i == ds - 1)
                         z_B = do_block_solve(n - dx, n, z_B);
