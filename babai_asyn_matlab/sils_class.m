@@ -20,14 +20,14 @@ m = 12
 :15
 s = sils_class(k, m, SNR);
 s.
-write_to_nc;
+
+write_to_nc();
+
 end
         end
 end
         end
-
 end
-
         methods
 %
 Constructor
@@ -76,47 +76,41 @@ sils = write_to_nc(sils)
 disp([res, avg]);
 R_A = zeros(sils.n * (sils.n + 1) / 2, 1);
 index = 1;
-
 for
 i = 1
 :sils.n
-
 for
 j = i
 :sils.n
-
 if sils.
 R(i, j
-) ~= 0
+)~=0
 R_A(index) = sils.R(i, j);
 index = index + 1;
 end
-
         end
-
 end
-
-        filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_', int2str(sils.k), '.nc');
+        filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_', int2ste(sils.k), '.nc');
 nccreate(filename,
 'R_A', 'Dimensions', {
-'y', index});
+'y',index});
 nccreate(filename,
 'x_t', 'Dimensions', {
-'x', sils.n});
+'x',sils.n});
 nccreate(filename,
 'y', 'Dimensions', {
-'x', sils.n});
+'x',sils.n});
 nccreate(filename,
 'x_R', 'Dimensions', {
-'x', sils.n});
+'x',sils.n});
 ncwrite(filename,
-'R_A', R_A);
+'R_A',R_A);
 ncwrite(filename,
-'x_t', sils.x0);
+'x_t',sils.x0);
 ncwrite(filename,
-'x_R', x_R);
+'x_R',x_R);
 ncwrite(filename,
-'y', sils.y);
+'y',sils.y);
 end
 
         function
@@ -125,26 +119,21 @@ sils = write_to_files(sils)
 disp([res, avg]);
 R_A = zeros(sils.n * (sils.n + 1) / 2, 1);
 index = 1;
-
 for
 i = 1
 :sils.n
-
 for
 j = i
 :sils.n
-
 if sils.
 R(i, j
-) ~= 0
+)~=0
 R_A(index) = sils.R(i, j);
 index = index + 1;
 end
-
         end
 
 end
-
 writematrix(sils
 
 .R, append('../data/R_',
@@ -186,7 +175,6 @@ find_real_x0(sils);
 end
 
         tStart = tic;
-
 for
 j = sils.n
 :-1:1
@@ -198,7 +186,6 @@ R(j, j
 );
 z_B(j) = round(z_B(j));
 end
-
         tEnd = toc(tStart);
 res = norm(sils.y - sils.R * z_B);
 end
@@ -210,7 +197,6 @@ real solution
 function [x_R, res, avg] =
 sils_seach_round(sils)
 tStart = tic;
-
 for
 j = sils.n
 :-1:1
@@ -222,7 +208,6 @@ x0_R(j
 R(j, j
 );
 end
-
         tEnd = toc(tStart);
 x_R = round(sils.x0_R);
 avg = tEnd;
@@ -244,7 +229,6 @@ vector d
 size(d);
 %1 dimension
 if ds == 1
-
 if d == 1
 x = round(yb / Rb);
 return
@@ -269,7 +253,6 @@ yb(q
 yb2 = yb(1
 :q) - Rb(1:q, q + 1:l) *
 xx1;
-
 if q == 1%
 Babai
         xx2 = round(yb2 / Rb(1, 1));
@@ -278,16 +261,14 @@ Rb(1:q, 1:q)
 xx2 = sils_search(Rb(1
 :q, 1:q), yb2, 1);
 end
-
         x = [xx2;
 xx1];
 end
-
         end
-
 res = norm(yb - Rb * x);
 
 end
+
 
         end
 
