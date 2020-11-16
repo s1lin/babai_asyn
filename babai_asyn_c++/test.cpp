@@ -17,9 +17,12 @@ int main() {
     //plot_run();
     for (int k = 1; k <= 3; k++) {
         for (int SNR = 15; SNR <= 15; SNR += 10) {
-            plot_run<double, int, n>(k, SNR);
+            //plot_run<double, int, n>(k, SNR);
+            ils_block_search<double, int, n>(k, SNR);
         }
     }
+
+
     return 0;
 }
 
