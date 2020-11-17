@@ -130,7 +130,7 @@ void plot_run(index k, index SNR) {
             index l = 2;
             scalar min_res = INFINITY;
             for (index i = 0; i < 10; i++) {
-                for (index n_proc = 4; n_proc <= 64; n_proc *= 2) {
+                for (index n_proc = 3; n_proc <= 48; n_proc *= 2) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     index iter = 12;
@@ -149,7 +149,7 @@ void plot_run(index k, index SNR) {
             }
             cout << "min_res:" << min_res << endl;
             l = 2;
-            for (index n_proc = 4; n_proc <= 64; n_proc *= 2) {
+            for (index n_proc = 3; n_proc <= 48; n_proc *= 2) {
                 file << size << "," << n_proc << ","
                      << res[l] / 10 << ","
                      << tim[l] / 10 << ","
