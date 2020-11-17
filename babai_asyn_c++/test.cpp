@@ -6,20 +6,37 @@
 
 using namespace std;
 
-//const int n = 4096;
-//const int n = 8192;
-const int n = 16384;
-//const int n = 32648;
+const int n1 = 4096;
+const int n2 = 8192;
+const int n3 = 16384;
+const int n4 = 32768;
 
 
-int main() {
+int main(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
+    int k = 1, index = 0;
+    if (argc != 1) {
+        k = stoi(argv[1]);
+        index = stoi(argv[2]);
+    }
     //plot_run();
-    for (int k = 1; k <= 3; k++) {
-        for (int SNR = 15; SNR <= 45; SNR += 10) {
-            plot_run<double, int, n>(k, SNR);
-            //ils_block_search<double, int, n>(k, SNR);
+
+    for (int SNR = 15; SNR <= 45; SNR += 10) {
+        switch(index){
+            case 0:
+                plot_run<double, int, n1>(k, SNR);
+                break;
+            case 1:
+                plot_run<double, int, n2>(k, SNR);
+                break;
+            case 3:
+                plot_run<double, int, n3>(k, SNR);
+                break;
+            default:
+                plot_run<double, int, n4>(k, SNR);
+                break;
         }
+
     }
 
     return 0;
