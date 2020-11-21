@@ -51,6 +51,19 @@ namespace sils {
     };
 
     /**
+     * Return scalar pointer array along with the size.
+     * @tparam scalar
+     * @tparam index
+     */
+    template<typename scalar, typename index>
+    struct returnType {
+        scalarType<scalar, index> *x;
+        scalar run_time;
+        scalar residual;
+        index num_iter;
+    };
+
+    /**
      * Return the result of norm2(y-R*x).
      * @tparam scalar
      * @tparam index
@@ -377,7 +390,7 @@ namespace sils {
 
         inline scalarType<scalar, index> *do_block_solve(const index n_dx_q_0,
                                                          const index n_dx_q_1,
-                                                         const scalar* y,
+                                                         const scalar *y,
                                                          scalarType<scalar, index> *z_B) {
             scalar sum = 0, newprsd, gamma, beta = INFINITY;
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
@@ -476,7 +489,7 @@ namespace sils {
          * @param z_B
          * @return
          */
-        scalarType<scalar, index> *sils_search(scalarType<scalar, index> *R_B,
+        returnType<scalar, index> sils_search(scalarType<scalar, index> *R_B,
                                                scalarType<scalar, index> *y_B);
 
         /**
@@ -488,16 +501,16 @@ namespace sils {
          * @param z_B_p
          * @return
          */
-        scalarType<scalar, index> *sils_babai_search_omp(index n_proc, index nswp, index *update,
-                                                         scalarType<scalar, index> *z_B,
-                                                         scalarType<scalar, index> *z_B_p);
+        returnType<scalar, index> sils_babai_search_omp(index n_proc, index nswp, index *update,
+                                                        scalarType<scalar, index> *z_B,
+                                                        scalarType<scalar, index> *z_B_p);
 
         /**
          *
          * @param z_B
          * @return
          */
-        scalarType<scalar, index> *sils_babai_search_serial(scalarType<scalar, index> *z_B);
+        returnType<scalar, index> sils_babai_search_serial(scalarType<scalar, index> *z_B);
 
         /**
          * @deprecated
@@ -508,13 +521,13 @@ namespace sils {
          * @param block_size
          * @return
          */
-        scalarType<scalar, index> *
+        returnType<scalar, index>
         sils_block_search_serial_recursive(scalarType<scalar, index> *R_B,
                                            scalarType<scalar, index> *y_B,
                                            scalarType<scalar, index> *z_B,
                                            vector<index> d);
 
-        scalarType<scalar, index> *
+        returnType<scalar, index>
         sils_block_search_serial(scalarType<scalar, index> *R_B,
                                  scalarType<scalar, index> *y_B,
                                  scalarType<scalar, index> *z_B,
@@ -530,7 +543,7 @@ namespace sils {
          * @param d
          * @return
          */
-        scalarType<scalar, index> *
+        returnType<scalar, index>
         sils_block_search_omp(index n_proc, index nswp,
                               scalarType<scalar, index> *R_B,
                               scalarType<scalar, index> *y_B,
