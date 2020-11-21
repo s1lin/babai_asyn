@@ -178,7 +178,7 @@ void plot_run(index k, index SNR) {
 
 template<typename scalar, typename index, index n>
 void plot_res(index k, index SNR) {
-
+    printf("-------------------------------------------\n");
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
@@ -190,22 +190,37 @@ void plot_res(index k, index SNR) {
     printf("Finish Init, time: %f seconds\n", end_time);
     printf("-------------------------------------------\n");
 
-    sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
+    index init = 0;
     for (index init = -1; init <= 1; init++) {
         for (index size = 8; size <= 32; size *= 2) {
-            printf("\n++++++++++++++++++++++++++++++++++++++\n");
             vector<index> d(n / size, size);
             sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
             cout << init << "\n";
             for (index i = d_s.size - 2; i >= 0; i--) {
                 d_s.x[i] += d_s.x[i + 1];
             }
-
             scalar omp_res = 0, omp_time = 0, num_iter = 0;
-
+            sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
             sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
+            sils::scalarType<scalar, index> z_B_s{(scalar *) calloc(n, sizeof(scalar)), n};
 
-            for (index n_proc = 3; n_proc <= 48; n_proc *= 2) {
+            z_B_s.x = (scalar *) calloc(n, sizeof(scalar));
+            if (init == -1)
+                for (index i = 0; i < n; i++) {
+                    z_B.x[i] = bsa.x_R.x[i];
+                }
+            else if (init == 1)
+                for (index i = 0; i < n; i++) {
+                    z_B.x[i] = std::pow(2, k) / 2;
+                }
+            start = omp_get_wtime();
+            z_B_s = *bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B_s, &d_s);
+            end_time = omp_get_wtime() - start;
+            auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B_s);
+            auto y = bsa.y_A;
+            auto R = bsa.R_A;
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, end_time);
+            for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
                 if (init == -1)
@@ -216,11 +231,14 @@ void plot_res(index k, index SNR) {
                     for (index i = 0; i < n; i++) {
                         z_B.x[i] = std::pow(2, k) / 2;
                     }
-                z_B = *bsa.sils_block_search_omp(n_proc, 16, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+
+                z_B = *bsa.sils_block_search_omp(n_proc, 12, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                 cout << sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B) << endl;
+//                cout << sils::norm<scalar, index, n>(&z_B_s, &z_B) << endl;
+
             }
         }
-        free(z_B.x);
+//        free(z_B.x);
     }
 }
 

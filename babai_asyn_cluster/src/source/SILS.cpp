@@ -353,6 +353,9 @@ namespace sils {
         for (int l = n - q; l < n; l++) {
             z_B->x[l] = x_b_s->x[l - n + q];
         }
+//        sils::display_scalarType(y_b_s);
+//        cout<<  n - q<<","<<n <<endl;
+//        sils::display_scalarType(x_b_s);
 
         //Therefore, skip the last block, start from the second-last block till the first block.
         for (index i = 0; i < ds - 1; i++) {
@@ -363,13 +366,17 @@ namespace sils {
             y_b_s = sils::block_residual_vector(R_B, x_b_s, y_b_s, n - d->x[q], n - d->x[q + 1],
                                                 n - d->x[q + 1],
                                                 n);
+//            sils::display_scalarType(y_b_s);
             R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q],
                                                      n - d->x[q + 1], n);
+//            cout<< n - d->x[q]<<","<<n - d->x[q + 1]<<endl;
             x_b_s = sils_search(R_ii, y_b_s);
+//            sils::display_array(x_b_s->x, x_b_s->size);
 
             for (int l = n - d->x[q]; l < n - d->x[q + 1]; l++) {
                 z_B->x[l] = x_b_s->x[l - n + d->x[q]];
             }
+//            sils::display_scalarType(x_b_s);
 #ifdef VERBOSE
             cout << "y_b_s" << endl;
             sils::display_scalarType<double, int>(&y_b_s);
@@ -398,8 +405,6 @@ namespace sils {
                                                                      scalarType<scalar, index> *z_B,
                                                                      scalarType<scalar, index> *z_B_p,
                                                                      scalarType<index, index> *d) {
-        //nswp = 16;
-
         index ds = d->size, dx = d->x[ds - 1];
         cout << dx << "," << n_proc << ",";
         //special cases:
@@ -416,17 +421,35 @@ namespace sils {
             return sils_babai_search_serial(z_B);
         }
         index count = 0, num_iter = 0;
-        scalar res = 0;
-
-#pragma omp parallel default(shared) num_threads(n_proc)
+        scalar res = 0, sum = 0;
+        auto *y = (scalar *) calloc(dx, sizeof(scalar));
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, y)
         {
+            sum = 0;
+            auto *y = (scalar *) calloc(dx, sizeof(scalar));
             for (index j = 0; j < nswp; j++) {//&& abs(res) < 1e-3
-#pragma omp for schedule(dynamic, dx) nowait
+#pragma omp for nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i == ds - 1)
-                        z_B = do_block_solve(n - dx, n, z_B);
-                    else
-                        z_B = do_block_solve(n - d->x[ds - 2 - i], n - d->x[ds - 1 - i], z_B);
+                    index n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
+                    index n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
+                    //The block operation
+                    if (i != 0) {
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+#pragma omp simd reduction(+ : sum)
+                            for (index col = n_dx_q_1; col < n; col++) {
+                                //Translating the index from R(matrix) to R_B(compressed array).
+                                sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                            }
+                            y[row - n_dx_q_0] = y_B->x[row] - sum;
+                            sum = 0;
+                        }
+                    } else {
+                        y = sils::find_block_x<double, int>(y_B, n_dx_q_0, n_dx_q_1)->x;
+                    }
+//                    sils::display_array(y, dx);
+//                    cout<<n_dx_q_0<<","<<n_dx_q_1<<endl;
+                    z_B = do_block_solve(n_dx_q_0, n_dx_q_1, y, z_B);
+//                    cout << i << "," << j << "," << omp_get_thread_num()<<endl;
                 }
 #pragma omp master
                 {
@@ -437,7 +460,8 @@ namespace sils {
                 //num_iter = j;
             }
         }
-        cout << endl;
+        free(y);
+//        cout << endl;
         //cout << num_iter << ' ' << endl;
         return z_B;
     }

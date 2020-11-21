@@ -234,7 +234,7 @@ namespace sils {
 
         index counter = 0, prev_i = 0, i;
         scalar sum = 0;
-
+//        cout<<"R_B"<<endl;
         //The block operation
         for (index row = row_begin; row < row_end; row++) {
             //Translating the index from R(matrix) to R_B(compressed array).
@@ -242,12 +242,16 @@ namespace sils {
                 i = (col_end * row) + col - ((row * (row + 1)) / 2);
                 sum += R_B->x[i] * x->x[counter];
                 counter++;
+//                cout<< R_B->x[i] << " ";
             }
+//            cout<<endl;
             y_b_s->x[prev_i] = y->x[row - row_begin] - sum;
             prev_i++;
             sum = counter = 0;
         }
+//        cout<<"R_B_END"<<endl;
         return y_b_s;
+
     }
 
     /**
@@ -373,6 +377,7 @@ namespace sils {
 
         inline scalarType<scalar, index> *do_block_solve(const index n_dx_q_0,
                                                          const index n_dx_q_1,
+                                                         const scalar* y,
                                                          scalarType<scalar, index> *z_B) {
             scalar sum = 0, newprsd, gamma, beta = INFINITY;
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
@@ -382,18 +387,6 @@ namespace sils {
             auto *c = (scalar *) calloc(dx, sizeof(scalar));
             auto *z = (scalar *) calloc(dx, sizeof(scalar));
             auto *d = (index *) calloc(dx, sizeof(index));
-            auto *y = (scalar *) calloc(dx, sizeof(scalar));
-
-            //The block operation
-#pragma omp simd reduction(+ : sum)
-            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                for (index col = n_dx_q_1;
-                     col < n; col++) {//Translating the index from R(matrix) to R_B(compressed array).
-                    sum += R_A.x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
-                }
-                y[row - n_dx_q_0] = y_A.x[row] - sum;
-                sum = 0;
-            }
 
             //  Initial squared search radius
             scalar R_kk = R_A.x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
@@ -430,11 +423,11 @@ namespace sils {
 
                     } else {
                         beta = newprsd;
-#pragma omp parallel for
+#pragma omp simd
+//#pragma omp parallel for
                         for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
                             z_B->x[l] = z[l - n_dx_q_0];
                         }
-
                         z[0] += d[0];
                         gamma = R_A.x[0] * (c[0] - z[0]);
                         d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
@@ -450,6 +443,10 @@ namespace sils {
                     }
                 }
             }
+//            for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
+//                cout<< z_B->x[l] << " ";
+//            }
+//            cout<< "\n";
 //            free(p);
 //            free(c);
 //            free(z);
