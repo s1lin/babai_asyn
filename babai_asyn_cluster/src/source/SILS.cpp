@@ -96,7 +96,7 @@ namespace sils {
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *SILS<scalar, index, is_read, is_write, n>::sils_babai_search_omp(const index n_proc,
+    returnType<scalar, index> SILS<scalar, index, is_read, is_write, n>::sils_babai_search_omp(const index n_proc,
                                                                                                 const index nswp,
                                                                                                 index *update,
                                                                                                 scalarType<scalar, index> *z_B,
@@ -106,7 +106,7 @@ namespace sils {
         index chunk = std::log2(n);
         scalar res = 0;
 
-
+        scalar start = omp_get_wtime();
         z_B->x[n - 1] = round(y_A.x[n - 1] / R_A.x[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel default(shared) num_threads(n_proc) private(count) shared(update)
         {
@@ -134,14 +134,17 @@ namespace sils {
             }
         }
         //cout << num_iter << endl;
-
-        return z_B;
+        scalar run_time = omp_get_wtime() - start;
+        returnType<scalar, index> reT = {z_B, run_time, 0, num_iter};
+        return reT;
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *
+    returnType<scalar, index>
     SILS<scalar, index, is_read, is_write, n>::sils_babai_search_serial(scalarType<scalar, index> *z_B) {
         scalar sum = 0;
+        scalar start = omp_get_wtime();
+
         z_B->x[n - 1] = round(y_A.x[n - 1] / R_A.x[((n - 1) * n) / 2 + n - 1]);
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
@@ -152,11 +155,13 @@ namespace sils {
                     (y_A.x[n - 1 - i] - sum) / R_A.x[(n - 1 - i) * n - ((n - 1 - i) * (n - i)) / 2 + n - 1 - i]);
             sum = 0;
         }
-        return z_B;
+        scalar run_time = omp_get_wtime() - start;
+        returnType<scalar, index> reT = {z_B, run_time, 0, 0};
+        return reT;
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *
+    returnType<scalar, index>
     SILS<scalar, index, is_read, is_write, n>::sils_search(scalarType<scalar, index> *R_B,
                                                            scalarType<scalar, index> *y_B) {
 
@@ -227,13 +232,13 @@ namespace sils {
             }
         }
         std::memcpy(z->x, z_H, sizeof(scalar) * block_size);
-
+        returnType<scalar, index> reT = {z, 0, 0, 0};
         free(z_H);
         free(c);
         free(d);
         free(p);
 
-        return z;
+        return reT;
     }
 
 
@@ -251,7 +256,7 @@ namespace sils {
      * @return
      */
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *
+    returnType<scalar, index>
     SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial_recursive(scalarType<scalar, index> *R_B,
                                                                                   scalarType<scalar, index> *y_B,
                                                                                   scalarType<scalar, index> *z_B,
@@ -318,23 +323,25 @@ namespace sils {
                 free(y_b_s_2);
                 free(x_b_s);
                 free(x_b_s_2);
-                return z_B;
+                returnType<scalar, index> reT = {z_B, 0, 0, 0};
+                return reT;
             }
         }
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *
+    returnType<scalar, index>
     SILS<scalar, index, is_read, is_write, n>::sils_block_search_serial(scalarType<scalar, index> *R_B,
                                                                         scalarType<scalar, index> *y_B,
                                                                         scalarType<scalar, index> *z_B,
                                                                         scalarType<index, index> *d) {
+
         index ds = d->size;
         //special cases:
         if (ds == 1) {
             if (d->x[0] == 1) {
                 z_B->x[0] = round(y_B->x[0] / R_B->x[0]);
-                return z_B;
+                return {z_B, 0, 0, 0};
             } else {
                 return sils_search(R_B, y_B);
             }
@@ -346,12 +353,13 @@ namespace sils {
         //last block:
         index q = d->x[ds - 1];
 
+        scalar start = omp_get_wtime();
         //the last block
         auto R_ii = sils::find_block_Rii<double, int>(R_B, n - q, n, n - q, n, n);
         auto y_b_s = sils::find_block_x<double, int>(y_B, n - q, n);
-        auto x_b_s = sils_search(R_ii, y_b_s);
+        auto x_b = sils_search(R_ii, y_b_s);
         for (int l = n - q; l < n; l++) {
-            z_B->x[l] = x_b_s->x[l - n + q];
+            z_B->x[l] = x_b.x->x[l - n + q];
         }
 //        sils::display_scalarType(y_b_s);
 //        cout<<  n - q<<","<<n <<endl;
@@ -362,7 +370,7 @@ namespace sils {
             q = ds - 2 - i;
             //accumulate the block size
             y_b_s = sils::find_block_x<double, int>(y_B, n - d->x[q], n - d->x[q + 1]);
-            x_b_s = sils::find_block_x<double, int>(z_B, n - d->x[q + 1], n);
+            auto x_b_s = sils::find_block_x<double, int>(z_B, n - d->x[q + 1], n);
             y_b_s = sils::block_residual_vector(R_B, x_b_s, y_b_s, n - d->x[q], n - d->x[q + 1],
                                                 n - d->x[q + 1],
                                                 n);
@@ -370,11 +378,11 @@ namespace sils {
             R_ii = sils::find_block_Rii<double, int>(R_B, n - d->x[q], n - d->x[q + 1], n - d->x[q],
                                                      n - d->x[q + 1], n);
 //            cout<< n - d->x[q]<<","<<n - d->x[q + 1]<<endl;
-            x_b_s = sils_search(R_ii, y_b_s);
+            x_b = sils_search(R_ii, y_b_s);
 //            sils::display_array(x_b_s->x, x_b_s->size);
 
             for (int l = n - d->x[q]; l < n - d->x[q + 1]; l++) {
-                z_B->x[l] = x_b_s->x[l - n + d->x[q]];
+                z_B->x[l] = x_b.x->x[l - n + d->x[q]];
             }
 //            sils::display_scalarType(x_b_s);
 #ifdef VERBOSE
@@ -389,16 +397,16 @@ namespace sils {
 #endif
 
         }
-
+        scalar run_time = omp_get_wtime() - start;
+        returnType<scalar, index> reT = {z_B, run_time, 0, 0};
         free(R_ii);
         free(y_b_s);
-        free(x_b_s);
-
-        return z_B;
+//        free(x_b_s);
+        return reT;
     }
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
-    scalarType<scalar, index> *
+    returnType<scalar, index>
     SILS<scalar, index, is_read, is_write, n>::sils_block_search_omp(index n_proc, index nswp,
                                                                      scalarType<scalar, index> *R_B,
                                                                      scalarType<scalar, index> *y_B,
@@ -406,12 +414,12 @@ namespace sils {
                                                                      scalarType<scalar, index> *z_B_p,
                                                                      scalarType<index, index> *d) {
         index ds = d->size, dx = d->x[ds - 1];
-        cout << dx << "," << n_proc << ",";
+//        cout << "Block Size: " << dx << "," << "n_proc: " << n_proc << ",";
         //special cases:
         if (ds == 1) {
             if (d->x[0] == 1) {
                 z_B->x[0] = round(y_B->x[0] / R_B->x[0]);
-                return z_B;
+                return {z_B, 0, 0, 0};
             } else {
                 return sils_search(R_B, y_B);
             }
@@ -420,18 +428,21 @@ namespace sils {
             //todo: Change it to omp version
             return sils_babai_search_serial(z_B);
         }
-        index count = 0, num_iter = 0;
-        scalar res = 0, sum = 0;
+        index count = 0, num_iter = 0, n_dx_q_0 = 0, n_dx_q_1 = 0;
+        scalar res = INFINITY, nres = INFINITY, sum = 0;
         auto *y = (scalar *) calloc(dx, sizeof(scalar));
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, y)
+
+        scalar start = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, n_dx_q_0, n_dx_q_1)
         {
             sum = 0;
-            auto *y = (scalar *) calloc(dx, sizeof(scalar));
-            for (index j = 0; j < nswp; j++) {//&& abs(res) < 1e-3
+            y = (scalar *) calloc(dx, sizeof(scalar));
+            for (index j = 0; j < nswp && res > 1; j++) {//
+                res = nres;
 #pragma omp for nowait
                 for (index i = 0; i < ds; i++) {
-                    index n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
-                    index n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
+                    n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
+                    n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
                     //The block operation
                     if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -453,16 +464,19 @@ namespace sils {
                 }
 #pragma omp master
                 {
-                    scalar nres = sils::find_residual_omp<scalar, index, n>(R_B, y_B, z_B);
-                    res = nres - res;
-                    cout << nres << ",";
+                    if(num_iter > 1) {
+                        nres = sils::find_residual_omp<scalar, index, n>(R_B, y_B, z_B);
+                        res = nres - res;
+                    }
                 }
-                //num_iter = j;
+                num_iter = j;
             }
         }
+        scalar run_time = omp_get_wtime() - start;
+        returnType<scalar, index> reT = {z_B, run_time, nres, num_iter};
         free(y);
 //        cout << endl;
-        //cout << num_iter << ' ' << endl;
-        return z_B;
+//        cout << num_iter << ' ' << endl;
+        return reT;
     }
 }
