@@ -101,8 +101,51 @@ def plot_res_time(n):
             index = index + 1
 
 
+def plot_res_conv(n):
+    file1 = open(str(n) + '_4_15.csv', 'r')
+    lines = file1.readlines()
+
+    for i in range(0, len(lines)):
+        line = lines[i]
+        if "seconds" in line:
+            i = i + 2
+        else:
+            continue
+        line = lines[i]
+        print(line)
+            # line_str = line.split(",")
+            # axes = plt.gca()
+            # axes.set_xlim([5, 215])
+            # #    axes.set_ylim([5, 7])
+            # left, width = .25, .75
+            # bottom, height = .20, .75
+            # right = left + width
+            # top = bottom + height
+            # plt.axhline(y=ser_res, xmin=0.0, xmax=1.0, color='b', linestyle='dashed', label='Serial')
+            # plt.axhline(y=mat_res, xmin=0.0, xmax=1.0, color='g', linestyle='dotted', label='Matlab')
+            # plt.plot(n_proc, omp_res, color='r', marker='o', label='OpenMP')
+            #
+            # if init_value == -1:
+            #     axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess: the round of real solution, Noise = 0.1',
+            #               horizontalalignment='right',
+            #               verticalalignment='bottom',
+            #               transform=axes.transAxes)
+            # else:
+            #     axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess:' + str(init_value) + ', Noise = 0.1',
+            #               horizontalalignment='right',
+            #               verticalalignment='bottom',
+            #               transform=axes.transAxes)
+            #
+            # plt.xlabel('Number of Threads')
+            # plt.ylabel('Residual')
+            # plt.title('Average Residual Time For 10 Trials')
+            #
+            # plt.legend(loc='upper left')
+            # plt.savefig('./' + str(n) + '_res_' + str(init_value))
+            # plt.close()
+
+
+
 if __name__ == "__main__":
-    n = 4096
-    while n <= 16384:
-        plot_res_time(n)
-        n = n * 2
+    plot_res_conv(4096)
+    plot_res_conv(16384)

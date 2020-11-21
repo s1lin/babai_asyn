@@ -30,16 +30,16 @@ classdef sils_class
             sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)));
             sils.y = sils.R * sils.x0 + normrnd(0, sils.sigma, sils.n, 1);
             sils.init_res = norm(sils.y - sils.R * sils.x0);
-            
+
         end
 
         function sils = init_from_files(sils)
             sils.R = table2array(readtable(append('../data/R_', int2str(sils.n), '.csv')));
-            sils.x0 = table2array(readtable(append('../data/x_', int2str(sils.n), '.csv')));            
+            sils.x0 = table2array(readtable(append('../data/x_', int2str(sils.n), '.csv')));
             sils.y = table2array(readtable(append('../data/y_', int2str(sils.n), '.csv')));
             sils.init_res = norm(sils.y - sils.R * sils.x0);
         end
-        
+
         function sils = write_to_nc(sils)
             [x_R, res, avg] = sils_seach_round(sils);
             disp([res, avg]);
@@ -63,7 +63,7 @@ classdef sils_class
             ncwrite(filename,'x_R',x_R);
             ncwrite(filename,'y',sils.y);
         end
-        
+
         function sils = write_to_files(sils)
             [x_R, res, avg] = sils_seach_round(sils);
             disp([res, avg]);
@@ -86,7 +86,7 @@ classdef sils_class
 
         %Search - find the Babai solustion to the reduced problem
         function [z_B, res, tEnd] = sils_search_babai(sils, init_value)
-            
+
             if init_value ~= -1
                 z_B = zeros(sils.n, 1) + init_value;
             else
@@ -99,9 +99,9 @@ classdef sils_class
                 z_B(j) = round(z_B(j));
             end
             tEnd = toc(tStart);
-            res = norm(sils.y - sils.R * z_B);            
+            res = norm(sils.y - sils.R * z_B);
         end
-        
+
         %Search - round the real solution.
         function [x_R, res, avg] = sils_seach_round(sils)
             tStart = tic;
@@ -111,9 +111,9 @@ classdef sils_class
             tEnd = toc(tStart);
             x_R = round(sils.x0_R);
             avg = tEnd;
-            res = norm(sils.x0 - x_R);            
+            res = norm(sils.x0 - x_R);
         end
-        
+
          %Search - rescurisive block solver.
         function [x, res] = sils_block_search(sils, Rb, yb, x, d, init_value)
             %BOB with input partition vector d
@@ -146,13 +146,13 @@ classdef sils_class
                     end
                     x = [xx2; xx1];
                 end
-            end       
-            res = norm(yb - Rb * x);         
-            
-        end
-        
+            end
+            res = norm(yb - Rb * x);
 
-        
+        end
+
+
+
     end
 
 end
