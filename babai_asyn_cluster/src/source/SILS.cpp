@@ -396,8 +396,12 @@ namespace sils {
                                                                      scalarType<scalar, index> *R_B,
                                                                      scalarType<scalar, index> *y_B,
                                                                      scalarType<scalar, index> *z_B,
+                                                                     scalarType<scalar, index> *z_B_p,
                                                                      scalarType<index, index> *d) {
+        //nswp = 16;
+
         index ds = d->size, dx = d->x[ds - 1];
+        cout << dx << "," << n_proc << ",";
         //special cases:
         if (ds == 1) {
             if (d->x[0] == 1) {
@@ -408,13 +412,15 @@ namespace sils {
             }
         } else if (ds == n) {
             //Find the Babai point
+            //todo: Change it to omp version
             return sils_babai_search_serial(z_B);
         }
-
+        index count = 0, num_iter = 0;
+        scalar res = 0;
 
 #pragma omp parallel default(shared) num_threads(n_proc)
         {
-            for (index j = 0; j < nswp; j++) {
+            for (index j = 0; j < nswp; j++) {//&& abs(res) < 1e-3
 #pragma omp for schedule(dynamic, dx) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i == ds - 1)
@@ -422,8 +428,17 @@ namespace sils {
                     else
                         z_B = do_block_solve(n - d->x[ds - 2 - i], n - d->x[ds - 1 - i], z_B);
                 }
+#pragma omp master
+                {
+                    scalar nres = sils::find_residual_omp<scalar, index, n>(R_B, y_B, z_B);
+                    res = nres - res;
+                    cout << nres << ",";
+                }
+                //num_iter = j;
             }
         }
+        cout << endl;
+        //cout << num_iter << ' ' << endl;
         return z_B;
     }
 }

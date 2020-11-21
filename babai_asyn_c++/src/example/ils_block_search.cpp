@@ -15,7 +15,7 @@ void ils_block_search(index k, index SNR) {
 
     sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
 
-    for (index size = 32; size <= 32; size *= 2) {
+    for (index size = 8; size <= 32; size *= 2) {
         //Initialize the block vector
         vector<index> d(n / size, size);
         sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
@@ -23,7 +23,7 @@ void ils_block_search(index k, index SNR) {
             d_s.x[i] += d_s.x[i + 1];
         }
 
-        for (index i = 0; i < 10; i++) {
+        for (index i = 0; i < 1; i++) {
             printf("++++++++++++++++++++++++++++++++++++++\n");
             free(z_B.x);
             z_B.x = (scalar *) calloc(n, sizeof(scalar));
@@ -32,16 +32,19 @@ void ils_block_search(index k, index SNR) {
             end_time = omp_get_wtime() - start;
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, end_time);
+            sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
 
-            for (index n_proc = 3; n_proc <= 12; n_proc *= 2) {
+            for (index n_proc = 2; n_proc <= 8; n_proc *= 2) {
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
+                z_B_p.x = (scalar *) calloc(n, sizeof(scalar));
                 for (index t = 0; t < n; t++) {
                     z_B.x[t] = pow(2, k) / 2;
+                    z_B_p.x[t] = pow(2, k) / 2;
                 }
                 index iter = 10;
                 start = omp_get_wtime();
-                z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
+                z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                 end_time = omp_get_wtime() - start;
 //                res = sils::norm<scalar, index, n>(&bsa.x_tA, &z_B);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
@@ -51,6 +54,7 @@ void ils_block_search(index k, index SNR) {
             }
 
             free(z_B.x);
+            free(z_B_p.x);
             z_B.x = (scalar *) calloc(n, sizeof(scalar));
             sils::scalarType<scalar, index> z_BS = {(scalar *) calloc(n, sizeof(scalar)), n};
             start = omp_get_wtime();
@@ -127,6 +131,7 @@ void plot_run(index k, index SNR) {
             file << size << "," << res[1] / 10 << "," << tim[1] / 10 << ",\n";
 
             std::cout << "Block OMP:" << std::endl;
+            sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
             index l = 2;
             scalar min_res = INFINITY;
             for (index i = 0; i < 10; i++) {
@@ -135,7 +140,7 @@ void plot_run(index k, index SNR) {
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     index iter = 12;
                     start = omp_get_wtime();
-                    z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &d_s);
+                    z_B = *bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                     omp_time = omp_get_wtime() - start;
                     omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B);
                     if (omp_res < min_res)
@@ -169,6 +174,54 @@ void plot_run(index k, index SNR) {
     }
     file.close();
     printf("-------------------------------------------\n");
+}
+
+template<typename scalar, typename index, index n>
+void plot_res(index k, index SNR) {
+
+    std::cout << "Init, size: " << n << std::endl;
+    std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
+    std::cout << "Init, SNR: " << SNR << std::endl;
+
+    //bool read_r, bool read_ra, bool read_xy
+    scalar start = omp_get_wtime();
+    sils::SILS<scalar, index, true, false, n> bsa(k, SNR);
+    scalar end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %f seconds\n", end_time);
+    printf("-------------------------------------------\n");
+
+    sils::scalarType<scalar, index> z_B{(scalar *) calloc(n, sizeof(scalar)), n};
+    for (index init = -1; init <= 1; init++) {
+        for (index size = 8; size <= 32; size *= 2) {
+            printf("\n++++++++++++++++++++++++++++++++++++++\n");
+            vector<index> d(n / size, size);
+            sils::scalarType<index, index> d_s{d.data(), (index) d.size()};
+            cout << init << "\n";
+            for (index i = d_s.size - 2; i >= 0; i--) {
+                d_s.x[i] += d_s.x[i + 1];
+            }
+
+            scalar omp_res = 0, omp_time = 0, num_iter = 0;
+
+            sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
+
+            for (index n_proc = 3; n_proc <= 48; n_proc *= 2) {
+                free(z_B.x);
+                z_B.x = (scalar *) calloc(n, sizeof(scalar));
+                if (init == -1)
+                    for (index i = 0; i < n; i++) {
+                        z_B.x[i] = bsa.x_R.x[i];
+                    }
+                else if (init == 1)
+                    for (index i = 0; i < n; i++) {
+                        z_B.x[i] = std::pow(2, k) / 2;
+                    }
+                z_B = *bsa.sils_block_search_omp(n_proc, 16, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+                cout << sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B) << endl;
+            }
+        }
+        free(z_B.x);
+    }
 }
 
 template<typename scalar, typename index, index n>

@@ -76,6 +76,32 @@ namespace sils {
     }
 
     /**
+ * Return the result of norm2(y-R*x).
+ * @tparam scalar
+ * @tparam index
+ * @tparam n
+ * @param R
+ * @param y
+ * @param x
+ * @return residual
+ */
+    template<typename scalar, typename index, index n>
+    inline scalar find_residual_omp(scalarType<scalar, index> *R,
+                                    scalarType<scalar, index> *y,
+                                    scalarType<scalar, index> *x) {
+        scalar res = 0, sum = 0;
+#pragma omp simd reduction(+ : sum)
+        for (index i = 0; i < n; i++) {
+            for (index j = i; j < n; j++)
+                sum += x->x[j] * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
+
+            res += (y->x[i] - sum) * (y->x[i] - sum);
+            sum = 0;
+        }
+        return std::sqrt(res);
+    }
+
+    /**
      * Return the result of norm2(y-R*x).
      * @tparam scalar
      * @tparam index
@@ -93,6 +119,28 @@ namespace sils {
             res += (y->x[i] - x->x[i]) * (y->x[i] - x->x[i]);
         }
         return std::sqrt(res);
+    }
+
+
+    /**
+     * Return the result of norm2(y-R*x).
+     * @tparam scalar
+     * @tparam index
+     * @tparam n
+     * @param R
+     * @param y
+     * @param x
+     * @return residual
+     */
+    template<typename scalar, typename index, index n>
+    inline scalar diff(scalarType<scalar, index> *x,
+                       scalarType<scalar, index> *y) {
+        scalar d = 0;
+#pragma omp parallel for
+        for (index i = 0; i < n; i++) {
+            d += (y->x[i] - x->x[i]);
+        }
+        return d;
     }
 
     /**
@@ -339,7 +387,8 @@ namespace sils {
             //The block operation
 #pragma omp simd reduction(+ : sum)
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                for (index col = n_dx_q_1; col < n; col++) {//Translating the index from R(matrix) to R_B(compressed array).
+                for (index col = n_dx_q_1;
+                     col < n; col++) {//Translating the index from R(matrix) to R_B(compressed array).
                     sum += R_A.x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                 }
                 y[row - n_dx_q_0] = y_A.x[row] - sum;
@@ -489,6 +538,7 @@ namespace sils {
                               scalarType<scalar, index> *R_B,
                               scalarType<scalar, index> *y_B,
                               scalarType<scalar, index> *z_B,
+                              scalarType<scalar, index> *z_B_p,
                               scalarType<index, index> *d);
 
 
