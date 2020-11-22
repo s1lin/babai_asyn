@@ -199,12 +199,13 @@ def plot_res_conv(n):
                     title = 'Residual Convergence for' + SNR + '-SNR and ' \
                             + str(pow(4, f)) + '-QAM with different block sizes'
 
-                    if init_value in '-1':
+                    if init_value in '1':
+                        title = title + 'where each element in the initial point is the rounded mean'
+                    elif init_value in '-1':
                         title = title + ' where the round of real solution as the initial point'
                     elif init_value in '0':
                         title = title + ' where each element in the initial point is 0'
-                    elif init_value in '1':
-                        title = title + 'where each element in the initial point is the rounded mean'
+
 
                     fig.suptitle(title, fontsize=12)
                     plt.savefig(
