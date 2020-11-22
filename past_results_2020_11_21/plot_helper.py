@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams, rc
 
 
 def plot_time(ser_time, mat_time, n_proc, omp_time, init_value):
@@ -102,9 +103,9 @@ def plot_res_time(n):
 
 
 def plot_res_conv(n):
-    for f in range(1,4,2):
+    for f in range(1, 4, 2):
         print(f)
-        file = open(str(n) + '_' + str(pow(4,f)) +'_15.out', 'r')
+        file = open(str(n) + '_' + str(pow(4, f)) + '_15.out', 'r')
         lines = file.readlines()
 
         for i in range(0, len(lines)):
@@ -118,79 +119,83 @@ def plot_res_conv(n):
                     line_str = lines[i].split(",")
                     init_value = line_str[0].split("\n")[0]
 
-                    fig, (ax1, ax2, ax3) = plt.subplots(3,1)
+                    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
                     axes = plt.gca()
-                    plt.rcParams["figure.figsize"] = (10,10)
-
+                    plt.rcParams["figure.figsize"] = (10, 4)
+                    # plt.rcParams["font.sans-serif"] = "Comic Sans MS"
+                    # plt.rcParams["font.family"] = "sans-serif"
+                    # rc('font', **{'family': 'serif', 'serif':['Times']})
                     i = i + 2
                     line_str = lines[i].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
-                    ax1.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='r', marker='o',
-                             label='num_thread = ' + line_str[1])
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
+                                 label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax1.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='g', marker='x',
-                             label='num_thread = ' + line_str[1])
+                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
+                                 label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax1.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='b', marker='+',
-                             label='num_thread = ' + line_str[1])
+                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
+                                 label='num_thread = ' + line_str[1])
                     ax1.legend(loc="upper right")
+                    ax1.set_xlabel('Number of Iterations')
                     ax1.set_ylabel('Residual $\log_{10}$')
-                    ax1.set_title('Residual Convergence with Block Size ' + line_str[0])
+                    ax1.set_title('Block Size ' + line_str[0], fontsize=10)
 
                     i = i + 3
                     line_str = lines[i].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
-                    ax2.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='r', marker='o',
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
                                  label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax2.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='g', marker='x',
+                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
                                  label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax2.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='b', marker='+',
+                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
                     ax2.legend(loc="upper right")
-                    ax2.set_ylabel('Residual $\log_{10}$')
-                    ax2.set_title('Residual Convergence with Block Size ' + line_str[0])
+                    ax2.set_xlabel('Number of Iterations')
+                    # ax2.set_ylabel('Residual $\log_{10}$')
+                    ax2.set_title('Block Size ' + line_str[0], fontsize=10)
 
                     i = i + 3
                     line_str = lines[i].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
-                    ax3.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='r', marker='o',
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
                                  label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax3.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='g', marker='x',
+                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
                                  label='num_thread = ' + line_str[1])
                     i = i + 1
                     line_str = lines[i].split(",")
-                    line_str[end-1] = line_str[end-1].split("/n")[0]
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax3.semilogy(range(0, 13), np.array(line_str[2:end]).astype(np.float), color='b', marker='+',
+                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
                     ax3.legend(loc="upper right")
                     ax3.set_xlabel('Number of Iterations')
-                    ax3.set_ylabel('Residual $\log_{10}$')
-                    ax3.set_title('Residual Convergence with Block Size ' + line_str[0])
+                    # ax3.set_ylabel('Residual $\log_{10}$')
+                    ax3.set_title('Block Size ' + line_str[0], fontsize=10)
 
                     if init_value in '-1':
                         fig.suptitle('Residual Convergence where the round of real solution as the initial point')
@@ -199,8 +204,10 @@ def plot_res_conv(n):
                     elif init_value in '1':
                         fig.suptitle('Residual Convergence where each element in the initial point is the rounded mean')
 
-                    fig.suptitle('Residual Convergence with different block sizes')
-                    plt.savefig('./' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0])
+                    fig.suptitle('Residual Convergence for' + SNR + '-SNR and ' + str(
+                        pow(4, f)) + '-QAM with different block sizes', fontsize=11)
+                    plt.savefig(
+                        './' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0] + '_' + str(pow(4, f)))
                     plt.close()
                     i = i + 1
 
