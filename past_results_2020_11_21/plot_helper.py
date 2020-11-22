@@ -118,10 +118,10 @@ def plot_res_conv(n):
 
                     line_str = lines[i].split(",")
                     init_value = line_str[0].split("\n")[0]
-
+                    plt.rcParams["figure.figsize"] = (10, 4)
                     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
                     axes = plt.gca()
-                    plt.rcParams["figure.figsize"] = (10, 4)
+
                     # plt.rcParams["font.sans-serif"] = "Comic Sans MS"
                     # plt.rcParams["font.family"] = "sans-serif"
                     # rc('font', **{'family': 'serif', 'serif':['Times']})
