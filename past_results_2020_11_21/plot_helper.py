@@ -114,8 +114,9 @@ def plot_res_conv(n):
                 SNR = lines[i].split(":")[1].split("\n")[0]
             if "seconds" in line:
                 i = i + 2
-                while i < len(lines) and not "-----" in lines[i]:
-
+                while i < len(lines) and not "-----" in lines[i] \
+                        and not "++++++" in lines[i] \
+                        and not "it, si" in lines[i]:
                     line_str = lines[i].split(",")
                     init_value = line_str[0].split("\n")[0]
                     plt.rcParams["figure.figsize"] = (13, 4)
@@ -216,4 +217,4 @@ def plot_res_conv(n):
 
 if __name__ == "__main__":
     plot_res_conv(4096)
-    plot_res_conv(16384)
+    # plot_res_conv(16384)
