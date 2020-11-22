@@ -91,7 +91,7 @@ void plot_run(index k, index SNR) {
                     d_s.x[i] += d_s.x[i + 1];
                 }
 
-                vector<scalar> res(50, 0), tim(50, 0), itr(50, 0);
+                vector<scalar> min_res(50, INFINITY), res(50, 0), tim(50, 0), itr(50, 0);
                 scalar omp_res = 0, omp_time = 0, num_iter = 0;
                 scalar ser_res = 0, ser_time = 0;
 
@@ -139,9 +139,10 @@ void plot_run(index k, index SNR) {
                 std::cout << "Block OMP:" << std::endl;
                 sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
                 index l = 2;
-                scalar min_res = INFINITY;
                 for (index i = 0; i < 10; i++) {
-                    for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
+                    for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
+                        if (n_proc == 192)
+                            n_proc = 64;
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
@@ -152,23 +153,24 @@ void plot_run(index k, index SNR) {
                             for (index t = 0; t < n; t++) {
                                 z_B.x[t] = std::pow(2, k) / 2;
                             }
-                        index iter = 5;
+                        index iter = 6;
                         auto reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                         omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
-                        if (omp_res < min_res)
-                            min_res = omp_res;
-                        
+                        if (omp_res < min_res[l])
+                            min_res[l] = omp_res;
+                        res[l] = min_res[l];
                         tim[l] += reT.run_time;
                         itr[l] += reT.num_iter;
                         l++;
                     }
-                    res[l] = min_res;
-                    min_res = INFINITY;
+//                    min_res = vector<scalar>(50, INFINITY);
                     l = 2;
                 }
 //                cout << "min_res:" << min_res << endl;
                 l = 2;
-                for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
+                for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
+                    if (n_proc == 192)
+                        n_proc = 64;
                     file << size << "," << n_proc << ","
                          << res[l] << ","
                          << tim[l] / 10 << ","

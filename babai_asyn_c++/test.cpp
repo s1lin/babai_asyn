@@ -14,7 +14,7 @@ const int n4 = 32768;
 
 int main(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    int k = 3, index = 2;
+    int k = 3, index = 0;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
