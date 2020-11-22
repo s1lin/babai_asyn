@@ -196,16 +196,17 @@ def plot_res_conv(n):
                     ax3.set_xlabel('Number of Iterations')
                     # ax3.set_ylabel('Residual $\log_{10}$')
                     ax3.set_title('Block Size ' + line_str[0], fontsize=10)
+                    title = 'Residual Convergence for' + SNR + '-SNR and ' \
+                            + str(pow(4, f)) + '-QAM with different block sizes'
 
                     if init_value in '-1':
-                        fig.suptitle('Residual Convergence where the round of real solution as the initial point')
+                        title = title + ' where the round of real solution as the initial point'
                     elif init_value in '0':
-                        fig.suptitle('Residual Convergence where each element in the initial point is 0')
+                        title = title + ' where each element in the initial point is 0'
                     elif init_value in '1':
-                        fig.suptitle('Residual Convergence where each element in the initial point is the rounded mean')
+                        title = title + 'where each element in the initial point is the rounded mean'
 
-                    fig.suptitle('Residual Convergence for' + SNR + '-SNR and ' + str(
-                        pow(4, f)) + '-QAM with different block sizes', fontsize=11)
+                    fig.suptitle(title, fontsize=10)
                     plt.savefig(
                         './' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0] + '_' + str(pow(4, f)))
                     plt.close()
