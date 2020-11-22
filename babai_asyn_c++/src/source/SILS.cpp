@@ -97,10 +97,10 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     returnType<scalar, index> SILS<scalar, index, is_read, is_write, n>::sils_babai_search_omp(const index n_proc,
-                                                                                                const index nswp,
-                                                                                                index *update,
-                                                                                                scalarType<scalar, index> *z_B,
-                                                                                                scalarType<scalar, index> *z_B_p) {
+                                                                                               const index nswp,
+                                                                                               index *update,
+                                                                                               scalarType<scalar, index> *z_B,
+                                                                                               scalarType<scalar, index> *z_B_p) {
 
         index count = 0, num_iter = 0;
         index chunk = std::log2(n);
@@ -428,55 +428,61 @@ namespace sils {
             //todo: Change it to omp version
             return sils_babai_search_serial(z_B);
         }
-        index count = 0, num_iter = 0, n_dx_q_0 = 0, n_dx_q_1 = 0;
-        scalar res = INFINITY, nres = INFINITY, sum = 0;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
+        scalar res = 0, nres = 10, sum = 0;
         auto *y = (scalar *) calloc(dx, sizeof(scalar));
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, n_dx_q_0, n_dx_q_1)
         {
-            sum = 0;
             y = (scalar *) calloc(dx, sizeof(scalar));
-            for (index j = 0; j < nswp && res > 1; j++) {//
-                res = nres;
-#pragma omp for nowait
+            for (index j = 0; j < nswp && nres > 0.5; j++) {
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
                     //The block operation
                     if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                            sum = 0;
 #pragma omp simd reduction(+ : sum)
                             for (index col = n_dx_q_1; col < n; col++) {
                                 //Translating the index from R(matrix) to R_B(compressed array).
                                 sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
                             }
                             y[row - n_dx_q_0] = y_B->x[row] - sum;
-                            sum = 0;
                         }
                     } else {
-                        y = sils::find_block_x<double, int>(y_B, n_dx_q_0, n_dx_q_1)->x;
+#pragma omp simd
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            y[l - n_dx_q_0] = y_B->x[l];
+                        }
                     }
-//                    sils::display_array(y, dx);
-//                    cout<<n_dx_q_0<<","<<n_dx_q_1<<endl;
                     z_B = do_block_solve(n_dx_q_0, n_dx_q_1, y, z_B);
-//                    cout << i << "," << j << "," << omp_get_thread_num()<<endl;
                 }
 #pragma omp master
                 {
-                    if(num_iter > 1) {
-                        nres = sils::find_residual_omp<scalar, index, n>(R_B, y_B, z_B);
-                        res = nres - res;
+                    if (num_iter > 0) {
+                        nres = 0;
+#pragma omp simd reduction(+ : nres)
+                        for (index l = 0; l < n; l++) {
+                            nres += (z_B_p->x[l] - z_B->x[l]);
+                            z_B_p->x[l] = z_B->x[l];
+                        }
+                    } else {
+#pragma omp simd
+                        for (index l = 0; l < n; l++) {
+                            z_B_p->x[l] = z_B->x[l];
+                        }
                     }
+                    num_iter = j;
                 }
-                num_iter = j;
+
             }
         }
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, nres, num_iter};
         free(y);
-//        cout << endl;
-//        cout << num_iter << ' ' << endl;
         return reT;
     }
 }

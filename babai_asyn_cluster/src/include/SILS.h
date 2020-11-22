@@ -149,7 +149,7 @@ namespace sils {
     inline scalar diff(scalarType<scalar, index> *x,
                        scalarType<scalar, index> *y) {
         scalar d = 0;
-#pragma omp parallel for
+#pragma omp simd reduction(+ : d)
         for (index i = 0; i < n; i++) {
             d += (y->x[i] - x->x[i]);
         }
@@ -392,7 +392,7 @@ namespace sils {
                                                          const index n_dx_q_1,
                                                          const scalar *y,
                                                          scalarType<scalar, index> *z_B) {
-            scalar sum = 0, newprsd, gamma, beta = INFINITY;
+            scalar sum, newprsd, gamma, beta = INFINITY;
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
@@ -437,7 +437,6 @@ namespace sils {
                     } else {
                         beta = newprsd;
 #pragma omp simd
-//#pragma omp parallel for
                         for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
                             z_B->x[l] = z[l - n_dx_q_0];
                         }
@@ -448,7 +447,9 @@ namespace sils {
                 } else {
                     if (k == dx - 1) break;
                     else {
+#pragma omp atomic
                         k++;
+#pragma omp atomic
                         row_k++;
                         z[k] += d[k];
                         gamma = R_A.x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
@@ -456,15 +457,10 @@ namespace sils {
                     }
                 }
             }
-//            for (int l = n_dx_q_0; l < n_dx_q_1; l++) {
-//                cout<< z_B->x[l] << " ";
-//            }
-//            cout<< "\n";
-//            free(p);
-//            free(c);
-//            free(z);
-//            free(d);
-//            free(y);
+            free(p);
+            free(c);
+            free(z);
+            free(d);
             return z_B;
         }
 
