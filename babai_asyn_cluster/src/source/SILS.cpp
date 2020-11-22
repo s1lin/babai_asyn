@@ -436,7 +436,7 @@ namespace sils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, n_dx_q_0, n_dx_q_1)
         {
             y = (scalar *) calloc(dx, sizeof(scalar));
-            for (index j = 0; j < nswp && nres > 0.5; j++) {
+            for (index j = 0; j < nswp; j++) {// && nres > 0.5;
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];

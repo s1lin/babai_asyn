@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
     //plot_run();
 
-    for (int SNR = 25; SNR <= 45; SNR += 10) {
+    for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch(index){
             case 0:
                 plot_run<double, int, n1>(k, SNR);

@@ -40,7 +40,7 @@ void ils_block_search(index k, index SNR) {
                     z_B.x[t] = pow(2, k) / 2;
                     z_B_p.x[t] = pow(2, k) / 2;
                 }
-                index iter = 6;
+                index iter = 5;
                 reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                 printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %fs\n",
