@@ -228,27 +228,29 @@ void plot_res(index k, index SNR) {
                 for (index i = 0; i < n; i++) {
                     z_B.x[i] = std::pow(2, k) / 2;
                 }
-            start = omp_get_wtime();
-            z_B_s = *bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B_s, &d_s);
-            end_time = omp_get_wtime() - start;
-            auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B_s);
+            auto reT = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B_s, &d_s);
+            auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
             auto y = bsa.y_A;
             auto R = bsa.R_A;
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, end_time);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %fs\n", size, res, reT.run_time);
             for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
-                free(z_B.x);
-                z_B.x = (scalar *) calloc(n, sizeof(scalar));
-                if (init == -1)
-                    for (index i = 0; i < n; i++) {
-                        z_B.x[i] = bsa.x_R.x[i];
-                    }
-                else if (init == 1)
-                    for (index i = 0; i < n; i++) {
-                        z_B.x[i] = std::pow(2, k) / 2;
-                    }
+                cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
+                for (index nswp = 0; nswp < 12; nswp++) {
+                    free(z_B.x);
+                    z_B.x = (scalar *) calloc(n, sizeof(scalar));
+                    if (init == -1)
+                        for (index i = 0; i < n; i++) {
+                            z_B.x[i] = bsa.x_R.x[i];
+                        }
+                    else if (init == 1)
+                        for (index i = 0; i < n; i++) {
+                            z_B.x[i] = std::pow(2, k) / 2;
+                        }
 
-                z_B = *bsa.sils_block_search_omp(n_proc, 12, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
-                cout << sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &z_B) << endl;
+                    reT = bsa.sils_block_search_omp(n_proc, nswp, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+                    cout << sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x) << ",";
+                }
+                cout << endl;
 //                cout << sils::norm<scalar, index, n>(&z_B_s, &z_B) << endl;
 
             }

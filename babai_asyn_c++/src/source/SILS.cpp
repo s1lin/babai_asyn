@@ -415,6 +415,7 @@ namespace sils {
                                                                      scalarType<index, index> *d) {
         index ds = d->size, dx = d->x[ds - 1];
 //        cout << "Block Size: " << dx << "," << "n_proc: " << n_proc << ",";
+//        cout << dx << "," << n_proc << ",";
         //special cases:
         if (ds == 1) {
             if (d->x[0] == 1) {
