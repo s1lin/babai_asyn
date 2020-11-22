@@ -100,12 +100,12 @@ void plot_run(index k, index SNR) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     if (init == -1)
-                        for (index i = 0; i < n; i++) {
-                            z_B.x[i] = bsa.x_R.x[i];
+                        for (index t = 0; t < n; t++) {
+                            z_B.x[t] = bsa.x_R.x[t];
                         }
                     else if (init == 1)
-                        for (index i = 0; i < n; i++) {
-                            z_B.x[i] = std::pow(2, k) / 2;
+                        for (index t = 0; t < n; t++) {
+                            z_B.x[t] = std::pow(2, k) / 2;
                         }
                     auto reT = bsa.sils_babai_search_serial(&z_B);
                     ser_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
@@ -121,12 +121,12 @@ void plot_run(index k, index SNR) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     if (init == -1)
-                        for (index i = 0; i < n; i++) {
-                            z_B.x[i] = bsa.x_R.x[i];
+                        for (index t = 0; t < n; t++) {
+                            z_B.x[t] = bsa.x_R.x[t];
                         }
                     else if (init == 1)
-                        for (index i = 0; i < n; i++) {
-                            z_B.x[i] = std::pow(2, k) / 2;
+                        for (index t = 0; t < n; t++) {
+                            z_B.x[t] = std::pow(2, k) / 2;
                         }
                     auto reT = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, &d_s);
                     ser_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
@@ -141,40 +141,42 @@ void plot_run(index k, index SNR) {
                 index l = 2;
                 scalar min_res = INFINITY;
                 for (index i = 0; i < 10; i++) {
-                    for (index n_proc = 5; n_proc <= 40; n_proc *= 2) {
+                    for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
-                            for (index i = 0; i < n; i++) {
-                                z_B.x[i] = bsa.x_R.x[i];
+                            for (index t = 0; t < n; t++) {
+                                z_B.x[t] = bsa.x_R.x[t];
                             }
                         else if (init == 1)
-                            for (index i = 0; i < n; i++) {
-                                z_B.x[i] = std::pow(2, k) / 2;
+                            for (index t = 0; t < n; t++) {
+                                z_B.x[t] = std::pow(2, k) / 2;
                             }
-                        index iter = 10;
+                        index iter = 5;
                         auto reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                         omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         if (omp_res < min_res)
                             min_res = omp_res;
-                        res[l] += omp_res;
+                        
                         tim[l] += reT.run_time;
                         itr[l] += reT.num_iter;
                         l++;
                     }
+                    res[l] = min_res;
+                    min_res = INFINITY;
                     l = 2;
                 }
-                cout << "min_res:" << min_res << endl;
+//                cout << "min_res:" << min_res << endl;
                 l = 2;
-                for (index n_proc = 5; n_proc <= 40; n_proc *= 2) {
+                for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                     file << size << "," << n_proc << ","
-                         << res[l] / 10 << ","
+                         << res[l] << ","
                          << tim[l] / 10 << ","
                          << itr[l] / 10 << ",\n";
 
                     printf("Block Size: %d, n_proc: %d, res :%f, num_iter: %f, Average time: %fs\n",
                            size, n_proc,
-                           res[l] / 10,
+                           res[l],
                            itr[l] / 10,
                            tim[l] / 10);
                     l++;
@@ -202,7 +204,6 @@ void plot_res(index k, index SNR) {
     printf("Finish Init, time: %f seconds\n", end_time);
     printf("-------------------------------------------\n");
 
-    index init = 0;
     for (index init = -1; init <= 1; init++) {
         for (index size = 8; size <= 32; size *= 2) {
             vector<index> d(n / size, size);
