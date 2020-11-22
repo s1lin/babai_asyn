@@ -206,7 +206,7 @@ def plot_res_conv(n):
                     elif init_value in '1':
                         title = title + 'where each element in the initial point is the rounded mean'
 
-                    fig.suptitle(title, fontsize=10)
+                    fig.suptitle(title, fontsize=12)
                     plt.savefig(
                         './' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0] + '_' + str(pow(4, f)))
                     plt.close()
