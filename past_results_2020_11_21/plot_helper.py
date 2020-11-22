@@ -110,13 +110,13 @@ def plot_res_conv(n):
         for i in range(0, len(lines)):
             line = lines[i]
             if "SNR" in line:
-                SNR = lines[i].split(":")[1].split("/n")[0]
+                SNR = lines[i].split(":")[1].split("\n")[0]
             if "seconds" in line:
                 i = i + 2
                 while i < len(lines) and not "-----" in lines[i]:
 
                     line_str = lines[i].split(",")
-                    init_value = line_str[0].split("/n")[0]
+                    init_value = line_str[0].split("\n")[0]
 
                     fig, (ax1, ax2, ax3) = plt.subplots(3,1)
                     axes = plt.gca()
@@ -200,7 +200,7 @@ def plot_res_conv(n):
                         fig.suptitle('Residual Convergence where each element in the initial point is the rounded mean')
 
                     fig.suptitle('Residual Convergence with different block sizes')
-                    plt.savefig('./' + str(n) + '_res_' + init_value + "_" + str(SNR) + "_" + line_str[0])
+                    plt.savefig('./' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0])
                     plt.close()
                     i = i + 1
 
