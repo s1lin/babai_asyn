@@ -438,7 +438,7 @@ namespace sils {
         {
             y = (scalar *) calloc(dx, sizeof(scalar));
             for (index j = 0; j < nswp; j++) {// && nres > 0.5;
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for nowait //schedule(dynamic)
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];

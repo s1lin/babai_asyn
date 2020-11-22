@@ -24,17 +24,18 @@ int main(int argc, char *argv[]) {
     for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch(index){
             case 0:
-//                plot_run<double, int, n1>(k, SNR);
-//                ils_block_search<double, int, n1>(k, SNR);
                 plot_res<double, int, n1>(k, SNR);
+                plot_run<double, int, n1>(k, SNR);
+//                ils_block_search<double, int, n1>(k, SNR);
                 break;
             case 1:
                 plot_res<double, int, n2>(k, SNR);
+                plot_run<double, int, n2>(k, SNR);
 //                ils_block_search<double, int, n2>(k, SNR);
-//                plot_run<double, int, n2>(k, SNR);
                 break;
             case 2:
                 plot_res<double, int, n3>(k, SNR);
+                plot_run<double, int, n3>(k, SNR);
 //                ils_block_search<double, int, n3>(k, SNR);
 //                plot_run<double, int, n3>(k, SNR);
                 break;
