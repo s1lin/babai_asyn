@@ -118,7 +118,7 @@ def plot_res_conv(n):
 
                     line_str = lines[i].split(",")
                     init_value = line_str[0].split("\n")[0]
-                    plt.rcParams["figure.figsize"] = (10, 4)
+                    plt.rcParams["figure.figsize"] = (13, 4)
                     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
                     axes = plt.gca()
 
