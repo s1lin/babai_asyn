@@ -30,13 +30,13 @@ int main(int argc, char *argv[]) {
                 break;
             case 1:
                 plot_res<double, int, n2>(k, SNR);
-//                plot_run<double, int, n2>(k, SNR);
+                plot_run<double, int, n2>(k, SNR);
 //                ils_block_search<double, int, n2>(k, SNR);
                 break;
             case 2:
-//                plot_res<double, int, n3>(k, SNR);
-//                plot_run<double, int, n3>(k, SNR);
-                ils_block_search<double, int, n3>(k, SNR);
+                plot_res<double, int, n3>(k, SNR);
+                plot_run<double, int, n3>(k, SNR);
+//                ils_block_search<double, int, n3>(k, SNR);
 //                plot_run<double, int, n3>(k, SNR);
                 break;
             default:
