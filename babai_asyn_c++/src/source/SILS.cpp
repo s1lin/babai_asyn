@@ -469,23 +469,23 @@ namespace sils {
                         z_B->x[l] = y[l - n_dx_q_0];
                     }
                 }
-//#pragma omp master
-//                {
-//                    if (num_iter > 0) {
-//                        nres = 0;
-//#pragma omp simd reduction(+ : nres)
-//                        for (index l = 0; l < n; l++) {
-//                            nres += (z_B_p->x[l] - z_B->x[l]);
-//                            z_B_p->x[l] = z_B->x[l];
-//                        }
-//                    } else {
-//#pragma omp simd
-//                        for (index l = 0; l < n; l++) {
-//                            z_B_p->x[l] = z_B->x[l];
-//                        }
-//                    }
+#pragma omp master
+                {
+                    if (num_iter > 0) {
+                        nres = 0;
+#pragma omp simd reduction(+ : nres)
+                        for (index l = 0; l < n; l++) {
+                            nres += (z_B_p->x[l] - z_B->x[l]);
+                            z_B_p->x[l] = z_B->x[l];
+                        }
+                    } else {
+#pragma omp simd
+                        for (index l = 0; l < n; l++) {
+                            z_B_p->x[l] = z_B->x[l];
+                        }
+                    }
                     num_iter = j;
-//                }
+                }
             }
 
         }

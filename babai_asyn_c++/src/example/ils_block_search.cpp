@@ -100,7 +100,7 @@ void plot_run(index k, index SNR) {
                 scalar ser_res = 0, ser_time = 0;
 
                 std::cout << "Babai Serial:" << std::endl;
-                for (index i = 0; i < 10; i++) {
+                for (index i = 0; i < 5; i++) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     if (init == -1)
@@ -116,12 +116,12 @@ void plot_run(index k, index SNR) {
                     res[0] += ser_res;
                     tim[0] += reT.run_time;
                 }
-                printf("Thread: SR, Res: %.5f, Run time: %.5fs\n", res[0] / 10, tim[0] / 10);
+                printf("Thread: SR, Res: %.5f, Run time: %.5fs\n", res[0] / 5, tim[0] / 5);
 
-                file << size << "," << res[0] / 10 << "," << tim[0] / 10 << ",\n";
+                file << size << "," << res[0] / 5 << "," << tim[0] / 5 << ",\n";
 
                 std::cout << "Block Serial:" << std::endl;
-                for (index i = 0; i < 10; i++) {
+                for (index i = 0; i < 5; i++) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     if (init == -1)
@@ -137,16 +137,14 @@ void plot_run(index k, index SNR) {
                     res[1] += ser_res;
                     tim[1] += reT.run_time;
                 }
-                printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res[1] / 10, tim[1] / 10);
-                file << size << "," << res[1] / 10 << "," << tim[1] / 10 << ",\n";
+                printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res[1] / 5, tim[1] / 5);
+                file << size << "," << res[1] / 5 << "," << tim[1] / 5 << ",\n";
 
                 std::cout << "Block OMP:" << std::endl;
                 sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
                 index l = 2;
-                for (index i = 0; i < 10; i++) {
-                    for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
-                        if (n_proc == 192)
-                            n_proc = 64;
+                for (index i = 0; i < 5; i++) {
+                    for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
@@ -157,8 +155,8 @@ void plot_run(index k, index SNR) {
                             for (index t = 0; t < n; t++) {
                                 z_B.x[t] = std::pow(2, k) / 2;
                             }
-                        index iter = 6;
-                        if (k == 3) iter = 10;
+                        index iter = 5;
+                        if (k == 3) iter = 8;
                         auto reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                         omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         if (omp_res < min_res[l])
@@ -173,19 +171,17 @@ void plot_run(index k, index SNR) {
                 }
 //                cout << "min_res:" << min_res << endl;
                 l = 2;
-                for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
-                    if (n_proc == 192)
-                        n_proc = 64;
+                for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                     file << size << "," << n_proc << ","
                          << res[l] << ","
-                         << tim[l] / 10 << ","
-                         << itr[l] / 10 << ",\n";
+                         << tim[l] / 5 << ","
+                         << itr[l] / 5 << ",\n";
 
                     printf("Block Size: %d, n_proc: %d, res :%.5f, num_iter: %.5f, Average time: %.5fs\n",
                            size, n_proc,
                            res[l],
-                           itr[l] / 10,
-                           tim[l] / 10);
+                           itr[l] / 5,
+                           tim[l] / 5);
                     l++;
                 }
                 file << "Next,\n";
@@ -242,7 +238,7 @@ void plot_res(index k, index SNR) {
             for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
                 cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
                 for (index nswp = 0; nswp < 12; nswp++) {
-                    for (index t = 0; t < 10; t++) {
+                    for (index t = 0; t < 5; t++) {
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
@@ -258,11 +254,10 @@ void plot_res(index k, index SNR) {
                         scalar newres = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         res = newres < res ? newres : res;
                     }
-                    cout << res << ",";
+                    printf("%.5f,", res);
                     res = INFINITY;
                 }
                 cout << endl;
-//                cout << sils::norm<scalar, index, n>(&z_B_s, &z_B) << endl;
 
             }
         }

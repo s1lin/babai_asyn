@@ -172,7 +172,6 @@ void plot_run(index k, index SNR) {
 //                cout << "min_res:" << min_res << endl;
                 l = 2;
                 for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
-                    n_proc = 64;
                     file << size << "," << n_proc << ","
                          << res[l] << ","
                          << tim[l] / 5 << ","
@@ -255,7 +254,7 @@ void plot_res(index k, index SNR) {
                         scalar newres = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         res = newres < res ? newres : res;
                     }
-                    cout << res << ",";
+                    printf("%.5f,", res);
                     res = INFINITY;
                 }
                 cout << endl;
