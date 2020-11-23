@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import rcParams, rc
+import matplotlib.pyplot as plt2
+from matplotlib import rcParams, rc, ticker
 
 
 def plot_time(ser_time, mat_time, n_proc, omp_time, init_value):
@@ -107,95 +108,97 @@ def plot_res_conv(n):
         print(f)
         file = open(str(n) + '_' + str(pow(4, f)) + '_15.out', 'r')
         lines = file.readlines()
+        k = 0
+        while k < len(lines):
 
-        for i in range(0, len(lines)):
-            line = lines[i]
+            line = lines[k]
             if "SNR" in line:
-                SNR = lines[i].split(":")[1].split("\n")[0]
+                SNR = lines[k].split(":")[1].split("\n")[0]
             if "seconds" in line:
-                i = i + 2
-                while i < len(lines) and not "-----" in lines[i] \
-                        and not "++++++" in lines[i] \
-                        and not "it, si" in lines[i]:
-                    line_str = lines[i].split(",")
+                k = k + 2
+                while k < len(lines) and not "-----" in lines[k] \
+                        and not "++++++" in lines[k] \
+                        and not "it, si" in lines[k]:
+                    line_str = lines[k].split(",")
                     init_value = line_str[0].split("\n")[0]
                     plt.rcParams["figure.figsize"] = (13, 4)
+
                     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
                     axes = plt.gca()
 
                     # plt.rcParams["font.sans-serif"] = "Comic Sans MS"
                     # plt.rcParams["font.family"] = "sans-serif"
                     # rc('font', **{'family': 'serif', 'serif':['Times']})
-                    i = i + 2
-                    line_str = lines[i].split(",")
+                    k = k + 2
+                    line_str = lines[k].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
-                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
+                    ax1.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='r', marker='o',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
+                    ax1.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='g', marker='x',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax1.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
+                    ax1.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
                     ax1.legend(loc="upper right")
                     ax1.set_xlabel('Number of Iterations')
-                    ax1.set_ylabel('Residual $\log_{10}$')
+                    ax1.set_ylabel('Residual')
                     ax1.set_title('Block Size ' + line_str[0], fontsize=10)
 
-                    i = i + 3
-                    line_str = lines[i].split(",")
+                    k = k + 3
+                    line_str = lines[k].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
-                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
+                    ax2.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='r', marker='o',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
+                    ax2.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='g', marker='x',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax2.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
+                    ax2.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
                     ax2.legend(loc="upper right")
                     ax2.set_xlabel('Number of Iterations')
-                    # ax2.set_ylabel('Residual $\log_{10}$')
+                    # ax2.set_ylabel('Residual')
                     ax2.set_title('Block Size ' + line_str[0], fontsize=10)
 
-                    i = i + 3
-                    line_str = lines[i].split(",")
+                    k = k + 3
+                    line_str = lines[k].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
-                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='r', marker='o',
+                    ax3.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='r', marker='o',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='g', marker='x',
+                    ax3.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='g', marker='x',
                                  label='num_thread = ' + line_str[1])
-                    i = i + 1
-                    line_str = lines[i].split(",")
+                    k = k + 1
+                    line_str = lines[k].split(",")
                     line_str[end - 1] = line_str[end - 1].split("/n")[0]
                     print(line_str[2:end])
-                    ax3.semilogy(range(0, 9), np.array(line_str[2:end - 4]).astype(np.float), color='b', marker='+',
+                    ax3.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
                     ax3.legend(loc="upper right")
                     ax3.set_xlabel('Number of Iterations')
-                    # ax3.set_ylabel('Residual $\log_{10}$')
+                    # ax3.set_ylabel('Residual')
                     ax3.set_title('Block Size ' + line_str[0], fontsize=10)
                     title = 'Residual Convergence for' + SNR + '-SNR and ' \
                             + str(pow(4, f)) + '-QAM with different block sizes'
@@ -207,14 +210,165 @@ def plot_res_conv(n):
                     elif init_value in '0':
                         title = title + ' where each element in the initial point is 0'
 
-
                     fig.suptitle(title, fontsize=12)
                     plt.savefig(
                         './' + str(n) + '_res_' + init_value + "_" + SNR + "_" + line_str[0] + '_' + str(pow(4, f)))
                     plt.close()
-                    i = i + 1
+                    k = k + 1
+
+                if "+" not in lines[k]:
+                    k = k + 8
+                else:
+                    k = k + 2
+
+                plt2.rcParams["figure.figsize"] = (13, 9)
+                fig, axes = plt2.subplots(2, 3)
+
+                color = ['r', 'g', 'b']
+                marker = ['o', '+', 'x']
+
+                axes[0, 0].set_title('Block Size 8', fontsize=10)
+                axes[0, 1].set_title('Block Size 16', fontsize=10)
+                axes[0, 2].set_title('Block Size 32', fontsize=10)
+                axes[1, 0].set_title('Block Size 8', fontsize=10)
+                axes[1, 1].set_title('Block Size 16', fontsize=10)
+                axes[1, 2].set_title('Block Size 32', fontsize=10)
+
+                axes[1, 0].set_xlabel('Method')
+                axes[1, 1].set_xlabel('Method')
+                axes[1, 2].set_xlabel('Method')
+
+                axes[0, 0].set_ylabel('Residual')
+                axes[1, 0].set_ylabel('Running Time')
+
+                for x in range(0, 3):
+                    init_value = int(lines[k].split(":")[1].split("\n")[0])
+                    print(lines[k].split(","))
+                    for t in range(0, 3):
+                        print("here:" + str(t))
+                        k = k + 2
+                        print(lines[k].split(","))
+                        babai_res = float(lines[k].split(",")[1].split(":")[1])
+                        babai_tim = float(lines[k].split(",")[2].split(":")[1].split("s")[0])
+                        k = k + 2
+                        print(lines[k].split(","))
+                        block_res = float(lines[k].split(",")[2].split(":")[1])
+                        block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
+                        k = k + 2
+                        print(lines[k].split(","))
+                        omp_res = [babai_res, block_res]
+                        omp_tim = [babai_tim, block_tim]
+
+                        for l in range(0, 4):
+                            print(lines[k].split(","))
+                            omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+                            omp_tim.append(float(lines[k].split(",")[4].split(":")[1].split("s")[0]))
+                            k = k + 1
+
+                        if init_value == -1:
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
+                        elif init_value == 0:
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = 0$')
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = 0$')
+                        else:
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = avg$')
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                                            color=color[x], marker=marker[x], label='$x_{init} = avg$')
+
+                        k = k + 2
+                axes[0, 0].legend(loc="upper left")
+                axes[0, 1].legend(loc="upper left")
+                axes[0, 2].legend(loc="upper left")
+                axes[1, 0].legend(loc="center left")
+                axes[1, 1].legend(loc="center left")
+                axes[1, 2].legend(loc="center left")
+                title = 'Achieved Residual and Running Time for' + SNR + '-SNR and ' \
+                        + str(pow(4, f)) + '-QAM with different block sizes and initial guesses'
+
+                fig.suptitle(title, fontsize=12)
+
+                plt2.savefig('./' + str(n) + '_res_' + SNR + "_tim_" + str(pow(4, f)))
+                plt2.close()
+
+            k = k + 1
 
 
 if __name__ == "__main__":
     plot_res_conv(4096)
     # plot_res_conv(16384)
+
+#
+# for t in range(0, 3):
+#     babai_res = float(lines[k].split(",")[1].split(":")[1])
+#     babai_tim = float(lines[k].split(",")[2].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     block_res = float(lines[k].split(",")[2].split(":")[1])
+#     block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     omp_res = []
+#     omp_res.append(babai_res)
+#     omp_res.append(block_res)
+#     for l in range(0, 3):
+#         omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+#         k = k + 1
+#
+#     ax1.plot(label, omp_res, color=color[t], marker=marker[t])
+#
+#     k = k + 5
+#
+# k = k - 2
+# init_value = int(lines[k].split(":")[1].split("\n")[0])
+# k = k + 2
+# for t in range(0, 3):
+#     babai_res = float(lines[k].split(",")[1].split(":")[1])
+#     babai_tim = float(lines[k].split(",")[2].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     block_res = float(lines[k].split(",")[2].split(":")[1])
+#     block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     omp_res = []
+#     omp_res.append(babai_res)
+#     omp_res.append(block_res)
+#     for l in range(0, 3):
+#         omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+#         k = k + 1
+#
+#     ax2.plot(label, omp_res, color=color[t], marker=marker[t])
+#
+#     k = k + 5
+#
+# k = k - 2
+# init_value = int(lines[k].split(":")[1].split("\n")[0])
+# k = k + 2
+# for t in range(0, 3):
+#     babai_res = float(lines[k].split(",")[1].split(":")[1])
+#     babai_tim = float(lines[k].split(",")[2].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     block_res = float(lines[k].split(",")[2].split(":")[1])
+#     block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
+#     k = k + 2
+#
+#     omp_res = []
+#     omp_res.append(babai_res)
+#     omp_res.append(block_res)
+#     for l in range(0, 3):
+#         omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+#         k = k + 1
+#
+#     ax3.plot(label, omp_res, color=color[t], marker=marker[t])
+#
+#     k = k + 5
+# k = k + 3
+# plt.savefig('./' + str(n) + '_res_' + str(init_value) + "_" + SNR + "_res_" + str(pow(4, f)))
+# plt.close()

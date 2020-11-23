@@ -193,8 +193,9 @@ namespace sils {
 
         //  Determine enumeration direction at level block_size
         d[block_size - 1] = c[block_size - 1] > z->x[block_size - 1] ? 1 : -1;
-
+        index iter = 0;
         while (true) {
+//            iter++;
             newprsd = p[k] + gamma * gamma;
             if (newprsd < beta) {
                 if (k != 0) {
@@ -231,6 +232,7 @@ namespace sils {
                 }
             }
         }
+//        cout<<iter<<endl;
         std::memcpy(z->x, z_H, sizeof(scalar) * block_size);
         returnType<scalar, index> reT = {z, 0, 0, 0};
         free(z_H);
@@ -437,8 +439,8 @@ namespace sils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, n_dx_q_0, n_dx_q_1)
         {
             y = (scalar *) calloc(dx, sizeof(scalar));
-            for (index j = 0; j < nswp; j++) {// && nres > 0.5;
-#pragma omp for nowait
+            for (index j = 0; j < nswp; j++) {// && nres > 0.5
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
@@ -461,23 +463,23 @@ namespace sils {
                     }
                     z_B = do_block_solve(n_dx_q_0, n_dx_q_1, y, z_B);
                 }
-#pragma omp master
-                {
-                    if (num_iter > 0) {
-                        nres = 0;
-#pragma omp simd reduction(+ : nres)
-                        for (index l = 0; l < n; l++) {
-                            nres += (z_B_p->x[l] - z_B->x[l]);
-                            z_B_p->x[l] = z_B->x[l];
-                        }
-                    } else {
-#pragma omp simd
-                        for (index l = 0; l < n; l++) {
-                            z_B_p->x[l] = z_B->x[l];
-                        }
-                    }
+//#pragma omp master
+//                {
+//                    if (num_iter > 0) {
+//                        nres = 0;
+//#pragma omp simd reduction(+ : nres)
+//                        for (index l = 0; l < n; l++) {
+//                            nres += (z_B_p->x[l] - z_B->x[l]);
+//                            z_B_p->x[l] = z_B->x[l];
+//                        }
+//                    } else {
+//#pragma omp simd
+//                        for (index l = 0; l < n; l++) {
+//                            z_B_p->x[l] = z_B->x[l];
+//                        }
+//                    }
                     num_iter = j;
-                }
+//                }
             }
 
         }

@@ -86,8 +86,9 @@ else
 end
 
 k = n;
-
+iter = 0;
 while 1
+    iter = iter + 1;
     % Temporary partial squared residual norm at level k
     newprsd = prsd(k) + gamma * gamma;
 
@@ -171,5 +172,6 @@ while 1
         end 
     end
 end
+
 
 
