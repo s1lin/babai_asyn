@@ -130,6 +130,7 @@ def plot_res_conv(n):
                     # plt.rcParams["font.family"] = "sans-serif"
                     # rc('font', **{'family': 'serif', 'serif':['Times']})
                     k = k + 2
+
                     line_str = lines[k].split(",")
                     end = len(line_str)
                     print(line_str[2:end])
@@ -148,6 +149,14 @@ def plot_res_conv(n):
                     print(line_str[2:end])
                     ax1.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
+
+                    k = k + 1
+                    line_str = lines[k].split(",")
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    print(line_str[2:end])
+                    ax1.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='y', marker='.',
+                                 label='num_thread = ' + line_str[1])
+
                     ax1.legend(loc="upper right")
                     ax1.set_xlabel('Number of Iterations')
                     ax1.set_ylabel('Residual')
@@ -172,6 +181,14 @@ def plot_res_conv(n):
                     print(line_str[2:end])
                     ax2.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
+
+                    k = k + 1
+                    line_str = lines[k].split(",")
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    print(line_str[2:end])
+                    ax2.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='y', marker='.',
+                                 label='num_thread = ' + line_str[1])
+
                     ax2.legend(loc="upper right")
                     ax2.set_xlabel('Number of Iterations')
                     # ax2.set_ylabel('Residual')
@@ -196,6 +213,14 @@ def plot_res_conv(n):
                     print(line_str[2:end])
                     ax3.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='b', marker='+',
                                  label='num_thread = ' + line_str[1])
+
+                    k = k + 1
+                    line_str = lines[k].split(",")
+                    line_str[end - 1] = line_str[end - 1].split("/n")[0]
+                    print(line_str[2:end])
+                    ax3.semilogy(range(0, 11), np.array(line_str[2:end - 2]).astype(np.float), color='y', marker='.',
+                                 label='num_thread = ' + line_str[1])
+
                     ax3.legend(loc="upper right")
                     ax3.set_xlabel('Number of Iterations')
                     # ax3.set_ylabel('Residual')
@@ -224,8 +249,8 @@ def plot_res_conv(n):
                 plt2.rcParams["figure.figsize"] = (13, 9)
                 fig, axes = plt2.subplots(2, 3)
 
-                color = ['r', 'g', 'b']
-                marker = ['o', '+', 'x']
+                color = ['r', 'g', 'b', 'y']
+                marker = ['o', '+', 'x', '.']
 
                 axes[0, 0].set_title('Block Size 8', fontsize=10)
                 axes[0, 1].set_title('Block Size 16', fontsize=10)
@@ -266,19 +291,19 @@ def plot_res_conv(n):
                             k = k + 1
 
                         if init_value == -1:
-                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
                                             color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
-                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
                                             color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
                         elif init_value == 0:
-                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
                                             color=color[x], marker=marker[x], label='$x_{init} = 0$')
-                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
                                             color=color[x], marker=marker[x], label='$x_{init} = 0$')
                         else:
-                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_res[0:5],
+                            axes[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
                                             color=color[x], marker=marker[x], label='$x_{init} = avg$')
-                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-3', 'BOB-12', 'BOB-48'], omp_tim[0:5],
+                            axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
                                             color=color[x], marker=marker[x], label='$x_{init} = avg$')
 
                         k = k + 2

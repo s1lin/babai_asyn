@@ -15,7 +15,7 @@ const int n4 = 32768;
 int main(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
-    int k = 1, index = 0;
+    int k = 3, index = 0;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
@@ -27,18 +27,21 @@ int main(int argc, char *argv[]) {
             case 0:
                 plot_res<double, int, n1>(k, SNR, max_proc);
                 plot_run<double, int, n1>(k, SNR, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
                 plot_run<double, int, n1>(k, SNR, max_proc, 0.5);//NON-STOP
 //                ils_block_search<double, int, n1>(k, SNR);
                 break;
             case 1:
                 plot_res<double, int, n2>(k, SNR, max_proc);
                 plot_run<double, int, n2>(k, SNR, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
                 plot_run<double, int, n2>(k, SNR, max_proc, 0.5);//NON-STOP
 //                ils_block_search<double, int, n2>(k, SNR);
                 break;
             case 2:
                 plot_res<double, int, n3>(k, SNR, max_proc);
                 plot_run<double, int, n3>(k, SNR, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
                 plot_run<double, int, n3>(k, SNR, max_proc, 0.5);//NON-STOP
 //                ils_block_search<double, int, n3>(k, SNR);
 //                plot_run<double, int, n3>(k, SNR);
