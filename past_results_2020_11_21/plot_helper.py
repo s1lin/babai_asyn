@@ -1,107 +1,10 @@
+from textwrap import wrap
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt2
-from matplotlib import rcParams, rc, ticker
-
-
-def plot_time(ser_time, mat_time, n_proc, omp_time, init_value):
-    axes = plt.gca()
-    axes.set_xlim([5, 215])
-    #    axes.set_ylim([0.4, 2.7])
-    left, width = .25, .75
-    bottom, height = -.75, .75
-    right = left + width
-    top = bottom + height
-    plt.axhline(y=ser_time, xmin=0.0, xmax=1.0, color='b', linestyle='dashed', label='Serial')
-    plt.axhline(y=mat_time, xmin=0.0, xmax=1.0, color='g', linestyle='dotted', label='Matlab')
-    plt.plot(n_proc, omp_time, color='r', marker='o', label='OpenMP')
-
-    if init_value == -1:
-        axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess: the round of real solution, Noise = 0.1',
-                  horizontalalignment='right',
-                  verticalalignment='bottom',
-                  transform=axes.transAxes)
-    else:
-        axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess:' + str(init_value) + ', Noise = 0.1',
-                  horizontalalignment='right',
-                  verticalalignment='bottom',
-                  transform=axes.transAxes)
-
-    plt.xlabel('Number of Threads')
-    plt.ylabel('Running Time')
-    plt.title('Average Running Time For 10 Trials')
-
-    plt.legend(loc='center left')
-    plt.savefig('../figures/20201018/' + str(n) + '_tim_' + str(init_value))
-    plt.close()
-
-
-def plot_res(ser_res, mat_res, n_proc, omp_res, init_value, n):
-    axes = plt.gca()
-    axes.set_xlim([5, 215])
-    #    axes.set_ylim([5, 7])
-    left, width = .25, .75
-    bottom, height = .20, .75
-    right = left + width
-    top = bottom + height
-    plt.axhline(y=ser_res, xmin=0.0, xmax=1.0, color='b', linestyle='dashed', label='Serial')
-    plt.axhline(y=mat_res, xmin=0.0, xmax=1.0, color='g', linestyle='dotted', label='Matlab')
-    plt.plot(n_proc, omp_res, color='r', marker='o', label='OpenMP')
-
-    if init_value == -1:
-        axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess: the round of real solution, Noise = 0.1',
-                  horizontalalignment='right',
-                  verticalalignment='bottom',
-                  transform=axes.transAxes)
-    else:
-        axes.text(right, top, 'Dimension: ' + str(n) + ', Init Guess:' + str(init_value) + ', Noise = 0.1',
-                  horizontalalignment='right',
-                  verticalalignment='bottom',
-                  transform=axes.transAxes)
-
-    plt.xlabel('Number of Threads')
-    plt.ylabel('Residual')
-    plt.title('Average Residual Time For 10 Trials')
-
-    plt.legend(loc='upper left')
-    plt.savefig('../figures/20201018/' + str(n) + '_res_' + str(init_value))
-    plt.close()
-
-
-def plot_res_time(n):
-    file1 = open('cmake-build-debug/res_' + str(n) + '.csv', 'r')
-    lines = file1.readlines()
-    init_value = -2
-    n_proc = np.arange(21)
-    omp_res = np.arange(21, dtype=np.double)
-    omp_time = np.arange(21, dtype=np.double)
-    num_iter = np.arange(21, dtype=np.double)
-    eig_res = ser_res = ser_time = eig_time = ser_time = mat_time = mat_res = 0
-
-    index = i = 0
-    for line in lines:
-        line_str = line.split(",")
-        print(line_str)
-        if line == "Next,\n":
-            plot_time(ser_time, mat_time, n_proc, omp_time, init_value)
-            plot_res(ser_res, mat_res, n_proc, omp_res, init_value)
-            index = i = 0
-        else:
-            init_value = int(line_str[0])
-            if index == 0:
-                ser_res = float(line_str[1])
-                ser_time = float(line_str[2])
-            elif index == 1:
-                mat_res = float(line_str[1])
-                mat_time = float(line_str[2])
-            else:
-                n_proc[i] = int(line_str[1])
-                omp_res[i] = float(line_str[2])
-                omp_time[i] = float(line_str[3])
-                num_iter[i] = float(line_str[4])
-                i = i + 1
-            index = index + 1
-
+import matplotlib.pyplot as plt3
+import pandas as pd
 
 def plot_res_conv(n):
     for f in range(1, 4, 2):
@@ -247,25 +150,21 @@ def plot_res_conv(n):
                     k = k + 2
 
                 plt2.rcParams["figure.figsize"] = (13, 9)
-                fig, axes = plt2.subplots(2, 3)
+                fig, axes2 = plt2.subplots(2, 3)
 
                 color = ['r', 'g', 'b', 'y']
                 marker = ['o', '+', 'x', '.']
 
-                axes[0, 0].set_title('Block Size 8', fontsize=10)
-                axes[0, 1].set_title('Block Size 16', fontsize=10)
-                axes[0, 2].set_title('Block Size 32', fontsize=10)
-                axes[1, 0].set_title('Block Size 8', fontsize=10)
-                axes[1, 1].set_title('Block Size 16', fontsize=10)
-                axes[1, 2].set_title('Block Size 32', fontsize=10)
+                axes2[0, 0].set_title('Block Size 8',  fontsize=11)
+                axes2[0, 1].set_title('Block Size 16', fontsize=11)
+                axes2[0, 2].set_title('Block Size 32', fontsize=11)
 
-                axes[1, 0].set_xlabel('Method')
-                axes[1, 1].set_xlabel('Method')
-                axes[1, 2].set_xlabel('Method')
-
-                axes[0, 0].set_ylabel('Residual')
-                axes[1, 0].set_ylabel('Running Time')
-
+                axes2[0, 0].set_ylabel('Residual')
+                axes2[1, 0].set_ylabel('Running Time')
+                index = ['Iter', 'Time']
+                omp_itr = pd.DataFrame(np.random.randn(2, 6),
+                                       columns=['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'])
+                # print(omp_itr.iloc[0, 0])
                 for x in range(0, 3):
                     init_value = int(lines[k].split(":")[1].split("\n")[0])
                     print(lines[k].split(","))
@@ -281,12 +180,107 @@ def plot_res_conv(n):
                         block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
                         k = k + 2
                         print(lines[k].split(","))
+
                         omp_res = [babai_res, block_res]
                         omp_tim = [babai_tim, block_tim]
+                        omp_itr.iloc[0, 0] = '/'
+                        omp_itr.iloc[0, 1] = '/'
+                        omp_itr.iloc[1, 0] = babai_tim
+                        omp_itr.iloc[1, 1] = block_tim
 
                         for l in range(0, 4):
                             print(lines[k].split(","))
                             omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+                            omp_itr.iloc[0, l + 2] = float(lines[k].split(",")[3].split(":")[1])
+                            omp_itr.iloc[1, l + 2] = float(lines[k].split(",")[4].split(":")[1].split("s")[0])
+                            omp_tim.append(float(lines[k].split(",")[4].split(":")[1].split("s")[0]))
+                            k = k + 1
+
+                        if init_value == -1:
+                            axes2[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
+                                            color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
+                            axes2[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
+                                            color=color[x], marker=marker[x], label='$x_{init} = round(x_R)$')
+                        elif init_value == 0:
+                            axes2[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
+                                            color=color[x], marker=marker[x], label='$x_{init} = 0$')
+                            axes2[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
+                                            color=color[x], marker=marker[x], label='$x_{init} = 0$')
+                        else:
+                            axes2[0, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_res,
+                                            color=color[x], marker=marker[x], label='$x_{init} = avg$')
+                            axes2[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
+                                            color=color[x], marker=marker[x], label='$x_{init} = avg$')
+
+                        axes2[1, t].set_xticks([])
+                        axes2[1, t].table(cellText=omp_itr.values, rowLabels=index, colLabels=omp_itr.columns,
+                                         loc='bottom', colLoc='center', cellLoc='center')
+
+                        k = k + 2
+
+                axes2[0, 0].legend(loc="upper left")
+                axes2[0, 1].legend(loc="upper left")
+                axes2[0, 2].legend(loc="upper left")
+                axes2[1, 0].legend(loc="center left")
+                axes2[1, 1].legend(loc="center left")
+                axes2[1, 2].legend(loc="center left")
+                title = 'Achieved Residual and Running Time for problem size' + str(n) + 'with ' + SNR + '-SNR and ' \
+                        + str(pow(4, f)) + '-QAM with different block sizes and initial guesses without stopping ' \
+                                           'Criteria'
+
+                fig.suptitle("\n".join(wrap(title, 60)), fontsize=12)
+                pd.set_option('display.max_columns', None)
+                print(omp_itr)
+
+                plt2.savefig('./' + str(n) + '_res_' + SNR + "_tim_" + str(pow(4, f)) + '_non_stop')
+                plt2.close()
+                k = k + 7
+
+                plt3.rcParams["figure.figsize"] = (13, 9)
+                fig, axes = plt3.subplots(2, 3)
+
+                color = ['r', 'g', 'b', 'y']
+                marker = ['o', '+', 'x', '.']
+
+                axes[0, 0].set_title('Block Size 8', fontsize=11)
+                axes[0, 1].set_title('Block Size 16', fontsize=11)
+                axes[0, 2].set_title('Block Size 32', fontsize=11)
+
+                axes[0, 0].set_ylabel('Residual')
+                axes[1, 0].set_ylabel('Running Time')
+
+                index = ['Iter', 'Time']
+                omp_itr = pd.DataFrame(np.random.randn(2, 6),
+                                       columns=['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'])
+                # print(omp_itr.iloc[0, 0])
+                for x in range(0, 3):
+                    init_value = int(lines[k].split(":")[1].split("\n")[0])
+                    print(lines[k].split(","))
+                    for t in range(0, 3):
+                        print("here:" + str(t))
+                        k = k + 2
+                        print(lines[k].split(","))
+                        babai_res = float(lines[k].split(",")[1].split(":")[1])
+                        babai_tim = float(lines[k].split(",")[2].split(":")[1].split("s")[0])
+                        k = k + 2
+                        print(lines[k].split(","))
+                        block_res = float(lines[k].split(",")[2].split(":")[1])
+                        block_tim = float(lines[k].split(",")[3].split(":")[1].split("s")[0])
+                        k = k + 2
+                        print(lines[k].split(","))
+
+                        omp_res = [babai_res, block_res]
+                        omp_tim = [babai_tim, block_tim]
+                        omp_itr.iloc[0, 0] = '/'
+                        omp_itr.iloc[0, 1] = '/'
+                        omp_itr.iloc[1, 0] = babai_tim
+                        omp_itr.iloc[1, 1] = block_tim
+
+                        for l in range(0, 4):
+                            print(lines[k].split(","))
+                            omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
+                            omp_itr.iloc[0, l + 2] = float(lines[k].split(",")[3].split(":")[1])
+                            omp_itr.iloc[1, l + 2] = float(lines[k].split(",")[4].split(":")[1].split("s")[0])
                             omp_tim.append(float(lines[k].split(",")[4].split(":")[1].split("s")[0]))
                             k = k + 1
 
@@ -306,6 +300,10 @@ def plot_res_conv(n):
                             axes[1, t].plot(['Babai-1', 'BOB-1', 'BOB-6', 'BOB-12', 'BOB-24', 'BOB-48'], omp_tim,
                                             color=color[x], marker=marker[x], label='$x_{init} = avg$')
 
+                        axes[1, t].set_xticks([])
+                        axes[1, t].table(cellText=omp_itr.values, rowLabels=index, colLabels=omp_itr.columns,
+                                         loc='bottom', colLoc='center', cellLoc='center')
+
                         k = k + 2
                 axes[0, 0].legend(loc="upper left")
                 axes[0, 1].legend(loc="upper left")
@@ -313,20 +311,21 @@ def plot_res_conv(n):
                 axes[1, 0].legend(loc="center left")
                 axes[1, 1].legend(loc="center left")
                 axes[1, 2].legend(loc="center left")
-                title = 'Achieved Residual and Running Time for' + SNR + '-SNR and ' \
-                        + str(pow(4, f)) + '-QAM with different block sizes and initial guesses'
+                title = 'Achieved Residual and Running Time for problem size' + str(n) + 'with ' + SNR + '-SNR and ' \
+                        + str(pow(4, f)) + '-QAM with different block sizes and initial guesses with stopping ' \
+                                           'Criteria'
 
-                fig.suptitle(title, fontsize=12)
+                fig.suptitle("\n".join(wrap(title, 60)), fontsize=12)
 
-                plt2.savefig('./' + str(n) + '_res_' + SNR + "_tim_" + str(pow(4, f)))
-                plt2.close()
+                plt3.savefig('./' + str(n) + '_res_' + SNR + "_tim_" + str(pow(4, f)) + '_stopped')
+                plt3.close()
 
             k = k + 1
 
 
 if __name__ == "__main__":
     plot_res_conv(4096)
-    # plot_res_conv(16384)
+    plot_res_conv(16384)
 
 #
 # for t in range(0, 3):
