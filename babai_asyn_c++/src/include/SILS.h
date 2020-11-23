@@ -388,10 +388,9 @@ namespace sils {
         }
 
 
-        inline scalarType<scalar, index> *do_block_solve(const index n_dx_q_0,
-                                                         const index n_dx_q_1,
-                                                         const scalar *y,
-                                                         scalarType<scalar, index> *z_B) {
+        inline scalar *do_block_solve(const index n_dx_q_0,
+                                      const index n_dx_q_1,
+                                      const scalar *y) {
             scalar sum, newprsd, gamma, beta = INFINITY;
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
@@ -399,6 +398,7 @@ namespace sils {
             auto *p = (scalar *) calloc(dx, sizeof(scalar));
             auto *c = (scalar *) calloc(dx, sizeof(scalar));
             auto *z = (scalar *) calloc(dx, sizeof(scalar));
+            auto *x = (scalar *) calloc(dx, sizeof(scalar));
             auto *d = (index *) calloc(dx, sizeof(index));
 
             //  Initial squared search radius
@@ -412,7 +412,7 @@ namespace sils {
 
             //ILS search process
             while (true) {
-                iter++;
+//                iter++;
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -438,8 +438,8 @@ namespace sils {
                     } else {
                         beta = newprsd;
 #pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            z_B->x[l] = z[l - n_dx_q_0];
+                        for (index l = 0; l < dx; l++) {
+                            x[l] = z[l];
                         }
 
                         z[0] += d[0];
@@ -464,7 +464,7 @@ namespace sils {
             free(c);
             free(z);
             free(d);
-            return z_B;
+            return x;
         }
 
 

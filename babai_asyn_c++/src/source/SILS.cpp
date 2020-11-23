@@ -434,13 +434,18 @@ namespace sils {
         index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
         scalar res = 0, nres = 10, sum = 0;
         auto *y = (scalar *) calloc(dx, sizeof(scalar));
+        auto *y_n = (scalar *) calloc(dx, sizeof(scalar));
+
+        for (index l = n - dx; l < n; l++) {
+            y_n[l - (n - dx)] = y_B->x[l];
+        }
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, n_dx_q_0, n_dx_q_1)
         {
             y = (scalar *) calloc(dx, sizeof(scalar));
             for (index j = 0; j < nswp; j++) {// && nres > 0.5
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for nowait
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
@@ -455,13 +460,14 @@ namespace sils {
                             }
                             y[row - n_dx_q_0] = y_B->x[row] - sum;
                         }
+                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y);
                     } else {
-#pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            y[l - n_dx_q_0] = y_B->x[l];
-                        }
+                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y_n);
                     }
-                    z_B = do_block_solve(n_dx_q_0, n_dx_q_1, y, z_B);
+#pragma omp simd
+                    for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                        z_B->x[l] = y[l - n_dx_q_0];
+                    }
                 }
 //#pragma omp master
 //                {
@@ -486,6 +492,7 @@ namespace sils {
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, nres, num_iter};
         free(y);
+        free(y_n);
         return reT;
     }
 }

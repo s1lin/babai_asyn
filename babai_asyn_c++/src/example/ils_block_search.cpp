@@ -32,8 +32,11 @@ void ils_block_search(index k, index SNR) {
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
             sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
 
-            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
-                n_proc = n_proc == 13 ? 12 : n_proc;
+//            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
+//                n_proc = n_proc == 13 ? 12 : n_proc;
+            for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
+                if (n_proc == 192)
+                    n_proc = 64;
                 free(z_B.x);
                 z_B.x = (scalar *) calloc(n, sizeof(scalar));
                 z_B_p.x = (scalar *) calloc(n, sizeof(scalar));
@@ -41,7 +44,7 @@ void ils_block_search(index k, index SNR) {
                     z_B.x[t] = pow(2, k) / 2;
                     z_B_p.x[t] = pow(2, k) / 2;
                 }
-                index iter = n_proc == 1 ? 1 : 4;
+                index iter = n_proc == 1 ? 1 : 5;
                 reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                 printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %.5fs\n",
