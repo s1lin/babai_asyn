@@ -65,7 +65,7 @@ void ils_block_search(index k, index SNR) {
 }
 
 template<typename scalar, typename index, index n>
-void plot_run(index k, index SNR) {
+void plot_run(index k, index SNR, index max_proc, scalar stop) {
 
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
@@ -144,7 +144,8 @@ void plot_run(index k, index SNR) {
                 sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
                 index l = 2;
                 for (index i = 0; i < 5; i++) {
-                    for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
+                    for (index n_proc = 6; n_proc <= max_proc; n_proc *= 2) {
+                        n_proc = n_proc == 96 ? 64 : n_proc;
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
@@ -157,7 +158,8 @@ void plot_run(index k, index SNR) {
                             }
                         index iter = 5;
                         if (k == 3) iter = 8;
-                        auto reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+                        auto reT = bsa.sils_block_search_omp(n_proc, iter, stop, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p,
+                                                             &d_s);
                         omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         if (omp_res < min_res[l])
                             min_res[l] = omp_res;
@@ -171,7 +173,8 @@ void plot_run(index k, index SNR) {
                 }
 //                cout << "min_res:" << min_res << endl;
                 l = 2;
-                for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
+                for (index n_proc = 6; n_proc <= max_proc; n_proc *= 2) {
+                    n_proc = n_proc == 96 ? 64 : n_proc;
                     file << size << "," << n_proc << ","
                          << res[l] << ","
                          << tim[l] / 5 << ","
@@ -194,7 +197,7 @@ void plot_run(index k, index SNR) {
 }
 
 template<typename scalar, typename index, index n>
-void plot_res(index k, index SNR) {
+void plot_res(index k, index SNR, index max_proc) {
     printf("-------------------------------------------\n");
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
@@ -235,10 +238,10 @@ void plot_res(index k, index SNR) {
             auto R = bsa.R_A;
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
             res = INFINITY;
-            for (index n_proc = 3; n_proc <= 48; n_proc *= 4) {
+            for (index n_proc = 6; n_proc <= max_proc; n_proc *= 2) {
                 cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
                 for (index nswp = 0; nswp < 12; nswp++) {
-                    for (index t = 0; t < 5; t++) {
+                    for (index t = 0; t < 3; t++) {
                         free(z_B.x);
                         z_B.x = (scalar *) calloc(n, sizeof(scalar));
                         if (init == -1)
@@ -250,7 +253,7 @@ void plot_res(index k, index SNR) {
                                 z_B.x[i] = std::pow(2, k) / 2;
                             }
 
-                        reT = bsa.sils_block_search_omp(n_proc, nswp, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+                        reT = bsa.sils_block_search_omp(n_proc, nswp, -1, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                         scalar newres = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
                         res = newres < res ? newres : res;
                     }

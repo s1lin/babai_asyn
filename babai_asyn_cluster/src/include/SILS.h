@@ -543,7 +543,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_omp(index n_proc, index nswp,
+        sils_block_search_omp(index n_proc, index nswp, scalar stop,
                               scalarType<scalar, index> *R_B,
                               scalarType<scalar, index> *y_B,
                               scalarType<scalar, index> *z_B,
