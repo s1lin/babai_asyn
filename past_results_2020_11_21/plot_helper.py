@@ -149,7 +149,7 @@ def plot_res_conv(n):
                 else:
                     k = k + 2
 
-                plt2.rcParams["figure.figsize"] = (13, 9)
+                plt2.rcParams["figure.figsize"] = (13, 7)
                 fig, axes2 = plt2.subplots(2, 3)
 
                 color = ['r', 'g', 'b', 'y']
@@ -228,7 +228,7 @@ def plot_res_conv(n):
                         + str(pow(4, f)) + '-QAM with different block sizes and initial guesses without stopping ' \
                                            'Criteria'
 
-                fig.suptitle("\n".join(wrap(title, 60)), fontsize=12)
+                fig.suptitle("\n".join(wrap(title, 120)), fontsize=12)
                 pd.set_option('display.max_columns', None)
                 print(omp_itr)
 
@@ -236,7 +236,7 @@ def plot_res_conv(n):
                 plt2.close()
                 k = k + 7
 
-                plt3.rcParams["figure.figsize"] = (13, 9)
+                plt3.rcParams["figure.figsize"] = (13, 7)
                 fig, axes = plt3.subplots(2, 3)
 
                 color = ['r', 'g', 'b', 'y']
@@ -315,7 +315,7 @@ def plot_res_conv(n):
                         + str(pow(4, f)) + '-QAM with different block sizes and initial guesses with stopping ' \
                                            'Criteria'
 
-                fig.suptitle("\n".join(wrap(title, 60)), fontsize=12)
+                fig.suptitle("\n".join(wrap(title, 120)), fontsize=12)
 
                 plt3.savefig('./' + str(n) + '_res_' + SNR + "_tim_" + str(pow(4, f)) + '_stopped')
                 plt3.close()

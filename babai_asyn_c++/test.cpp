@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
     }
+    max_proc = max_proc != 64? max_proc : 100;
     //plot_run();
 
     for (int SNR = 15; SNR <= 35; SNR += 20) {

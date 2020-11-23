@@ -156,8 +156,8 @@ void plot_run(index k, index SNR, index max_proc, scalar stop) {
                             for (index t = 0; t < n; t++) {
                                 z_B.x[t] = std::pow(2, k) / 2;
                             }
-                        index iter = 5;
-                        if (k == 3) iter = 8;
+                        index iter = 10;
+//                        if (k == 3) iter = 8;
                         auto reT = bsa.sils_block_search_omp(n_proc, iter, stop, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p,
                                                              &d_s);
                         omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
