@@ -140,7 +140,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                 printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res[1] / 5, tim[1] / 5);
                 file << size << "," << res[1] / 5 << "," << tim[1] / 5 << ",\n";
 
-                std::cout << "Block OMP, " << "Stopping criteria: " << stop << std::endl;
+                std::cout << "Block OMP:" << std::endl;
                 sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
                 index l = 2;
                 for (index i = 0; i < 5; i++) {
@@ -173,7 +173,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                 }
 //                cout << "min_res:" << min_res << endl;
                 l = 2;
-                for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+                for (index n_proc = 12; n_proc <= max_proc; n_proc *= 2) {
                     n_proc = n_proc == 96 ? 64 : n_proc;
                     file << size << "," << n_proc << ","
                          << res[l] << ","
@@ -239,7 +239,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
             res = INFINITY;
             for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
-                n_proc = n_proc == 96 ? 64 : n_proc;
+
                 cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
                 for (index nswp = 0; nswp < 20; nswp++) {
                     for (index t = 0; t < 3; t++) {

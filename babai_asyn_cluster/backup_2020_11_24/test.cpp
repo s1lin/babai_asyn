@@ -23,22 +23,24 @@ int main(int argc, char *argv[]) {
     }
     max_proc = max_proc != 64? max_proc : 100;
     min_proc = max_proc != 64? 6 : 12;
-
+    
     //plot_run();
 
     for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch(index){
             case 0:
-//                plot_res<double, int, n1>(k, SNR, min_proc, max_proc);
-//                plot_run<double, int, n1>(k, SNR, 3, max_proc, -1);//NON-STOP
-//                plot_run<double, int, n1>(k, SNR, 3, max_proc, 0);//NON-STOP
-//                plot_run<double, int, n1>(k, SNR, 3, max_proc, 1);//NON-STOP
-                plot_run<double, int, n1>(k, SNR, 3, max_proc, 5);//NON-STOP
+                plot_res<double, int, n1>(k, SNR, min_proc, max_proc);
+                plot_run<double, int, n1>(k, SNR, min_proc, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
+                plot_run<double, int, n1>(k, SNR, min_proc, max_proc, 0);//NON-STOP
+                plot_run<double, int, n1>(k, SNR, min_proc, max_proc, 1);//NON-STOP
+                plot_run<double, int, n1>(k, SNR, min_proc, max_proc, 5);//NON-STOP
 //                ils_block_search<double, int, n1>(k, SNR);
                 break;
             case 1:
                 plot_res<double, int, n2>(k, SNR, min_proc, max_proc);
                 plot_run<double, int, n2>(k, SNR, min_proc, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
                 plot_run<double, int, n2>(k, SNR, min_proc, max_proc, 0);//NON-STOP
                 plot_run<double, int, n2>(k, SNR, min_proc, max_proc, 1);//NON-STOP
                 plot_run<double, int, n2>(k, SNR, min_proc, max_proc, 5);//NON-STOP
@@ -47,6 +49,7 @@ int main(int argc, char *argv[]) {
             case 2:
                 plot_res<double, int, n3>(k, SNR, min_proc, max_proc);
                 plot_run<double, int, n3>(k, SNR, min_proc, max_proc, -1);//NON-STOP
+                cout<<"STOP--------------------";
                 plot_run<double, int, n3>(k, SNR, min_proc, max_proc, 0);//NON-STOP
                 plot_run<double, int, n3>(k, SNR, min_proc, max_proc, 1);//NON-STOP
                 plot_run<double, int, n3>(k, SNR, min_proc, max_proc, 5);//NON-STOP
