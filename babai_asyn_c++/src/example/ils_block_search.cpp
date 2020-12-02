@@ -29,12 +29,13 @@ void ils_block_search(index k, index SNR) {
             z_B.x = (scalar *) calloc(n, sizeof(scalar));
             auto reT = bsa.sils_block_search_serial(&bsa.R_A, &bsa.y_A, &z_B, &d_s);
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
+            auto brr = sils::find_bit_error_rate<scalar, index, n>(reT.x, &bsa.x_tA);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n", size, res, brr, reT.run_time);
             sils::scalarType<scalar, index> z_B_p{(scalar *) calloc(n, sizeof(scalar)), n};
 
 //            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
 //                n_proc = n_proc == 13 ? 12 : n_proc;
-            for (index n_proc = 3; n_proc <= 192; n_proc *= 4) {
+            for (index n_proc = 1; n_proc <= 192; n_proc *= 4) {
                 if (n_proc == 192)
                     n_proc = 64;
                 free(z_B.x);
@@ -44,12 +45,15 @@ void ils_block_search(index k, index SNR) {
                     z_B.x[t] = pow(2, k) / 2;
                     z_B_p.x[t] = pow(2, k) / 2;
                 }
-                index iter = n_proc == 1 ? 1 : 5;
-                reT = bsa.sils_block_search_omp(n_proc, iter, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
+                index iter = n_proc == 1 ? 1 : 10;
+                reT = bsa.sils_block_search_omp(n_proc, iter, -1, &bsa.R_A, &bsa.y_A, &z_B, &z_B_p, &d_s);
                 res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
-                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, Run time: %.5fs\n",
-                       n_proc,
-                       size, reT.num_iter, res, reT.run_time);
+                brr = sils::find_bit_error_rate<scalar, index, n>(reT.x, &bsa.x_tA);
+//                sils::display_scalarType(reT.x);
+                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n",
+                       n_proc, size, reT.num_iter, res, brr, reT.run_time);
+
+
             }
 
             free(z_B.x);
@@ -58,7 +62,8 @@ void ils_block_search(index k, index SNR) {
             sils::scalarType<scalar, index> z_BS = {(scalar *) calloc(n, sizeof(scalar)), n};
             reT = bsa.sils_babai_search_serial(&z_BS);
             res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
-            printf("Method: BBI_SER, Res: %.5f, Run time: %.5fs\n", res, reT.run_time);
+            brr = sils::find_bit_error_rate<scalar, index, n>(reT.x, &bsa.x_tA);
+            printf("Method: BBI_SER, Res: %.5f, BRR: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
         }
     }
 

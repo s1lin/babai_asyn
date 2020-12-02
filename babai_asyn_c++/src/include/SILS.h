@@ -31,6 +31,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <netcdf.h>
+#include <bitset>
 
 using namespace std;
 
@@ -86,6 +87,21 @@ namespace sils {
             res += (y->x[i] - sum) * (y->x[i] - sum);
         }
         return std::sqrt(res);
+    }
+
+    template<typename scalar, typename index, index n>
+    inline scalar find_bit_error_rate(scalarType<scalar, index> *x_b,
+                                      scalarType<scalar, index> *x_t) {
+        index error = 0, size = sizeof(index);
+        for (index i = 0; i < n; i++) {
+            std::string binary_x_b = std::bitset<sizeof(index)>(x_b->x[i]).to_string(); //to binary
+            std::string binary_x_t = std::bitset<sizeof(index)>(x_t->x[i]).to_string();
+            for (index j = 0; j < size; j++)
+                if (binary_x_b[j] != binary_x_t[j])
+                    error++;
+
+        }
+        return (scalar) error / (n * size);
     }
 
     /**

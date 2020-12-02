@@ -1,7 +1,7 @@
 classdef sils_class
 
     properties
-        A, R, x0, x0_R, y, n, k, SNR, z, init_res, sigma;
+        A, Q, R, x0, x0_R, y, n, k, SNR, z, init_res, sigma;
     end
 
     methods(Static)
@@ -23,14 +23,13 @@ classdef sils_class
             sils.n = 2^m;
             sils.SNR = SNR;
             sils.z = ones(sils.n, 1);
-            sils.A = randn(sils.n, sils.n);
-            sils.R = triu(qr(sils.A));
+            sils.A = normrnd(0, 1/4, sils.n, sils.n);
+            [sils.Q, sils.R] = qr(sils.A);
             sils.x0_R = zeros(sils.n, 1);
             sils.x0 = randi([0, 2^k - 1],sils.n,1);
             sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)));
-            sils.y = sils.R * sils.x0 + normrnd(0, sils.sigma, sils.n, 1);
+            sils.y = sils.R * sils.x0 + sils.Q' * normrnd(0, sils.sigma, sils.n, 1);
             sils.init_res = norm(sils.y - sils.R * sils.x0);
-
         end
 
         function sils = init_from_files(sils)
@@ -53,7 +52,7 @@ classdef sils_class
                     end
                 end
             end
-            filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2ste(sils.k),'.nc');
+            filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
