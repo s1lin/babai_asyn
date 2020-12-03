@@ -14,7 +14,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, bool is_write, index n>
     SILS<scalar, index, is_read, is_write, n>::SILS(index qam, index snr) {
-        this->R_A.x = (scalar *) calloc(n * (n + 1) / 2 + 1, sizeof(scalar));
+        this->R_A.x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
         this->x_R.x = (scalar *) calloc(n, sizeof(scalar));
         this->x_tA.x = (scalar *) calloc(n, sizeof(scalar));
         this->y_A.x = (scalar *) calloc(n, sizeof(scalar));
@@ -23,7 +23,7 @@ namespace sils {
         this->qam = qam;
         this->snr = snr;
 
-        this->R_A.size = n * (n + 1) / 2 + 1;
+        this->R_A.size = n * (n + 1) / 2;
         this->x_R.size = n;
         this->x_tA.size = n;
         this->y_A.size = n;
@@ -113,15 +113,18 @@ namespace sils {
                 count = 0;
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < n; i++) {
-                    int x_c = do_solve(i, z_B->x);
+//                for (index m = 0; m < n_proc; m++) {
+//                    for (index i = m; i < n; i += n_proc) {
+                        index x_c = do_solve(i, z_B->x);
 //                    int x_p = z_B[n - 1 - i];
-                    z_B->x[n - 1 - i] = x_c;
+                        z_B->x[n - 1 - i] = x_c;
 
 //                    if (x_c != x_p) {
 //                        update[n - 1 - i] = 0;
 //                        z_B_p[n - 1 - i] = x_c;
 //                    } else {
 //                        update[n - 1 - i] = 1;
+//                    }
 //                    }
                 }
 //#pragma omp simd reduction(+ : count)
@@ -445,6 +448,9 @@ namespace sils {
             y = (scalar *) calloc(dx, sizeof(scalar));
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
+//#pragma omp for nowait //schedule(dynamic)
+//                for (index m = 0; m < n_proc; m++) {
+//                    for (index i = m; i < ds; i += n_proc) {
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
@@ -453,19 +459,20 @@ namespace sils {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
 #pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                //Translating the index from R(matrix) to R_B(compressed array).
-                                sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    //Translating the index from R(matrix) to R_B(compressed array).
+                                    sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                                }
+                                y[row - n_dx_q_0] = y_B->x[row] - sum;
                             }
-                            y[row - n_dx_q_0] = y_B->x[row] - sum;
+                            y = do_block_solve(n_dx_q_0, n_dx_q_1, y);
+                        } else {
+                            y = do_block_solve(n_dx_q_0, n_dx_q_1, y_n);
                         }
-                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y);
-                    } else {
-                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y_n);
-                    }
 #pragma omp simd
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                        z_B->x[l] = y[l - n_dx_q_0];
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            z_B->x[l] = y[l - n_dx_q_0];
+                        }
                     }
                 }
 #pragma omp master

@@ -3,7 +3,6 @@
 
 #include "../include/SILS.h"
 
-#define FILE_NAME "simple_xy.nc"
 #define ERRCODE 2
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
 
@@ -114,15 +113,18 @@ namespace sils {
                 count = 0;
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < n; i++) {
-                    int x_c = do_solve(i, z_B->x);
+//                for (index m = 0; m < n_proc; m++) {
+//                    for (index i = m; i < n; i += n_proc) {
+                        index x_c = do_solve(i, z_B->x);
 //                    int x_p = z_B[n - 1 - i];
-                    z_B->x[n - 1 - i] = x_c;
+                        z_B->x[n - 1 - i] = x_c;
 
 //                    if (x_c != x_p) {
 //                        update[n - 1 - i] = 0;
 //                        z_B_p[n - 1 - i] = x_c;
 //                    } else {
 //                        update[n - 1 - i] = 1;
+//                    }
 //                    }
                 }
 //#pragma omp simd reduction(+ : count)
@@ -446,6 +448,9 @@ namespace sils {
             y = (scalar *) calloc(dx, sizeof(scalar));
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
+//#pragma omp for nowait //schedule(dynamic)
+//                for (index m = 0; m < n_proc; m++) {
+//                    for (index i = m; i < ds; i += n_proc) {
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->x[ds - 1 - i];
                     n_dx_q_1 = i == 0 ? n : n - d->x[ds - i];
@@ -454,19 +459,20 @@ namespace sils {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
 #pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                //Translating the index from R(matrix) to R_B(compressed array).
-                                sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    //Translating the index from R(matrix) to R_B(compressed array).
+                                    sum += R_B->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->x[col];
+                                }
+                                y[row - n_dx_q_0] = y_B->x[row] - sum;
                             }
-                            y[row - n_dx_q_0] = y_B->x[row] - sum;
+                            y = do_block_solve(n_dx_q_0, n_dx_q_1, y);
+                        } else {
+                            y = do_block_solve(n_dx_q_0, n_dx_q_1, y_n);
                         }
-                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y);
-                    } else {
-                        y = do_block_solve(n_dx_q_0, n_dx_q_1, y_n);
-                    }
 #pragma omp simd
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                        z_B->x[l] = y[l - n_dx_q_0];
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            z_B->x[l] = y[l - n_dx_q_0];
+                        }
                     }
                 }
 #pragma omp master
