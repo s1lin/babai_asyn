@@ -474,7 +474,7 @@ namespace sils {
                             z_B->x[l] = y[l - n_dx_q_0];
                         }
                     }
-                }
+//                }
 #pragma omp master
                 {
                     if (num_iter > 0) {
