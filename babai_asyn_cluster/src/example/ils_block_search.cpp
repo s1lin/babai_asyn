@@ -238,7 +238,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
             auto brr = sils::find_bit_error_rate<scalar, index, n>(reT.x, &bsa.x_tA);
 
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr, reT.run_time);
             res = INFINITY;
             for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
                 n_proc = n_proc == 96 ? 64 : n_proc;
@@ -262,7 +262,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
                         res = newres < res ? newres : res;
                         brr = newbrr < brr ? newbrr : brr;
                     }
-                    printf("brr = %.5f, res =%.5%,", res, brr);
+                    printf("res = %.5f, brr =%.5f,", res, brr);
                     brr = INFINITY;
                     res = INFINITY;
                 }

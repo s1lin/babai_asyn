@@ -104,7 +104,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                 d_s.x[i] += d_s.x[i + 1];
             }
 
-            vector<scalar> min_res(50, INFINITY), res(50, 0), tim(50, 0), itr(50, 0), brr(50, 0), min_brr(50, 0);
+            vector<scalar> min_res(50, INFINITY), res(50, 0), tim(50, 0), itr(50, 0), brr(50, 0), min_brr(50, INFINITY);
             scalar omp_res = 0, omp_time = 0, num_iter = 0, omp_brr = 0;
             scalar ser_res = 0, ser_time = 0, ser_brr = 0;
 
@@ -238,8 +238,8 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
             auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, reT.x);
             auto brr = sils::find_bit_error_rate<scalar, index, n>(reT.x, &bsa.x_tA);
 
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Run time: %.5fs\n", size, res, reT.run_time);
-            res = INFINITY;
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr, reT.run_time);
+            res = brr = INFINITY;
             for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
                 n_proc = n_proc == 96 ? 64 : n_proc;
                 cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
@@ -262,9 +262,8 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
                         res = newres < res ? newres : res;
                         brr = newbrr < brr ? newbrr : brr;
                     }
-                    printf("brr = %.5f, res =%.5%,", res, brr);
-                    brr = INFINITY;
-                    res = INFINITY;
+                    printf("res = %.5f, brr =%.5f,", res, brr);
+                    res = brr = INFINITY;
                 }
                 cout << endl;
 
