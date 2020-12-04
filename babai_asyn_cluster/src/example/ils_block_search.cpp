@@ -258,8 +258,8 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s.x[d_s.size - 1] << "," << n_proc << ",";
-            for (index nswp = 0; nswp < 30; nswp++) {
-                for (index t = 0; t < 3; t++) {
+            for (index nswp = 0; nswp < 100; nswp++) {
+                for (index t = 0; t < 1; t++) {
                     free(z_B.x);
                     z_B.x = (scalar *) calloc(n, sizeof(scalar));
                     if (init == -1)
