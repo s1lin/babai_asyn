@@ -232,7 +232,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
-            for (index nswp = 0; nswp < 30; nswp++) {
+            for (index nswp = 0; nswp < 100; nswp++) {
                 for (index t = 0; t < 3; t++) {
                     z_B.assign(n, 0);
                     if (init == -1)
