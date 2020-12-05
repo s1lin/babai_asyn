@@ -1,4 +1,5 @@
 #include "../source/SILS.cpp"
+#include "../source/block_search_omp.cpp"
 
 template<typename scalar, typename index, index n>
 void ils_block_search(index k, index SNR) {
@@ -45,7 +46,7 @@ void ils_block_search(index k, index SNR) {
                 }
 
                 index iter = n_proc == 1 ? 1 : 10;
-                reT = bsa.sils_block_search_omp(n_proc, iter, -1, &z_B, &d_s);
+                reT = bsa.sils_block_search_omp_schedule(n_proc, iter, -1, "dynamic", &z_B, &d_s);
                 res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
                 brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
                 printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
@@ -172,7 +173,6 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
             l++;
             cout << endl;
         }
-
         l = 2;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
@@ -180,6 +180,48 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                    size, n_proc, res[l], brr[l], itr[l] / max_num_iter, tim[l] / max_num_iter);
             l++;
         }
+        index l_new = l;
+        std::cout << "Block OMP scheduled, " << "Stopping criteria: " << stop << std::endl;
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+            cout << "Threads:" << n_proc;
+            for (index i = 0; i < max_num_iter; i++) {
+                if (i % 100 == 0)
+                    cout << i << " ";
+                n_proc = n_proc == 96 ? 64 : n_proc;
+                z_B.assign(n, 0);
+
+                if (init == -1)
+                    for (index t = 0; t < n; t++) {
+                        z_B[t] = bsa.x_R[t];
+                    }
+                else if (init == 1)
+                    for (index t = 0; t < n; t++) {
+                        z_B[t] = std::pow(2, k) / 2;
+                    }
+
+                index iter = 10;
+
+                reT = bsa.sils_block_search_omp_schedule(n_proc, iter, stop, "", &z_B, &d_s);
+                omp_res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+                omp_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
+                if (omp_res < min_res[l]) min_res[l] = omp_res;
+                if (omp_brr < min_brr[l]) min_brr[l] = omp_brr;
+                res[l] = min_res[l];
+                brr[l] = min_brr[l];
+                tim[l] += reT.run_time;
+                itr[l] += reT.num_iter;
+            }
+            l++;
+            cout << endl;
+        }
+        l = l_new;
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+            n_proc = n_proc == 96 ? 64 : n_proc;
+            printf("Block Size: %d, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Average time: %.5fs\n",
+                   size, n_proc, res[l], brr[l], itr[l] / max_num_iter, tim[l] / max_num_iter);
+            l++;
+        }
+
 
     }
 //    }
