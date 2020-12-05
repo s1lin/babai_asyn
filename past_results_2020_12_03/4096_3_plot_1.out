@@ -1,0 +1,121 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+Maximum Threads: 48
+plot_run-------------------------------------------
+Init, size: 4096
+Init, QAM: 64
+Init, SNR: 15
+init_res:127.713
+Finish Init, time: 0.18251 seconds
+-------------------------------------------
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: -1
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 207.95950, BRR: 0.47406, Run time: 0.03681s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 207.90938, BRR: 0.47833, Run time: 0.05036s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :205.22781, BRR: 0.47034, num_iter: 12.27750, Average time: 0.17233s
+Block Size: 16, n_proc: 12, Res :206.78571, BRR: 0.47150, num_iter: 12.20850, Average time: 0.10185s
+Block Size: 16, n_proc: 24, Res :207.80328, BRR: 0.46948, num_iter: 12.49250, Average time: 0.06073s
+Block Size: 16, n_proc: 48, Res :207.90938, BRR: 0.47003, num_iter: 12.34150, Average time: 0.03523s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 0
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 207.95950, BRR: 0.47406, Run time: 0.03667s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 207.90938, BRR: 0.47833, Run time: 0.05059s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :205.56916, BRR: 0.47144, num_iter: 12.60550, Average time: 0.17567s
+Block Size: 16, n_proc: 12, Res :207.90938, BRR: 0.46875, num_iter: 12.81650, Average time: 0.10395s
+Block Size: 16, n_proc: 24, Res :207.90938, BRR: 0.46832, num_iter: 13.04500, Average time: 0.06154s
+Block Size: 16, n_proc: 48, Res :207.90938, BRR: 0.46625, num_iter: 13.05650, Average time: 0.03647s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 1
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 207.95950, BRR: 0.47406, Run time: 0.04297s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 207.90938, BRR: 0.47833, Run time: 0.05093s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :205.86847, BRR: 0.47174, num_iter: 12.46350, Average time: 0.17528s
+Block Size: 16, n_proc: 12, Res :205.27727, BRR: 0.46869, num_iter: 12.82750, Average time: 0.10531s
+Block Size: 16, n_proc: 24, Res :207.77351, BRR: 0.46771, num_iter: 12.80100, Average time: 0.06122s
+Block Size: 16, n_proc: 48, Res :207.90938, BRR: 0.47052, num_iter: 13.02000, Average time: 0.03634s
+End of current TASK.
+-------------------------------------------
+plot_run-------------------------------------------
+Init, size: 4096
+Init, QAM: 64
+Init, SNR: 35
+init_res:12.7198
+Finish Init, time: 0.19705 seconds
+-------------------------------------------
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: -1
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 209.13309, BRR: 0.37201, Run time: 0.03635s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 12.71981, BRR: 0.00000, Run time: 0.04615s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :12.71981, BRR: 0.00000, num_iter: 3.86450, Average time: 0.08694s
+Block Size: 16, n_proc: 12, Res :12.71981, BRR: 0.00000, num_iter: 4.68450, Average time: 0.05949s
+Block Size: 16, n_proc: 24, Res :12.71981, BRR: 0.00000, num_iter: 5.75250, Average time: 0.03954s
+Block Size: 16, n_proc: 48, Res :12.71981, BRR: 0.00000, num_iter: 7.04000, Average time: 0.02752s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 0
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 209.13309, BRR: 0.37201, Run time: 0.04312s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 12.71981, BRR: 0.00000, Run time: 0.04679s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :12.71981, BRR: 0.00000, num_iter: 5.14100, Average time: 0.10061s
+Block Size: 16, n_proc: 12, Res :12.71981, BRR: 0.00000, num_iter: 6.32850, Average time: 0.07031s
+Block Size: 16, n_proc: 24, Res :12.71981, BRR: 0.00000, num_iter: 7.71000, Average time: 0.04818s
+Block Size: 16, n_proc: 48, Res :12.71981, BRR: 0.00000, num_iter: 9.21850, Average time: 0.03389s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 1
+Babai Serial:
+Method: ILS_SER, Block size: 16, Res: 209.13309, BRR: 0.37201, Run time: 0.03597s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 12.71981, BRR: 0.00000, Run time: 0.04659s
+Block OMP, Stopping criteria: 1
+Threads:6
+Threads:12
+Threads:24
+Threads:48
+Block Size: 16, n_proc: 6, Res :12.71981, BRR: 0.00000, num_iter: 4.68950, Average time: 0.09513s
+Block Size: 16, n_proc: 12, Res :12.71981, BRR: 0.00000, num_iter: 5.70650, Average time: 0.06776s
+Block Size: 16, n_proc: 24, Res :12.71981, BRR: 0.00000, num_iter: 6.91000, Average time: 0.04552s
+Block Size: 16, n_proc: 48, Res :12.71981, BRR: 0.00000, num_iter: 8.36300, Average time: 0.03101s
+End of current TASK.
+-------------------------------------------
+
+real	91m23.545s
+user	966m5.611s
+sys	1m21.795s
