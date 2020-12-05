@@ -27,14 +27,14 @@ void ils_block_search(index k, index SNR) {
             z_B.assign(n, 0);
 //            sils::display_vector<index>(&z_B);
             auto reT = bsa.sils_block_search_serial(&z_B, &d_s);
-            auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-            auto brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n", size, res, brr,
+            auto res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+            auto brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n", size, res, brr,
                    reT.run_time);
 
             z_B.assign(n, 0);
             reT = bsa.sils_babai_search_omp(9, 10, &z_B);
-            res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
+            res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
             printf("Method: BAB_OMP, Block size: %d, Res: %.5f, Run time: %.5fs\n", 1, res, reT.run_time);
 //            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
 //                n_proc = n_proc == 13 ? 12 : n_proc;
@@ -46,9 +46,9 @@ void ils_block_search(index k, index SNR) {
 
                 index iter = n_proc == 1 ? 1 : 10;
                 reT = bsa.sils_block_search_omp(n_proc, iter, -1, &z_B, &d_s);
-                res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-                brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
-                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n",
+                res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+                brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
+                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                        n_proc, size, reT.num_iter, res, brr, reT.run_time);
 
 
@@ -56,16 +56,16 @@ void ils_block_search(index k, index SNR) {
 
             z_B.assign(n, 0);
             reT = bsa.sils_babai_search_serial(&z_B);
-            res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-            brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
-            printf("Method: BBI_SER, Res: %.5f, BRR: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
+            res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+            brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
+            printf("Method: BBI_SER, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
         }
     }
 
 }
 
 template<typename scalar, typename index, index n>
-void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
+void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_iter, scalar stop) {
     printf("plot_run-------------------------------------------\n");
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
@@ -107,13 +107,13 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                     z_B[t] = std::pow(2, k) / 2;
                 }
             reT = bsa.sils_babai_search_serial(&z_B);
-            ser_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-            ser_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
+            ser_res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+            ser_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
             res[0] += ser_res;
             brr[0] += ser_brr;
             tim[0] += reT.run_time;
         }
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n",
+        printf("Method: BBA_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                size, res[0] / 5, brr[0] / 5, tim[0] / 5);
 
         std::cout << "Block Serial:" << std::endl;
@@ -128,21 +128,23 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                     z_B[t] = std::pow(2, k) / 2;
                 }
             reT = bsa.sils_block_search_serial(&z_B, &d_s);
-            ser_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-            ser_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
+            ser_res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+            ser_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
             res[1] += ser_res;
             brr[1] += ser_brr;
             tim[1] += reT.run_time;
         }
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BRR: %.5f, Run time: %.5fs\n",
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                size, res[1] / 5, brr[1] / 5, tim[1] / 5);
 
         std::cout << "Block OMP, " << "Stopping criteria: " << stop << std::endl;
         index l = 2;
-        index total_iter = 10;
+
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
-            cout << "Threads:" << n_proc << endl;
-            for (index i = 0; i < total_iter; i++) {
+            cout << "Threads:" << n_proc;
+            for (index i = 0; i < max_num_iter; i++) {
+                if (i % 100 == 0)
+                    cout << i << " ";
                 n_proc = n_proc == 96 ? 64 : n_proc;
                 z_B.assign(n, 0);
 
@@ -156,11 +158,10 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                     }
 
                 index iter = 10;
-                if (k == 3) iter = 15;
-//                sils::display_vector<index>(&z_BS);
+
                 reT = bsa.sils_block_search_omp(n_proc, iter, stop, &z_B, &d_s);
-                omp_res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-                omp_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
+                omp_res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+                omp_brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
                 if (omp_res < min_res[l]) min_res[l] = omp_res;
                 if (omp_brr < min_brr[l]) min_brr[l] = omp_brr;
                 res[l] = min_res[l];
@@ -169,13 +170,14 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
                 itr[l] += reT.num_iter;
             }
             l++;
+            cout << endl;
         }
 
         l = 2;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
-            printf("Block Size: %d, n_proc: %d, Res :%.5f, BRR: %.5f, num_iter: %.5f, Average time: %.5fs\n",
-                   size, n_proc, res[l], brr[l], itr[l] / total_iter, tim[l] / total_iter);
+            printf("Block Size: %d, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Average time: %.5fs\n",
+                   size, n_proc, res[l], brr[l], itr[l] / max_num_iter, tim[l] / max_num_iter);
             l++;
         }
 
@@ -223,8 +225,8 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
             }
 
         auto reT = bsa.sils_block_search_serial(&z_B, &d_s);
-        auto res = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-        auto brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
+        auto res = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+        auto brr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
 
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr,
                reT.run_time);
@@ -232,7 +234,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
-            for (index nswp = 0; nswp < 100; nswp++) {
+            for (index nswp = 0; nswp < 30; nswp++) {
                 for (index t = 0; t < 3; t++) {
                     z_B.assign(n, 0);
                     if (init == -1)
@@ -245,8 +247,8 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
                         }
 
                     reT = bsa.sils_block_search_omp(n_proc, nswp, -1, &z_B, &d_s);
-                    scalar newres = sils::find_residual<scalar, index, n>(&bsa.R_A, &bsa.y_A, &reT.x);
-                    scalar newbrr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_tA);
+                    scalar newres = sils::find_residual<scalar, index, n>(bsa.R_A, bsa.y_A, &reT.x);
+                    scalar newbrr = sils::find_bit_error_rate<scalar, index, n>(&reT.x, &bsa.x_t);
                     res = newres < res ? newres : res;
                     brr = newbrr < brr ? newbrr : brr;
                 }
