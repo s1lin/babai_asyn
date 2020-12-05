@@ -139,10 +139,10 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
 
         std::cout << "Block OMP, " << "Stopping criteria: " << stop << std::endl;
         index l = 2;
-
+        index total_iter = 10;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             cout << "Threads:" << n_proc << endl;
-            for (index i = 0; i < 2000; i++) {
+            for (index i = 0; i < total_iter; i++) {
                 n_proc = n_proc == 96 ? 64 : n_proc;
                 z_B.assign(n, 0);
 
@@ -175,7 +175,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, scalar stop) {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             printf("Block Size: %d, n_proc: %d, Res :%.5f, BRR: %.5f, num_iter: %.5f, Average time: %.5fs\n",
-                   size, n_proc, res[l], brr[l], itr[l] / 2000, tim[l] / 2000);
+                   size, n_proc, res[l], brr[l], itr[l] / total_iter, tim[l] / total_iter);
             l++;
         }
 
