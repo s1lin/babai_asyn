@@ -12,10 +12,11 @@ const int n3 = 16384;
 const int n4 = 32768;
 
 void load_test() {
-    int n = 4096;
-    vector<int> d(4096 / 16, 16), d_s(4096 / 16, 16);
-    for (int i = d_s.size() - 2; i >= 0; i--) {
-        d_s[i] += d_s[i + 1];
+
+    vector<int> d(4096 / 16, 16);
+    sils::scalarType<int, int> d_s{d.data(), (int) d.size()};
+    for (int i = d_s.size - 2; i >= 0; i--) {
+        d_s.x[i] += d_s.x[i + 1];
     }
     int ds = d.size();
     int n_proc = 10;
@@ -23,16 +24,13 @@ void load_test() {
 #pragma omp parallel default(shared) num_threads(n_proc) //private()
     {
 //    for (int j = 0; j < 10; j++) {//
-#pragma omp for schedule(dynamic) nowait //schedule(dynamic)
-        for (int i = 0; i < 2*n_proc; i++) {
+#pragma omp for nowait //schedule(dynamic)
+        for (int i = 0; i < n_proc; i++) {
 //            if (omp_get_thread_num()==n_proc) {
-//            for (int m = i; m < ds; m += n_proc) {
-//                iter[m] = i;
-//            }
-//            }
-            if (omp_get_thread_num() == 0) {
-                cout << omp_get_thread_num() << ",i," << i << endl;
+            for (int m = i; m < ds; m += n_proc) {
+                iter[m] = i;
             }
+//            }
 
         }
     }
@@ -48,7 +46,7 @@ void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
     int min_proc = 6;
-    int k = 1, index = 0, stop = 0, mode = 1;
+    int k = 1, index = 0, stop = -1, mode = 1;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
@@ -58,15 +56,13 @@ void run_test(int argc, char *argv[]) {
     max_proc = max_proc != 64 ? max_proc : 100;
     min_proc = max_proc != 64 ? 6 : 12;
 
-    for (int SNR = 15; SNR <= 35; SNR += 10) {
+    for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch (index) {
             case 0:
                 if (mode == 0)
                     plot_res<double, int, n1>(k, SNR, min_proc, max_proc);
-                else if (mode == 1)
-                    plot_run<double, int, n1>(k, SNR, min_proc, max_proc, stop);
                 else
-                    ils_block_search<double, int, n1>(k, SNR);
+                    plot_run<double, int, n1>(k, SNR, min_proc, max_proc, stop);
                 break;
             case 1:
                 plot_res<double, int, n2>(k, SNR, min_proc, max_proc);
