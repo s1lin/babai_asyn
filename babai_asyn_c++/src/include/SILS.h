@@ -514,7 +514,7 @@ namespace sils {
 
 
         inline vector<index> ils_reduction(const scalarType<scalar, index> *B, const vector<scalar> *y_B) {
-            scalar colNormB = new scalar[2][n];
+            std::array<std::array<index, n>, 2> colNormB;
             for (index j = 0; j < n; j++) {
                 scalar b_0 = B[0][j];
                 scalar b_1 = B[1][j];
@@ -522,7 +522,7 @@ namespace sils {
             }
             index n_dim = n;
             for (index k = 0; k < n_dim; k++) {
-
+                
             }
         }
 

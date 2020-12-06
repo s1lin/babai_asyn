@@ -10,7 +10,7 @@ import pandas as pd
 def plot_residual(n, f, file):
     lines = file.readlines()
     k = 6
-    for j in range(1, 3):
+    for j in range(1, 4):
         plt.rcParams["figure.figsize"] = (13, 7)
         fig, axes = plt.subplots(2, 3, constrained_layout=True)
         print(lines[k])
@@ -108,8 +108,8 @@ def plot_runtime(n, f, stop, file):
     color = ['r', 'g', 'b', 'y']
     marker = ['o', '+', 'x', '.']
     index = ['Iter', 'Time', 'Res', 'BER']
-    omp_tab = pd.DataFrame(np.random.randn(4, 6),
-                           columns=['Babai', 'B-seq', 'NT-6', 'NT-12', 'NT-24', 'NT-48'])
+    omp_tab = pd.DataFrame(np.random.randn(4, 5),
+                           columns=['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'])
     k = 6
     SNRs = [15, 35]
     for j in range(0, 2):
@@ -141,7 +141,7 @@ def plot_runtime(n, f, stop, file):
             block_res = float(lines[k].split(",")[2].split(":")[1])
             block_ber = float(lines[k].split(",")[3].split(":")[1])
             block_tim = float(lines[k].split(",")[4].split(":")[1].split("s")[0])
-            k = k + 6
+            k = k + 5
             print(lines[k].split(","))
             omp_res = [init_res, babai_res, block_res]
             omp_ber = [babai_ber, block_ber]
@@ -153,7 +153,7 @@ def plot_runtime(n, f, stop, file):
             omp_tab.iloc[2, 1] = babai_ber
             omp_tab.iloc[2, 1] = block_ber
             omp_itr = []
-            for l in range(0, 4):
+            for l in range(0, 3):
                 print(lines[k].split(","))
                 omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
                 omp_itr.append(float(lines[k].split(",")[4].split(":")[1]))
@@ -167,20 +167,20 @@ def plot_runtime(n, f, stop, file):
 
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
 
-            axes2[j, 0].plot(['NT-6', 'NT-12', 'NT-24', 'NT-48'], omp_itr,
+            axes2[j, 0].plot(['NT-12', 'NT-24', 'NT-48'], omp_itr,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 1].plot(['True', 'Babai', 'B-seq', 'NT-6', 'NT-12', 'NT-24', 'NT-48'], omp_res,
+            axes2[j, 1].plot(['True', 'Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_res,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 2].plot(['Babai', 'B-seq', 'NT-6', 'NT-12', 'NT-24', 'NT-48'], omp_ber,
+            axes2[j, 2].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_ber,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 3].semilogy(['Babai', 'B-seq', 'NT-6', 'NT-12', 'NT-24', 'NT-48'], omp_tim,
+            axes2[j, 3].semilogy(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_tim,
                                  color=color[x], marker=marker[x], label=labels[init_value + 1])
 
             axes2[j, 0].legend(loc="upper left")
             axes2[0, 1].legend(loc="center right")
             axes2[1, 1].legend(loc="upper right")
             axes2[j, 2].legend(loc="upper right")
-            axes2[j, 3].legend(loc="upper right")
+            axes2[j, 3].legend(loc="lower left")
 
             k = k + 2
 
@@ -204,7 +204,7 @@ def plot_runtime(n, f, stop, file):
 
 
 def plot_res(n):
-    stops = [-1, 0, 1, 5]
+    stops = [0]
     for f in range(1, 4, 2):
         file = open(str(n) + '_' + str(f) + '_res.out', 'r')
         plot_residual(n, f, file)
