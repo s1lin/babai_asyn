@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const int n1 = 4096;
+const int n1 = 32;
 const int n2 = 8192;
 const int n3 = 16384;
 const int n4 = 32768;
@@ -87,33 +87,40 @@ void run_test(int argc, char *argv[]) {
 
 }
 
-void tiny_test(){
-//    int n = 40996;
+void tiny_test() {
+    const int n1 = 16;
+    int SNR = 35;
     printf("plot_run-------------------------------------------\n");
     std::cout << "Init, size: " << n1 << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, 1) << std::endl;
-    std::cout << "Init, SNR: " << 15 << std::endl;
+    std::cout << "Init, SNR: " << SNR << std::endl;
 
     //bool read_r, bool read_ra, bool read_xy
-    double start = omp_get_wtime();
-    sils::SILS<double, int, true, n1> bsa(1, 15);
-    double end_time = omp_get_wtime() - start;
-    printf("Finish Init, time: %.5f seconds\n", end_time);
-    printf("-------------------------------------------\n");
-    int size = 16;
+
+    sils::sils<double, int, false, n1> sils(1, SNR);
+
+    int size = 8;
 
     vector<int> z_B(n1, 0);
     vector<int> d(n1 / size, size), d_s(n1 / size, size);
     for (int i = d_s.size() - 2; i >= 0; i--) {
         d_s[i] += d_s[i + 1];
     }
-    auto reT = bsa.sils_block_search_omp_schedule(3, 3, 0, "", &z_B, &d_s);
+    for (int i = 0; i < 100; i++) {
+        sils.init();
+        //auto reT = sils.sils_block_search_omp_schedule(3, 10, 0, "", &z_B, &d_s);
+        auto reT = sils.sils_block_search_serial(&z_B, &d_s);
+        auto res = sils::find_residual<double, int, n1>(sils.R_A, sils.y_A, &reT.x);
+        auto brr = sils::find_bit_error_rate<double, int, n1>(&reT.x, &sils.x_t);
+        printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
+               3, size, reT.num_iter, res, brr, reT.run_time);
+    }
 }
 
 int main(int argc, char *argv[]) {
 //    load_test();
-//    run_test(argc, argv);
-    tiny_test();
+    run_test(argc, argv);
+//    tiny_test();
     return 0;
 }
 

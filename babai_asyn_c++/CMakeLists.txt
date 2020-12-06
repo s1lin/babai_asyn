@@ -3,7 +3,7 @@ project(sils)
 
 find_package(OpenMP REQUIRED)
 find_package(netCDF REQUIRED)
-
+find_package(Eigen3 REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 
 #Basic options
@@ -37,14 +37,20 @@ if (OPENMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
-add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/SILS.h src/source/SILS.cpp src/example/ils_babai_search.cpp src/source/block_search_omp.cpp src/source/qrmcp.cpp src/source/sils_reduction.cpp)
+add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/sils.h src/source/sils.cpp src/example/ils_babai_search.cpp src/source/sils_block_search_omp.cpp)# src/source/sils_reduction.cpp)
 
 if (OpenMP_CXX_FOUND)
-    target_link_libraries(sils PUBLIC OpenMP::OpenMP_CXX)
-    message("OpenMP_CXX_FOUND")
+    target_link_libraries(sils  OpenMP::OpenMP_CXX)
+    message("-- OpenMP_CXX_FOUND")
 endif ()
 
 if (netCDF_FOUND)
-    target_link_libraries(sils PUBLIC ${netCDF_LIBRARIES})
-    message("netCDF_FOUND")
+    target_link_libraries(sils  ${netCDF_LIBRARIES})
+    message("-- netCDF_FOUND")
 endif ()
+
+if (Eigen3_FOUND)
+    target_link_libraries(sils Eigen3::Eigen)
+    message("-- Eigen3_FOUND")
+endif ()
+

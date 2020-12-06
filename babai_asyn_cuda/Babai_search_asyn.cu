@@ -1,4 +1,4 @@
-#include "../babai_asyn_c++/src/include/SILS.h"
+#include "../babai_asyn_c++/src/include/sils.h"
 #include <ctime>
 
 using Eigen::MatrixXd;

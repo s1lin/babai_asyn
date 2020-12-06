@@ -5,14 +5,14 @@
 #include <random>
 #include <chrono>
 
-#include "../include/SILS.h"
+#include "../include/sils.h"
 
 using namespace std;
 
 namespace sils {
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    SILS<scalar, index, is_read, n>::sils_block_search_omp(index n_proc, index nswp, scalar stop,
+    sils<scalar, index, is_read, n>::sils_block_search_omp(index n_proc, index nswp, scalar stop,
                                                            vector<index> *z_B,
                                                            vector<index> *d) {
         index ds = d->size(), dx = d->at(ds - 1);
@@ -21,8 +21,8 @@ namespace sils {
                 z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
                 return {*z_B, 0, 0, 0};
             } else {
-                vector<scalar> R_B = sils::find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = sils::find_block_x(y_A, 0, n);
+                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
+                vector<scalar> y_B = find_block_x(y_A, 0, n);
                 return {ils_search(&R_B, &y_B), 0, 0, 0};
             }
         } else if (ds == n) {
@@ -99,7 +99,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    SILS<scalar, index, is_read, n>::sils_block_search_omp_schedule(index n_proc, index nswp,
+    sils<scalar, index, is_read, n>::sils_block_search_omp_schedule(index n_proc, index nswp,
                                                                     scalar stop, string schedule,
                                                                     vector<index> *z_B,
                                                                     vector<index> *d) {
@@ -109,8 +109,8 @@ namespace sils {
                 z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
                 return {*z_B, 0, 0, 0};
             } else {
-                vector<scalar> R_B = sils::find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = sils::find_block_x(y_A, 0, n);
+                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
+                vector<scalar> y_B = find_block_x(y_A, 0, n);
                 return {ils_search(&R_B, &y_B), 0, 0, 0};
             }
         } else if (ds == n) {
@@ -138,7 +138,7 @@ namespace sils {
 
 //        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 //        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
-//        sils::display_vector<scalar, index>(&work);
+//        display_vector<scalar, index>(&work);
 //        omp_set_schedule(omp_sched_dynamic, n_proc);
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, y, x, n_dx_q_0, n_dx_q_1)
