@@ -48,7 +48,7 @@ void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
     int min_proc = 6;
-    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10;
+    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 2000;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);

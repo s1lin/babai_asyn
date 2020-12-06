@@ -100,10 +100,10 @@ namespace sils {
             }
             this->x_R = sils_back_solve(&x_R).x;
         }
-        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
-        scalar end_time = omp_get_wtime() - start;
-        printf("Finish Init, time: %.5f seconds\n", end_time);
-        printf("-------------------------------------------\n");
+//        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
+//        scalar end_time = omp_get_wtime() - start;
+//        printf("Finish Init, time: %.5f seconds\n", end_time);
+
     }
 
     template<typename scalar, typename index, bool is_read, index n>
