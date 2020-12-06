@@ -32,9 +32,12 @@
 #include <algorithm>
 #include <netcdf.h>
 #include <bitset>
+#include <math.h>
+#include <Eigen/Dense>
 
 using namespace std;
-
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 /**
  * namespace of sils
  */
@@ -153,8 +156,21 @@ namespace sils {
      * @param x
      */
     template<typename scalar, typename index>
+    void display_scalarType(scalarType<scalar, index> *x) {
+        for (index i = 0; i < x->size; i++) {
+            cout << x->x[i] << endl;
+        }
+    }
+
+    /**
+     * Simple function for displaying the struct scalarType
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     */
+    template<typename scalar, typename index>
     inline void display_vector(const vector<index> *x) {
-        for (int i = 0; i < x->size(); i++) {
+        for (index i = 0; i < x->size(); i++) {
             cout << x->at(i) << " ";
         }
         cout << endl;
@@ -191,6 +207,24 @@ namespace sils {
         }
 
         return R_b_s;
+    }
+
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
+     * @return
+     */
+    template<typename scalar, typename index>
+    inline scalar find_success_prob_babai(const scalarType<scalar, index> *R_B,
+                                          const index row_begin, const index row_end,
+                                          const index block_size, const scalar sigma) {
+        scalar y = 1;
+        for (index row = row_begin; row < row_end; row++) {
+            index i = (block_size * row) + row - ((row * (row + 1)) / 2);
+            y = y * erf(abs(R_B->x[i]) / 2 / sigma / sqrt(2));
+        }
+        return y;
     }
 
     /**
@@ -303,7 +337,7 @@ namespace sils {
     }
 
     /**
-     * SILS class object
+     * sils class object
      * @tparam scalar
      * @tparam index
      * @tparam is_read
@@ -311,15 +345,16 @@ namespace sils {
      * @tparam n
      */
     template<typename scalar, typename index, bool is_read, index n>
-    class SILS {
+    class sils {
 
     public:
 
         index qam, snr;
-        scalar init_res;
+        scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index> *A, *R_A, *y_A;
-
+        scalarType<scalar, index>  *R_A, *y_A;
+        Eigen::MatrixXd A, R, Q;
+        Eigen::VectorXd y, x_tV;
     private:
         /**
          * read the problem from files
@@ -341,6 +376,7 @@ namespace sils {
 
             return round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
         }
+
 
         /**
          *
@@ -495,7 +531,7 @@ namespace sils {
 
 
         inline vector<index> ils_reduction(const scalarType<scalar, index> *B, const vector<scalar> *y_B) {
-            scalar colNormB = new scalar[2][n];
+            std::array<std::array<index, n>, 2> colNormB;
             for (index j = 0; j < n; j++) {
                 scalar b_0 = B[0][j];
                 scalar b_1 = B[1][j];
@@ -503,14 +539,14 @@ namespace sils {
             }
             index n_dim = n;
             for (index k = 0; k < n_dim; k++) {
-
+                
             }
         }
 
     public:
-        explicit SILS(index qam, index snr);
+        explicit sils(index qam, index snr);
 
-        ~SILS() {
+        ~sils() {
             free(R_A);
             free(y_A);
         }
@@ -531,13 +567,31 @@ namespace sils {
 
         /**
          *
+         * @param n_proc
+         * @param nswp
+         * @param update
+         * @param z_B
+         * @param z_B_p
+         * @return
+         */
+        returnType<scalar, index>
+        sils_back_solve(vector<index> *z_B);
+
+
+        /**
+         *
          * @param z_B
          * @return
          */
         returnType<scalar, index>
         sils_babai_search_serial(vector<index> *z_B);
 
-
+        /**
+         *
+         * @param z_B
+         * @param d
+         * @return
+         */
         returnType<scalar, index>
         sils_block_search_serial(vector<index> *z_B, vector<index> *d);
 
@@ -554,7 +608,22 @@ namespace sils {
         returnType<scalar, index>
         sils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
 
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param R_B
+         * @param y_B
+         * @param z_B
+         * @param d
+         * @return
+         */
+        returnType<scalar, index>
+        sils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
+                                       vector<index> *z_B, vector<index> *d);
 
+        returnType<scalar, index>
+        sils_reduction();
     };
 }
 #endif
