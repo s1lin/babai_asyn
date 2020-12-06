@@ -140,7 +140,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
         std::cout << "Block OMP, " << "Stopping criteria: " << stop << std::endl;
         index l = 2;
 
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             cout << "Threads:" << n_proc;
             for (index i = 0; i < max_num_iter; i++) {
                 if (i % 100 == 0)
@@ -231,7 +231,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc) {
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr,
                reT.run_time);
         res = INFINITY;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             for (index nswp = 0; nswp < 30; nswp++) {
