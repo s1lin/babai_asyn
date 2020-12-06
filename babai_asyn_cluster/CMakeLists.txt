@@ -3,7 +3,7 @@ project(sils)
 
 find_package(OpenMP REQUIRED)
 find_package(netCDF REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 set(CMAKE_CXX_STANDARD 17)
 
 #Basic options
@@ -36,6 +36,7 @@ if (OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
+
 include_directories("${EIGEN3_INCLUDE_DIR}")
 
 add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/sils.h src/source/sils.cpp src/example/ils_babai_search.cpp src/source/sils_block_search_omp.cpp)# src/source/sils_reduction.cpp)
@@ -50,8 +51,8 @@ if (netCDF_FOUND)
     message("-- netCDF_FOUND")
 endif ()
 
-if (Eigen3_FOUND)
-#    target_link_libraries(sils Eigen3::Eigen)
-    message("-- Eigen3_FOUND")
-endif ()
+#if (Eigen3_FOUND)
+##    target_link_libraries(sils Eigen3::Eigen)
+#    message("-- Eigen3_FOUND")
+#endif ()
 
