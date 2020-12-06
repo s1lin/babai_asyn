@@ -87,9 +87,33 @@ void run_test(int argc, char *argv[]) {
 
 }
 
+void tiny_test(){
+//    int n = 40996;
+    printf("plot_run-------------------------------------------\n");
+    std::cout << "Init, size: " << n1 << std::endl;
+    std::cout << "Init, QAM: " << std::pow(4, 1) << std::endl;
+    std::cout << "Init, SNR: " << 15 << std::endl;
+
+    //bool read_r, bool read_ra, bool read_xy
+    double start = omp_get_wtime();
+    sils::SILS<double, int, true, n1> bsa(1, 15);
+    double end_time = omp_get_wtime() - start;
+    printf("Finish Init, time: %.5f seconds\n", end_time);
+    printf("-------------------------------------------\n");
+    int size = 16;
+
+    vector<int> z_B(n1, 0);
+    vector<int> d(n1 / size, size), d_s(n1 / size, size);
+    for (int i = d_s.size() - 2; i >= 0; i--) {
+        d_s[i] += d_s[i + 1];
+    }
+    auto reT = bsa.sils_block_search_omp_schedule(3, 3, 0, "", &z_B, &d_s);
+}
+
 int main(int argc, char *argv[]) {
 //    load_test();
-    run_test(argc, argv);
+//    run_test(argc, argv);
+    tiny_test();
     return 0;
 }
 

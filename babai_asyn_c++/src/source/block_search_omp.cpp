@@ -121,18 +121,23 @@ namespace sils {
         index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
         scalar res = 0, nres = 10, sum = 0;
 
-        vector<scalar> y(dx, 0), y_n(dx, 0);
+        vector<scalar> y(dx, 0), y_n(dx, 0), p(ds, 0);
         vector<index> x(dx, 0), z_B_p(n, 0), work(ds, 0);
 
         for (index l = n - dx; l < n; l++) {
             y_n[l - (n - dx)] = y_A->x[l];
         }
-        for (index i = 0; i < ds; i++){
-            work[i] = i;
+
+        for (index i = 0; i < ds - 1; i++) {
+            index q = ds - 2 - i;
+            p[i] = find_success_prob_babai(R_A, n - d->at(q), n - d->at(q + 1), n, sigma);
+            cout << n - d->at(q)<< ","<< n - d->at(q + 1)<< "," << "P=" << p[i] << endl;
         }
 
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
+
+
+//        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+//        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
 //        sils::display_vector<scalar, index>(&work);
 //        omp_set_schedule(omp_sched_dynamic, n_proc);
         scalar start = omp_get_wtime();
@@ -141,7 +146,7 @@ namespace sils {
             y.assign(dx, 0);
             x.assign(dx, 0);
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
-#pragma omp for nowait//schedule(dynamic) nowait
+#pragma omp for schedule(dynamic) nowait//schedule(dynamic) nowait
 //#pragma omp for nowait //schedule(dynamic)guided
 //                for (index m = 0; m < n_proc; m++) {
 //                    for (index i = m; i < ds; i += n_proc) {

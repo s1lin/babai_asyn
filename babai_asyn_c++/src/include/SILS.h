@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <netcdf.h>
 #include <bitset>
+#include <math.h>
 
 using namespace std;
 
@@ -197,6 +198,24 @@ namespace sils {
      *
      * @tparam scalar
      * @tparam index
+     * @return
+     */
+    template<typename scalar, typename index>
+    inline scalar find_success_prob_babai(const scalarType<scalar, index> *R_B,
+                                          const index row_begin, const index row_end,
+                                          const index block_size, const scalar sigma) {
+        scalar y = 1;
+        for (index row = row_begin; row < row_end; row++) {
+            index i = (block_size * row) + row - ((row * (row + 1)) / 2);
+            y = y * erf(abs(R_B->x[i]) / 2 / sigma / sqrt(2));
+        }
+        return y;
+    }
+
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
      * @param R_B
      * @param x
      * @param y
@@ -316,7 +335,7 @@ namespace sils {
     public:
 
         index qam, snr;
-        scalar init_res;
+        scalar init_res, sigma;
         vector<index> x_R, x_t;
         scalarType<scalar, index> *A, *R_A, *y_A;
 

@@ -13,7 +13,7 @@ using namespace std;
 namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
-    SILS<scalar, index, is_read, n>::SILS(index qam, index snr) {
+    SILS<scalar, index, is_read, n>::SILS(index k, index snr) {
         this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->R_A->x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
@@ -23,9 +23,9 @@ namespace sils {
         this->x_t = vector<index>(n, 0);
 
         this->init_res = INFINITY;
-        this->qam = qam;
+        this->qam = k;
         this->snr = snr;
-
+        this->sigma = (scalar) sqrt(((pow(4, k) - 1) * log2(n)) / (6 * pow(10, ((scalar)snr / 20.0))));
         this->R_A->size = n * (n + 1) / 2;
         this->y_A->size = n;
 
@@ -70,7 +70,7 @@ namespace sils {
         if (is_read) {
             read();
             this->init_res = sils::find_residual<scalar, index, n>(R_A, y_A, &x_t);
-            cout << "init_res:" << this->init_res << endl;
+            printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
         } else {
             std::random_device rd;
             std::mt19937 gen(rd());
