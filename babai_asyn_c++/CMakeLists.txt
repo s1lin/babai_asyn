@@ -37,7 +37,7 @@ if (OPENMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
-add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/SILS.h src/source/SILS.cpp src/example/ils_babai_search.cpp src/source/block_search_omp.cpp)
+add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/SILS.h src/source/SILS.cpp src/example/ils_babai_search.cpp src/source/block_search_omp.cpp src/source/qrmcp.cpp src/source/sils_reduction.cpp)
 
 if (OpenMP_CXX_FOUND)
     target_link_libraries(sils PUBLIC OpenMP::OpenMP_CXX)

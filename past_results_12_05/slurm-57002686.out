@@ -1,0 +1,109 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+Maximum Threads: 48
+plot_run-------------------------------------------
+Init, size: 4096
+Init, QAM: 4
+Init, SNR: 15
+init_res:28.0079
+Finish Init, time: 1.17339 seconds
+-------------------------------------------
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: -1
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 211.45002, BER: 0.39465, Run time: 0.15298s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 209.54050, BER: 0.38879, Run time: 0.19265s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :209.53912, BER: 0.38013, num_iter: 8.69000, Average time: 0.21372s
+Block Size: 16, n_proc: 24, Res :209.54050, BER: 0.38141, num_iter: 8.88000, Average time: 0.12798s
+Block Size: 16, n_proc: 48, Res :209.54050, BER: 0.37958, num_iter: 8.85000, Average time: 0.07560s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 0
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 211.45002, BER: 0.39465, Run time: 0.15289s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 209.54050, BER: 0.38879, Run time: 0.19362s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :211.96191, BER: 0.37726, num_iter: 8.85000, Average time: 0.22266s
+Block Size: 16, n_proc: 24, Res :221.09431, BER: 0.38196, num_iter: 8.81000, Average time: 0.12469s
+Block Size: 16, n_proc: 48, Res :235.90830, BER: 0.38177, num_iter: 8.95000, Average time: 0.07401s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 1
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 211.45002, BER: 0.39465, Run time: 0.15279s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 209.54050, BER: 0.38879, Run time: 0.19253s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :209.82960, BER: 0.37732, num_iter: 8.81000, Average time: 0.21230s
+Block Size: 16, n_proc: 24, Res :207.00786, BER: 0.38129, num_iter: 8.90000, Average time: 0.12719s
+Block Size: 16, n_proc: 48, Res :209.54050, BER: 0.37903, num_iter: 8.78000, Average time: 0.07523s
+End of current TASK.
+-------------------------------------------
+plot_run-------------------------------------------
+Init, size: 4096
+Init, QAM: 4
+Init, SNR: 35
+init_res:2.80184
+Finish Init, time: 0.97254 seconds
+-------------------------------------------
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: -1
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.15288s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.17933s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :2.80184, BER: 0.00000, num_iter: 2.00000, Average time: 0.11998s
+Block Size: 16, n_proc: 24, Res :2.80184, BER: 0.00000, num_iter: 2.00000, Average time: 0.08213s
+Block Size: 16, n_proc: 48, Res :2.80184, BER: 0.00000, num_iter: 2.00000, Average time: 0.05369s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 0
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.15270s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.17935s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :2.80184, BER: 0.00000, num_iter: 3.72000, Average time: 0.14223s
+Block Size: 16, n_proc: 24, Res :2.80184, BER: 0.00000, num_iter: 4.49000, Average time: 0.10073s
+Block Size: 16, n_proc: 48, Res :2.80184, BER: 0.00000, num_iter: 5.79000, Average time: 0.08265s
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 1
+Babai Serial:
+Method: BBA_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.15270s
+Block Serial:
+Method: ILS_SER, Block size: 16, Res: 2.80184, BER: 0.00000, Run time: 0.17928s
+Block OMP, Stopping criteria: 0
+Threads:120 
+Threads:240 
+Threads:480 
+Block Size: 16, n_proc: 12, Res :2.80184, BER: 0.00000, num_iter: 3.34000, Average time: 0.13911s
+Block Size: 16, n_proc: 24, Res :2.80184, BER: 0.00000, num_iter: 4.13000, Average time: 0.09893s
+Block Size: 16, n_proc: 48, Res :2.80184, BER: 0.00000, num_iter: 5.51000, Average time: 0.07728s
+End of current TASK.
+-------------------------------------------
+
+real	8m53.219s
+user	97m54.825s
+sys	0m1.651s
