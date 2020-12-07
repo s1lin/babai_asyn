@@ -1,6 +1,6 @@
 #include "../source/sils.cpp"
 #include "../source/sils_block_search_omp.cpp"
-
+#include <mpi.h>
 template<typename scalar, typename index, index n>
 void ils_block_search(index k, index SNR) {
 
@@ -166,7 +166,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
 }
 
 template<typename scalar, typename index, index n>
-void plot_run_mpi(index k, index SNR, index min_proc, index max_proc, index max_num_iter, scalar stop) {
+void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, index max_proc, index max_num_iter, scalar stop) {
 
     printf("plot_run-------------------------------------------\n");
 
@@ -220,6 +220,29 @@ void plot_run_mpi(index k, index SNR, index min_proc, index max_proc, index max_
                 ser_res[init + 1] += sils::find_residual<scalar, index, n>(sils.R_A, sils.y_A, &reT.x) / 5.0;
                 ser_ber[init + 1] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
                 ser_tim[init + 1] += reT.run_time / 5.0;
+            }
+        }
+    }
+
+    int rank, num_process;
+    MPI_Init(&argc, &argv); //initialize MPI library
+    MPI_Comm_size(MPI_COMM_WORLD, &num_process); //get number of processes
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank); //get my process id
+//do something
+    printf("Hello World from rank %d\n", rank);
+    if (rank == 0) printf("MPI World size = %d processes\n", num_process);
+    for (index p = 0; p < max_num_iter; p++) {
+//        printf("%d,", p);
+        sils.init();
+        if (p == 0){
+            printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
+        }
+        if (p % 10 == 0) cout << "-";
+        if (p % 500 == 0) cout << endl;
+        std::cout.flush();
+
+        for (index init = -1; init <= 1; init++) {
+            for (index i = 0; i < 5; i++) {
                 index l = 0;
                 for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
                     z_B.assign(n, 0);
@@ -241,6 +264,7 @@ void plot_run_mpi(index k, index SNR, index min_proc, index max_proc, index max_
             }
         }
     }
+    MPI_Finalize(); //MPI cleanup();
 
     //Print Results:
     for (index init = -1; init <= 1; init++) {
