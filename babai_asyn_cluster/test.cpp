@@ -3,10 +3,11 @@
 //
 #include "src/example/ils_block_search.cpp"
 //#include "src/example/ils_babai_search.cpp"
+#include <mpi.h>
 
 using namespace std;
 
-const int n1 = 32;
+const int n1 = 64;
 const int n2 = 8192;
 const int n3 = 16384;
 const int n4 = 32768;
@@ -44,11 +45,36 @@ void load_test() {
 
 }
 
+void mpi_test(int argc, char** argv) {
+    // Initialize the MPI environment
+    MPI_Init(NULL, NULL);
+
+    // Get the number of processes
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Get the rank of the process
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    // Get the name of the processor
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+
+    // Print off a hello world message
+    printf("Hello world from processor %s, rank %d out of %d processors\n",
+           processor_name, world_rank, world_size);
+
+    // Finalize the MPI environment.
+    MPI_Finalize();
+}
+
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
     int min_proc = 6;
-    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 2000;
+    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 100;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
@@ -119,8 +145,9 @@ void tiny_test() {
 
 int main(int argc, char *argv[]) {
 //    load_test();
-    run_test(argc, argv);
+//    run_test(argc, argv);
 //    tiny_test();
+    mpi_test(argc, argv);
     return 0;
 }
 

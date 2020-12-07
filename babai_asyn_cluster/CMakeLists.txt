@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8.2)
 project(sils)
 
 find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 find_package(netCDF REQUIRED)
 #find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 set(CMAKE_CXX_STANDARD 17)
@@ -39,15 +40,32 @@ endif ()
 
 include_directories("${EIGEN3_INCLUDE_DIR}")
 
+if (MPI_FOUND)
+    include_directories(${MPI_C_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
+    if(SLURM)
+        set(MPIEXEC "srun")
+        set(MPIOPTS "--cpu-bind=cores")
+    else()
+        set(MPIEXEC "mpirun")
+        set(MPIOPTS "")
+    endif(SLURM)
+
+endif ()
+
 add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/sils.h src/source/sils.cpp src/example/ils_babai_search.cpp src/source/sils_block_search_omp.cpp)# src/source/sils_reduction.cpp)
 
+if (MPI_FOUND)
+    target_link_libraries(sils ${MPI_LIBRARIES})
+    message("-- MPI_FOUND")
+endif ()
+
 if (OpenMP_CXX_FOUND)
-    target_link_libraries(sils  OpenMP::OpenMP_CXX)
+    target_link_libraries(sils OpenMP::OpenMP_CXX)
     message("-- OpenMP_CXX_FOUND")
 endif ()
 
 if (netCDF_FOUND)
-    target_link_libraries(sils  ${netCDF_LIBRARIES})
+    target_link_libraries(sils ${netCDF_LIBRARIES})
     message("-- netCDF_FOUND")
 endif ()
 
