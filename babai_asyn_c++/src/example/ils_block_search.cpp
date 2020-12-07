@@ -167,7 +167,8 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
 }
 
 template<typename scalar, typename index, index n>
-void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, index max_proc, index max_num_iter,
+void plot_run_mpi(index first, index last, index k, index SNR,
+                  index min_proc, index max_proc, index max_num_iter,
                   scalar stop) {
 
     printf("plot_run-------------------------------------------\n");
@@ -184,67 +185,8 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
         d_s[i] += d_s[i + 1];
     }
 
-    vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
-    vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
     vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
     sils::returnType<scalar, index> reT;
-
-    for (index p = 0; p < max_num_iter; p++) {
-//        printf("%d,", p);
-        sils.init();
-        if (p == 0) {
-            printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
-        }
-        if (p % 10 == 0) cout << "-";
-        if (p % 500 == 0) cout << endl;
-        std::cout.flush();
-
-        for (index init = -1; init <= 1; init++) {
-            for (index i = 0; i < 5; i++) {
-                z_B.assign(n, 0);
-                if (init == -1)
-                    copy(z_B.begin(), z_B.end(), sils.x_R.begin());
-                else if (init == 1)
-                    z_B.assign(n, std::pow(2, k) / 2);
-
-                reT = sils.sils_babai_search_serial(&z_B);
-                bab_res[init + 1] += sils::find_residual<scalar, index, n>(sils.R_A, sils.y_A, &reT.x) / 5.0;
-                bab_ber[init + 1] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
-                bab_tim[init + 1] += reT.run_time / 5.0;
-
-                z_B.assign(n, 0);
-                if (init == -1)
-                    copy(z_B.begin(), z_B.end(), sils.x_R.begin());
-                else if (init == 1)
-                    z_B.assign(n, std::pow(2, k) / 2);
-
-                reT = sils.sils_block_search_serial(&z_B, &d_s);
-                ser_res[init + 1] += sils::find_residual<scalar, index, n>(sils.R_A, sils.y_A, &reT.x) / 5.0;
-                ser_ber[init + 1] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
-                ser_tim[init + 1] += reT.run_time / 5.0;
-            }
-        }
-    }
-
-    index rank, n_ranks, numbers_per_rank, first, last;
-    index numbers = max_num_iter;
-
-    // First call MPI_Init
-    MPI_Init(&argc, &argv);
-    // Get my rank and the number of ranks
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
-
-    // Calculate the number of iterations for each rank
-    numbers_per_rank = floor(numbers / n_ranks);
-    if (numbers % n_ranks > 0) {
-        // Add 1 in case the number of ranks doesn't divide the number of numbers
-        numbers_per_rank += 1;
-    }
-
-    // Figure out the first and the last iteration for this rank
-    first = rank * numbers_per_rank;
-    last = first + numbers_per_rank;
 
 //do something
     for (index p = first; p < last; p++) {
@@ -278,19 +220,12 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
             }
         }
     }
-    MPI_Finalize(); //MPI cleanup();
 
     //Print Results:
     for (index init = -1; init <= 1; init++) {
         printf("++++++++++++++++++++++++++++++++++++++\n");
         std::cout << "Block, size: " << size << std::endl;
         std::cout << "Init, value: " << init << std::endl;
-        printf("Method: BBA_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
-               size, bab_res[init + 1] / max_num_iter, bab_ber[init + 1] / max_num_iter, bab_tim[init + 1],
-               bab_tim[init + 1] / max_num_iter);
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
-               size, ser_res[init + 1] / max_num_iter, ser_ber[init + 1] / max_num_iter, ser_tim[init + 1],
-               ser_tim[init + 1] / max_num_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;
