@@ -48,22 +48,22 @@ void load_test() {
 }
 
 int mpi_test(int argc, char *argv[]) {
-    int p,my_rank,c;
+    int p, my_rank, c;
     /* set number of threads to spawn */
-    omp_set_num_threads(omp_get_max_threads());
+    omp_set_num_threads(10);
     /* initialize MPI stuff */
     MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD,&p);
-    MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     /* the following is a parallel OpenMP
     * executed by each MPI process
     */
 #pragma omp parallel reduction(+:c)
     {
-        c = omp_get_num_threads();
+        c += omp_get_num_threads();
     }
     /* expect a number to get printed for each MPI process */
-    printf("%d\n",c);
+    printf("%d\n", c);
     /* finalize MPI */
     MPI_Finalize();
     return 0;
