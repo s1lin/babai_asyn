@@ -224,12 +224,29 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
         }
     }
 
-    int rank, num_process;
-    MPI_Init(&argc, &argv); //initialize MPI library
-    MPI_Comm_size(MPI_COMM_WORLD, &num_process); //get number of processes
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); //get my process id
+    int rank, n_ranks, numbers_per_rank;
+    int my_first, my_last;
+    int numbers = max_num_iter;
+
+    // First call MPI_Init
+    MPI_Init(&argc, &argv);
+    // Get my rank and the number of ranks
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+
+    // Calculate the number of iterations for each rank
+    numbers_per_rank = floor(numbers / n_ranks);
+    if (numbers % n_ranks > 0) {
+        // Add 1 in case the number of ranks doesn't divide the number of numbers
+        numbers_per_rank += 1;
+    }
+
+    // Figure out the first and the last iteration for this rank
+    my_first = rank * numbers_per_rank;
+    my_last = my_first + numbers_per_rank;
+
 //do something
-    for (index p = 0; p < max_num_iter; p++) {
+    for (index p = my_first; p < my_last; p++) {
 //        printf("%d,", p);
         sils.init();
         if (p == 0){

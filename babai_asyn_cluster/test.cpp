@@ -68,14 +68,7 @@ int mpi_test(int argc, char *argv[]) {
     // Figure out the first and the last iteration for this rank
     my_first = rank * numbers_per_rank;
     my_last = my_first + numbers_per_rank;
-
-    // Run only the part of the loop this rank needs to run
-    // The if statement makes sure we don't go over
-    for (int i = my_first; i < my_last; i++) {
-        if (i < numbers) {
-            printf("I'm rank %d and I'm printing the number %d.\n", rank, i);
-        }
-    }
+    printf("I'm rank %d and I'm printing the number %d.\n", my_first, my_last);
 
     // Call finalize at the end
     return MPI_Finalize();
