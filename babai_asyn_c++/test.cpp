@@ -53,7 +53,7 @@ int mpi_test(int argc, char *argv[]) {
 
     int rank, n_ranks, numbers_per_rank;
     int my_first, my_last;
-    int numbers = 100;
+    int numbers = 2000;
 
     // First call MPI_Init
     MPI_Init(&argc, &argv);
@@ -71,13 +71,13 @@ int mpi_test(int argc, char *argv[]) {
     // Figure out the first and the last iteration for this rank
     my_first = rank * numbers_per_rank;
     my_last = my_first + numbers_per_rank;
-
+    printf("my_first: %d, my_last: %d\n", my_first, my_last);
     // Run only the part of the loop this rank needs to run
     // The if statement makes sure we don't go over
-    for (int i = my_first; i < my_last; i++) {
-        sils.init();
-        printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
-    }
+//    for (int i = my_first; i < my_last; i++) {
+//        sils.init();
+//        printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
+//    }
 
     // Call finalize at the end
     return MPI_Finalize();
