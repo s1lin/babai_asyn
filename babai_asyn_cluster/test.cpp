@@ -81,7 +81,12 @@ int mpi_test(int argc, char *argv[]) {
 //    }
 
     // Call finalize at the end
-    return MPI_Finalize();
+    MPI_Finalize();
+    if (rank == 0)
+        for (int i = 0; i < argc; i++) {
+            cout << argv[i] << " ";
+        }
+    return 0;
 }
 
 void run_test(int argc, char *argv[]) {
@@ -162,9 +167,7 @@ int main(int argc, char *argv[]) {
 //    run_test(argc, argv);
 //    tiny_test();
     mpi_test<double, int, 32>(argc, argv);
-    for (int i = 0; i < argc; i++) {
-        cout << argv[i] << " ";
-    }
+
     return 0;
 }
 
