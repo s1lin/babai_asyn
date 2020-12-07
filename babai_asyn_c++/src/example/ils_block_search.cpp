@@ -229,8 +229,6 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
     MPI_Comm_size(MPI_COMM_WORLD, &num_process); //get number of processes
     MPI_Comm_rank(MPI_COMM_WORLD, &rank); //get my process id
 //do something
-    printf("Hello World from rank %d\n", rank);
-    if (rank == 0) printf("MPI World size = %d processes\n", num_process);
     for (index p = 0; p < max_num_iter; p++) {
 //        printf("%d,", p);
         sils.init();
