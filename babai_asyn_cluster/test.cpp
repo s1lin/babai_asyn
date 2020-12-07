@@ -3,8 +3,8 @@
 //
 #include "src/example/ils_block_search.cpp"
 //#include "src/example/ils_babai_search.cpp"
-#include <boost/mpi.hpp>
-
+#include <mpi.h>
+#define BUFMAX 81
 using namespace std;
 using namespace boost;
 
@@ -46,30 +46,36 @@ void load_test() {
 
 }
 
-int mpi_test(int argc, char *argv[])
-{
-    mpi::environment env(argc, argv);
-    mpi::communicator world;
-    int rank = world.rank();
-    int size = world.size();
+int mpi_test(int argc, char *argv[]) {
+    char outbuf[BUFMAX], inbuf[BUFMAX];
+    int rank, size;
+    int sendto, recvfrom;
+    MPI_Status status;
 
-    string outmessage = "Hello, world! from process " + to_string(rank) + " of " + to_string(size);
-    string inmessage;
-    int sendto = (rank + 1) % size;
-    int recvfrom = (rank + size - 1) % size;
 
-    cout << outmessage << endl;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (!(rank % 2)) {
-        world.send(sendto,0,outmessage);
-        world.recv(recvfrom,0,inmessage);
+    sprintf(outbuf, "Hello, world! from process %d of %d", rank, size);
+
+    sendto = (rank + 1) % size;
+    recvfrom = ((rank + size) - 1) % size;
+
+    if (!(rank % 2))
+    {
+        MPI_Send(outbuf, BUFMAX, MPI_CHAR, sendto, 0, MPI_COMM_WORLD);
+        MPI_Recv(inbuf, BUFMAX, MPI_CHAR, recvfrom, 0, MPI_COMM_WORLD, &status);
     }
-    else {
-        world.recv(recvfrom,0,inmessage);
-        world.send(sendto,0,outmessage);
+    else
+    {
+        MPI_Recv(inbuf, BUFMAX, MPI_CHAR, recvfrom, 0, MPI_COMM_WORLD, &status);
+        MPI_Send(outbuf, BUFMAX, MPI_CHAR, sendto, 0, MPI_COMM_WORLD);
     }
 
-    cout << "[P_" << rank << "] process " << recvfrom << " said: \"" << inmessage << "\"" << endl;
+    printf("[P_%d] process %d said: \"%s\"]\n", rank, recvfrom, inbuf);
+
+    MPI_Finalize();
     return 0;
 }
 

@@ -4,8 +4,9 @@
 #include "src/example/ils_block_search.cpp"
 //#include "src/example/ils_babai_search.cpp"
 #include <mpi.h>
-
+#define BUFMAX 81
 using namespace std;
+using namespace boost;
 
 const int n1 = 64;
 const int n2 = 8192;
@@ -45,29 +46,37 @@ void load_test() {
 
 }
 
-void mpi_test(int argc, char** argv) {
-    // Initialize the MPI environment
-    MPI_Init(NULL, NULL);
+int mpi_test(int argc, char *argv[]) {
+    char outbuf[BUFMAX], inbuf[BUFMAX];
+    int rank, size;
+    int sendto, recvfrom;
+    MPI_Status status;
 
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    // Get the rank of the process
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // Get the name of the processor
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
+    sprintf(outbuf, "Hello, world! from process %d of %d", rank, size);
 
-    // Print off a hello world message
-    printf("Hello world from processor %s, rank %d out of %d processors\n",
-           processor_name, world_rank, world_size);
+    sendto = (rank + 1) % size;
+    recvfrom = ((rank + size) - 1) % size;
 
-    // Finalize the MPI environment.
+    if (!(rank % 2))
+    {
+        MPI_Send(outbuf, BUFMAX, MPI_CHAR, sendto, 0, MPI_COMM_WORLD);
+        MPI_Recv(inbuf, BUFMAX, MPI_CHAR, recvfrom, 0, MPI_COMM_WORLD, &status);
+    }
+    else
+    {
+        MPI_Recv(inbuf, BUFMAX, MPI_CHAR, recvfrom, 0, MPI_COMM_WORLD, &status);
+        MPI_Send(outbuf, BUFMAX, MPI_CHAR, sendto, 0, MPI_COMM_WORLD);
+    }
+
+    printf("[P_%d] process %d said: \"%s\"]\n", rank, recvfrom, inbuf);
+
     MPI_Finalize();
+    return 0;
 }
 
 void run_test(int argc, char *argv[]) {
