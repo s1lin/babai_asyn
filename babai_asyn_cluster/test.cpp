@@ -3,9 +3,10 @@
 //
 #include "src/example/ils_block_search.cpp"
 //#include "src/example/ils_babai_search.cpp"
-#include <mpi.h>
+#include <boost/mpi.hpp>
 
 using namespace std;
+using namespace boost;
 
 const int n1 = 64;
 const int n2 = 8192;
@@ -45,29 +46,31 @@ void load_test() {
 
 }
 
-void mpi_test(int argc, char** argv) {
-    // Initialize the MPI environment
-    MPI_Init(NULL, NULL);
+int mpi_test(int argc, char *argv[])
+{
+    mpi::environment env(argc, argv);
+    mpi::communicator world;
+    int rank = world.rank();
+    int size = world.size();
 
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    string outmessage = "Hello, world! from process " + to_string(rank) + " of " + to_string(size);
+    string inmessage;
+    int sendto = (rank + 1) % size;
+    int recvfrom = (rank + size - 1) % size;
 
-    // Get the rank of the process
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    cout << outmessage << endl;
 
-    // Get the name of the processor
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
+    if (!(rank % 2)) {
+        world.send(sendto,0,outmessage);
+        world.recv(recvfrom,0,inmessage);
+    }
+    else {
+        world.recv(recvfrom,0,inmessage);
+        world.send(sendto,0,outmessage);
+    }
 
-    // Print off a hello world message
-    printf("Hello world from processor %s, rank %d out of %d processors\n",
-           processor_name, world_rank, world_size);
-
-    // Finalize the MPI environment.
-    MPI_Finalize();
+    cout << "[P_" << rank << "] process " << recvfrom << " said: \"" << inmessage << "\"" << endl;
+    return 0;
 }
 
 void run_test(int argc, char *argv[]) {
