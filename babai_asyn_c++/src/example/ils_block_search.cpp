@@ -1,6 +1,7 @@
 #include "../source/sils.cpp"
 #include "../source/sils_block_search_omp.cpp"
 #include <mpi.h>
+
 template<typename scalar, typename index, index n>
 void ils_block_search(index k, index SNR) {
 
@@ -86,7 +87,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     for (index p = 0; p < max_num_iter; p++) {
 //        printf("%d,", p);
         sils.init();
-        if (p == 0){
+        if (p == 0) {
             printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
         }
         if (p % 10 == 0) cout << "-";
@@ -166,7 +167,8 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
 }
 
 template<typename scalar, typename index, index n>
-void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, index max_proc, index max_num_iter, scalar stop) {
+void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, index max_proc, index max_num_iter,
+                  scalar stop) {
 
     printf("plot_run-------------------------------------------\n");
 
@@ -190,7 +192,7 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
     for (index p = 0; p < max_num_iter; p++) {
 //        printf("%d,", p);
         sils.init();
-        if (p == 0){
+        if (p == 0) {
             printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
         }
         if (p % 10 == 0) cout << "-";
@@ -248,7 +250,7 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
     for (index p = first; p < last; p++) {
 //        printf("%d,", p);
         sils.init();
-        if (p % 500 == 0){
+        if (p % 500 == 0) {
             printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
         }
         std::cout.flush();

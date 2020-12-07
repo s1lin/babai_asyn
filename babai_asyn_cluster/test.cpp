@@ -49,6 +49,9 @@ void load_test() {
 
 template<typename scalar, typename index, index n>
 int mpi_test(int argc, char *argv[]) {
+    for(index i = 0; i < argc; i++){
+        cout<<argv[i] <<" ";
+    }
     sils::sils<scalar, index, false, n> sils(1, 15);
 
     int rank, n_ranks, numbers_per_rank;
