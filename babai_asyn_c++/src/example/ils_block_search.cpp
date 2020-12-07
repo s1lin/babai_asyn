@@ -224,9 +224,8 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
         }
     }
 
-    int rank, n_ranks, numbers_per_rank;
-    int my_first, my_last;
-    int numbers = max_num_iter;
+    index rank, n_ranks, numbers_per_rank, first, last;
+    index numbers = max_num_iter;
 
     // First call MPI_Init
     MPI_Init(&argc, &argv);
@@ -242,18 +241,16 @@ void plot_run_mpi(int argc, char *argv[], index k, index SNR, index min_proc, in
     }
 
     // Figure out the first and the last iteration for this rank
-    my_first = rank * numbers_per_rank;
-    my_last = my_first + numbers_per_rank;
+    first = rank * numbers_per_rank;
+    last = first + numbers_per_rank;
 
 //do something
-    for (index p = my_first; p < my_last; p++) {
+    for (index p = first; p < last; p++) {
 //        printf("%d,", p);
         sils.init();
-        if (p == 0){
+        if (p % 500 == 0){
             printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
         }
-        if (p % 10 == 0) cout << "-";
-        if (p % 500 == 0) cout << endl;
         std::cout.flush();
 
         for (index init = -1; init <= 1; init++) {

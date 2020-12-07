@@ -47,10 +47,13 @@ void load_test() {
 
 }
 
+template<typename scalar, typename index, index n>
 int mpi_test(int argc, char *argv[]) {
+    sils::sils<scalar, index, false, n> sils(1, 15);
+
     int rank, n_ranks, numbers_per_rank;
     int my_first, my_last;
-    int numbers = 10;
+    int numbers = 100;
 
     // First call MPI_Init
     MPI_Init(&argc, &argv);
@@ -72,9 +75,8 @@ int mpi_test(int argc, char *argv[]) {
     // Run only the part of the loop this rank needs to run
     // The if statement makes sure we don't go over
     for (int i = my_first; i < my_last; i++) {
-        if (i < numbers) {
-            printf("I'm rank %d and I'm printing the number %d.\n", rank, i);
-        }
+        sils.init();
+        printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
     }
 
     // Call finalize at the end
@@ -158,7 +160,7 @@ int main(int argc, char *argv[]) {
 //    load_test();
 //    run_test(argc, argv);
 //    tiny_test();
-    mpi_test(argc, argv);
+    mpi_test<double, int, 32>(argc, argv);
     return 0;
 }
 
