@@ -71,7 +71,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     std::cout << "Init, SNR: " << SNR << std::endl;
 
     sils::sils<scalar, index, false, n> sils(k, SNR);
-    index size = 16, iter = 10;;
+    index size = 4, iter = 10;
 
     vector<index> z_B(n, 0), d(n / size, size), d_s(n / size, size);
     for (index i = d_s.size() - 2; i >= 0; i--) {
