@@ -9,7 +9,7 @@
 using namespace std;
 using namespace boost;
 
-const int n1 = 64;
+const int n1 = 4096;
 const int n2 = 8192;
 const int n3 = 16384;
 const int n4 = 32768;
@@ -94,7 +94,7 @@ int mpi_test(int argc, char *argv[]) {
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
-    int min_proc = 6;
+    int min_proc = 12;
     int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 100;
     if (argc != 1) {
         k = stoi(argv[1]);
@@ -104,7 +104,7 @@ void run_test(int argc, char *argv[]) {
         max_num_iter = stoi(argv[5]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = max_proc != 64 ? 6 : 12;
+    min_proc = 12;
 
     for (int SNR = 15; SNR <= 35; SNR += 10) {
         switch (index) {
@@ -166,9 +166,9 @@ void tiny_test() {
 
 int main(int argc, char *argv[]) {
 //    load_test();
-//    run_test(argc, argv);
+    run_test(argc, argv);
 //    tiny_test();
-    mpi_test<double, int, 32>(argc, argv);
+//    mpi_test<double, int, 32>(argc, argv);
     return 0;
 }
 

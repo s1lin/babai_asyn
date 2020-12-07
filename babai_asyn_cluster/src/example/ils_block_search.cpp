@@ -1,5 +1,6 @@
 #include "../source/sils.cpp"
 #include "../source/sils_block_search_omp.cpp"
+#include <mpi.h>
 
 template<typename scalar, typename index, index n>
 void ils_block_search(index k, index SNR) {
@@ -8,7 +9,7 @@ void ils_block_search(index k, index SNR) {
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
 
-    sils::sils<scalar, index, false, n> sils(k, SNR);
+    sils::sils<scalar, index, true, n> sils(k, SNR);
 
     vector<index> z_B(n, 0);
 
@@ -70,8 +71,8 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
 
-    sils::sils<scalar, index, false, n> sils(k, SNR);
-    index size = 16, iter = 10;;
+    sils::sils<scalar, index, true, n> sils(k, SNR);
+    index size = 4, iter = 10;
 
     vector<index> z_B(n, 0), d(n / size, size), d_s(n / size, size);
     for (index i = d_s.size() - 2; i >= 0; i--) {
@@ -86,7 +87,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     for (index p = 0; p < max_num_iter; p++) {
 //        printf("%d,", p);
         sils.init();
-        if (p == 0){
+        if (p == 0) {
             printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
         }
         if (p % 10 == 0) cout << "-";
@@ -117,7 +118,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                 ser_ber[init + 1] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
                 ser_tim[init + 1] += reT.run_time / 5.0;
                 index l = 0;
-                for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+                for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
                     z_B.assign(n, 0);
                     if (init == -1)
                         copy(z_B.begin(), z_B.end(), sils.x_R.begin());
@@ -149,6 +150,82 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
                size, ser_res[init + 1] / max_num_iter, ser_ber[init + 1] / max_num_iter, ser_tim[init + 1],
                ser_tim[init + 1] / max_num_iter);
+        index l = 0;
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
+            n_proc = n_proc == 96 ? 64 : n_proc;
+            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
+                   n_proc, omp_res[init + 1 + 3 * l] / max_num_iter, omp_ber[init + 1 + 3 * l] / max_num_iter,
+                   omp_itr[init + 1 + 3 * l] / max_num_iter,
+                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_num_iter);
+            l++;
+        }
+        printf("++++++++++++++++++++++++++++++++++++++\n");
+    }
+
+    printf("End of current TASK.\n");
+    printf("-------------------------------------------\n");
+}
+
+template<typename scalar, typename index, index n>
+void plot_run_mpi(index first, index last, index k, index SNR,
+                  index min_proc, index max_proc, index max_num_iter,
+                  scalar stop) {
+
+    printf("plot_run-------------------------------------------\n");
+
+    std::cout << "Init, size: " << n << std::endl;
+    std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
+    std::cout << "Init, SNR: " << SNR << std::endl;
+
+    sils::sils<scalar, index, false, n> sils(k, SNR);
+    index size = 4, iter = 10;
+
+    vector<index> z_B(n, 0), d(n / size, size), d_s(n / size, size);
+    for (index i = d_s.size() - 2; i >= 0; i--) {
+        d_s[i] += d_s[i + 1];
+    }
+
+    vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
+    sils::returnType<scalar, index> reT;
+
+//do something
+    for (index p = first; p < last; p++) {
+//        printf("%d,", p);
+        sils.init();
+        if (p % 500 == 0) {
+            printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
+        }
+        std::cout.flush();
+
+        for (index init = -1; init <= 1; init++) {
+            for (index i = 0; i < 5; i++) {
+                index l = 0;
+                for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+                    z_B.assign(n, 0);
+                    if (init == -1)
+                        copy(z_B.begin(), z_B.end(), sils.x_R.begin());
+                    else if (init == 1)
+                        z_B.assign(n, std::pow(2, k) / 2);
+
+                    n_proc = n_proc == 96 ? 64 : n_proc;
+                    reT = sils.sils_block_search_omp(n_proc, iter, stop, &z_B, &d_s);
+
+                    omp_res[init + 1 + 3 * l] +=
+                            sils::find_residual<scalar, index, n>(sils.R_A, sils.y_A, &reT.x) / 5.0;
+                    omp_ber[init + 1 + 3 * l] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
+                    omp_tim[init + 1 + 3 * l] += reT.run_time / 5.0;
+                    omp_itr[init + 1 + 3 * l] += reT.num_iter / 5.0;
+                    l++;
+                }
+            }
+        }
+    }
+
+    //Print Results:
+    for (index init = -1; init <= 1; init++) {
+        printf("++++++++++++++++++++++++++++++++++++++\n");
+        std::cout << "Block, size: " << size << std::endl;
+        std::cout << "Init, value: " << init << std::endl;
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
             n_proc = n_proc == 96 ? 64 : n_proc;

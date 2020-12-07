@@ -1,13 +1,13 @@
 classdef sils_class
 
     properties
-        A, Q, R, x0, x0_R, y, n, k, SNR, z, init_res, sigma;
+        A, Q, R, R_LLL, x0, x0_R, y, y_LLL, n, k, SNR, z, init_res, init_res_LLL, sigma;
     end
 
     methods(Static)
         function auto_gen()
             for k = 1:3
-                for SNR = 15:10:45
+                for SNR = 15:20:45
                     for m = 12:12
                         s = sils_class(k, m, SNR);
                         s.write_to_nc();
@@ -23,13 +23,17 @@ classdef sils_class
             sils.n = 2^m;
             sils.SNR = SNR;
             sils.z = ones(sils.n, 1);
-            sils.A = normrnd(0, 1/4, sils.n, sils.n);
+            sils.A = normrnd(0, sqrt(.5), sils.n, sils.n);
             [sils.Q, sils.R] = qr(sils.A);
             sils.x0_R = zeros(sils.n, 1);
             sils.x0 = randi([0, 2^k - 1],sils.n,1);
             sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/20)));
-            sils.y = sils.R * sils.x0 + sils.Q' * normrnd(0, sils.sigma, sils.n, 1);
+            v = normrnd(0, sils.sigma, sils.n, 1);
+            sils.y = sils.R * sils.x0 + sils.Q' * v;
+            [sils.R_LLL,~,sils.y_LLL] = sils_reduction(sils.A, sils.A * sils.x0 + v);
             sils.init_res = norm(sils.y - sils.R * sils.x0);
+            sils.init_res_LLL = norm(sils.y_LLL - sils.R_LLL * sils.x0);
+            
         end
 
         function sils = init_from_files(sils)
@@ -52,15 +56,29 @@ classdef sils_class
                     end
                 end
             end
-            filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
+            R_A_LLL = zeros(sils.n * (sils.n + 1)/2,1);
+            index = 1;
+            for i=1:sils.n
+                for j=i:sils.n
+                    if sils.R(i,j)~=0
+                        R_A_LLL(index) = sils.R_LLL(i,j);
+                        index = index + 1;
+                    end
+                end
+            end
+            filename = append('../data/new', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
+            nccreate(filename, 'R_A_LLL', 'Dimensions', {'y',index});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'x_R', 'Dimensions', {'x',sils.n});
+            nccreate(filename, 'y_LLL', 'Dimensions', {'x',sils.n});
             ncwrite(filename,'R_A',R_A);
+            ncwrite(filename,'R_A_LLL',R_A);
             ncwrite(filename,'x_t',sils.x0);
             ncwrite(filename,'x_R',x_R);
             ncwrite(filename,'y',sils.y);
+            ncwrite(filename,'y_LLL',sils.y_LLL);
         end
 
         function sils = write_to_files(sils)

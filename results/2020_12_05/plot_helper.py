@@ -38,21 +38,36 @@ def plot_residual(n, f, file):
                     res.append(float(line_str[index].split("=")[1]))
                     ber.append(float(line_str[index + 1].split("=")[1]))
                     index = index + 2
-
-                if init + 1 == 0:
-                    axes[0, init + 1].plot(range(0, len(res), 5), np.array(res)[1:len(res):5], color=color[m],
+                if SNR != 15:
+                    if init + 1 == 0:
+                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                marker=marker[m], label='num_thread = ' + str(num_thread))
 
-                else:
-                    axes[0, init + 1].plot(range(0, len(res), 5), np.array(res)[1:len(res):5], color=color[m],
+                    else:
+                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                marker=marker[m])
-                    # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
-                    #                           linestyle='dotted')
-                    # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
-                    #                           linestyle='dotted')
+                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
+                        #                           linestyle='dotted')
+                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
+                        #                           linestyle='dotted')
 
-                axes[1, init + 1].plot(range(0, len(ber), 5), np.array(ber)[1:len(ber):5], color=color[m],
-                                       marker=marker[m])
+                    axes[1, init + 1].plot(range(1, 10), np.array(ber)[1:10], color=color[m],
+                                           marker=marker[m])
+                else:
+                    if init + 1 == 0:
+                        axes[0, init + 1].plot(range(0, 40, 5), np.array(res)[1:40:5], color=color[m],
+                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
+
+                    else:
+                        axes[0, init + 1].plot(range(0, 40, 5), np.array(res)[1:40:5], color=color[m],
+                                                   marker=marker[m])
+                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
+                        #                           linestyle='dotted')
+                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
+                        #                           linestyle='dotted')
+
+                    axes[1, init + 1].plot(range(1, 40, 5), np.array(ber)[1:40:5], color=color[m],
+                                           marker=marker[m])
 
                 k = k + 1
 
@@ -91,8 +106,8 @@ def plot_residual(n, f, file):
         title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) + '-SNR and ' \
                 + str(pow(4, f)) + '-QAM with different number of threads and block size 16'
 
-        axes[0, 0].set_ylabel('Residual')
-        axes[1, 0].set_ylabel('Bit Error Rate')
+        axes[0, 0].set_ylabel('Residual', fontsize=13)
+        axes[1, 0].set_ylabel('Bit Error Rate', fontsize=13)
         fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
         fig.legend(loc='center right', title='Legend')
         fig.subplots_adjust(right=0.85)
@@ -108,11 +123,12 @@ def plot_runtime(n, f, stop, file):
     color = ['r', 'g', 'b', 'y']
     marker = ['o', '+', 'x', '.']
     index = ['Iter', 'Time', 'Res', 'BER']
-    omp_tab = pd.DataFrame(np.random.randn(4, 5),
-                           columns=['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'])
+    omp_tab = pd.DataFrame(np.random.randn(4, 4),
+                           columns=['Babai', 'B-seq', 'NT-24', 'NT-48'])
     k = 6
     SNRs = [15, 35]
     for j in range(0, 2):
+        print(lines[k].split(","))
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(":")[1].split("\n")[0])
         k = k + 6
@@ -122,10 +138,10 @@ def plot_runtime(n, f, stop, file):
         axes2[j, 2].set_title('BER ' + str(SNRs[j]) + '-SNR', fontsize=13)
         axes2[j, 3].set_title('Running Time ' + str(SNRs[j]) + '-SNR', fontsize=13)
 
-        axes2[j, 0].set_ylabel('Avg. Iterations')
-        axes2[j, 1].set_ylabel('Avg. Residual')
-        axes2[j, 2].set_ylabel('Avg. BER')
-        axes2[j, 3].set_ylabel('Avg. Running Time')
+        axes2[j, 0].set_ylabel('Avg. Iterations', fontsize=13)
+        axes2[j, 1].set_ylabel('Avg. Residual', fontsize=13)
+        axes2[j, 2].set_ylabel('Avg. BER', fontsize=13)
+        axes2[j, 3].set_ylabel('Avg. Running Time', fontsize=13)
 
         for x in range(0, 3):
             print(lines[k].split(","))
@@ -153,27 +169,28 @@ def plot_runtime(n, f, stop, file):
             omp_tab.iloc[2, 1] = babai_ber
             omp_tab.iloc[2, 1] = block_ber
             omp_itr = []
-            for l in range(0, 3):
+            k = k + 1
+            for l in range(1, 3):
                 print(lines[k].split(","))
                 omp_res.append(float(lines[k].split(",")[2].split(":")[1]))
                 omp_itr.append(float(lines[k].split(",")[4].split(":")[1]))
                 omp_ber.append(float(lines[k].split(",")[3].split(":")[1]))
                 omp_tim.append(float(lines[k].split(",")[5].split(":")[1].split("s")[0]))
-                omp_tab.iloc[0, l + 2] = float(lines[k].split(",")[4].split(":")[1])
-                omp_tab.iloc[2, l + 2] = float(lines[k].split(",")[3].split(":")[1])
-                omp_tab.iloc[1, l + 2] = float(lines[k].split(",")[5].split(":")[1].split("s")[0])
+                omp_tab.iloc[0, l + 1] = float(lines[k].split(",")[4].split(":")[1])
+                omp_tab.iloc[2, l + 1] = float(lines[k].split(",")[3].split(":")[1])
+                omp_tab.iloc[1, l + 1] = float(lines[k].split(",")[5].split(":")[1].split("s")[0])
 
                 k = k + 1
 
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
 
-            axes2[j, 0].plot(['NT-12', 'NT-24', 'NT-48'], omp_itr,
+            axes2[j, 0].plot(['NT-24', 'NT-48'], omp_itr,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 1].plot(['True', 'Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_res,
+            axes2[j, 1].semilogy(['True', 'Babai', 'B-seq', 'NT-24', 'NT-48'], omp_res,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 2].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_ber,
+            axes2[j, 2].plot(['Babai', 'B-seq', 'NT-24', 'NT-48'], omp_ber,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 3].semilogy(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-48'], omp_tim,
+            axes2[j, 3].plot(['Babai', 'B-seq', 'NT-24', 'NT-48'], omp_tim,
                                  color=color[x], marker=marker[x], label=labels[init_value + 1])
 
             axes2[j, 0].legend(loc="upper left")

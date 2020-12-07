@@ -9,7 +9,7 @@ void ils_block_search(index k, index SNR) {
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
 
-    sils::sils<scalar, index, false, n> sils(k, SNR);
+    sils::sils<scalar, index, true, n> sils(k, SNR);
 
     vector<index> z_B(n, 0);
 
@@ -71,7 +71,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
 
-    sils::sils<scalar, index, false, n> sils(k, SNR);
+    sils::sils<scalar, index, true, n> sils(k, SNR);
     index size = 4, iter = 10;
 
     vector<index> z_B(n, 0), d(n / size, size), d_s(n / size, size);
@@ -118,7 +118,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                 ser_ber[init + 1] += sils::find_bit_error_rate<scalar, index, n>(&reT.x, &sils.x_t) / 5.0;
                 ser_tim[init + 1] += reT.run_time / 5.0;
                 index l = 0;
-                for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+                for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
                     z_B.assign(n, 0);
                     if (init == -1)
                         copy(z_B.begin(), z_B.end(), sils.x_R.begin());
@@ -151,7 +151,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                size, ser_res[init + 1] / max_num_iter, ser_ber[init + 1] / max_num_iter, ser_tim[init + 1],
                ser_tim[init + 1] / max_num_iter);
         index l = 0;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_num_iter, omp_ber[init + 1 + 3 * l] / max_num_iter,

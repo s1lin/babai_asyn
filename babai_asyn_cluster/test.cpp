@@ -9,7 +9,7 @@
 using namespace std;
 using namespace boost;
 
-const int n1 = 64;
+const int n1 = 4096;
 const int n2 = 8192;
 const int n3 = 16384;
 const int n4 = 32768;
@@ -49,12 +49,17 @@ void load_test() {
 
 template<typename scalar, typename index, index n>
 int mpi_test(int argc, char *argv[]) {
-
-    sils::sils<scalar, index, false, n> sils(1, 15);
+    int k = 1, index_2 = 0, stop = 0, mode = 1, max_num_iter = 2000;
+    if (argc != 1) {
+        k = stoi(argv[1]);
+        index_2 = stoi(argv[2]);
+        stop = stoi(argv[3]);
+        mode = stoi(argv[4]);
+        max_num_iter = stoi(argv[5]);
+    }
 
     int rank, n_ranks, numbers_per_rank;
     int my_first, my_last;
-    int numbers = 2000;
 
     // First call MPI_Init
     MPI_Init(&argc, &argv);
@@ -63,8 +68,8 @@ int mpi_test(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
 
     // Calculate the number of iterations for each rank
-    numbers_per_rank = floor(numbers / n_ranks);
-    if (numbers % n_ranks > 0) {
+    numbers_per_rank = floor(max_num_iter / n_ranks);
+    if (max_num_iter % n_ranks > 0) {
         // Add 1 in case the number of ranks doesn't divide the number of numbers
         numbers_per_rank += 1;
     }
@@ -73,26 +78,23 @@ int mpi_test(int argc, char *argv[]) {
     my_first = rank * numbers_per_rank;
     my_last = my_first + numbers_per_rank;
     printf("my_first: %d, my_last: %d\n", my_first, my_last);
-    // Run only the part of the loop this rank needs to run
-    // The if statement makes sure we don't go over
-//    for (int i = my_first; i < my_last; i++) {
-//        sils.init();
-//        printf("init_res: %.5f, sigma: %.5f\n", sils.init_res, sils.sigma);
-//    }
-
-    // Call finalize at the end
+    plot_run_mpi<double, int, n1>(my_first, my_last,
+                                  k, 15, 3, 8, my_last - my_first, stop);
     MPI_Finalize();
-    if (rank == 0)
-        for (int i = 0; i < argc; i++) {
+    if (rank == 0) {
+        for (int i = 0; i < max_num_iter; i++) {
             cout << argv[i] << " ";
         }
+    }
+
+    // Call finalize at the end
     return 0;
 }
 
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
-    int min_proc = 6;
+    int min_proc = 12;
     int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 100;
     if (argc != 1) {
         k = stoi(argv[1]);
@@ -102,7 +104,7 @@ void run_test(int argc, char *argv[]) {
         max_num_iter = stoi(argv[5]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = max_proc != 64 ? 6 : 12;
+    min_proc = 12;
 
     for (int SNR = 15; SNR <= 35; SNR += 10) {
         switch (index) {
@@ -164,10 +166,9 @@ void tiny_test() {
 
 int main(int argc, char *argv[]) {
 //    load_test();
-//    run_test(argc, argv);
+    run_test(argc, argv);
 //    tiny_test();
-    mpi_test<double, int, 32>(argc, argv);
-
+//    mpi_test<double, int, 32>(argc, argv);
     return 0;
 }
 
