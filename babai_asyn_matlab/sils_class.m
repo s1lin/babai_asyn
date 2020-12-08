@@ -1,7 +1,7 @@
 classdef sils_class
 
     properties
-        A, Q, R, R_LLL, x0, x0_R, y, y_LLL, n, k, SNR, z, init_res, init_res_LLL, sigma;
+        A, Q, R, R_LLL, x0, x0_R, x0_R_LLL, y, y_LLL, n, k, SNR, z, init_res, init_res_LLL, sigma;
     end
 
     methods(Static)
@@ -26,14 +26,16 @@ classdef sils_class
             sils.A = normrnd(0, sqrt(.5), sils.n, sils.n);
             [sils.Q, sils.R] = qr(sils.A);
             sils.x0_R = zeros(sils.n, 1);
+            sils.x0_R_LLL = zeros(sils.n, 1);
             sils.x0 = randi([0, 2^k - 1],sils.n,1);
             sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/20)));
             v = normrnd(0, sils.sigma, sils.n, 1);
-            sils.y = sils.R * sils.x0 + sils.Q' * v;
-            [sils.R_LLL,~,sils.y_LLL] = sils_reduction(sils.A, sils.A * sils.x0 + v);
+            sils.y = sils.A * sils.x0 + v;
+            [sils.R_LLL,~,sils.y_LLL] = sils_reduction(sils.A, sils.y);
+            sils.y = sils.Q' * sils.y;
             sils.init_res = norm(sils.y - sils.R * sils.x0);
             sils.init_res_LLL = norm(sils.y_LLL - sils.R_LLL * sils.x0);
-            
+            disp([sils.init_res, sils.init_res_LLL]);
         end
 
         function sils = init_from_files(sils)
@@ -44,8 +46,8 @@ classdef sils_class
         end
 
         function sils = write_to_nc(sils)
-            [x_R, res, avg] = sils_seach_round(sils);
-            disp([res, avg]);
+            [x_R, x_R_LLL, res, res_LLL, ~] = sils_seach_round(sils);
+            disp([res, res_LLL]);
             R_A = zeros(sils.n * (sils.n + 1)/2,1);
             index = 1;
             for i=1:sils.n
@@ -72,11 +74,13 @@ classdef sils_class
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'x_R', 'Dimensions', {'x',sils.n});
+            nccreate(filename, 'x_R_LLL', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y_LLL', 'Dimensions', {'x',sils.n});
             ncwrite(filename,'R_A',R_A);
-            ncwrite(filename,'R_A_LLL',R_A);
+            ncwrite(filename,'R_A_LLL',R_A_LLL);
             ncwrite(filename,'x_t',sils.x0);
             ncwrite(filename,'x_R',x_R);
+            ncwrite(filename,'x_R_LLL',x_R_LLL);
             ncwrite(filename,'y',sils.y);
             ncwrite(filename,'y_LLL',sils.y_LLL);
         end
@@ -120,15 +124,19 @@ classdef sils_class
         end
 
         %Search - round the real solution.
-        function [x_R, res, avg] = sils_seach_round(sils)
+        function [x_R, x_R_LLL, res, res_LLL, avg] = sils_seach_round(sils)
             tStart = tic;
             for j = sils.n:-1:1
                 sils.x0_R(j) = (sils.y(j) - sils.R(j, j + 1:sils.n) * sils.x0_R(j + 1:sils.n)) / sils.R(j, j);
+                sils.x0_R_LLL(j) = (sils.y_LLL(j) - sils.R_LLL(j, j + 1:sils.n) * sils.x0_R_LLL(j + 1:sils.n)) / sils.R_LLL(j, j);
             end
+            
             tEnd = toc(tStart);
             x_R = round(sils.x0_R);
+            x_R_LLL = round(sils.x0_R_LLL);
             avg = tEnd;
             res = norm(sils.x0 - x_R);
+            res_LLL = norm(sils.x0 - x_R_LLL);
         end
 
          %Search - rescurisive block solver.

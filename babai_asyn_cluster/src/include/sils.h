@@ -94,15 +94,21 @@ namespace sils {
 
     template<typename scalar, typename index, index n>
     inline scalar find_bit_error_rate(const vector<index> *x_b,
-                                      const vector<index> *x_t) {
-        index error = 0, size = sizeof(index);
+                                      const vector<index> *x_t,
+                                      const index is_binary) {
+        index error = 0, size = is_binary ? 1 : sizeof(index);
         for (index i = 0; i < n; i++) {
             std::string binary_x_b = std::bitset<sizeof(index)>(x_b->at(i)).to_string(); //to binary
             std::string binary_x_t = std::bitset<sizeof(index)>(x_t->at(i)).to_string();
-            for (index j = 0; j < size; j++)
-                if (binary_x_b[j] != binary_x_t[j])
+            if (is_binary) {
+                if (binary_x_b[sizeof(index) - 1] != binary_x_t[sizeof(index) - 1])
                     error++;
-
+            } else {
+                for (index j = 0; j < sizeof(index); j++) {
+                    if (binary_x_b[j] != binary_x_t[j])
+                        error++;
+                }
+            }
         }
         return (scalar) error / (n * size);
     }
@@ -352,14 +358,14 @@ namespace sils {
         index qam, snr;
         scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index>  *R_A, *y_A;
+        scalarType<scalar, index> *R_A, *y_A;
         Eigen::MatrixXd A, R, Q;
         Eigen::VectorXd y, x_tV;
     private:
         /**
          * read the problem from files
          */
-        void read();
+        void read(bool is_qr);
 
         /**
          * Warning: OPENMP enabled.
@@ -539,7 +545,7 @@ namespace sils {
             }
             index n_dim = n;
             for (index k = 0; k < n_dim; k++) {
-                
+
             }
         }
 
@@ -551,7 +557,7 @@ namespace sils {
             free(y_A);
         }
 
-        void init();
+        void init(bool is_qr);
 
         /**
          *

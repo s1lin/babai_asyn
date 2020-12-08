@@ -48,85 +48,96 @@ void load_test() {
 }
 
 template<typename scalar, typename index, index n>
-int mpi_test(int argc, char *argv[]) {
-    int k = 1, index_2 = 0, stop = 0, mode = 1, max_num_iter = 2000;
-    if (argc != 1) {
-        k = stoi(argv[1]);
-        index_2 = stoi(argv[2]);
-        stop = stoi(argv[3]);
-        mode = stoi(argv[4]);
-        max_num_iter = stoi(argv[5]);
-    }
+int mpi_test_2(int argc, char *argv[]) {
+    MPI_Datatype vec;
+    MPI_Comm comm;
+    double *vecin, *vecout;
+    int minsize = 2, count;
+    int root, i, stride, errs = 0;
+    int rank, size;
 
-    int rank, n_ranks, numbers_per_rank;
-    int my_first, my_last;
-
-    // First call MPI_Init
     MPI_Init(&argc, &argv);
-    // Get my rank and the number of ranks
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &n_ranks);
+    comm = MPI_COMM_WORLD;
+    /* Determine the sender and receiver */
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
 
-    // Calculate the number of iterations for each rank
-    numbers_per_rank = floor(max_num_iter / n_ranks);
-    if (max_num_iter % n_ranks > 0) {
-        // Add 1 in case the number of ranks doesn't divide the number of numbers
-        numbers_per_rank += 1;
-    }
+    for (root = 0; root < size; root++) {
+        for (count = 1; count < 65000; count = count * 2) {
+//            n = 12;
+            stride = 10;
+            vecin = (double *) malloc(n * stride * size * sizeof(double));
+            vecout = (double *) malloc(size * n * sizeof(double));
 
-    // Figure out the first and the last iteration for this rank
-    my_first = rank * numbers_per_rank;
-    my_last = my_first + numbers_per_rank;
-    printf("my_first: %d, my_last: %d\n", my_first, my_last);
-    plot_run_mpi<double, int, n1>(my_first, my_last,
-                                  k, 15, 3, 8, my_last - my_first, stop);
-    MPI_Finalize();
-    if (rank == 0) {
-        for (int i = 0; i < max_num_iter; i++) {
-            cout << argv[i] << " ";
+            MPI_Type_vector(n, 1, stride, MPI_DOUBLE, &vec);
+            MPI_Type_commit(&vec);
+
+            for (i = 0; i < n * stride; i++) vecin[i] = -2;
+            for (i = 0; i < n; i++) vecin[i * stride] = rank * n + i;
+
+            MPI_Gather(vecin, 1, vec, vecout, n, MPI_DOUBLE, root, comm);
+
+            if (rank == root) {
+                for (i = 0; i < n * size; i++) {
+                    if (vecout[i] != i) {
+                        errs++;
+                        if (errs < 10) {
+                            fprintf(stderr, "vecout[%d]=%d\n", i, (int) vecout[i]);
+                            fflush(stderr);
+                        }
+                    }
+                }
+            }
+            MPI_Type_free(&vec);
+            free(vecin);
+            free(vecout);
         }
     }
 
-    // Call finalize at the end
+    /* do a zero length gather */
+    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+    MPI_Finalize();
     return 0;
 }
 
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
-    int min_proc = 12;
-    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 100;
+    int min_proc = 6;
+    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
         stop = stoi(argv[3]);
         mode = stoi(argv[4]);
         max_num_iter = stoi(argv[5]);
+        is_qr = stoi(argv[6]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = 12;
+    min_proc = max_proc != 12;
 
     for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch (index) {
             case 0:
                 if (mode == 0)
-                    plot_res<double, int, n1>(k, SNR, min_proc, max_proc);
+                    plot_res<double, int, n1>(k, SNR, min_proc, max_proc, is_qr);
                 else if (mode == 1)
-                    plot_run<double, int, n1>(k, SNR, min_proc, max_proc, max_num_iter, stop);
+                    plot_run<double, int, n1>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
                 else
                     ils_block_search<double, int, n1>(k, SNR);
                 break;
             case 1:
-                plot_res<double, int, n2>(k, SNR, min_proc, max_proc);
-                plot_run<double, int, n2>(k, SNR, min_proc, max_proc, max_num_iter, stop);
+                plot_res<double, int, n2>(k, SNR, min_proc, max_proc, is_qr);
+                plot_run<double, int, n2>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
 //                ils_block_search<double, int, n2>(k, SNR);
                 break;
             case 2:
-                plot_run<double, int, n3>(k, SNR, min_proc, max_proc, max_num_iter, stop);
+                plot_run<double, int, n3>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
 //                ils_block_search<double, int, n3>(k, SNR);
                 break;
             default:
-                plot_res<double, int, n4>(k, SNR, min_proc, max_proc);
+                plot_res<double, int, n4>(k, SNR, min_proc, max_proc, is_qr);
                 break;
         }
 
@@ -154,11 +165,11 @@ void tiny_test() {
         d_s[i] += d_s[i + 1];
     }
     for (int i = 0; i < 100; i++) {
-        sils.init();
+        sils.init(false);
         //auto reT = sils.sils_block_search_omp_schedule(3, 10, 0, "", &z_B, &d_s);
         auto reT = sils.sils_block_search_serial(&z_B, &d_s);
         auto res = sils::find_residual<double, int, n1>(sils.R_A, sils.y_A, &reT.x);
-        auto brr = sils::find_bit_error_rate<double, int, n1>(&reT.x, &sils.x_t);
+        auto brr = sils::find_bit_error_rate<double, int, n1>(&reT.x, &sils.x_t, false);
         printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                3, size, reT.num_iter, res, brr, reT.run_time);
     }
@@ -168,7 +179,7 @@ int main(int argc, char *argv[]) {
 //    load_test();
     run_test(argc, argv);
 //    tiny_test();
-//    mpi_test<double, int, 32>(argc, argv);
+//    mpi_test_2<double, int, 32>(argc, argv);
     return 0;
 }
 

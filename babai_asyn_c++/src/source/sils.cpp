@@ -34,8 +34,10 @@ namespace sils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    void sils<scalar, index, is_read, n>::read() {
+    void sils<scalar, index, is_read, n>::read(bool is_qr) {
         string filename = "../../data/new" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
+//        string filename = "../../data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
+
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
 
@@ -46,10 +48,14 @@ namespace sils {
         if ((retval = nc_get_var_int(ncid, varid, &x_t.data()[0]))) ERR(retval);
 
         /* Get the varid of the data variable, based on its name. */
-        if ((retval = nc_inq_varid(ncid, "y_LLL", &varid))) ERR(retval);
-
-        /* Read the data. */
-        if ((retval = nc_get_var_double(ncid, varid, &y_A->x[0]))) ERR(retval);
+        if (is_qr) {
+            if ((retval = nc_inq_varid(ncid, "y", &varid))) ERR(retval);
+            if ((retval = nc_get_var_double(ncid, varid, &y_A->x[0]))) ERR(retval);
+        }
+        else {
+            if ((retval = nc_inq_varid(ncid, "y_LLL", &varid))) ERR(retval);
+            if ((retval = nc_get_var_double(ncid, varid, &y_A->x[0]))) ERR(retval);
+        }
 
         /* Get the varid of the data variable, based on its name. */
         if ((retval = nc_inq_varid(ncid, "x_R", &varid))) ERR(retval);
@@ -58,18 +64,22 @@ namespace sils {
         if ((retval = nc_get_var_int(ncid, varid, &x_R.data()[0]))) ERR(retval);
 
         /* Get the varid of the data variable, based on its name. */
-        if ((retval = nc_inq_varid(ncid, "R_A_LLL", &varid))) ERR(retval);
-
-        /* Read the data. */
-        if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
+        if (is_qr) {
+            if ((retval = nc_inq_varid(ncid, "R_A", &varid))) ERR(retval);
+            if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
+        }
+        else {
+            if ((retval = nc_inq_varid(ncid, "R_A_LLL", &varid))) ERR(retval);
+            if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
+        }
     }
 
 
     template<typename scalar, typename index, bool is_read, index n>
-    void sils<scalar, index, is_read, n>::init() {
+    void sils<scalar, index, is_read, n>::init(bool is_qr) {
         scalar start = omp_get_wtime();
         if (is_read) {
-            read();
+            read(is_qr);
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
         } else {
             std::random_device rd;
