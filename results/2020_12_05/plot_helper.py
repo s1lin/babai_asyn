@@ -38,7 +38,7 @@ def plot_residual(n, f, file):
                     res.append(float(line_str[index].split("=")[1]))
                     ber.append(float(line_str[index + 1].split("=")[1]))
                     index = index + 2
-                if SNR != 15:
+                if SNR == 35:
                     if init + 1 == 0:
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                marker=marker[m], label='num_thread = ' + str(num_thread))
@@ -53,6 +53,21 @@ def plot_residual(n, f, file):
 
                     axes[1, init + 1].plot(range(1, 10), np.array(ber)[1:10], color=color[m],
                                            marker=marker[m])
+                elif SNR == 25:
+                    if init + 1 == 0:
+                        axes[0, init + 1].semilogy(range(0, 15), np.array(res)[0:15], color=color[m],
+                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
+
+                    else:
+                        axes[0, init + 1].semilogy(range(0, 15), np.array(res)[0:15], color=color[m],
+                                                   marker=marker[m])
+                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
+                        #                           linestyle='dotted')
+                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
+                        #                           linestyle='dotted')
+
+                    axes[1, init + 1].plot(range(1, 15), np.array(ber)[1:15], color=color[m],
+                                           marker=marker[m])
                 else:
                     if init + 1 == 0:
                         axes[0, init + 1].plot(range(0, 40, 5), np.array(res)[1:40:5], color=color[m],
@@ -66,7 +81,7 @@ def plot_residual(n, f, file):
                         # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
                         #                           linestyle='dotted')
 
-                    axes[1, init + 1].plot(range(1, 40, 5), np.array(ber)[1:40:5], color=color[m],
+                    axes[1, init + 1].plot(range(2, 40, 5), np.array(ber)[2:40:5], color=color[m],
                                            marker=marker[m])
 
                 k = k + 1
