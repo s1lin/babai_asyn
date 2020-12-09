@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8.2)
-project(sils)
+project(cils)
 
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
@@ -50,25 +50,25 @@ if (MPI_FOUND)
 
 endif ()
 
-add_executable(sils test.cpp src/example/ils_block_search.cpp src/include/sils.h src/source/sils.cpp src/example/ils_babai_search.cpp src/source/sils_block_search_omp.cpp)# src/source/sils_reduction.cpp)
+add_executable(cils test.cpp src/example/ils_block_search.cpp src/include/cils.h src/source/cils.cpp src/example/ils_babai_search.cpp src/source/cils_block_search_omp.cpp)# src/source/cils_reduction.cpp)
 
 if (MPI_FOUND)
-    target_link_libraries(sils ${MPI_LIBRARIES})
+    target_link_libraries(cils ${MPI_LIBRARIES})
     message("-- MPI_FOUND")
 endif ()
 
 if (OpenMP_CXX_FOUND)
-    target_link_libraries(sils OpenMP::OpenMP_CXX)
+    target_link_libraries(cils OpenMP::OpenMP_CXX)
     message("-- OpenMP_CXX_FOUND")
 endif ()
 
 if (netCDF_FOUND)
-    target_link_libraries(sils ${netCDF_LIBRARIES})
+    target_link_libraries(cils ${netCDF_LIBRARIES})
     message("-- netCDF_FOUND")
 endif ()
 
 if (Eigen3_FOUND)
-    target_link_libraries(sils Eigen3::Eigen)
+    target_link_libraries(cils Eigen3::Eigen)
     message("-- Eigen3_FOUND")
 endif ()
 

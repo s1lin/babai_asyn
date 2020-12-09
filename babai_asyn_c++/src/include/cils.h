@@ -39,9 +39,9 @@ using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 /**
- * namespace of sils
+ * namespace of cils
  */
-namespace sils {
+namespace cils {
 
     /**
      * Return scalar pointer array along with the size.
@@ -343,7 +343,7 @@ namespace sils {
     }
 
     /**
-     * sils class object
+     * cils class object
      * @tparam scalar
      * @tparam index
      * @tparam is_read
@@ -351,7 +351,7 @@ namespace sils {
      * @tparam n
      */
     template<typename scalar, typename index, bool is_read, index n>
-    class sils {
+    class cils {
 
     public:
 
@@ -550,9 +550,9 @@ namespace sils {
         }
 
     public:
-        explicit sils(index qam, index snr);
+        explicit cils(index qam, index snr);
 
-        ~sils() {
+        ~cils() {
             free(R_A);
             free(y_A);
         }
@@ -569,7 +569,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
+        cils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
 
         /**
          *
@@ -579,7 +579,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_babai_search_cuda(index nswp, vector<index> *z_B);
+        cils_babai_search_cuda(index nswp, vector<index> *z_B);
         /**
          *
          * @param n_proc
@@ -590,7 +590,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_back_solve(vector<index> *z_B);
+        cils_back_solve(vector<index> *z_B);
 
 
         /**
@@ -599,7 +599,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_babai_search_serial(vector<index> *z_B);
+        cils_babai_search_serial(vector<index> *z_B);
 
         /**
          *
@@ -608,7 +608,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_serial(vector<index> *z_B, vector<index> *d);
+        cils_block_search_serial(vector<index> *z_B, vector<index> *d);
 
         /**
          *
@@ -621,7 +621,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+        cils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
 
         /**
          *
@@ -634,7 +634,7 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+        cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
 
 
         /**
@@ -648,11 +648,11 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
+        cils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
                                        vector<index> *z_B, vector<index> *d);
 
         returnType<scalar, index>
-        sils_reduction();
+        cils_reduction();
     };
 }
 #endif

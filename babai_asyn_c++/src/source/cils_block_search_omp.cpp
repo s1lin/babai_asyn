@@ -5,14 +5,14 @@
 #include <random>
 #include <chrono>
 
-#include "../include/sils.h"
+#include "../include/cils.h"
 
 using namespace std;
 
-namespace sils {
+namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_block_search_omp(index n_proc, index nswp, scalar stop,
+    cils<scalar, index, is_read, n>::cils_block_search_omp(index n_proc, index nswp, scalar stop,
                                                            vector<index> *z_B,
                                                            vector<index> *d) {
         index ds = d->size(), dx = d->at(ds - 1);
@@ -28,7 +28,7 @@ namespace sils {
         } else if (ds == n) {
             //Find the Babai point
             //todo: Change it to omp version
-            return sils_babai_search_serial(z_B);
+            return cils_babai_search_serial(z_B);
         }
         index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
         scalar res = 0, nres = 10, sum = 0;
@@ -99,7 +99,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_block_search_omp_schedule(index n_proc, index nswp,
+    cils<scalar, index, is_read, n>::cils_block_search_omp_schedule(index n_proc, index nswp,
                                                                     scalar stop, string schedule,
                                                                     vector<index> *z_B,
                                                                     vector<index> *d) {
@@ -115,7 +115,7 @@ namespace sils {
             }
         } else if (ds == n) {
             //Find the Babai point by OpenMP
-            return sils_babai_search_omp(n_proc, nswp, z_B);
+            return cils_babai_search_omp(n_proc, nswp, z_B);
         }
 
         index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;

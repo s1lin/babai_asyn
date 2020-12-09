@@ -1,8 +1,8 @@
-#include "../babai_asyn_c++/src/source/sils.cpp"
+#include "../babai_asyn_c++/src/source/cils.cpp"
 #include "cils_cuda_solvers.cuh"
 #include <ctime>
 
-namespace sils {
+namespace cils {
 
     template<typename scalar, typename index, index n>
     void testDevice(index devID) {
@@ -18,7 +18,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_babai_search_cuda(index nswp, vector<index> *z_B) {
+    cils<scalar, index, is_read, n>::cils_babai_search_cuda(index nswp, vector<index> *z_B) {
         scalar *z_B_c, *z_B_p, *y_A_c, *R_A_c;
         scalar *z_B_c_h, *z_B_p_h, *y_A_c_h, *R_A_c_h;
 

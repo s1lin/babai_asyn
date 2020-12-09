@@ -1,7 +1,7 @@
 #include <cstring>
 #include <algorithm>
 
-#include "../include/sils.h"
+#include "../include/cils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 
@@ -13,10 +13,10 @@
 using namespace std;
 
 
-namespace sils {
+namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
-    sils<scalar, index, is_read, n>::sils(index k, index snr) {
+    cils<scalar, index, is_read, n>::cils(index k, index snr) {
         this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->R_A->x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
@@ -34,7 +34,7 @@ namespace sils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    void sils<scalar, index, is_read, n>::read(bool is_qr) {
+    void cils<scalar, index, is_read, n>::read(bool is_qr) {
 //        string filename = "../../data/new" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
         string filename = "../../data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
 
@@ -76,7 +76,7 @@ namespace sils {
 
 
     template<typename scalar, typename index, bool is_read, index n>
-    void sils<scalar, index, is_read, n>::init(bool is_qr) {
+    void cils<scalar, index, is_read, n>::init(bool is_qr) {
         scalar start = omp_get_wtime();
         if (is_read) {
             read(is_qr);
@@ -108,7 +108,7 @@ namespace sils {
                 }
                 x_t[i] = round(x_tV[i]);
             }
-            this->x_R = sils_back_solve(&x_R).x;
+            this->x_R = cils_back_solve(&x_R).x;
         }
 //        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
 //        scalar end_time = omp_get_wtime() - start;
@@ -118,7 +118,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_babai_search_omp(const index n_proc, const index nswp,
+    cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
         index count = 0, num_iter = 0, x_c = 0, chunk = std::log2(n);
@@ -163,7 +163,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_babai_search_serial(vector<index> *z_B) {
+    cils<scalar, index, is_read, n>::cils_babai_search_serial(vector<index> *z_B) {
         scalar sum = 0;
         scalar start = omp_get_wtime();
 
@@ -184,7 +184,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_back_solve(vector<index> *z_B) {
+    cils<scalar, index, is_read, n>::cils_back_solve(vector<index> *z_B) {
         scalar sum = 0;
         scalar start = omp_get_wtime();
         vector<scalar> z_B_tmp(n, 0);
@@ -210,7 +210,7 @@ namespace sils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    sils<scalar, index, is_read, n>::sils_block_search_serial(vector<index> *z_B,
+    cils<scalar, index, is_read, n>::cils_block_search_serial(vector<index> *z_B,
                                                               vector<index> *d) {
 
         index ds = d->size();
@@ -225,7 +225,7 @@ namespace sils {
             }
         } else if (ds == n) {
             //Find the Babai point
-            return sils_babai_search_serial(z_B);
+            return cils_babai_search_serial(z_B);
         }
 
         //last block:

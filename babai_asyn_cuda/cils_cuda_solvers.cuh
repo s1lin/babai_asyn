@@ -5,7 +5,7 @@
 #ifndef SILS_CUDA_CILS_CUDA_SOLVERS_CUH
 #define SILS_CUDA_CILS_CUDA_SOLVERS_CUH
 using namespace std;
-namespace sils{
+namespace cils{
     template<typename scalar, typename index, index n>
     __global__ void
     babai_solve_cuda(scalar *z_B_c, scalar *z_B_p, const scalar *y_A_c, const scalar *R_A_c) {
