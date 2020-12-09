@@ -2,6 +2,19 @@
 #include <ctime>
 
 namespace sils {
+
+    template<typename scalar, typename index, index n>
+    void testDevice(index devID) {
+        // Check if we can run. Maybe do something more...
+        cudaDeviceProp deviceProp{};
+        cudaGetDeviceProperties(&deviceProp, devID);
+        if (deviceProp.major == 9999 && deviceProp.minor == 9999) {   /* Simulated device. */
+            printf("There is no device supporting CUDA.\n");
+            cudaDeviceSynchronize();
+        } else
+            printf("Using GPU device number %d.\n", devID);
+    }
+
     template<typename scalar, typename index, index n>
     __global__ void
     babai_solve_cuda(scalar *z_B_c, scalar *z_B_p, const scalar *y_A, const scalar *R_A_c) {
@@ -57,24 +70,16 @@ namespace sils {
         for (index row = 0; row < n; row++) {
             for (index col = row; col < n; col++) {
                 index i = (n * row) + col - ((row * (row + 1)) / 2);
-                R_A_c[i] = R_A->x[i];
+                R_A_c[n * row + col] = R_A->x[i];
             }
             y_A_c[row] = y_A->x[row];
         }
 
-        for (index row = 0; row < 100; row++) {
-            for (index col = 0; col < 100; col++) {
-                cout<<R_A_c[row]<<" ";
-            }
-            cout<<endl;
-        }
-
-        z_B_c[end_1] = z_B_p[end_1] = z_B->at(end_1);
-
-        cudaMemcpy(y_A_c, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
-        cudaMemcpy(R_A_c, R_A->x, n * n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(y_A_c, y_A_c, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(R_A_c, R_A_c, n * n * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(z_B_c, z_B->data(), n * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(z_B_p, z_B->data(), n * sizeof(scalar), cudaMemcpyHostToDevice);
+        z_B_c[end_1] = z_B_p[end_1] = z_B->at(end_1);
 
         index tileSize = 4;
         // Optimized kernel
@@ -92,7 +97,7 @@ namespace sils {
 //            //find_raw_x0_cuda<<<nTiles, tileSize>>>(n, z_B_p, z_B_c, y_A_c, R_A_c);
 //        }
 
-//        cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
 //        scalar time = (std::clock() - start) / (scalar) CLOCKS_PER_SEC;
 
 
@@ -103,7 +108,8 @@ namespace sils {
         cudaFree(z_B_p);
         cudaFree(y_A_c);
         cudaFree(R_A_c);
-        return 0;
+        returnType<scalar, index> reT = {*z_B, 0, 0, 0};
+        return reT;
     }
 
 }
