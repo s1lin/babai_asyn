@@ -479,8 +479,8 @@ namespace sils {
             vector<index> z(block_size, 0), d(block_size, 0), z_H(block_size, 0);
             vector<scalar> p(block_size, 0), c(block_size, 0);
 
-            scalar newprsd, gamma, b_R, beta = INFINITY;
-            index k = block_size - 1, i, j;
+            scalar newprsd, gamma, beta = INFINITY;
+            index k = block_size - 1;
 
             c[block_size - 1] = y_B->at(block_size - 1) / R_B->at(R_B->size() - 1);
             z[block_size - 1] = round(c[block_size - 1]);
@@ -571,6 +571,15 @@ namespace sils {
         returnType<scalar, index>
         sils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
 
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param z_B
+         * @return
+         */
+        returnType<scalar, index>
+        sils_babai_search_cuda(index nswp, vector<index> *z_B);
         /**
          *
          * @param n_proc
