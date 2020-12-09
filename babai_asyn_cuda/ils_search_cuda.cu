@@ -1,4 +1,4 @@
-#include "ils_cuda_solvers.cu"
+#include "cils_cuda_solvers.cu"
 #include <ctime>
 
 using namespace std;
@@ -36,12 +36,15 @@ int main() {
     reT = sils.sils_babai_search_serial(&z_B);
     res = sils::find_residual<double, int, n>(sils.R_A, sils.y_A, &reT.x);
     brr = sils::find_bit_error_rate<double, int, n>(&reT.x, &sils.x_t, false);
-    printf("Method: BBI_SER, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
+    printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
 
     std::cout << "find_raw_x0_CUDA" << std::endl;
-    for (int nswp = 200; nswp <= 200; nswp += 10) {
+    for (int nswp = 10; nswp <= 100; nswp *= 2) {
+        z_B.assign(n, 0);
         reT = sils.sils_babai_search_cuda(nswp, &z_B);
-        //cout << time << ",";
+        res = sils::find_residual<double, int, n>(sils.R_A, sils.y_A, &reT.x);
+        brr = sils::find_bit_error_rate<double, int, n>(&reT.x, &sils.x_t, false);
+        printf("Method: BAB_GPU, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
     }
 
     return 0;

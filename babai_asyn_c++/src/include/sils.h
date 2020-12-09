@@ -634,6 +634,20 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
+        sils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+
+
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param R_B
+         * @param y_B
+         * @param z_B
+         * @param d
+         * @return
+         */
+        returnType<scalar, index>
         sils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
                                        vector<index> *z_B, vector<index> *d);
 
