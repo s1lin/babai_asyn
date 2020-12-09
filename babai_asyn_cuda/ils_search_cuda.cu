@@ -8,7 +8,7 @@ int main() {
 
     cils::testDevice<double, int, n>(0);
     int n_jobs = 50, size = 2;
-    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1, SNR = 15;
+    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1, SNR = 35;
     cils::cils<double, int, true, n> cils(k, SNR);
     cils.init(is_qr);
 
