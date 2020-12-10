@@ -8,7 +8,7 @@ classdef sils_class
         function auto_gen()
             for k = 1:3
                 for SNR = 15:20:45
-                    for m = 12:12
+                    for m = 4:5
                         s = sils_class(k, m, SNR);
                         s.write_to_nc();
                     end

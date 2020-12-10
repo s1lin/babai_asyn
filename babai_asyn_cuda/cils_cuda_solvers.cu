@@ -103,19 +103,19 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d) {
 
         index ds = d->size(), dx = d->at(ds - 1);
-        if (ds == 1) {
-            if (d->at(0) == 1) {
-                z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
-                return {*z_B, 0, 0, 0};
-            } else {
-                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = find_block_x(y_A, 0, n);
-                return {ils_search(&R_B, &y_B), 0, 0, 0};
-            }
-        } else if (ds == n) {
-            //Find the Babai point by OpenMP
-            return cils_babai_search_cuda(nswp, z_B);
-        }
+//        if (ds == 1) {
+//            if (d->at(0) == 1) {
+//                z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
+//                return {*z_B, 0, 0, 0};
+//            } else {
+//                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
+//                vector<scalar> y_B = find_block_x(y_A, 0, n);
+//                return {ils_search(&R_B, &y_B), 0, 0, 0};
+//            }
+//        } else if (ds == n) {
+//            //Find the Babai point by OpenMP
+//            return cils_babai_search_cuda(nswp, z_B);
+//        }
 
         scalar *z_B_d, *z_B_h, *y_A_d, *R_A_d;
         index *d_A_d, *d_A_h;
@@ -139,18 +139,19 @@ namespace cils {
         cudaMemcpy(y_A_d, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(R_A_d, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(z_B_d, z_B_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_A_d, d_A_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_A_d, d_A_h, ds * sizeof(index), cudaMemcpyHostToDevice);
 
         // Optimized kernel
-        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
-        cout<<nTiles;
-        index gridHeight = n / ds + (n % ds == 0 ? 0 : 1);
-        index gridWidth = n / ds + (n % ds == 0 ? 0 : 1);
-        dim3 dGrid(gridHeight, gridWidth), dBlock(ds, ds);
+//        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
+//        cout<<nTiles;
+//        index gridHeight = n / ds + (n % ds == 0 ? 0 : 1);
+//        index gridWidth = n / ds + (n % ds == 0 ? 0 : 1);
+        dim3 dGrid(1), dBlock(ds/1);
 
         std::clock_t start = std::clock();
         for (index k = 0; k < nswp; k++) {
-            cuda::block_solve_cuda<scalar, index, n><<<1, ds>>>(R_A_d, y_A_d, d_A_d, ds, z_B_d);
+            cuda::block_solve_cuda<scalar, index, n><<<dGrid, dBlock>>>(R_A_d, y_A_d, d_A_d, ds, z_B_d);
+            cudaDeviceSynchronize();
         }
 
         cudaDeviceSynchronize();
