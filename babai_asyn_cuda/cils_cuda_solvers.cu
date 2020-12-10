@@ -1,5 +1,6 @@
 #include "../babai_asyn_c++/src/source/cils.cpp"
 #include "cils_cuda_solvers.cuh"
+#include "cuda_runtime_api.h"
 #include <ctime>
 
 namespace cils {
@@ -11,21 +12,52 @@ namespace cils {
         cudaGetDeviceProperties(&deviceProp, devID);
         if (deviceProp.major == 9999 && deviceProp.minor == 9999) {   /* Simulated device. */
             printf("There is no device supporting CUDA.\n");
-            cudaDeviceSynchronize();
-        } else
-            printf("Using GPU device number %d.\n", devID);
+        } else {
+            index cores = 0;
+            index mp = deviceProp.multiProcessorCount;
+            switch (deviceProp.major){
+                case 2: // Fermi
+                    if (deviceProp.minor == 1) cores = mp * 48;
+                    else cores = mp * 32;
+                    break;
+                case 3: // Kepler
+                    cores = mp * 192;
+                    break;
+                case 5: // Maxwell
+                    cores = mp * 128;
+                    break;
+                case 6: // Pascal
+                    if ((deviceProp.minor == 1) || (deviceProp.minor == 2)) cores = mp * 128;
+                    else if (deviceProp.minor == 0) cores = mp * 64;
+                    else printf("Unknown device type\n");
+                    break;
+                case 7: // Volta and Turing
+                    if ((deviceProp.minor == 0) || (deviceProp.minor == 5)) cores = mp * 64;
+                    else printf("Unknown device type\n");
+                    break;
+                case 8: // Ampere
+                    if (deviceProp.minor == 0) cores = mp * 64;
+                    else if (deviceProp.minor == 6) cores = mp * 128;
+                    else printf("Unknown device type\n");
+                    break;
+                default:
+                    printf("Unknown device type\n");
+                    break;
+            }
+            printf("Using GPU device number %d, with %d CUDA cores.\n", devID, cores);
+        }
     }
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_babai_search_cuda(index nswp, vector<index> *z_B) {
-        scalar *z_B_d, *z_B_h, *y_A_c, *R_A_c;
+        scalar *z_B_d, *z_B_h, *y_A_d, *R_A_d;
 
         z_B_h = (scalar *) malloc(n * sizeof(scalar));
 
         cudaMallocManaged(&z_B_d, n * sizeof(scalar));
-        cudaMallocManaged(&y_A_c, n * sizeof(scalar));
-        cudaMallocManaged(&R_A_c, R_A->size * sizeof(scalar));
+        cudaMallocManaged(&y_A_d, n * sizeof(scalar));
+        cudaMallocManaged(&R_A_d, R_A->size * sizeof(scalar));
 
         index end_1 = n - 1;
         z_B->at(end_1) = round(y_A->x[end_1] / R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)]);
@@ -34,8 +66,8 @@ namespace cils {
             z_B_h[row] = z_B->at(row);
         }
 
-        cudaMemcpy(y_A_c, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
-        cudaMemcpy(R_A_c, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(y_A_d, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(R_A_d, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(z_B_d, z_B_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
 
         index tileSize = 4;
@@ -47,7 +79,7 @@ namespace cils {
 
         std::clock_t start = std::clock();
         for (index k = 0; k < nswp; k++) {
-            babai_solve_cuda<scalar, index, n><<<nTiles, tileSize>>>(R_A_c, y_A_c, z_B_d);
+            cuda::babai_solve_cuda<scalar, index, n><<<nTiles, tileSize>>>(R_A_d, y_A_d, z_B_d);
         }
 
         cudaDeviceSynchronize();
@@ -58,8 +90,8 @@ namespace cils {
         }
 
         cudaFree(z_B_d);
-        cudaFree(y_A_c);
-        cudaFree(R_A_c);
+        cudaFree(y_A_d);
+        cudaFree(R_A_d);
         free(z_B_h);
 
         returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
@@ -82,35 +114,43 @@ namespace cils {
             }
         } else if (ds == n) {
             //Find the Babai point by OpenMP
-            return cils_babai_search_cuda(nswp, nswp, z_B);
+            return cils_babai_search_cuda(nswp, z_B);
         }
 
-        scalar *z_B_d, *z_B_h, *y_A_c, *R_A_c;
+        scalar *z_B_d, *z_B_h, *y_A_d, *R_A_d;
+        index *d_A_d, *d_A_h;
 
         z_B_h = (scalar *) malloc(n * sizeof(scalar));
+        d_A_h = (index *) malloc(ds * sizeof(index));
 
         cudaMallocManaged(&z_B_d, n * sizeof(scalar));
-        cudaMallocManaged(&y_A_c, n * sizeof(scalar));
-        cudaMallocManaged(&R_A_c, R_A->size * sizeof(scalar));
+        cudaMallocManaged(&y_A_d, n * sizeof(scalar));
+        cudaMallocManaged(&R_A_d, R_A->size * sizeof(scalar));
+        cudaMallocManaged(&d_A_d, ds * sizeof(index));
 
-        for (index row = 0; row < n; row++) {
+        for (index row = 0; row < ds; row++) {
+            z_B_h[row] = z_B->at(row);
+            d_A_h[row] = d->at(row);
+        }
+        for (index row = ds; row < n; row++){
             z_B_h[row] = z_B->at(row);
         }
 
-        cudaMemcpy(y_A_c, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
-        cudaMemcpy(R_A_c, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(y_A_d, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(R_A_d, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(z_B_d, z_B_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_A_d, d_A_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
 
-        index tileSize = 4;
         // Optimized kernel
-        index nTiles = n / tileSize + (n % tileSize == 0 ? 0 : 1);
-        index gridHeight = n / tileSize + (n % tileSize == 0 ? 0 : 1);
-        index gridWidth = n / tileSize + (n % tileSize == 0 ? 0 : 1);
-        dim3 dGrid(gridHeight, gridWidth), dBlock(tileSize, tileSize);
+        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
+        cout<<nTiles;
+        index gridHeight = n / ds + (n % ds == 0 ? 0 : 1);
+        index gridWidth = n / ds + (n % ds == 0 ? 0 : 1);
+        dim3 dGrid(gridHeight, gridWidth), dBlock(ds, ds);
 
         std::clock_t start = std::clock();
         for (index k = 0; k < nswp; k++) {
-            block_solve_cuda<scalar, index, n><<<nTiles, tileSize>>>(R_A_c, y_A_c, z_B_d);
+            cuda::block_solve_cuda<scalar, index, n><<<1, ds>>>(R_A_d, y_A_d, d_A_d, ds, z_B_d);
         }
 
         cudaDeviceSynchronize();
@@ -121,8 +161,9 @@ namespace cils {
         }
 
         cudaFree(z_B_d);
-        cudaFree(y_A_c);
-        cudaFree(R_A_c);
+        cudaFree(y_A_d);
+        cudaFree(R_A_d);
+        cudaFree(d_A_d);
         free(z_B_h);
 
         returnType<scalar, index> reT = {*z_B, run_time, 0, 0};

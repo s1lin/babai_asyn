@@ -7,7 +7,7 @@ const int n = 4096;
 int main() {
 
     cils::testDevice<double, int, n>(0);
-    int n_jobs = 50, size = 2;
+    int n_jobs = 50, size = 16;
     int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1, SNR = 35;
     cils::cils<double, int, true, n> cils(k, SNR);
     cils.init(is_qr);
@@ -38,13 +38,20 @@ int main() {
     brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
     printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
 
-    for (int nswp = 0; nswp <= 100; nswp += 10) {
+    for (int nswp = 1; nswp <= 1; nswp += 10) {
         z_B.assign(n, 0);
-        reT = cils.cils_babai_search_cuda(nswp, &z_B);
+        reT = cils.cils_block_search_cuda(nswp, -1, &z_B, &d_s);
         res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
         brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
-        printf("Method: BAB_GPU, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
+        printf("Method: ILS_GPU, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
     }
+//    for (int nswp = 0; nswp <= 100; nswp += 10) {
+//        z_B.assign(n, 0);
+//        reT = cils.cils_babai_search_cuda(nswp, &z_B);
+//        res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
+//        brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
+//        printf("Method: BAB_GPU, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
+//    }
 
     return 0;
 
