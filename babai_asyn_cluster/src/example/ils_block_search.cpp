@@ -315,7 +315,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
                reT.run_time);
         res = INFINITY;
         brr = INFINITY;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc *= 2) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
