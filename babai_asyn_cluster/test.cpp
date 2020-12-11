@@ -115,7 +115,7 @@ void run_test(int argc, char *argv[]) {
         is_qr = stoi(argv[6]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = max_proc != 12;
+    min_proc = 12;
 
     for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch (index) {
