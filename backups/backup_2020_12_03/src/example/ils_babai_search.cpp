@@ -1,7 +1,7 @@
 //
 ////Created by Shilei Lin on 2020-11-09.
 //
-//#include "../source/SILS.cpp"
+//#include "../source/sils.cpp"
 //
 //template <typename scalar, typename index, index n>
 //void test_run(int init_value) {
@@ -11,7 +11,7 @@
 //
 //    //bool read_r, bool read_ra, bool read_xy
 //    double start = omp_get_wtime();
-//    sils::SILS<double, int, true, n> bsa(0.1);
+//    sils::sils<double, int, true, n> bsa(0.1);
 //    double end_time = omp_get_wtime() - start;
 //    printf("Finish Init, time: %f seconds\n", end_time);
 //
@@ -66,7 +66,7 @@
 //
 //    //bool read_r, bool read_ra, bool read_xy
 //    double start = omp_get_wtime();
-//    sils::SILS<double, int, true, false, n> bsa(0.1);
+//    sils::sils<double, int, true, false, n> bsa(0.1);
 //    double end_time = omp_get_wtime() - start;
 //    printf("Finish Init, time: %f seconds\n", end_time);
 //

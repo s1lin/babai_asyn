@@ -32,13 +32,16 @@
 #include <algorithm>
 #include <netcdf.h>
 #include <bitset>
+#include <math.h>
+#include <Eigen/Dense>
 
 using namespace std;
-
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 /**
- * namespace of sils
+ * namespace of cils
  */
-namespace sils {
+namespace cils {
 
     /**
      * Return scalar pointer array along with the size.
@@ -91,15 +94,21 @@ namespace sils {
 
     template<typename scalar, typename index, index n>
     inline scalar find_bit_error_rate(const vector<index> *x_b,
-                                      const vector<index> *x_t) {
-        index error = 0, size = sizeof(index);
+                                      const vector<index> *x_t,
+                                      const index is_binary) {
+        index error = 0, size = is_binary ? 1 : sizeof(index);
         for (index i = 0; i < n; i++) {
             std::string binary_x_b = std::bitset<sizeof(index)>(x_b->at(i)).to_string(); //to binary
             std::string binary_x_t = std::bitset<sizeof(index)>(x_t->at(i)).to_string();
-            for (index j = 0; j < size; j++)
-                if (binary_x_b[j] != binary_x_t[j])
+            if (is_binary) {
+                if (binary_x_b[sizeof(index) - 1] != binary_x_t[sizeof(index) - 1])
                     error++;
-
+            } else {
+                for (index j = 0; j < sizeof(index); j++) {
+                    if (binary_x_b[j] != binary_x_t[j])
+                        error++;
+                }
+            }
         }
         return (scalar) error / (n * size);
     }
@@ -153,8 +162,21 @@ namespace sils {
      * @param x
      */
     template<typename scalar, typename index>
+    void display_scalarType(scalarType<scalar, index> *x) {
+        for (index i = 0; i < x->size; i++) {
+            cout << x->x[i] << endl;
+        }
+    }
+
+    /**
+     * Simple function for displaying the struct scalarType
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     */
+    template<typename scalar, typename index>
     inline void display_vector(const vector<index> *x) {
-        for (int i = 0; i < x->size(); i++) {
+        for (index i = 0; i < x->size(); i++) {
             cout << x->at(i) << " ";
         }
         cout << endl;
@@ -191,6 +213,24 @@ namespace sils {
         }
 
         return R_b_s;
+    }
+
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
+     * @return
+     */
+    template<typename scalar, typename index>
+    inline scalar find_success_prob_babai(const scalarType<scalar, index> *R_B,
+                                          const index row_begin, const index row_end,
+                                          const index block_size, const scalar sigma) {
+        scalar y = 1;
+        for (index row = row_begin; row < row_end; row++) {
+            index i = (block_size * row) + row - ((row * (row + 1)) / 2);
+            y = y * erf(abs(R_B->x[i]) / 2 / sigma / sqrt(2));
+        }
+        return y;
     }
 
     /**
@@ -303,7 +343,7 @@ namespace sils {
     }
 
     /**
-     * SILS class object
+     * cils class object
      * @tparam scalar
      * @tparam index
      * @tparam is_read
@@ -311,20 +351,21 @@ namespace sils {
      * @tparam n
      */
     template<typename scalar, typename index, bool is_read, index n>
-    class SILS {
+    class cils {
 
     public:
 
         index qam, snr;
-        scalar init_res;
+        scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index> *A, *R_A, *y_A;
-
+        scalarType<scalar, index> *R_A, *y_A;
+        Eigen::MatrixXd A, R, Q;
+        Eigen::VectorXd y, x_tV;
     private:
         /**
          * read the problem from files
          */
-        void read();
+        void read(bool is_qr);
 
         /**
          * Warning: OPENMP enabled.
@@ -341,6 +382,7 @@ namespace sils {
 
             return round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
         }
+
 
         /**
          *
@@ -437,8 +479,8 @@ namespace sils {
             vector<index> z(block_size, 0), d(block_size, 0), z_H(block_size, 0);
             vector<scalar> p(block_size, 0), c(block_size, 0);
 
-            scalar newprsd, gamma, b_R, beta = INFINITY;
-            index k = block_size - 1, i, j;
+            scalar newprsd, gamma, beta = INFINITY;
+            index k = block_size - 1;
 
             c[block_size - 1] = y_B->at(block_size - 1) / R_B->at(R_B->size() - 1);
             z[block_size - 1] = round(c[block_size - 1]);
@@ -495,7 +537,7 @@ namespace sils {
 
 
         inline vector<index> ils_reduction(const scalarType<scalar, index> *B, const vector<scalar> *y_B) {
-            scalar colNormB = new scalar[2][n];
+            std::array<std::array<index, n>, 2> colNormB;
             for (index j = 0; j < n; j++) {
                 scalar b_0 = B[0][j];
                 scalar b_1 = B[1][j];
@@ -508,14 +550,14 @@ namespace sils {
         }
 
     public:
-        explicit SILS(index qam, index snr);
+        explicit cils(index qam, index snr);
 
-        ~SILS() {
+        ~cils() {
             free(R_A);
             free(y_A);
         }
 
-        void init();
+        void init(bool is_qr);
 
         /**
          *
@@ -527,7 +569,29 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
+        cils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
+
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param z_B
+         * @return
+         */
+        returnType<scalar, index>
+        cils_babai_search_cuda(index nswp, vector<index> *z_B);
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param update
+         * @param z_B
+         * @param z_B_p
+         * @return
+         */
+        returnType<scalar, index>
+        cils_back_solve(vector<index> *z_B);
+
 
         /**
          *
@@ -535,11 +599,16 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_babai_search_serial(vector<index> *z_B);
+        cils_babai_search_serial(vector<index> *z_B);
 
-
+        /**
+         *
+         * @param z_B
+         * @param d
+         * @return
+         */
         returnType<scalar, index>
-        sils_block_search_serial(vector<index> *z_B, vector<index> *d);
+        cils_block_search_serial(vector<index> *z_B, vector<index> *d);
 
         /**
          *
@@ -552,9 +621,38 @@ namespace sils {
          * @return
          */
         returnType<scalar, index>
-        sils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+        cils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param R_B
+         * @param y_B
+         * @param z_B
+         * @param d
+         * @return
+         */
+        returnType<scalar, index>
+        cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
 
 
+        /**
+         *
+         * @param n_proc
+         * @param nswp
+         * @param R_B
+         * @param y_B
+         * @param z_B
+         * @param d
+         * @return
+         */
+        returnType<scalar, index>
+        cils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
+                                       vector<index> *z_B, vector<index> *d);
+
+        returnType<scalar, index>
+        cils_reduction();
     };
 }
 #endif

@@ -115,7 +115,7 @@ void run_test(int argc, char *argv[]) {
         is_qr = stoi(argv[6]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = max_proc != 12;
+    min_proc = 12;
 
     for (int SNR = 15; SNR <= 35; SNR += 20) {
         switch (index) {
@@ -155,7 +155,7 @@ void tiny_test() {
 
     //bool read_r, bool read_ra, bool read_xy
 
-    sils::sils<double, int, false, n1> sils(1, SNR);
+    cils::cils<double, int, false, n1> cils(1, SNR);
 
     int size = 8;
 
@@ -165,11 +165,11 @@ void tiny_test() {
         d_s[i] += d_s[i + 1];
     }
     for (int i = 0; i < 100; i++) {
-        sils.init(false);
-        //auto reT = sils.sils_block_search_omp_schedule(3, 10, 0, "", &z_B, &d_s);
-        auto reT = sils.sils_block_search_serial(&z_B, &d_s);
-        auto res = sils::find_residual<double, int, n1>(sils.R_A, sils.y_A, &reT.x);
-        auto brr = sils::find_bit_error_rate<double, int, n1>(&reT.x, &sils.x_t, false);
+        cils.init(false);
+        //auto reT = cils.cils_block_search_omp_schedule(3, 10, 0, "", &z_B, &d_s);
+        auto reT = cils.cils_block_search_serial(&z_B, &d_s);
+        auto res = cils::find_residual<double, int, n1>(cils.R_A, cils.y_A, &reT.x);
+        auto brr = cils::find_bit_error_rate<double, int, n1>(&reT.x, &cils.x_t, false);
         printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                3, size, reT.num_iter, res, brr, reT.run_time);
     }
