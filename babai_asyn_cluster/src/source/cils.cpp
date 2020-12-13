@@ -120,7 +120,7 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, x_max = std::log2(n), x_min = 0, x_c = n - 1, chunk = std::log2(n);
+        index count = 0, num_iter = 0, x_max = n_proc, x_min = 0, x_c = n - 1, chunk = std::log2(n);
         vector<index> z_B_p(n, 0), update(n, 0), work(n_proc, 0);
 
         scalar start = omp_get_wtime();
