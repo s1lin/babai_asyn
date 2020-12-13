@@ -17,7 +17,7 @@ def plot_residual(n, f, file):
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
 
-        k = k + 2
+        k = k + 4
         for init in range(-1, 2):
             line_str = lines[k].split(",")
             print(line_str)
@@ -241,9 +241,9 @@ def plot_res(n):
         file = open(str(n) + '_' + str(f) + '_res.out', 'r')
         plot_residual(n, f, file)
 
-        for stop in stops:
-            file = open(str(n) + '_' + str(f) + '_plot_' + str(stop) + '.out', 'r')
-            plot_runtime(n, f, stop, file)
+        # for stop in stops:
+        #     file = open(str(n) + '_' + str(f) + '_plot_' + str(stop) + '.out', 'r')
+        #     plot_runtime(n, f, stop, file)
 
 
 if __name__ == "__main__":

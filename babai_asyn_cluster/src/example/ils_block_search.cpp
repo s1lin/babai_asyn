@@ -307,7 +307,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
 
         auto reT = cils.cils_block_search_serial(&z_B, &d_s);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-        auto brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+        auto brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
 
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr,
                reT.run_time);
@@ -317,7 +317,7 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
-            for (index nswp = 0; nswp < 30; nswp++) {
+            for (index nswp = 0; nswp < 100; nswp++) {
                 for (index t = 0; t < 3; t++) {
                     z_B.assign(n, 0);
                     if (init == -1)
