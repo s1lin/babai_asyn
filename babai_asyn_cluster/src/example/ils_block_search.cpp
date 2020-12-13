@@ -43,7 +43,7 @@ void ils_block_search(index k, index SNR) {
             printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
             scalar ser_tim = reT.run_time;
 
-            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
+            for (index n_proc = 12; n_proc <= 48; n_proc += 12) {
                 z_B.assign(n, 0);
                 reT = cils.cils_babai_search_omp(n_proc, 20, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
@@ -51,7 +51,7 @@ void ils_block_search(index k, index SNR) {
                 printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                        n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
             }
-            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
+            for (index n_proc = 12; n_proc <= 48; n_proc += 12) {
                 z_B.assign(n, 0);
 //                for (index t = 0; t < n; t++) {
 //                    z_B[t] = pow(2, k) / 2;
