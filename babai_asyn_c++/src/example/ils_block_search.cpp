@@ -45,12 +45,13 @@ void ils_block_search(index k, index SNR) {
 
             for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
                 z_B.assign(n, 0);
-                reT = cils.cils_babai_search_omp(n_proc, 3, &z_B);
+                reT = cils.cils_babai_search_omp(n_proc, 20, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
                 printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
-                       n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim/reT.run_time));
-
+                       n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
+            }
+            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
                 z_B.assign(n, 0);
 //                for (index t = 0; t < n; t++) {
 //                    z_B[t] = pow(2, k) / 2;
@@ -60,7 +61,7 @@ void ils_block_search(index k, index SNR) {
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
                 printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
-                       n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim/reT.run_time));
+                       n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
             }
 
 
@@ -135,7 +136,8 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
 
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t,
+                                                                                         cils.qam == 1);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
                 l++;

@@ -120,26 +120,24 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, x_min = std::log2(n), x_max = n - 1, x_c = n - 1, chunk = std::log2(n);
-        vector<index> z_B_p(n, 0), update(n, 0), work(n, 0);
+        index count = 0, num_iter = 0, x_max = std::log2(n), x_min = 0, x_c = n - 1, chunk = std::log2(n);
+        vector<index> z_B_p(n, 0), update(n, 0), work(n_proc, 0);
 
         scalar start = omp_get_wtime();
-        z_B->at(n - 1) = round(y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1]);
 #pragma omp parallel default(shared) num_threads(n_proc) shared(update, x_min, count)
         {
             for (index j = 0; j < nswp && count <= 0; j++) {//
 #pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
-                    if (i <= x_min) {
-                        if (x_max > n - i - 1) {
-                            x_c = x_max - 1;
-                            babai_solve_omp(i, z_B, &z_B_p, &update);
-                            x_min++;
-                            x_max = x_max > x_c ? x_max : x_c;
-#pragma omp atomic
-                            count += update[n - 1 - i];
-                        }
+                    if (i <= x_max && i >= x_min) {
+//                        if (x_max > n - i - 1) {
+//                            x_c = n - i - 1;
+                        babai_solve_omp(i, z_B, &z_B_p, &update);
+                        x_max++;
+                        work[omp_get_thread_num()] = i;
+                        count += update[n - 1 - i];
                     }
+//                    x_min = *min_element(work.begin(), work.end());
                 }
                 num_iter = j;
             }
@@ -194,8 +192,6 @@ namespace cils {
         returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
         return reT;
     }
-
-
 
 
 }

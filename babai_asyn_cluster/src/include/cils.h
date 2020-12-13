@@ -373,14 +373,19 @@ namespace cils {
          * @param z_B
          * @return
          */
-        inline index babai_solve_omp(const index i, vector<index> *z_B) {
+        inline void babai_solve_omp(const index i, vector<index> *z_B, vector<index> *z_B_p, vector<index> *update) {
             scalar sum = 0;
             index ni = n - 1 - i;
 #pragma omp simd reduction(+ : sum)
             for (index col = n - i; col < n; col++)
-                sum += R_A->x[ni * n - (ni * (n - i)) / 2 + col] * z_B->at(col);
+                sum += R_A->x[ni * n - (ni * (n - i)) / 2 + col] * z_B_p->at(col);
 
-            return round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
+            z_B->at(ni) = round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
+            if (abs(z_B->at(ni) - z_B_p->at(ni)) != 0){
+                z_B_p->at(ni) = z_B->at(ni);
+                update->at(ni) = -1;
+            } else
+                update->at(ni) = 1;
         }
 
 
@@ -391,8 +396,8 @@ namespace cils {
          * @param y
          * @return
          */
-        inline vector<index> ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                            const vector<scalar> *y) {
+        inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                            const vector<scalar> *y_B, vector<index> *z_B) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -401,11 +406,11 @@ namespace cils {
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
             vector<scalar> p(dx, 0), c(dx, 0);
-            vector<index> z(dx, 0), x(dx, 0), d(dx, 0);
+            vector<index> z(dx, 0), d(dx, 0);
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
-            c[k] = y->at(k) / R_kk;
+            c[k] = y_B->at(k) / R_kk;
             z[k] = round(c[k]);
             gamma = R_kk * (c[k] - z[k]);
 
@@ -431,7 +436,7 @@ namespace cils {
                         R_kk = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
 
                         p[k] = newprsd;
-                        c[k] = (y->at(k) - sum) / R_kk;
+                        c[k] = (y_B->at(k) - sum) / R_kk;
                         z[k] = round(c[k]);
                         gamma = R_kk * (c[k] - z[k]);
 
@@ -441,7 +446,7 @@ namespace cils {
                         beta = newprsd;
 #pragma omp simd
                         for (index l = 0; l < dx; l++) {
-                            x[l] = z[l];
+                            z_B->at(l) = z[l];
                         }
                         //x.assign(z.begin(), z.end());
                         z[0] += d[0];
@@ -461,7 +466,8 @@ namespace cils {
                     }
                 }
             }
-            return x;
+
+
         }
 
 
@@ -580,6 +586,7 @@ namespace cils {
          */
         returnType<scalar, index>
         cils_babai_search_cuda(index nswp, vector<index> *z_B);
+
         /**
          *
          * @param n_proc

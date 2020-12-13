@@ -4,6 +4,7 @@
 #include "../include/cils.h"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <chrono>
 
 #define ERRCODE 2
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
@@ -51,8 +52,7 @@ namespace cils {
         if (is_qr) {
             if ((retval = nc_inq_varid(ncid, "y", &varid))) ERR(retval);
             if ((retval = nc_get_var_double(ncid, varid, &y_A->x[0]))) ERR(retval);
-        }
-        else {
+        } else {
             if ((retval = nc_inq_varid(ncid, "y_LLL", &varid))) ERR(retval);
             if ((retval = nc_get_var_double(ncid, varid, &y_A->x[0]))) ERR(retval);
         }
@@ -67,8 +67,7 @@ namespace cils {
         if (is_qr) {
             if ((retval = nc_inq_varid(ncid, "R_A", &varid))) ERR(retval);
             if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
-        }
-        else {
+        } else {
             if ((retval = nc_inq_varid(ncid, "R_A_LLL", &varid))) ERR(retval);
             if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
         }
@@ -121,41 +120,28 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, x_c = 0, chunk = std::log2(n);
-        vector<index> z_B_p(n, 0);
-        vector<index> update(n, 0);
+        index count = 0, num_iter = 0, x_max = std::log2(n), x_min = 0, x_c = n - 1, chunk = std::log2(n);
+        vector<index> z_B_p(n, 0), update(n, 0), work(n_proc, 0);
 
         scalar start = omp_get_wtime();
-        z_B->at(n - 1) = round(y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1]);
-#pragma omp parallel default(shared) num_threads(n_proc) private(count, x_c) shared(update)
+#pragma omp parallel default(shared) num_threads(n_proc) shared(update, x_min, count)
         {
-            for (index j = 0; j < nswp; j++) {//&& count < 16
-                count = 0;
-#pragma omp for nowait
+            for (index j = 0; j < nswp && count <= 0; j++) {//
+#pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
-//                for (index m = 0; m < n_proc; m++) {
-//                    for (index i = m; i < n; i += n_proc) {
-                    x_c = babai_solve_omp(i, z_B);
-//                    index x_p = z_B[n - 1 - i];
-                    z_B->at(n - 1 - i) = x_c;
-
-//                    if (x_c != x_p) {
-//                        update[n - 1 - i] = 0;
-//                        z_B_p[n - 1 - i] = x_c;
-//                    } else {
-//                        update[n - 1 - i] = 1;
-//                    }
-//                    }
+                    if (i <= x_max && i >= x_min) {
+//                        if (x_max > n - i - 1) {
+//                            x_c = n - i - 1;
+                        babai_solve_omp(i, z_B, &z_B_p, &update);
+                        x_max++;
+                        work[omp_get_thread_num()] = i;
+                        count += update[n - 1 - i];
+                    }
+//                    x_min = *min_element(work.begin(), work.end());
                 }
-//#pragma omp simd reduction(+ : count)
-//                for (index col = 0; col < 32; col++) {
-//                    count += update[col];
-//                }
                 num_iter = j;
-//
             }
         }
-        //cout << num_iter << endl;
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {*z_B, run_time, 0, num_iter};
         return reT;
@@ -207,66 +193,5 @@ namespace cils {
         return reT;
     }
 
-
-    template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_serial(vector<index> *z_B,
-                                                              vector<index> *d) {
-
-        index ds = d->size();
-        //special cases:
-        if (ds == 1) {
-            if (d->at(0) == 1) {
-                return {vector<index>(round(y_A->x[0] / R_A->x[0]), 0), 0, 0, 0};
-            } else {
-                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = find_block_x(y_A, 0, n);
-                return {ils_search(&R_B, &y_B), 0, 0, 0};
-            }
-        } else if (ds == n) {
-            //Find the Babai point
-            return cils_babai_search_serial(z_B);
-        }
-
-        //last block:
-        index q = d->at(ds - 1);
-
-        scalar start = omp_get_wtime();
-        //the last block
-        vector<scalar> R_ii = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
-        vector<scalar> y_b_s = find_block_x<scalar, index>(y_A, n - q, n);
-        vector<index> x_b_s = ils_search(&R_ii, &y_b_s);
-        for (index l = n - q; l < n; l++) {
-            z_B->at(l) = x_b_s[l - n + q];
-        }
-//        display_scalarType(y_b_s);
-//        cout<<  n - q<<","<<n <<endl;
-//        display_scalarType(x_b_s);
-
-        //Therefore, skip the last block, start from the second-last block till the first block.
-        for (index i = 0; i < ds - 1; i++) {
-            q = ds - 2 - i;
-            //accumulate the block size
-            y_b_s = find_block_x<scalar, index>(y_A, n - d->at(q), n - d->at(q + 1));
-            x_b_s = find_block_x<scalar, index>(z_B, n - d->at(q + 1), n);
-            y_b_s = block_residual_vector(R_A, &x_b_s, &y_b_s, n - d->at(q), n - d->at(q + 1),
-                                          n - d->at(q + 1), n);
-//            display_scalarType(y_b_s);
-            R_ii = find_block_Rii<scalar, index>(R_A, n - d->at(q), n - d->at(q + 1), n - d->at(q),
-                                                 n - d->at(q + 1), n);
-//            cout<< n - d->at(q)<<","<<n - d->at(q + 1)<<endl;
-            x_b_s = ils_search(&R_ii, &y_b_s);
-//            display_array(x_b_s->at, x_b_s->size());
-
-            for (index l = n - d->at(q); l < n - d->at(q + 1); l++) {
-                z_B->at(l) = x_b_s[l - n + d->at(q)];
-            }
-
-
-        }
-        scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
-        return reT;
-    }
 
 }
