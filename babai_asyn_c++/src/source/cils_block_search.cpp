@@ -11,7 +11,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(vector<index> *z_B,
                                                               vector<index> *d) {
 
@@ -72,7 +72,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(index n_proc, index nswp, scalar stop,
                                                            vector<index> *z_B,
                                                            vector<index> *d) {
@@ -91,7 +91,7 @@ namespace cils {
             //todo: Change it to omp version
             return cils_babai_search_serial(z_B);
         }
-        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, x_max = n_proc;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
         scalar res = 0, nres = 10, sum = 0;
 
         vector<scalar> y(dx, 0), y_n(dx, 0);
@@ -109,7 +109,7 @@ namespace cils {
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i <= x_max) {
+                    if (i <= s) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -127,7 +127,7 @@ namespace cils {
                         } else {
                             ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
                         }
-                        x_max++;
+                        s++;
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
                             z_B->at(l) = x[l - n_dx_q_0];
@@ -161,7 +161,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp_schedule(index n_proc, index nswp,
                                                                     scalar stop, string schedule,
                                                                     vector<index> *z_B,
@@ -181,7 +181,7 @@ namespace cils {
             return cils_babai_search_omp(n_proc, nswp, z_B);
         }
 
-        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, x_max = 256, x_min = 0;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc, x_min = ds;
         scalar res = 0, nres = 10, sum = 0;
 
         vector<scalar> y(dx, 0), y_n(dx, 0), p(ds, 0);
@@ -206,11 +206,11 @@ namespace cils {
             y.assign(dx, 0);
             x.assign(dx, 0);
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
-#pragma omp for nowait
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i <= x_max && i > x_min) {
-                        n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
-                        n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+                    n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
+                    n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+                    if (i <= s && ds - i <= x_min) {
                         //The block operation
                         if (i != 0) {
                             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -225,15 +225,15 @@ namespace cils {
                         } else {
                             ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
                         }
-                        x_max++;
-                        work[omp_get_thread_num()] = i;
+
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
                             z_B->at(l) = x[l - n_dx_q_0];
                         }
+                        x_min--;
+                        s++;
                     }
                 }
-                x_min = *min_element(work.begin(), work.end());
 #pragma omp master
                 {
                     if (num_iter > 0) {
