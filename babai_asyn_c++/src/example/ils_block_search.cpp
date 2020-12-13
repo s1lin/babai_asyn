@@ -42,22 +42,22 @@ void ils_block_search(index k, index SNR) {
             ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
             printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
             scalar ser_tim = reT.run_time;
-
-            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
+            index iter = 2;
+            for (index n_proc = 4; n_proc <= 16; n_proc += 4) {
                 z_B.assign(n, 0);
-                reT = cils.cils_babai_search_omp(n_proc, 20, &z_B);
+                reT = cils.cils_babai_search_omp(n_proc, 5, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
                 printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                        n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
             }
-            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
+            for (index n_proc = 4; n_proc <= 16; n_proc += 4) {
                 z_B.assign(n, 0);
 //                for (index t = 0; t < n; t++) {
 //                    z_B[t] = pow(2, k) / 2;
 //                }
 
-                reT = cils.cils_block_search_omp(n_proc, 6, 0, &z_B, &d_s);
+                reT = cils.cils_block_search_omp(n_proc, 5, -1, &z_B, &d_s);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
                 printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",

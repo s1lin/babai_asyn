@@ -91,7 +91,7 @@ namespace cils {
             //todo: Change it to omp version
             return cils_babai_search_serial(z_B);
         }
-        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, x_max = n_proc;
         scalar res = 0, nres = 10, sum = 0;
 
         vector<scalar> y(dx, 0), y_n(dx, 0);
@@ -107,29 +107,32 @@ namespace cils {
             y.assign(dx, 0);
             x.assign(dx, 0);
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
-#pragma omp for nowait
+#pragma omp for schedule(dynamic) nowait
 //#pragma omp for nowait //schedule(dynamic)guided
                 for (index i = 0; i < ds; i++) {
-                    n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
-                    n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-                    //The block operation
-                    if (i != 0) {
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            sum = 0;
+                    if (i <= x_max) {
+                        n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
+                        n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+                        //The block operation
+                        if (i != 0) {
+                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                                sum = 0;
 #pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                //Translating the index from R(matrix) to R_B(compressed array).
-                                sum += R_A->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->at(col);
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    //Translating the index from R(matrix) to R_B(compressed array).
+                                    sum += R_A->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->at(col);
+                                }
+                                y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            y[row - n_dx_q_0] = y_A->x[row] - sum;
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
+                        } else {
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
                         }
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
-                    } else {
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
-                    }
+                        x_max++;
 #pragma omp simd
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                        z_B->at(l) = x[l - n_dx_q_0];
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            z_B->at(l) = x[l - n_dx_q_0];
+                        }
                     }
                 }
 //                }

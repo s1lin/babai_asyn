@@ -10,7 +10,7 @@ import pandas as pd
 def plot_residual(n, f, file):
     lines = file.readlines()
     k = 6
-    for j in range(1, 3):
+    for j in range(1, 2):
         plt.rcParams["figure.figsize"] = (13, 7)
         fig, axes = plt.subplots(2, 3, constrained_layout=True)
         print(lines[k])
@@ -42,11 +42,11 @@ def plot_residual(n, f, file):
                 if SNR == 35:
                     if init + 1 == 0:
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                               marker=marker[m], label='num_thread = ' + str(num_thread))
+                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
 
                     else:
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                               marker=marker[m])
+                                                   marker=marker[m])
                         # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
                         #                           linestyle='dotted')
                         # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
@@ -71,34 +71,34 @@ def plot_residual(n, f, file):
                                            marker=marker[m])
                 else:
                     if init + 1 == 0:
-                        axes[0, init + 1].plot(range(0, 30), np.array(res)[0:30], color=color[m],
-                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
+                        axes[0, init + 1].plot(range(0, 10), np.array(res)[0:10], color=color[m],
+                                               label='num_thread = ' + str(num_thread))  # marker=marker[m],
 
                     else:
-                        axes[0, init + 1].plot(range(0, 30), np.array(res)[0:30], color=color[m],
-                                                   marker=marker[m])
+                        axes[0, init + 1].plot(range(0, 10), np.array(res)[0:10], color=color[m])
                         # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
                         #                           linestyle='dotted')
                         # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
                         #                           linestyle='dotted')
 
-                    axes[1, init + 1].plot(range(0, 30), np.array(ber)[0:30], color=color[m],
-                                           marker=marker[m])
+                    axes[1, init + 1].plot(range(0, 100), np.array(ber)[0:100], color=color[m])
+                    if f == 1 and SNR == 15:
+                        axes[1, init + 1].set_ylim(0.4, 0.6)
 
                 k = k + 1
 
             if init + 1 == 0:
-                axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=3,
+                axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=2.5,
                                           linestyle='dotted',
                                           label='True parameter')
-                axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='m', linewidth=3, linestyle='dotted',
+                axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='m', linewidth=2.5, linestyle='dotted',
                                           label='Block Residual')
-                axes[1, init + 1].axhline(y=ser_ber, xmin=0.0, xmax=1.0, color='k', linewidth=3, linestyle='dotted',
+                axes[1, init + 1].axhline(y=ser_ber, xmin=0.0, xmax=1.0, color='k', linewidth=2.5, linestyle='dotted',
                                           label='Block BER')
             else:
-                axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=3, linestyle='dotted')
-                axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='m', linewidth=3, linestyle='dotted', )
-                axes[1, init + 1].axhline(y=ser_ber, xmin=0.0, xmax=1.0, color='k', linewidth=3, linestyle='dotted', )
+                axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=2.5, linestyle='dotted')
+                axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='m', linewidth=2.5, linestyle='dotted', )
+                axes[1, init + 1].axhline(y=ser_ber, xmin=0.0, xmax=1.0, color='k', linewidth=2.5, linestyle='dotted', )
 
             # axes[0, init + 1].legend(loc="upper right")
             # axes[1, init + 1].legend(loc="center right")
@@ -147,7 +147,7 @@ def plot_runtime(n, f, stop, file):
         print(lines[k].split(","))
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
-        k = k + 6
+        k = k + 10
 
         axes2[j, 0].set_title('Iterations ' + str(SNRs[j]) + '-SNR', fontsize=13)
         axes2[j, 1].set_title('Residual ' + str(SNRs[j]) + '-SNR', fontsize=13)
@@ -157,7 +157,9 @@ def plot_runtime(n, f, stop, file):
         axes2[j, 0].set_ylabel('Avg. Iterations', fontsize=13)
         axes2[j, 1].set_ylabel('Avg. Residual', fontsize=13)
         axes2[j, 2].set_ylabel('Avg. BER', fontsize=13)
-        axes2[j, 3].set_ylabel('Avg. Running Time', fontsize=13)
+        axes2[j, 3].set_ylabel('Total Running Time (seconds)', fontsize=13)
+        ax = axes2[j, 3].twinx()
+        ax.set_ylabel('Avg. Running Time (seconds)', fontsize=13)
 
         for x in range(0, 3):
             print(lines[k].split(","))
@@ -205,14 +207,26 @@ def plot_runtime(n, f, stop, file):
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
             axes2[j, 2].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_ber,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 3].semilogy(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_tim,
-                                 color=color[x], marker=marker[x], label=labels[init_value + 1])
+            axes2[j, 3].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_tim,
+                             color=color[x], marker=marker[x], label=labels[init_value + 1])
+            if SNR == 15:
+                axes2[j, 3].set_ylim(130, 450)
+                ax.set_ylim(130 / 2000, 450 / 2000)
+                if f == 3:
+                    axes2[j, 2].set_ylim(0.4, 0.5)
+            if SNR == 35:
+                if f == 1:
+                    axes2[j, 1].set_ylim(2, 4)
+                    axes2[j, 2].set_ylim(-0.0001, 0.001)
+
+                axes2[j, 3].set_ylim(130, 400)
+                ax.set_ylim(130 / 2000, 400 / 2000)
 
             axes2[j, 0].legend(loc="upper left")
             axes2[0, 1].legend(loc="center right")
             axes2[1, 1].legend(loc="upper right")
-            axes2[j, 2].legend(loc="upper right")
-            axes2[j, 3].legend(loc="upper right")
+            axes2[j, 2].legend(loc="center right")
+            axes2[j, 3].legend(loc="lower left")
 
             k = k + 3
 
@@ -241,9 +255,9 @@ def plot_res(n):
         file = open(str(n) + '_' + str(f) + '_res.out', 'r')
         plot_residual(n, f, file)
 
-        # for stop in stops:
-        #     file = open(str(n) + '_' + str(f) + '_plot_' + str(stop) + '.out', 'r')
-        #     plot_runtime(n, f, stop, file)
+        for stop in stops:
+            file = open(str(n) + '_' + str(f) + '_plot_' + str(stop) + '.out', 'r')
+            plot_runtime(n, f, stop, file)
 
 
 if __name__ == "__main__":

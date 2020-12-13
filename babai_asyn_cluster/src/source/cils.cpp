@@ -20,7 +20,7 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils(index k, index snr) {
         this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-        this->R_A->x = (scalar *) calloc(n * (n + 1) / 2, sizeof(scalar));
+        this->R_A->x = (scalar *) calloc(n * (n + 1) / 2 + 1, sizeof(scalar));
         this->y_A->x = (scalar *) calloc(n, sizeof(scalar));
 
         this->x_R = vector<index>(n, 0);
@@ -30,7 +30,7 @@ namespace cils {
         this->qam = k;
         this->snr = snr;
         this->sigma = (scalar) sqrt(((pow(4, k) - 1) * log2(n)) / (6 * pow(10, ((scalar) snr / 20.0))));
-        this->R_A->size = n * (n + 1) / 2;
+        this->R_A->size = n * (n + 1) / 2 + 1;
         this->y_A->size = n;
     }
 
@@ -89,7 +89,7 @@ namespace cils {
             std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
 
             this->A = MatrixXd::Zero(n, n).unaryExpr([&](double dummy) { return A_norm_dis(gen); });
-            this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
+//            this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
             this->Q = A.householderQr().householderQ();
             this->x_tV = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
             this->y = R * x_tV +
@@ -124,16 +124,17 @@ namespace cils {
         vector<index> z_B_p(n, 0), update(n, 0), work(n_proc, 0);
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) shared(update, x_min, count)
+#pragma omp parallel default(shared) num_threads(n_proc)
         {
-            for (index j = 0; j < nswp && count <= 0; j++) {//
+            for (index j = 0; j < nswp; j++) {//&& count <= 0;
 #pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
                     if (i <= x_max && i >= x_min) {
 //                        if (x_max > n - i - 1) {
 //                            x_c = n - i - 1;
-                        babai_solve_omp(i, z_B, &z_B_p, &update);
                         x_max++;
+                        babai_solve_omp(i, z_B, &z_B_p, &update);
+
                         work[omp_get_thread_num()] = i;
                         count += update[n - 1 - i];
                     }
