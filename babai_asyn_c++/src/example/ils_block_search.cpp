@@ -1,5 +1,5 @@
 #include "../source/cils.cpp"
-#include "../source/cils_block_search_omp.cpp"
+#include "../source/cils_block_search.cpp"
 #include <mpi.h>
 
 template<typename scalar, typename index>
@@ -31,36 +31,39 @@ void ils_block_search(index k, index SNR) {
 //            cils::display_vector<index>(&z_B);
             auto reT = cils.cils_block_search_serial(&z_B, &d_s);
             auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            auto brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n", size, res, brr,
+            auto ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs\n", size, res, ber,
                    reT.run_time);
-
-            z_B.assign(n, 0);
-            reT = cils.cils_babai_search_omp(9, 10, &z_B);
-            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
-            printf("Method: BAB_OMP, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
-//            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
-//                n_proc = n_proc == 13 ? 12 : n_proc;
-            for (index n_proc = 1; n_proc <= 13; n_proc += 4) {
-                z_B.assign(n, 0);
-                for (index t = 0; t < n; t++) {
-                    z_B[t] = pow(2, k) / 2;
-                }
-
-                index iter = n_proc == 1 ? 1 : 10;
-                reT = cils.cils_block_search_omp(n_proc, iter, 0, &z_B, &d_s);
-                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
-                printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
-                       n_proc, size, reT.num_iter, res, brr, reT.run_time);
-            }
+            scalar ils_tim = reT.run_time;
 
             z_B.assign(n, 0);
             reT = cils.cils_babai_search_serial(&z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
-            printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Run time: %.5fs\n", res, brr, reT.run_time);
+            ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+            printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
+            scalar ser_tim = reT.run_time;
+
+            for (index n_proc = 4; n_proc <= 12; n_proc += 4) {
+                z_B.assign(n, 0);
+                reT = cils.cils_babai_search_omp(n_proc, 3, &z_B);
+                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
+                ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+                printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                       n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim/reT.run_time));
+
+                z_B.assign(n, 0);
+//                for (index t = 0; t < n; t++) {
+//                    z_B[t] = pow(2, k) / 2;
+//                }
+
+                reT = cils.cils_block_search_omp(n_proc, 6, 0, &z_B, &d_s);
+                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
+                ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+                printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                       n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim/reT.run_time));
+            }
+
+
         }
     }
 
@@ -146,16 +149,16 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
         printf("++++++++++++++++++++++++++++++++++++++\n");
         std::cout << "Block, size: " << size << std::endl;
         std::cout << "Init, value: " << init << std::endl;
-        printf("Method: BBA_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
+        printf("Method: BBA_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
                size, bab_res[init + 1] / max_num_iter, bab_ber[init + 1] / max_num_iter, bab_tim[init + 1],
                bab_tim[init + 1] / max_num_iter);
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
                size, ser_res[init + 1] / max_num_iter, ser_ber[init + 1] / max_num_iter, ser_tim[init + 1],
                ser_tim[init + 1] / max_num_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
-            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Run time: %.5fs, Avg Run time: %.5fs\n",
+            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_num_iter, omp_ber[init + 1 + 3 * l] / max_num_iter,
                    omp_itr[init + 1 + 3 * l] / max_num_iter,
                    omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_num_iter);
@@ -307,12 +310,12 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
 
         auto reT = cils.cils_block_search_serial(&z_B, &d_s);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-        auto brr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
+        auto ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, false);
 
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Run time: %.5fs\n", size, res, brr,
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n", size, res, ber,
                reT.run_time);
         res = INFINITY;
-        brr = INFINITY;
+        ber = INFINITY;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
@@ -333,10 +336,10 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
                     scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
                     scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
                     res = newres < res ? newres : res;
-                    brr = newbrr < brr ? newbrr : brr;
+                    ber = newbrr < ber ? newbrr : ber;
                 }
-                printf("res = %.5f, brr =%.5f,", res, brr);
-                brr = INFINITY;
+                printf("res = %.5f, ber =%.5f,", res, ber);
+                ber = INFINITY;
                 res = INFINITY;
             }
             cout << endl;
@@ -361,12 +364,12 @@ void test_ils_search() {
     auto z_B = cils.cils_search(&cils.R_A, &cils.y_A);
     end_time = omp_get_wtime() - start;
     auto res = cils::find_residual<double, int, n>(&cils.R_A, &cils.y_A, z_B);
-    printf("Thread: ILS, Sweep: 0, Res: %.5f, Run time: %.5fs\n", res, end_time);
+    printf("Thread: ILS, Sweep: 0, Res: %.5f, Time: %.5fs\n", res, end_time);
 
 //    cils::scalarType<double, int> z_BS = {(double *) calloc(n, sizeof(double)), n};
 //    start = omp_get_wtime();
 //    z_BS = *cils.cils_babai_search_serial(&z_BS);
 //    end_time = omp_get_wtime() - start;
 //    res = cils::find_residual<double, int, n>(&cils.R_A, &cils.y_A, &z_BS);
-//    printf("Thread: SR, Sweep: 0, Res: %.5f, Run time: %.5fs\n", res, end_time);
+//    printf("Thread: SR, Sweep: 0, Res: %.5f, Time: %.5fs\n", res, end_time);
 }

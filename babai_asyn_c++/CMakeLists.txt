@@ -50,7 +50,7 @@ if (MPI_FOUND)
 
 endif ()
 
-add_executable(cils test.cpp src/example/ils_block_search.cpp src/include/cils.h src/source/cils.cpp src/example/ils_babai_search.cpp src/source/cils_block_search_omp.cpp)# src/source/cils_reduction.cpp)
+add_executable(cils test.cpp src/example/ils_block_search.cpp src/include/cils.h src/source/cils.cpp src/example/ils_babai_search.cpp src/source/cils_block_search.cpp)# src/source/cils_reduction.cpp)
 
 if (MPI_FOUND)
     target_link_libraries(cils ${MPI_LIBRARIES})
