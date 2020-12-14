@@ -109,7 +109,7 @@ namespace cils {
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i <= s) {
+                    if (i <= ds) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -123,15 +123,15 @@ namespace cils {
                                 }
                                 y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
                         } else {
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
                         }
                         s++;
-#pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            z_B->at(l) = x[l - n_dx_q_0];
-                        }
+//#pragma omp simd
+//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+//                            z_B->at(l) = x[l - n_dx_q_0];
+//                        }
                     }
                 }
 //                }
@@ -210,7 +210,7 @@ namespace cils {
                 for (index i = 0; i < ds; i++) {
                     n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                     n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-                    if (i <= s && ds - i <= x_min) {
+                    if (i <= s) {
                         //The block operation
                         if (i != 0) {
                             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -221,15 +221,15 @@ namespace cils {
                                 }
                                 y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
                         } else {
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
                         }
 
-#pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            z_B->at(l) = x[l - n_dx_q_0];
-                        }
+//#pragma omp simd
+//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+//                            z_B->at(l) = x[l - n_dx_q_0];
+//                        }
                         x_min--;
                         s++;
                     }

@@ -11,7 +11,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(vector<index> *z_B,
                                                               vector<index> *d) {
 
@@ -72,7 +72,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(index n_proc, index nswp, scalar stop,
                                                            vector<index> *z_B,
                                                            vector<index> *d) {
@@ -91,7 +91,7 @@ namespace cils {
             //todo: Change it to omp version
             return cils_babai_search_serial(z_B);
         }
-        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, x_max = n_proc;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
         scalar res = 0, nres = 10, sum = 0;
 
         vector<scalar> y(dx, 0), y_n(dx, 0);
@@ -108,9 +108,8 @@ namespace cils {
             x.assign(dx, 0);
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
-//#pragma omp for nowait //schedule(dynamic)guided
                 for (index i = 0; i < ds; i++) {
-                    if (i <= x_max) {
+                    if (i <= ds) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -124,15 +123,15 @@ namespace cils {
                                 }
                                 y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
                         } else {
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
                         }
-                        x_max++;
-#pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            z_B->at(l) = x[l - n_dx_q_0];
-                        }
+                        s++;
+//#pragma omp simd
+//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+//                            z_B->at(l) = x[l - n_dx_q_0];
+//                        }
                     }
                 }
 //                }
@@ -162,7 +161,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp_schedule(index n_proc, index nswp,
                                                                     scalar stop, string schedule,
                                                                     vector<index> *z_B,
@@ -182,7 +181,7 @@ namespace cils {
             return cils_babai_search_omp(n_proc, nswp, z_B);
         }
 
-        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1;
+        index count = 0, num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc, x_min = ds;
         scalar res = 0, nres = 10, sum = 0;
 
         vector<scalar> y(dx, 0), y_n(dx, 0), p(ds, 0);
@@ -192,14 +191,11 @@ namespace cils {
             y_n[l - (n - dx)] = y_A->x[l];
         }
 
-        for (index i = 0; i < ds - 1; i++) {
-            index q = ds - 2 - i;
-            p[i] = find_success_prob_babai(R_A, n - d->at(q), n - d->at(q + 1), n, sigma);
-            cout << n - d->at(q) << "," << n - d->at(q + 1) << "," << "P=" << p[i] << endl;
-        }
-
-
-
+//        for (index i = 0; i < ds - 1; i++) {
+//            index q = ds - 2 - i;
+//            p[i] = find_success_prob_babai(R_A, n - d->at(q), n - d->at(q + 1), n, sigma);
+//            cout << n - d->at(q) << "," << n - d->at(q + 1) << "," << "P=" << p[i] << endl;
+//        }
 //        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 //        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
 //        display_vector<scalar, index>(&work);
@@ -210,51 +206,51 @@ namespace cils {
             y.assign(dx, 0);
             x.assign(dx, 0);
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
-#pragma omp for schedule(dynamic) nowait//schedule(dynamic) nowait
-//#pragma omp for nowait //schedule(dynamic)guided
-//                for (index m = 0; m < n_proc; m++) {
-//                    for (index i = m; i < ds; i += n_proc) {
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    n_dx_q_0 = work[i] == 0 ? n - dx : n - d->at(ds - 1 - work[i]);
-                    n_dx_q_1 = work[i] == 0 ? n : n - d->at(ds - work[i]);
-                    //The block operation
-                    if (work[i] != 0) {
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            sum = 0;
+                    n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
+                    n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+                    if (i <= s) {
+                        //The block operation
+                        if (i != 0) {
+                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                                sum = 0;
 #pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                //Translating the index from R(matrix) to R_B(compressed array).
-                                sum += R_A->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->at(col);
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    sum += R_A->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_B->at(col);
+                                }
+                                y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            y[row - n_dx_q_0] = y_A->x[row] - sum;
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
+                        } else {
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
                         }
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, &y, &x);
-                    } else {
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, &x);
-                    }
-#pragma omp simd
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                        z_B->at(l) = x[l - n_dx_q_0];
+
+//#pragma omp simd
+//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+//                            z_B->at(l) = x[l - n_dx_q_0];
+//                        }
+                        x_min--;
+                        s++;
                     }
                 }
-//                }
-//#pragma omp master
-//                {
-//                    if (num_iter > 0) {
-//                        nres = 0;
-//#pragma omp simd reduction(+ : nres)
-//                        for (index l = 0; l < n; l++) {
-//                            nres += (z_B_p[l] - z_B->at(l));
-//                            z_B_p[l] = z_B->at(l);
-//                        }
-//                    } else {
-//#pragma omp simd
-//                        for (index l = 0; l < n; l++) {
-//                            z_B_p[l] = z_B->at(l);
-//                        }
-//                    }
-//                    num_iter = j;
-//                }
+#pragma omp master
+                {
+                    if (num_iter > 0) {
+                        nres = 0;
+#pragma omp simd reduction(+ : nres)
+                        for (index l = 0; l < n; l++) {
+                            nres += (z_B_p[l] - z_B->at(l));
+                            z_B_p[l] = z_B->at(l);
+                        }
+                    } else {
+#pragma omp simd
+                        for (index l = 0; l < n; l++) {
+                            z_B_p[l] = z_B->at(l);
+                        }
+                    }
+                    num_iter = j;
+                }
             }
 
         }

@@ -381,7 +381,7 @@ namespace cils {
                 sum += R_A->x[ni * n - (ni * (n - i)) / 2 + col] * z_B_p->at(col);
 
             z_B->at(ni) = round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
-            if (abs(z_B->at(ni) - z_B_p->at(ni)) != 0){
+            if (abs(z_B->at(ni) - z_B_p->at(ni)) != 0) {
                 z_B_p->at(ni) = z_B->at(ni);
                 update->at(ni) = -1;
             } else
@@ -397,7 +397,7 @@ namespace cils {
          * @return
          */
         inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                            const vector<scalar> *y_B, vector<index> *z_B) {
+                                   const vector<scalar> *y_B, vector<index> *z_B) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -418,8 +418,9 @@ namespace cils {
             d[dx - 1] = c[dx - 1] > z[dx - 1] ? 1 : -1;
 
             //ILS search process
-            while (true) {
-//                iter++;
+            while (iter <= 32) {
+#pragma omp atomic
+                iter++;
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -445,9 +446,12 @@ namespace cils {
                     } else {
                         beta = newprsd;
 #pragma omp simd
-                        for (index l = 0; l < dx; l++) {
-                            z_B->at(l) = z[l];
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                            z_B->at(l) = z[l - n_dx_q_0];
                         }
+//                        for (index l = 0; l < dx; l++) {
+//                            z_B->at(l) = z[l];
+//                        }
                         //x.assign(z.begin(), z.end());
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
@@ -467,7 +471,7 @@ namespace cils {
                 }
             }
 
-
+//            cout << iter << " ";
         }
 
 
