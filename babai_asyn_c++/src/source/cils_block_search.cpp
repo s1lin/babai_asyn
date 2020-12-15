@@ -123,9 +123,9 @@ namespace cils {
                                 }
                                 y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);//&x);
                         } else {
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);//&x);
                         }
                         s++;
 //#pragma omp simd
@@ -221,9 +221,9 @@ namespace cils {
                                 }
                                 y[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y, z_B);//&x);
                         } else {
-                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);
+                            ils_search_omp(n_dx_q_0, n_dx_q_1, &y_n, z_B);//&x);
                         }
 
 //#pragma omp simd
