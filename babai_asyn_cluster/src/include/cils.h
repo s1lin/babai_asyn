@@ -104,7 +104,7 @@ namespace cils {
                 if (binary_x_b[sizeof(index) - 1] != binary_x_t[sizeof(index) - 1])
                     error++;
             } else {
-                for (index j = 0; j < sizeof(index); j++) {
+                for (index j = 0; j < (index) sizeof(index); j++) {
                     if (binary_x_b[j] != binary_x_t[j])
                         error++;
                 }
@@ -405,8 +405,8 @@ namespace cils {
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
-            vector<scalar> p(dx, 0), c(dx, 0);
-            vector<index> z(dx, 0), d(dx, 0);
+            array<scalar, 16> p, c;
+            array<index, 16> z, d;
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
@@ -449,7 +449,7 @@ namespace cils {
                         }
 #pragma omp atomic
                         iter++;
-                        if(iter > max_iter) break;
+                        if (iter > max_iter) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);

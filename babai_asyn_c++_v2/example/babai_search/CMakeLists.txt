@@ -1,3 +1,0 @@
-add_executable(babai_search ils_babai_search.cpp)
-target_link_libraries(babai_search sils)
-set_property(TARGET babai_search PROPERTY POSITION_INDEPENDENT_CODE ON)
