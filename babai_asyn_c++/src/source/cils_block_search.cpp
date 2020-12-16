@@ -186,7 +186,7 @@ namespace cils {
             for (index j = 0; j < nswp && abs(nres) > stop; j++) {//
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i <= s) {
+                    if (i <= ds) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -226,13 +226,13 @@ namespace cils {
                 }
                 num_iter = j;
             }
-            free(y_b);
-            free(x);
+
 #pragma omp barrier
 #pragma omp simd
             for (index l = 0; l < n; l++)
                 z_B->at(l) = z_x[l];
-
+            free(y_b);
+            free(x);
         }
 
         scalar run_time = omp_get_wtime() - start;
