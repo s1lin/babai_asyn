@@ -18,17 +18,17 @@ int main() {
     }
 
     z_B.assign(n, 0);
-    auto reT = cils.cils_block_search_serial(&z_B, &d_s);
-    auto res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
-    auto brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
+//    auto reT = cils.cils_block_search_serial(&z_B, &d_s);
+//    auto res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
+//    auto brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
 //    cils::display_vector<double, int>(&z_B);
-    printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n", size, res, brr,
-           reT.run_time);
+//    printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n", size, res, brr,
+//           reT.run_time);
 
     z_B.assign(n, 0);
-    reT = cils.cils_babai_search_omp(9, 10, &z_B);
-    res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
-    brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
+     auto reT = cils.cils_babai_search_omp(9, 10, &z_B);
+     auto res = cils::find_residual<double, int, n>(cils.R_A, cils.y_A, &reT.x);
+     auto brr = cils::find_bit_error_rate<double, int, n>(&reT.x, &cils.x_t, false);
     printf("Method: BAB_OMP, Block size: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n", size, res, brr,
            reT.run_time);
 

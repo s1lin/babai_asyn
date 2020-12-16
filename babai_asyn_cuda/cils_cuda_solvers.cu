@@ -143,6 +143,7 @@ namespace cils {
 
         // Optimized kernel
 //        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
+//        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
 //        cout<<nTiles;
 //        index gridHeight = n / ds + (n % ds == 0 ? 0 : 1);
 //        index gridWidth = n / ds + (n % ds == 0 ? 0 : 1);

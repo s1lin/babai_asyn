@@ -37,7 +37,7 @@ namespace cils {
                 index n_dx_q_0 = i == 0 ? n - dx : n - d_A[ds - 1 - i];
                 index n_dx_q_1 = i == 0 ? n : n - d_A[ds - i];
 //                printf("%d, %d, %d, %d\n", i, threadIdx.x, n_dx_q_0, n_dx_q_1);
-                scalar *y = (scalar *) malloc(dx * sizeof(scalar));
+                scalar *y_b = (scalar *) malloc(dx * sizeof(scalar));
                 index *x = (index *) malloc(dx * sizeof(index));
 
                 if (i != 0) {
@@ -49,12 +49,12 @@ namespace cils {
 //                            printf("R_A_d%f,\n", R_A_d[(n * row) + col - ((row * (row + 1)) / 2)]);
 //                            printf("z_B_c%f,\n", z_B_c[col]);
                         }
-                        y[row - n_dx_q_0] = y_A_d[row] - sum;
+                        y_b[row - n_dx_q_0] = y_A_d[row] - sum;
                     }
 //                    x = cuda::ils_search_cuda<scalar, index, n>(n_dx_q_0, n_dx_q_1, R_A_d, y);
                 } else {
                     for (index l = n - dx; l < n; l++) {
-                        y[l - (n - dx)] = y_A_d[l];
+                        y_b[l - (n - dx)] = y_A_d[l];
                     }
 //                    x = cuda::ils_search_cuda<scalar, index, n>(n_dx_q_0, n_dx_q_1, R_A_d, y_n);
                 }
@@ -71,7 +71,7 @@ namespace cils {
 
                 //  Initial squared search radius
                 scalar R_kk = R_A_d[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
-                c[k] = y[k] / R_kk;
+                c[k] = y_b[k] / R_kk;
                 z[k] = round(c[k]);
                 gamma = R_kk * (c[k] - z[k]);
 //            printf("R_kk:%f\n", R_kk);
@@ -80,7 +80,6 @@ namespace cils {
 
                 //ILS search process
                 while (true) {
-                    iter++;
                     newprsd = p[k] + gamma * gamma;
                     if (newprsd < beta) {
                         if (k != 0) {
@@ -94,7 +93,7 @@ namespace cils {
                             R_kk = R_A_d[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
 
                             p[k] = newprsd;
-                            c[k] = (y[k] - sum) / R_kk;
+                            c[k] = (y_b[k] - sum) / R_kk;
                             z[k] = round(c[k]);
                             gamma = R_kk * (c[k] - z[k]);
 
@@ -104,14 +103,9 @@ namespace cils {
                             beta = newprsd;
                             for (index l = 0; l < dx; l++) {
                                 x[l] = z[l];
-                                if (abs(x[l]) > 1000) {
-//                                    for(index tt = 0; tt < dx; tt++){
-//                                        printf("%d ", x[tt]);
-//                                    }
-                                    printf("\n%d, %d\n", i, iter);
-//                                    break;
-                                }
                             }
+                            iter++;
+                            if(iter > 2) break;
                             //x.assign(z.begin(), z.end());
                             z[0] += d[0];
                             gamma = R_A_d[0] * (c[0] - z[0]);
@@ -141,15 +135,15 @@ namespace cils {
 
                 for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
                     z_B_c[l] = x[l - n_dx_q_0];
-                    if (abs(x[l - n_dx_q_0]) > 100) {
-                        for(index tt = 0; tt < dx; tt++){
-                            printf("%d ", x[tt]);
-                        }
-                        printf("\n%d, %d, %d, %d, %d\n", i, threadIdx.x, n_dx_q_0, n_dx_q_1, x[l - n_dx_q_0]);
-                        break;
-                    }
+//                    if (abs(x[l - n_dx_q_0]) > 100) {
+//                        for(index tt = 0; tt < dx; tt++){
+//                            printf("%d ", x[tt]);
+//                        }
+//                        printf("\n%d, %d, %d, %d, %d\n", i, threadIdx.x, n_dx_q_0, n_dx_q_1, x[l - n_dx_q_0]);
+//                        break;
+//                    }
                 }
-                free(y);
+                free(y_b);
                 free(x);
             }
         }

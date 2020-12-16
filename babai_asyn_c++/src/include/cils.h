@@ -396,8 +396,8 @@ namespace cils {
          * @param y
          * @return
          */
-        inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                   const vector<scalar> *y_B, vector<index> *z_B) {
+        inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index max_iter,
+                                   const vector<scalar> *y_B, vector<index> *x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -406,7 +406,7 @@ namespace cils {
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
             vector<scalar> p(dx, 0), c(dx, 0);
-            vector<index> z(dx, 0), d(dx, 0), x(dx, 0);
+            vector<index> z(dx, 0), d(dx, 0);
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
@@ -419,8 +419,6 @@ namespace cils {
 
             //ILS search process
             while (true) {
-//#pragma omp atomic
-                iter++;
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -429,7 +427,6 @@ namespace cils {
 #pragma omp atomic
                         row_k--;
                         sum = 0;
-
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
                             sum += R_A->x[(n * row_k) + col + n_dx_q_0 - ((row_k * (row_k + 1)) / 2)] * z[col];
@@ -446,15 +443,14 @@ namespace cils {
                     } else {
                         beta = newprsd;
 #pragma omp simd
-//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
 //                            z_B->at(l) = z[l - n_dx_q_0];
-//                        }
-                        for (index l = 0; l < dx; l++) {
-                            x[l] = z[l];
-                            if(iter % 10 == 0)
-                                z_B->at(l + n_dx_q_0) = z[l];
+                            x->at(l - n_dx_q_0) = z[l - n_dx_q_0];
                         }
-                        //x.assign(z.begin(), z.end());
+#pragma omp atomic
+                        iter++;
+                        if(iter > max_iter) break;
+
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
                         d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
@@ -472,8 +468,8 @@ namespace cils {
                     }
                 }
             }
-
-//            cout << iter << " ";
+//            x->assign(z.begin(), z.end());
+//            cout << omp_get_thread_num() << " ";
         }
 
 
