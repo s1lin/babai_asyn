@@ -397,7 +397,7 @@ namespace cils {
          * @return
          */
         inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index max_iter,
-                                   const vector<scalar> *y_B, vector<index> *x) {
+                                   const scalar *y_B, index *x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -410,7 +410,7 @@ namespace cils {
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
-            c[k] = y_B->at(k) / R_kk;
+            c[k] = y_B[k] / R_kk;
             z[k] = round(c[k]);
             gamma = R_kk * (c[k] - z[k]);
 
@@ -434,7 +434,7 @@ namespace cils {
                         R_kk = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
 
                         p[k] = newprsd;
-                        c[k] = (y_B->at(k) - sum) / R_kk;
+                        c[k] = (y_B[k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         gamma = R_kk * (c[k] - z[k]);
 
@@ -445,7 +445,7 @@ namespace cils {
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
 //                            z_B->at(l) = z[l - n_dx_q_0];
-                            x->at(l - n_dx_q_0) = z[l - n_dx_q_0];
+                            x[l - n_dx_q_0] = z[l - n_dx_q_0];
                         }
 #pragma omp atomic
                         iter++;

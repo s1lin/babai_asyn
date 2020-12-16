@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8.2)
 project(cils)
 
 find_package(OpenMP REQUIRED)
+find_package(OpenCL REQUIRED)
 find_package(MPI REQUIRED)
 find_package(netCDF REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -50,7 +51,8 @@ if (MPI_FOUND)
 
 endif ()
 
-add_executable(cils test.cpp src/example/ils_block_search.cpp src/include/cils.h src/source/cils.cpp src/example/ils_babai_search.cpp src/source/cils_block_search.cpp)# src/source/cils_reduction.cpp)
+
+add_executable(cils test.cpp src/example/ils_block_search.cpp src/include/cils.h src/source/cils.cpp src/example/ils_babai_search.cpp src/source/cils_block_search.cpp) #src/source/cils_block_search_OpenCL.cpp)# src/source/cils_reduction.cpp)
 
 if (MPI_FOUND)
     target_link_libraries(cils ${MPI_LIBRARIES})
@@ -70,5 +72,10 @@ endif ()
 if (Eigen3_FOUND)
     target_link_libraries(cils Eigen3::Eigen)
     message("-- Eigen3_FOUND")
+endif ()
+
+if (OpenCL_FOUND)
+    target_link_libraries(cils ${OPENCL_LIBRARIES})
+    message("-- OpenCL_FOUND")
 endif ()
 
