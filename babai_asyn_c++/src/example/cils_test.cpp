@@ -1,11 +1,7 @@
 #include "../source/cils.cpp"
 #include "../source/cils_block_search.cpp"
+#include "../source/cils_babai_search.cpp"
 #include <mpi.h>
-
-template<typename scalar, typename index>
-struct results {
-    vector<scalar> omp_res, omp_ber, omp_tim, omp_itr;
-};
 
 template<typename scalar, typename index, index n>
 void ils_block_search(index k, index SNR) {
@@ -28,7 +24,6 @@ void ils_block_search(index k, index SNR) {
         for (index i = 0; i < 1; i++) {
             printf("++++++++++++++++++++++++++++++++++++++\n");
             z_B.assign(n, 0);
-//            cils::display_vector<index>(&z_B);
             auto reT = cils.cils_block_search_serial(&d_s, &z_B);
             auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
@@ -80,7 +75,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     std::cout << "Init, SNR: " << SNR << std::endl;
 
     cils::cils<scalar, index, true, n> cils(k, SNR);
-    index size = 16, iter = 10;
+    index size = 16, iter = 5;
 
     vector<index> z_B(n, 0), d(n / size, size), d_s(n / size, size);
     for (index i = d_s.size() - 2; i >= 0; i--) {
@@ -132,7 +127,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                     z_B.assign(n, std::pow(2, k) / 2);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
-                reT = cils.cils_block_search_omp(n_proc, iter, stop, 1, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc, iter, stop, 2, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
@@ -160,11 +155,11 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
-            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.5f\n",
+            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_num_iter, omp_ber[init + 1 + 3 * l] / max_num_iter,
                    omp_itr[init + 1 + 3 * l] / max_num_iter,
                    omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_num_iter,
-                   ser_tim[init + 1] / omp_itr[init + 1 + 3 * l]);
+                   ser_tim[init + 1] / omp_tim[init + 1 + 3 * l]);
             l++;
         }
         printf("++++++++++++++++++++++++++++++++++++++\n");

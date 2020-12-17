@@ -52,7 +52,7 @@ if (MPI_FOUND)
 
 endif ()
 
-add_executable(cils test.cpp)
+add_executable(cils main.cpp)
 
 if (MPI_FOUND)
     target_link_libraries(cils ${MPI_LIBRARIES})

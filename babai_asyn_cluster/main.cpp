@@ -1,11 +1,10 @@
 //
 // Created by shilei on 2020-11-04.
 //
-#include "src/example/ils_block_search.cpp"
+#include "src/example/cils_test.cpp"
 //#include "src/example/ils_babai_search.cpp"
 #include <mpi.h>
 
-#define BUFMAX 81
 using namespace std;
 using namespace boost;
 
@@ -104,8 +103,8 @@ int mpi_test_2(int argc, char *argv[]) {
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
-    int min_proc = 6;
-    int k = 1, index = 0, stop = 0, mode = 2, max_num_iter = 10, is_qr = 1;
+    int min_proc = 12;
+    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);
@@ -115,7 +114,6 @@ void run_test(int argc, char *argv[]) {
         is_qr = stoi(argv[6]);
     }
     max_proc = max_proc != 64 ? max_proc : 100;
-    min_proc = 12;
 
     for (int SNR = 35; SNR <= 35; SNR += 20) {
         switch (index) {
