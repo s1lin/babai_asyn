@@ -121,9 +121,8 @@ namespace cils {
                                                            vector<index> *z_B) {
 
         index count = 0, num_iter = 0, x_max = n_proc, x_min = 0;
-        auto *z_x = (index *) calloc(n, sizeof(index));
-        auto *u_p = (index *) calloc(n, sizeof(index));
-        auto *z_p = (index *) calloc(n, sizeof(index));
+        auto z_x = z_B->data();
+        auto *u_p = new index[n](), *z_p = new index[n]();
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc)
@@ -131,7 +130,7 @@ namespace cils {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
-                    if (i <= x_max && i >= x_min) {
+                    if (i <= x_max) {
                         x_max++;
                         babai_solve_omp(i, z_x, z_p, u_p);
                         count += u_p[n - 1 - i];
@@ -141,9 +140,9 @@ namespace cils {
             }
         }
         scalar run_time = omp_get_wtime() - start;
-        for (index l = 0; l < n; l++)
-            z_B->at(l) = z_x[l];
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
+        delete[] u_p;
+        delete[] z_p;
         return reT;
     }
 
@@ -192,6 +191,5 @@ namespace cils {
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
-
 
 }

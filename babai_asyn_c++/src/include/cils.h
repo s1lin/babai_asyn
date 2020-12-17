@@ -42,7 +42,6 @@ using Eigen::VectorXd;
  * namespace of cils
  */
 namespace cils {
-
     /**
      * Return scalar pointer array along with the size.
      * @tparam scalar
@@ -538,15 +537,13 @@ namespace cils {
 
         /**
          *
-         * @param n_proc
-         * @param nswp
-         * @param update
-         * @param z_B
-         * @param z_B_p
+         * @param n_proc: number of Processors/Threads
+         * @param nswp: maximum number of iterations
+         * @param z_B: estimation of the true parameter
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
 
         /**
          *
@@ -556,7 +553,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_cuda(index nswp, vector<index> *z_B);
+        cils_babai_search_cuda(const index nswp, vector<index> *z_B);
 
         /**
          *
@@ -586,7 +583,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(vector<index> *z_B, vector<index> *d);
+        cils_block_search_serial(const vector<index> *d, vector<index> *z_B);
 
         /**
          *
@@ -599,20 +596,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
-
-        /**
-         *
-         * @param n_proc
-         * @param nswp
-         * @param R_B
-         * @param y_B
-         * @param z_B
-         * @param d
-         * @return
-         */
-        returnType<scalar, index>
-        cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<index> *z_B);
 
 
         /**
@@ -626,8 +610,8 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
-                                       vector<index> *z_B, vector<index> *d);
+        cils_block_search_omp(const index n_proc, const index nswp, const index stop, const index schedule,
+                              const vector<index> *d, vector<index> *z_B);
 
         returnType<scalar, index>
         cils_reduction();
