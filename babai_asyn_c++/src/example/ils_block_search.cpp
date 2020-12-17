@@ -1,5 +1,6 @@
 #include "../source/cils.cpp"
 #include "../source/cils_block_search.cpp"
+#include "../source/cils_babai_search.cpp"
 #include <mpi.h>
 
 template<typename scalar, typename index>

@@ -526,7 +526,22 @@ namespace cils {
         }
 
     public:
-        explicit cils(index qam, index snr);
+        cils(index qam, index snr){
+            this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
+            this->y_A->x = new scalar[n]();
+
+            this->x_R = vector<index>(n, 0);
+            this->x_t = vector<index>(n, 0);
+
+            this->init_res = INFINITY;
+            this->qam = qam;
+            this->snr = snr;
+            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * log2(n)) / (6 * pow(10, ((scalar) snr / 20.0))));
+            this->R_A->size = n * (n + 1) / 2;
+            this->y_A->size = n;
+        }
 
         ~cils() {
             free(R_A);

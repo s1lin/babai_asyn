@@ -5,7 +5,6 @@
 //#include "src/example/ils_babai_search.cpp"
 #include <mpi.h>
 
-#define BUFMAX 81
 using namespace std;
 using namespace boost;
 
