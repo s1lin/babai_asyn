@@ -29,25 +29,25 @@ void ils_block_search(index k, index SNR) {
             printf("++++++++++++++++++++++++++++++++++++++\n");
             z_B.assign(n, 0);
 //            cils::display_vector<index>(&z_B);
-            auto reT = cils.cils_block_search_serial(&z_B, &d_s);
-            auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            auto ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+            auto reT = cils.cils_block_search_serial(&d_s, &z_B);
+            auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs\n", size, res, ber,
                    reT.run_time);
             scalar ils_tim = reT.run_time;
 
             z_B.assign(n, 0);
             reT = cils.cils_babai_search_serial(&z_B);
-            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
             scalar ser_tim = reT.run_time;
 //            index iter = 2;
             for (index n_proc = 4; n_proc <= 48; n_proc += 4) {
                 z_B.assign(n, 0);
                 reT = cils.cils_babai_search_omp(n_proc, 5, &z_B);
-                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
                 printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                        n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
             }
@@ -57,18 +57,12 @@ void ils_block_search(index k, index SNR) {
 //                    z_B[t] = pow(2, k) / 2;
 //                }
 
-                reT = cils.cils_block_search_omp_schedule(n_proc, 10, 0, "", &z_B, &d_s);
-                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
-                printf("Method: ILS_OMP_SCH, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                reT = cils.cils_block_search_omp(n_proc, 5, -1, 2, &d_s, &z_B);
+                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+                printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                        n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
 
-//                z_B.assign(n, 0);
-//                reT = cils.cils_block_search_omp(n_proc, 6, 0, &z_B, &d_s);
-//                res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-//                ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
-//                printf("Method: ILS_OMP_NON, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
-//                       n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
             }
 
         }
@@ -115,8 +109,8 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                 z_B.assign(n, std::pow(2, k) / 2);
 
             reT = cils.cils_babai_search_serial(&z_B);
-            bab_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+            bab_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             bab_tim[init + 1] += reT.run_time;
 
             z_B.assign(n, 0);
@@ -125,9 +119,9 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
             else if (init == 1)
                 z_B.assign(n, std::pow(2, k) / 2);
 
-            reT = cils.cils_block_search_serial(&z_B, &d_s);
-            ser_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-            ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+            reT = cils.cils_block_search_serial(&d_s, &z_B);
+            ser_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             ser_tim[init + 1] += reT.run_time;
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
@@ -138,11 +132,11 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                     z_B.assign(n, std::pow(2, k) / 2);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
-                reT = cils.cils_block_search_omp(n_proc, iter, stop, &z_B, &d_s);
+                reT = cils.cils_block_search_omp(n_proc, iter, stop, 1, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
-                        cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t,
+                        cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
                                                                                          cils.qam == 1);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
@@ -257,11 +251,11 @@ void plot_run_mpi(int argc, char *argv[]) {
                         z_B.assign(n, std::pow(2, k) / 2);
 
                     n_proc = n_proc == 96 ? 64 : n_proc;
-                    reT = cils.cils_block_search_omp(n_proc, iter, stop, &z_B, &d_s);
+                    reT = cils.cils_block_search_omp(n_proc, iter, stop, &d_s, &z_B);
 
                     omp_res[init + 1 + 3 * l] +=
-                            cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                    omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t);
+                            cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                    omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t);
                     omp_tim[init + 1 + 3 * l] += reT.run_time;
                     omp_itr[init + 1 + 3 * l] += reT.num_iter;
                     l++;
@@ -314,9 +308,9 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
                 z_B[i] = std::pow(2, k) / 2;
             }
 
-        auto reT = cils.cils_block_search_serial(&z_B, &d_s);
-        auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-        auto ber = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+        auto reT = cils.cils_block_search_serial(&d_s, &z_B);
+        auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
 
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n", size, res, ber,
                reT.run_time);
@@ -338,9 +332,9 @@ void plot_res(index k, index SNR, index min_proc, index max_proc, bool is_qr) {
                             z_B[i] = std::pow(2, k) / 2;
                         }
 
-                    reT = cils.cils_block_search_omp(n_proc, nswp, -1, &z_B, &d_s);
-                    scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &reT.x);
-                    scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(&reT.x, &cils.x_t, cils.qam == 1);
+                    reT = cils.cils_block_search_omp(n_proc, nswp, -1, 1, &d_s, &z_B);
+                    scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                    scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
                     res = newres < res ? newres : res;
                     ber = newbrr < ber ? newbrr : ber;
                 }

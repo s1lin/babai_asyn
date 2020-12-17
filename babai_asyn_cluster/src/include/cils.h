@@ -16,8 +16,8 @@
  *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SILS_H
-#define SILS_H
+#ifndef CILS_H
+#define CILS_H
 
 #include <iostream>
 #include <omp.h>
@@ -42,7 +42,6 @@ using Eigen::VectorXd;
  * namespace of cils
  */
 namespace cils {
-
     /**
      * Return scalar pointer array along with the size.
      * @tparam scalar
@@ -61,9 +60,8 @@ namespace cils {
      */
     template<typename scalar, typename index>
     struct returnType {
-        vector<index> x;
+        vector<index> *x;
         scalar run_time;
-        scalar residual;
         index num_iter;
     };
 
@@ -257,7 +255,7 @@ namespace cils {
 
         index counter = 0, prev_i = 0, i;
         scalar sum = 0;
-//        cout<<"R_B"<<endl;
+
         //The block operation
         for (index row = row_begin; row < row_end; row++) {
             //Translating the index from R(matrix) to R_B(compressed array).
@@ -265,16 +263,12 @@ namespace cils {
                 i = (col_end * row) + col - ((row * (row + 1)) / 2);
                 sum += R_B->x[i] * x->at(counter);
                 counter++;
-//                cout<< R_B->at(i) << " ";
             }
-//            cout<<endl;
             y_b_s[prev_i] = y->at(row - row_begin) - sum;
             prev_i++;
             sum = counter = 0;
         }
-//        cout<<"R_B_END"<<endl;
         return y_b_s;
-
     }
 
     /**
@@ -319,30 +313,6 @@ namespace cils {
 
 
     /**
-     *
-     * @tparam scalar
-     * @tparam index
-     * @param first
-     * @param second
-     * @return scalarType*
-     */
-    template<typename scalar, typename index>
-    inline vector<scalar> concatenate_array(vector<scalar> *first,
-                                            vector<scalar> *second) {
-        index size = first->size() + second->size();
-        vector<scalar> z(size, 0);
-
-        for (int i = 0; i < first->size; i++) {
-            z->at(i) = first->at(i);
-        }
-        for (int i = first->size; i < size; i++) {
-            z->at(i) = second->at(i - first->size());
-        }
-
-        return z;
-    }
-
-    /**
      * cils class object
      * @tparam scalar
      * @tparam index
@@ -354,7 +324,6 @@ namespace cils {
     class cils {
 
     public:
-
         index qam, snr;
         scalar init_res, sigma;
         vector<index> x_R, x_t;
@@ -363,29 +332,34 @@ namespace cils {
         Eigen::VectorXd y, x_tV;
     private:
         /**
+         *
          * read the problem from files
          */
         void read(bool is_qr);
 
+
         /**
-         * Warning: OPENMP enabled.
+         *
          * @param i
          * @param z_B
-         * @return
+         * @param z_B_p
+         * @param update
          */
-        inline void babai_solve_omp(const index i, vector<index> *z_B, vector<index> *z_B_p, vector<index> *update) {
+        inline void babai_solve_omp(const index i, index *z_x, index *z_p, index *u_p) {
             scalar sum = 0;
-            index ni = n - 1 - i;
+            index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+
 #pragma omp simd reduction(+ : sum)
             for (index col = n - i; col < n; col++)
-                sum += R_A->x[ni * n - (ni * (n - i)) / 2 + col] * z_B_p->at(col);
+                sum += R_A->x[nj + col] * z_p[col];
 
-            z_B->at(ni) = round((y_A->x[ni] - sum) / R_A->x[ni * n - (ni * (n - i)) / 2 + ni]);
-            if (abs(z_B->at(ni) - z_B_p->at(ni)) != 0) {
-                z_B_p->at(ni) = z_B->at(ni);
-                update->at(ni) = -1;
+            z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
+
+            if (abs(z_x[ni] - z_p[ni]) != 0) {
+                z_p[ni] = z_x[ni];
+                u_p[ni] = -1;
             } else
-                update->at(ni) = 1;
+                u_p[ni] = 1;
         }
 
 
@@ -403,13 +377,13 @@ namespace cils {
             scalar sum, newprsd, gamma, beta = INFINITY;
 
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
-            index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
+            index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, row_k_end = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
             scalar p[dx], c[dx];
             index z[dx], d[dx];
 
             //  Initial squared search radius
-            scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
+            scalar R_kk = R_A->x[row_k_end];
             c[k] = y_B[k] / R_kk;
             z[k] = round(c[k]);
             gamma = R_kk * (c[k] - z[k]);
@@ -427,11 +401,12 @@ namespace cils {
 #pragma omp atomic
                         row_k--;
                         sum = 0;
+                        row_k_end = (n * row_k) - ((row_k * (row_k + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R_A->x[(n * row_k) + col + n_dx_q_0 - ((row_k * (row_k + 1)) / 2)] * z[col];
+                            sum += R_A->x[row_k_end + col + n_dx_q_0] * z[col];
                         }
-                        R_kk = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)];
+                        R_kk = R_A->x[row_k_end + row_k];
 
                         p[k] = newprsd;
                         c[k] = (y_B[k] - sum) / R_kk;
@@ -443,9 +418,8 @@ namespace cils {
                     } else {
                         beta = newprsd;
 #pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-//                            z_B->at(l) = z[l - n_dx_q_0];
-                            x[l - n_dx_q_0] = z[l - n_dx_q_0];
+                        for (index l = 0; l < dx; l++) {
+                            x[l] = z[l];
                         }
 #pragma omp atomic
                         iter++;
@@ -468,8 +442,6 @@ namespace cils {
                     }
                 }
             }
-//            x->assign(z.begin(), z.end());
-//            cout << omp_get_thread_num() << " ";
         }
 
 
@@ -477,14 +449,15 @@ namespace cils {
          *
          * @param R_B
          * @param y_B
-         * @return
+         * @param x
          */
-        inline vector<index> ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B) {
+        inline void ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
+                               vector<index> *x) {
 
             //variables
             index block_size = y_B->size();
 
-            vector<index> z(block_size, 0), d(block_size, 0), z_H(block_size, 0);
+            vector<index> z(block_size, 0), d(block_size, 0);
             vector<scalar> p(block_size, 0), c(block_size, 0);
 
             scalar newprsd, gamma, beta = INFINITY;
@@ -519,9 +492,8 @@ namespace cils {
                         beta = newprsd;
                         //Deep Copy of the result
                         for (index l = 0; l < block_size; l++) {
-                            z_H[l] = z[l];
+                            x->at(l) = z[l];
                         }
-                        //std::memcpy(z_H, z, sizeof(scalar) * block_size);
 
                         z[0] += d[0];
                         gamma = R_B->at(0) * (c[0] - z[0]);
@@ -537,10 +509,6 @@ namespace cils {
                     }
                 }
             }
-            for (index l = 0; l < block_size; l++) {
-                z[l] = z_H[l];
-            }
-            return z;
         }
 
 
@@ -569,15 +537,13 @@ namespace cils {
 
         /**
          *
-         * @param n_proc
-         * @param nswp
-         * @param update
-         * @param z_B
-         * @param z_B_p
+         * @param n_proc: number of Processors/Threads
+         * @param nswp: maximum number of iterations
+         * @param z_B: estimation of the true parameter
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp(index n_proc, index nswp, vector<index> *z_B);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
 
         /**
          *
@@ -587,7 +553,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_cuda(index nswp, vector<index> *z_B);
+        cils_babai_search_cuda(const index nswp, vector<index> *z_B);
 
         /**
          *
@@ -617,7 +583,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(vector<index> *z_B, vector<index> *d);
+        cils_block_search_serial(const vector<index> *d, vector<index> *z_B);
 
         /**
          *
@@ -630,20 +596,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp(index n_proc, index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
-
-        /**
-         *
-         * @param n_proc
-         * @param nswp
-         * @param R_B
-         * @param y_B
-         * @param z_B
-         * @param d
-         * @return
-         */
-        returnType<scalar, index>
-        cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d);
+        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<index> *z_B);
 
 
         /**
@@ -657,8 +610,8 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp_schedule(index n_proc, index nswp, scalar stop, string schedule,
-                                       vector<index> *z_B, vector<index> *d);
+        cils_block_search_omp(const index n_proc, const index nswp, const index stop, const index schedule,
+                              const vector<index> *d, vector<index> *z_B);
 
         returnType<scalar, index>
         cils_reduction();
