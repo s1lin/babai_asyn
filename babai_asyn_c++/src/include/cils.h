@@ -405,8 +405,8 @@ namespace cils {
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
 
-            array<scalar, 16> p, c;
-            array<index, 16> z, d;
+            scalar p[dx], c[dx];
+            index z[dx], d[dx];
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[(n * end_1) + end_1 - ((end_1 * (end_1 + 1)) / 2)];
