@@ -17,7 +17,7 @@ namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
     void cils<scalar, index, is_read, n>::read(bool is_qr) {
 //        string filename = "../../data/new" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
-        string filename = "../../data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
+        string filename = "data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
 
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
