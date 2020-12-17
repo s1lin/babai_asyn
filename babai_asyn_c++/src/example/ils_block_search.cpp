@@ -57,7 +57,7 @@ void ils_block_search(index k, index SNR) {
 //                    z_B[t] = pow(2, k) / 2;
 //                }
 
-                reT = cils.cils_block_search_omp(n_proc, 5, -1, 2, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc, 10, 0, 2, &d_s, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
                 printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
@@ -160,10 +160,11 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
             n_proc = n_proc == 96 ? 64 : n_proc;
-            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
+            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.5f\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_num_iter, omp_ber[init + 1 + 3 * l] / max_num_iter,
                    omp_itr[init + 1 + 3 * l] / max_num_iter,
-                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_num_iter);
+                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_num_iter,
+                   ser_tim[init + 1] / omp_itr[init + 1 + 3 * l]);
             l++;
         }
         printf("++++++++++++++++++++++++++++++++++++++\n");

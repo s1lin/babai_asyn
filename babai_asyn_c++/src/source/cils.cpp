@@ -130,8 +130,8 @@ namespace cils {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
-                    if (i <= x_max) {
-                        x_max++;
+                    if (i <= min(x_max, n)) {
+                        x_max += n_proc;
                         babai_solve_omp(i, z_x, z_p, u_p);
                         count += u_p[n - 1 - i];
                     }
