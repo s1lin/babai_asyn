@@ -107,7 +107,7 @@ namespace cils {
                 }
                 x_t[i] = round(x_tV[i]);
             }
-            this->x_R = cils_back_solve(&x_R).x;
+            this->x_R = *cils_back_solve(&x_R).x;
         }
         printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
         scalar end_time = omp_get_wtime() - start;
@@ -121,30 +121,29 @@ namespace cils {
                                                            vector<index> *z_B) {
 
         index count = 0, num_iter = 0, x_max = n_proc, x_min = 0;
-        vector<index> z_B_p(n, 0), update(n, 0), work(n_proc, 0);
+        auto *z_x = (index *) calloc(n, sizeof(index));
+        auto *u_p = (index *) calloc(n, sizeof(index));
+        auto *z_p = (index *) calloc(n, sizeof(index));
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc)
         {
-            for (index j = 0; j < nswp; j++) {//&& count <= 0;
+            for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < n; i++) {
                     if (i <= x_max && i >= x_min) {
-//                        if (x_max > n - i - 1) {
-//                            x_c = n - i - 1;
                         x_max++;
-                        babai_solve_omp(i, z_B, &z_B_p, &update);
-
-                        work[omp_get_thread_num()] = i;
-                        count += update[n - 1 - i];
+                        babai_solve_omp(i, z_x, z_p, u_p);
+                        count += u_p[n - 1 - i];
                     }
-//                    x_min = *min_element(work.begin(), work.end());
                 }
                 num_iter = j;
             }
         }
         scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, 0, num_iter};
+        for (index l = 0; l < n; l++)
+            z_B->at(l) = z_x[l];
+        returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;
     }
 
@@ -165,7 +164,7 @@ namespace cils {
             sum = 0;
         }
         scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
+        returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 
@@ -190,7 +189,7 @@ namespace cils {
         }
 
         scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
+        returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 

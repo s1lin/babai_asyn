@@ -19,11 +19,13 @@ namespace cils {
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
-                return {vector<index>(round(y_A->x[0] / R_A->x[0]), 0), 0, 0, 0};
+                z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
+                return {z_B, 0, 0};
             } else {
                 vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
                 vector<scalar> y_B = find_block_x(y_A, 0, n);
-                return {ils_search(&R_B, &y_B), 0, 0, 0};
+                ils_search(&R_B, &y_B, z_B);
+                return {z_B, 0, 0};
             }
         } else if (ds == n) {
             //Find the Babai point
@@ -35,39 +37,33 @@ namespace cils {
 
         scalar start = omp_get_wtime();
         //the last block
-        vector<scalar> R_ii = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
-        vector<scalar> y_b_s = find_block_x<scalar, index>(y_A, n - q, n);
-        vector<index> x_b_s = ils_search(&R_ii, &y_b_s);
+        vector<scalar> R_b = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
+        vector<scalar> y_b = find_block_x<scalar, index>(y_A, n - q, n);
+        vector<index> x_b(n - q, 0);
+        ils_search(&R_b, &y_b, &x_b);
         for (index l = n - q; l < n; l++) {
-            z_B->at(l) = x_b_s[l - n + q];
+            z_B->at(l) = x_b[l - n + q];
         }
-//        display_scalarType(y_b_s);
-//        cout<<  n - q<<","<<n <<endl;
-//        display_scalarType(x_b_s);
-
+        
         //Therefore, skip the last block, start from the second-last block till the first block.
         for (index i = 0; i < ds - 1; i++) {
             q = ds - 2 - i;
             //accumulate the block size
-            y_b_s = find_block_x<scalar, index>(y_A, n - d->at(q), n - d->at(q + 1));
-            x_b_s = find_block_x<scalar, index>(z_B, n - d->at(q + 1), n);
-            y_b_s = block_residual_vector(R_A, &x_b_s, &y_b_s, n - d->at(q), n - d->at(q + 1),
-                                          n - d->at(q + 1), n);
-//            display_scalarType(y_b_s);
-            R_ii = find_block_Rii<scalar, index>(R_A, n - d->at(q), n - d->at(q + 1), n - d->at(q),
-                                                 n - d->at(q + 1), n);
-//            cout<< n - d->at(q)<<","<<n - d->at(q + 1)<<endl;
-            x_b_s = ils_search(&R_ii, &y_b_s);
-//            display_array(x_b_s->at, x_b_s->size());
+            y_b = find_block_x<scalar, index>(y_A, n - d->at(q), n - d->at(q + 1));
+            x_b = find_block_x<scalar, index>(z_B, n - d->at(q + 1), n);
+            y_b = block_residual_vector(R_A, &x_b, &y_b, n - d->at(q), n - d->at(q + 1), n - d->at(q + 1), n);
+
+            R_b = find_block_Rii<scalar, index>(R_A, n - d->at(q), n - d->at(q + 1), n - d->at(q), n - d->at(q + 1), n);
+
+            ils_search(&R_b, &y_b, &x_b);
 
             for (index l = n - d->at(q); l < n - d->at(q + 1); l++) {
-                z_B->at(l) = x_b_s[l - n + d->at(q)];
+                z_B->at(l) = x_b[l - n + d->at(q)];
             }
-
 
         }
         scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
+        returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 
@@ -77,19 +73,8 @@ namespace cils {
                                                            vector<index> *z_B,
                                                            vector<index> *d) {
         index ds = d->size(), dx = d->at(ds - 1);
-        if (ds == 1) {
-            if (d->at(0) == 1) {
-                z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
-                return {*z_B, 0, 0, 0};
-            } else {
-                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = find_block_x(y_A, 0, n);
-                return {ils_search(&R_B, &y_B), 0, 0, 0};
-            }
-        } else if (ds == n) {
-            //Find the Babai point
-            //todo: Change it to omp version
-            return cils_babai_search_serial(z_B);
+        if (ds == 1 || ds == n) {
+            return cils_block_search_serial(z_B, d);
         }
         index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
         scalar nres = 10, sum = 0;
@@ -156,7 +141,7 @@ namespace cils {
 
         }
         scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {*z_B, run_time, nres, num_iter};
+        returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;
     }
 
@@ -167,6 +152,10 @@ namespace cils {
                                                                     vector<index> *z_B,
                                                                     vector<index> *d) {
         index ds = d->size(), dx = d->at(ds - 1);
+        if (ds == 1 || ds == n) {
+            return cils_block_search_serial(z_B, d);
+        }
+        
         auto *z_x = (index *) calloc(n, sizeof(index));
         auto *z_p = (index *) calloc(n, sizeof(index));
         auto *y_n = (scalar *) calloc(dx, sizeof(scalar));
@@ -235,7 +224,7 @@ namespace cils {
         scalar run_time = omp_get_wtime() - start;
         for (index l = 0; l < n; l++)
             z_B->at(l) = z_x[l];
-        returnType<scalar, index> reT = {*z_B, run_time, nres, num_iter};
+        returnType<scalar, index> reT = {z_B, run_time, num_iter};
 
         free(z_x);
         free(z_p);

@@ -168,8 +168,8 @@ void tiny_test() {
         cils.init(false);
         //auto reT = cils.cils_block_search_omp_schedule(3, 10, 0, "", &z_B, &d_s);
         auto reT = cils.cils_block_search_serial(&z_B, &d_s);
-        auto res = cils::find_residual<double, int, n1>(cils.R_A, cils.y_A, &reT.x);
-        auto brr = cils::find_bit_error_rate<double, int, n1>(&reT.x, &cils.x_t, false);
+        auto res = cils::find_residual<double, int, n1>(cils.R_A, cils.y_A, reT.x);
+        auto brr = cils::find_bit_error_rate<double, int, n1>(reT.x, &cils.x_t, false);
         printf("Method: ILS_OMP, Num of Threads: %d, Block size: %d, Iter: %d, Res: %.5f, BER: %.5f, Run time: %.5fs\n",
                3, size, reT.num_iter, res, brr, reT.run_time);
     }
