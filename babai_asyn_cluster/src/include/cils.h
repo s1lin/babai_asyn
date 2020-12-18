@@ -335,8 +335,13 @@ namespace cils {
          *
          * read the problem from files
          */
-        void read(bool is_qr);
+        void read_nc(string filename);
 
+        /**
+         *
+         * read the problem from files
+         */
+        void read_csv(bool is_qr);
 
         /**
          *
@@ -548,7 +553,7 @@ namespace cils {
             free(y_A);
         }
 
-        void init(bool is_qr);
+        void init(bool is_qr, bool is_nc);
 
         /**
          *
