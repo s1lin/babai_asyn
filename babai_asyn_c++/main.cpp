@@ -2,7 +2,6 @@
 // Created by shilei on 2020-11-04.
 //
 #include "src/example/cils_test.cpp"
-//#include "src/example/ils_babai_search.cpp"
 #include <mpi.h>
 
 using namespace std;
