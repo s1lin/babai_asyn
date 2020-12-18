@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 3.8.2)
 project(cils)
 
-find_package(OpenMP REQUIRED)
-find_package(OpenCL REQUIRED)
-find_package(MPI REQUIRED)
-find_package(netCDF REQUIRED)
-#find_package(Eigen3 REQUIRED)
-set(CMAKE_CXX_STANDARD 11)
-
 # detect C++ compiler - the C compiler must be the same type too
 #if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 #    set(CXX_COMPILER_GNUCLANG TRUE)
@@ -52,9 +45,12 @@ else()
     message(SEND_ERROR "Don't know OpenMP flag for this compiler!")
 endif()
 
-#if (OPENMP_FOUND)
-
-#endif ()
+find_package(OpenMP REQUIRED)
+#find_package(OpenCL REQUIRED)
+find_package(MPI REQUIRED)
+find_package(netCDF REQUIRED)
+#find_package(Eigen3 REQUIRED)
+set(CMAKE_CXX_STANDARD 11)
 
 if (MPI_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
@@ -90,7 +86,7 @@ if (Eigen3_FOUND)
     message("-- Eigen3_FOUND")
 endif ()
 
-if (OpenCL_FOUND)
-    target_link_libraries(cils ${OPENCL_LIBRARIES})
-    message("-- OpenCL_FOUND")
-endif ()
+#if (OpenCL_FOUND)
+#    target_link_libraries(cils ${OPENCL_LIBRARIES})
+#    message("-- OpenCL_FOUND")
+#endif ()

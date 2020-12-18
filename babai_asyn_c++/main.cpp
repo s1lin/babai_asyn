@@ -13,38 +13,30 @@ const int n2 = 8192;
 const int n3 = 16384;
 const int n4 = 32768;
 
-//void load_test() {
-//    int n = 4096;
-//    vector<int> d(4096 / 16, 16), d_s(4096 / 16, 16);
-//    for (int i = d_s.size() - 2; i >= 0; i--) {
-//        d_s[i] += d_s[i + 1];
-//    }
-//    int ds = d.size();
-//    int n_proc = 10;
-//    vector<int> iter(300, 0);
-//#pragma omp parallel default(shared) num_threads(n_proc) //private()
-//    {
-////    for (int j = 0; j < 10; j++) {//
-//#pragma omp for schedule(dynamic) nowait //schedule(dynamic)
-//        for (int i = 0; i < 2 * n_proc; i++) {
-////            if (omp_get_thread_num()==n_proc) {
-////            for (int m = i; m < ds; m += n_proc) {
-////                iter[m] = i;
-////            }
-////            }
-//            if (omp_get_thread_num() == 0) {
-//                cout << omp_get_thread_num() << ",i," << i << endl;
-//            }
-//
-//        }
-//    }
-//    //    }
-//    cout << iter.size() << endl;
-//    for (int m = 0; m < ds; m++) {
-//        cout << iter[m] << ", ";
-//    }
-//
-//}
+void load_test() {
+    int n = 4096;
+    vector<int> d(4096 / 16, 16), d_s(4096 / 16, 16);
+    for (int i = d_s.size() - 2; i >= 0; i--) {
+        d_s[i] += d_s[i + 1];
+    }
+    int ds = d.size();
+    int n_proc = 10;
+    vector<int> iter(300, 0);
+#pragma omp parallel default(shared) num_threads(n_proc) //private()
+    {
+//    for (int j = 0; j < 10; j++) {//
+#pragma omp for schedule(static) nowait //schedule(dynamic)
+        for (int i = 0; i < ds; i++) {
+            cout << omp_get_thread_num() << ",i," << i << endl;
+        }
+    }
+    //    }
+    cout << iter.size() << endl;
+    for (int m = 0; m < ds; m++) {
+        cout << iter[m] << ", ";
+    }
+
+}
 
 template<typename scalar, typename index, index n>
 int mpi_test_2(int argc, char *argv[]) {
@@ -104,7 +96,7 @@ void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
     int max_proc = omp_get_max_threads();
     int min_proc = 12;
-    int k = 1, index = 0, stop = 0, mode = 1, max_num_iter = 10, is_qr = 1;
+    int k = 1, index = 0, stop = 0, mode = 2, max_num_iter = 10, is_qr = 1;
     if (argc != 1) {
         k = stoi(argv[1]);
         index = stoi(argv[2]);

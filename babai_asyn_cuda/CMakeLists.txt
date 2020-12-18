@@ -25,7 +25,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 link_libraries(${PYTHON_LIBRARIES})
 link_libraries(Eigen3::Eigen)
 
-add_executable(cils_cuda ils_search_cuda.cu cils_cuda_solvers.cu cils_cuda_solvers.cuh ../babai_asyn_c++/src/include/cils.h)
+add_executable(cils_cuda ils_search_cuda.cu)
 target_link_libraries(cils_cuda Eigen3::Eigen)
 target_link_libraries(cils_cuda OpenMP::OpenMP_CXX)
 set_target_properties(cils_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

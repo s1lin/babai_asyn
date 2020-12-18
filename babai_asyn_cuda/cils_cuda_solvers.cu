@@ -1,4 +1,6 @@
 #include "../babai_asyn_c++/src/source/cils.cpp"
+#include "../babai_asyn_c++/src/source/cils_babai_search.cpp"
+#include "../babai_asyn_c++/src/source/cils_block_search.cpp"
 #include "cils_cuda_solvers.cuh"
 #include "cuda_runtime_api.h"
 #include <ctime>
@@ -15,7 +17,7 @@ namespace cils {
         } else {
             index cores = 0;
             index mp = deviceProp.multiProcessorCount;
-            switch (deviceProp.major){
+            switch (deviceProp.major) {
                 case 2: // Fermi
                     if (deviceProp.minor == 1) cores = mp * 48;
                     else cores = mp * 32;
@@ -50,7 +52,7 @@ namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_cuda(index nswp, vector<index> *z_B) {
+    cils<scalar, index, is_read, n>::cils_babai_search_cuda(const index nswp, vector<index> *z_B) {
         scalar *z_B_d, *z_B_h, *y_A_d, *R_A_d;
 
         z_B_h = (scalar *) malloc(n * sizeof(scalar));
@@ -94,13 +96,14 @@ namespace cils {
         cudaFree(R_A_d);
         free(z_B_h);
 
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
+        returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType<scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_cuda(index nswp, scalar stop, vector<index> *z_B, vector<index> *d) {
+    cils<scalar, index, is_read, n>::cils_block_search_cuda(const index nswp, const scalar stop, const vector<index> *d,
+                                                            vector<index> *z_B) {
 
         index ds = d->size(), dx = d->at(ds - 1);
 //        if (ds == 1) {
@@ -117,58 +120,38 @@ namespace cils {
 //            return cils_babai_search_cuda(nswp, z_B);
 //        }
 
-        scalar *z_B_d, *z_B_h, *y_A_d, *R_A_d;
-        index *d_A_d, *d_A_h;
+        scalar *y_A_d, *R_A_d;
+        index *z_B_d, *d_A_d;
 
-        z_B_h = (scalar *) malloc(n * sizeof(scalar));
-        d_A_h = (index *) malloc(ds * sizeof(index));
+        auto z_B_h = z_B->data();
+        auto d_A_h = d->data();
 
-        cudaMallocManaged(&z_B_d, n * sizeof(scalar));
+        cudaMallocManaged(&z_B_d, n * sizeof(index));
         cudaMallocManaged(&y_A_d, n * sizeof(scalar));
         cudaMallocManaged(&R_A_d, R_A->size * sizeof(scalar));
         cudaMallocManaged(&d_A_d, ds * sizeof(index));
 
-        for (index row = 0; row < ds; row++) {
-            z_B_h[row] = z_B->at(row);
-            d_A_h[row] = d->at(row);
-        }
-        for (index row = ds; row < n; row++){
-            z_B_h[row] = z_B->at(row);
-        }
-
         cudaMemcpy(y_A_d, y_A->x, n * sizeof(scalar), cudaMemcpyHostToDevice);
         cudaMemcpy(R_A_d, R_A->x, R_A->size * sizeof(scalar), cudaMemcpyHostToDevice);
-        cudaMemcpy(z_B_d, z_B_h, n * sizeof(scalar), cudaMemcpyHostToDevice);
+        cudaMemcpy(z_B_d, z_B_h, n * sizeof(index), cudaMemcpyHostToDevice);
         cudaMemcpy(d_A_d, d_A_h, ds * sizeof(index), cudaMemcpyHostToDevice);
 
-        // Optimized kernel
-//        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
-//        index nTiles = n / ds + (n % ds == 0 ? 0 : 1);
-//        cout<<nTiles;
-//        index gridHeight = n / ds + (n % ds == 0 ? 0 : 1);
-//        index gridWidth = n / ds + (n % ds == 0 ? 0 : 1);
-        dim3 dGrid(1), dBlock(ds/1);
+        dim3 dGrid(1), dBlock(ds / 1);
 
         std::clock_t start = std::clock();
-        for (index k = 0; k < nswp; k++) {
+        for (index k = 0; k < 5; k++) {
             cuda::block_solve_cuda<scalar, index, n><<<dGrid, dBlock>>>(R_A_d, y_A_d, d_A_d, ds, z_B_d);
-            cudaDeviceSynchronize();
         }
 
         cudaDeviceSynchronize();
         scalar run_time = (std::clock() - start) / (scalar) CLOCKS_PER_SEC;
-        cudaMemcpy(z_B_h, z_B_d, n * sizeof(scalar), cudaMemcpyDeviceToHost);
-        for (index row = 0; row < n; row++) {
-            z_B->at(row) = z_B_h[row];
-        }
-
+        cudaMemcpy(z_B_h, z_B_d, n * sizeof(index), cudaMemcpyDeviceToHost);
         cudaFree(z_B_d);
         cudaFree(y_A_d);
         cudaFree(R_A_d);
         cudaFree(d_A_d);
-        free(z_B_h);
 
-        returnType<scalar, index> reT = {*z_B, run_time, 0, 0};
+        returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 }
