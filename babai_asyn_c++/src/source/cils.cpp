@@ -97,8 +97,8 @@ namespace cils {
             if (is_qr) {
                 filename = "../../data/" + to_string(n) + "_" + to_string(snr) + "_" + to_string(qam) + ".nc";
             }
-            if (is_nc) read_nc(filename);
-            else read_csv(is_qr);
+            if (!is_nc)
+                read_csv(is_qr);
 
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
         }

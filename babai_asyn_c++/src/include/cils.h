@@ -636,9 +636,7 @@ namespace cils {
         returnType<scalar, index>
         cils_reduction();
 
-        void read_nc(string filename);
 
-        void read_nc(string filename);
     };
 }
 #endif
