@@ -101,38 +101,38 @@ namespace cils {
             else read_csv(is_qr);
 
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
-        } else {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            //mean:0, std:sqrt(1/2). same as matlab.
-            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
-            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-            std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
-
-            this->A = MatrixXd::Zero(n, n).unaryExpr([&](double dummy) { return A_norm_dis(gen); });
-//            this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
-            this->Q = A.householderQr().householderQ();
-            this->x_tV = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
-            this->y = R * x_tV +
-                      Q.transpose() * VectorXd::Zero(n).unaryExpr([&](double dummy) { return v_norm_dis(gen); });
-            this->init_res = (y - R * x_tV).norm();
-
-            VectorXd::Map(&y_A->x[0], n) = y;
-            index l = 0;
-            for (index i = 0; i < n; i++) {
-                for (index j = 0; j < n; j++) {
-                    if (this->R(i, j) != 0) {
-                        this->R_A->x[l] = this->R(i, j);
-                        l++;
-                    }
-                }
-                x_t[i] = round(x_tV[i]);
-            }
-            this->x_R = *cils_back_solve(&x_R).x;
         }
         printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
         scalar end_time = omp_get_wtime() - start;
         printf("Finish Init, time: %.5f seconds\n", end_time);
+//        } else {
+//            std::random_device rd;
+//            std::mt19937 gen(rd());
+//            //mean:0, std:sqrt(1/2). same as matlab.
+//            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
+//            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+//            std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
+//
+//            this->A = MatrixXd::Zero(n, n).unaryExpr([&](double dummy) { return A_norm_dis(gen); });
+////            this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
+//            this->Q = A.householderQr().householderQ();
+//            this->x_tV = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
+//            this->y = R * x_tV +
+//                      Q.transpose() * VectorXd::Zero(n).unaryExpr([&](double dummy) { return v_norm_dis(gen); });
+//            this->init_res = (y - R * x_tV).norm();
+//
+//            VectorXd::Map(&y_A->x[0], n) = y;
+//            index l = 0;
+//            for (index i = 0; i < n; i++) {
+//                for (index j = 0; j < n; j++) {
+//                    if (this->R(i, j) != 0) {
+//                        this->R_A->x[l] = this->R(i, j);
+//                        l++;
+//                    }
+//                }
+//                x_t[i] = round(x_tV[i]);
+//            }
+//            this->x_R = *cils_back_solve(&x_R).x;
 
     }
 

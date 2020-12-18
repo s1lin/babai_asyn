@@ -36,8 +36,8 @@
 #include <Eigen/Dense>
 
 using namespace std;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+//using Eigen::MatrixXd;
+//using Eigen::VectorXd;
 /**
  * namespace of cils
  */
@@ -328,8 +328,8 @@ namespace cils {
         scalar init_res, sigma;
         vector<index> x_R, x_t;
         scalarType<scalar, index> *R_A, *y_A;
-        Eigen::MatrixXd A, R, Q;
-        Eigen::VectorXd y, x_tV;
+//        Eigen::MatrixXd A, R, Q;
+//        Eigen::VectorXd y, x_tV;
     private:
         /**
          *
@@ -635,6 +635,10 @@ namespace cils {
 
         returnType<scalar, index>
         cils_reduction();
+
+        void read_nc(string filename);
+
+        void read_nc(string filename);
     };
 }
 #endif
