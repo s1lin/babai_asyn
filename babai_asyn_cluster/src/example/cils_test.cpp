@@ -83,7 +83,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
     vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
     vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
     cils::returnType<scalar, index> reT;
-    cils.init(is_qr, 1);
+    cils.init(is_qr, 0);
 
     for (index p = 0; p < max_num_iter; p++) {
         if (p == 0) {
