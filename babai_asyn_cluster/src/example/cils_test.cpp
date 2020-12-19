@@ -116,7 +116,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
             ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             ser_tim[init + 1] += reT.run_time;
             index l = 0;
-            for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
+            for (index n_proc = 12; n_proc <= max_proc; n_proc += 4) {
                 z_B.assign(n, 0);
                 if (init == -1)
                     copy(z_B.begin(), z_B.end(), cils.x_R.begin());
@@ -126,8 +126,7 @@ void plot_run(index k, index SNR, index min_proc, index max_proc, index max_num_
                 n_proc = n_proc == 96 ? 64 : n_proc;
                 reT = cils.cils_block_search_omp(n_proc, iter, stop, 2, &d_s, &z_B);
 
-                omp_res[init + 1 + 3 * l] +=
-                        cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                omp_res[init + 1 + 3 * l] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
                                                                                          cils.qam == 1);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
