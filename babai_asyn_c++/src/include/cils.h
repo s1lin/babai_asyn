@@ -34,6 +34,7 @@
 #include <bitset>
 #include <math.h>
 #include <Eigen/Dense>
+#include "config.h"
 
 using namespace std;
 //using Eigen::MatrixXd;
@@ -375,8 +376,7 @@ namespace cils {
          * @param y
          * @return
          */
-        inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index max_iter,
-                                   const scalar *y_B, index *x) {
+        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const scalar *y_B, index *x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -428,7 +428,7 @@ namespace cils {
                         }
 #pragma omp atomic
                         iter++;
-                        if (iter > max_iter) break;
+                        if (iter > program_def::search_iter) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
@@ -447,6 +447,7 @@ namespace cils {
                     }
                 }
             }
+            return beta;
         }
 
 

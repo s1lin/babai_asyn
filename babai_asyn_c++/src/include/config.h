@@ -23,7 +23,7 @@ namespace cils {
         index num_trials = 10;
         index max_iter = 10;
         index search_iter = 1;
-        index stop = -1;
+        index stop = 10;
         index schedule = 2;
         index chunk_size = 16;
         index block_size = 16;
@@ -32,8 +32,12 @@ namespace cils {
         index min_proc = 12;
         index max_proc = 12;
         index mode = 2;
+        index is_local = true;
 
+        string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
+        string prefix = is_local ? "../../" : "";
         std::vector<index> d(N_4096 / block_size, block_size), d_s(N_4096 / block_size, block_size);
+
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
@@ -49,6 +53,7 @@ namespace cils {
                 is_nc = stoi(argv[10]);
                 mode = stoi(argv[11]);
                 num_trials = stoi(argv[12]);
+                is_local = stoi(argv[13]);
             }
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];

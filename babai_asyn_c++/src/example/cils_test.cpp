@@ -1,4 +1,4 @@
-#include "../include/config.h"
+
 #include "../source/cils.cpp"
 #include "../source/cils_block_search.cpp"
 #include "../source/cils_babai_search.cpp"

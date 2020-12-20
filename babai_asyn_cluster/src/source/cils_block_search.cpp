@@ -11,7 +11,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
 
         index ds = d->size();
@@ -67,7 +67,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index schedule,
                                                            const vector<index> *d,
@@ -81,7 +81,7 @@ namespace cils {
         auto *z_p = new index[n]();
 
         index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc, *x_b;
-        scalar nres = 10, sum = 0, *y_b;
+        scalar nres = INFINITY, sum = 0, res = 0, *y_b, diff = 20;
 
         omp_set_schedule((omp_sched_t) schedule, 1);
 
@@ -90,7 +90,8 @@ namespace cils {
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
-            for (index j = 0; j < nswp && abs(nres) > stop; j++) {
+            for (index j = 0; j < nswp && abs(diff) > stop; j++) {// && abs(nres) > stop
+                res = 0;
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i <= s) {
@@ -106,36 +107,23 @@ namespace cils {
                                 }
                                 y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                        } else
+                        } else {
 #pragma omp simd
                             for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                                 y_b[l - n_dx_q_0] = y_A->x[l];
+                        }
 
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, 3, y_b, x_b);
+                        res += ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
 #pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
-                            z_x[l] = x_b[l - n_dx_q_0];
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                            z_x[row] = x_b[row - n_dx_q_0];
                         }
                         s++;
                     }
                 }
-#pragma omp master
-                {
-                    if (num_iter > 0) {
-                        nres = 0;
-#pragma omp simd reduction(+ : nres)
-                        for (index l = 0; l < n; l++) {
-                            nres += (z_p[l] - z_x[l]);
-                            z_p[l] = z_x[l];
-                        }
-                    } else {
-#pragma omp simd
-                        for (index l = 0; l < n; l++) {
-                            z_p[l] = z_x[l];
-                        }
-                    }
-                    num_iter = j;
-                }
+                diff = nres - std::sqrt(res);
+                nres = std::sqrt(res);
+                num_iter = j;
             }
             delete[] y_b;
             delete[] x_b;
