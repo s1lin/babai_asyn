@@ -34,10 +34,11 @@
 #include <bitset>
 #include <math.h>
 #include <Eigen/Dense>
+#include "config.h"
 
 using namespace std;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+//using Eigen::MatrixXd;
+//using Eigen::VectorXd;
 /**
  * namespace of cils
  */
@@ -328,15 +329,20 @@ namespace cils {
         scalar init_res, sigma;
         vector<index> x_R, x_t;
         scalarType<scalar, index> *R_A, *y_A;
-        Eigen::MatrixXd A, R, Q;
-        Eigen::VectorXd y, x_tV;
+//        Eigen::MatrixXd A, R, Q;
+//        Eigen::VectorXd y, x_tV;
     private:
         /**
          *
          * read the problem from files
          */
-        void read(bool is_qr);
+        void read_nc(string filename);
 
+        /**
+         *
+         * read the problem from files
+         */
+        void read_csv(bool is_qr);
 
         /**
          *
@@ -370,8 +376,7 @@ namespace cils {
          * @param y
          * @return
          */
-        inline void ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index max_iter,
-                                   const scalar *y_B, index *x) {
+        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const scalar *y_B, index *x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -423,7 +428,7 @@ namespace cils {
                         }
 #pragma omp atomic
                         iter++;
-                        if (iter > max_iter) break;
+                        if (iter > program_def::search_iter) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
@@ -442,6 +447,7 @@ namespace cils {
                     }
                 }
             }
+            return beta;
         }
 
 
@@ -548,7 +554,7 @@ namespace cils {
             free(y_A);
         }
 
-        void init(bool is_qr);
+        void init(bool is_qr, bool is_nc);
 
         /**
          *
@@ -630,6 +636,8 @@ namespace cils {
 
         returnType<scalar, index>
         cils_reduction();
+
+
     };
 }
 #endif

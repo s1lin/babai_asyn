@@ -104,7 +104,7 @@ if (MPI_FOUND)
 
 endif ()
 
-add_executable(cils main.cpp)
+add_executable(cils main.cpp src/include/config.h)
 
 if (MPI_FOUND)
     target_link_libraries(cils ${MPI_LIBRARIES})
