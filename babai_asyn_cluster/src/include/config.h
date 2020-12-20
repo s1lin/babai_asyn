@@ -20,10 +20,10 @@ namespace cils {
     namespace program_def {
         index k = 1;
         index SNR = 35;
-        index num_trials = 10;
+        index num_trials = 10; //nswp
         index max_iter = 10;
-        index search_iter = 1;
-        index stop = 10;
+        index search_iter = 3;
+        index stop = 15;
         index schedule = 2;
         index chunk_size = 16;
         index block_size = 16;

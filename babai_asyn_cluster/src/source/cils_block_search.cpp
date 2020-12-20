@@ -90,7 +90,7 @@ namespace cils {
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
-            for (index j = 0; j < nswp && abs(diff) > stop; j++) {// && abs(nres) > stop
+            for (index j = 0; j < nswp; j++) {// && abs(nres) > stop
                 res = 0;
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
@@ -121,9 +121,12 @@ namespace cils {
                         s++;
                     }
                 }
+                num_iter = j;
                 diff = nres - std::sqrt(res);
                 nres = std::sqrt(res);
-                num_iter = j;
+//                cout << diff << " ";
+                if (abs(diff) < stop)
+                    break;
             }
             delete[] y_b;
             delete[] x_b;
