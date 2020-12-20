@@ -2,15 +2,12 @@
 // Created by shilei on 2020-11-04.
 //
 #include "src/example/cils_test.cpp"
+
 #include <mpi.h>
 
 using namespace std;
 using namespace boost;
-
-const int n1 = 4096;
-const int n2 = 8192;
-const int n3 = 16384;
-const int n4 = 32768;
+using namespace cils;
 
 void load_test() {
     int n = 4096;
@@ -93,45 +90,21 @@ int mpi_test_2(int argc, char *argv[]) {
 
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    int max_proc = omp_get_max_threads();
-    int min_proc = 12;
-    int k = 1, index = 0, stop = 0, mode = 2, max_num_iter = 10, is_qr = 0;
-    if (argc != 1) {
-        k = stoi(argv[1]);
-        index = stoi(argv[2]);
-        stop = stoi(argv[3]);
-        mode = stoi(argv[4]);
-        max_num_iter = stoi(argv[5]);
-        is_qr = stoi(argv[6]);
+    program_def::max_proc = omp_get_max_threads();
+    program_def::min_proc = 12;
+    program_def::init_program_def(argc, argv);
+
+    switch (program_def::mode) {
+        case 0:
+            plot_res<scalar, int, N_4096>();
+            break;
+        case 1:
+            plot_run<scalar, int, N_4096>();
+            break;
+        default:
+            ils_block_search<scalar, int, N_4096>();
+            break;
     }
-    max_proc = max_proc != 64 ? max_proc : 100;
-
-    for (int SNR = 35; SNR <= 35; SNR += 20) {
-        switch (index) {
-            case 0:
-                if (mode == 0)
-                    plot_res<double, int, n1>(k, SNR, min_proc, max_proc, is_qr);
-                else if (mode == 1)
-                    plot_run<double, int, n1>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
-                else
-                    ils_block_search<double, int, n1>(k, SNR);
-                break;
-            case 1:
-                plot_res<double, int, n2>(k, SNR, min_proc, max_proc, is_qr);
-                plot_run<double, int, n2>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
-//                ils_block_search<double, int, n2>(k, SNR);
-                break;
-            case 2:
-                plot_run<double, int, n3>(k, SNR, min_proc, max_proc, max_num_iter, stop, is_qr);
-//                ils_block_search<double, int, n3>(k, SNR);
-                break;
-            default:
-                plot_res<double, int, n4>(k, SNR, min_proc, max_proc, is_qr);
-                break;
-        }
-
-    }
-
 }
 
 //void tiny_test() {
