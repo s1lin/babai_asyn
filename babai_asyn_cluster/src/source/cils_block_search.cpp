@@ -118,7 +118,7 @@ namespace cils {
 //                            diff += z_x[row] == z_p[row] ? 0 : 1;
 //                            z_p[row] = x_b[row - n_dx_q_0];
                         }
-                        s += n_proc;
+                        s++;
                     }
                 }
 #pragma omp master
@@ -126,18 +126,23 @@ namespace cils {
                     if (abs(nres - std::sqrt(res)) < stop) {
                         num_iter = j;
                         flag = true;
-                        run_time = omp_get_wtime();
+
                     } else {
                         nres = std::sqrt(res);
                     }
                     //diff = 0;
                 }
             }
+#pragma omp master
+            {
+                run_time = omp_get_wtime();
+            }
             delete[] y_b;
             delete[] x_b;
         }
-        scalar run_time2 = omp_get_wtime() - run_time;
-        cout << run_time2 << " ";
+
+        scalar run_time2 = omp_get_wtime() - start;
+        printf("%.3f, %.3f, ", run_time2, run_time2 / (run_time - start));
         returnType<scalar, index> reT = {z_B, run_time - start, num_iter};
 
         delete[] z_p;
