@@ -4,13 +4,14 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <cblas.h>
 #include "../include/cils.h"
 
 using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
 
         index ds = d->size();
@@ -66,7 +67,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index schedule,
                                                            const vector<index> *d,
@@ -78,18 +79,21 @@ namespace cils {
 
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
+        bool flag = false;
 
         index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
         scalar nres = INFINITY, sum = 0, res = 0, diff = 20, run_time;
-
         omp_set_schedule((omp_sched_t) schedule, chunk_size);
-
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, n_dx_q_0, n_dx_q_1)
         {
             auto *y_b = new scalar[dx]();
             auto *x_b = new index[dx]();
-            for (index j = 0; j < nswp && abs(nres) > stop; j++) {
+            for (index j = 0; j < nswp; j++) {
+                if (flag) {
+                    j += nswp;
+                    continue;
+                }
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i <= s) {
@@ -112,7 +116,7 @@ namespace cils {
                         }
 
                         ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
-#pragma omp simd
+#pragma omp simd reduction(+ : diff)
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             z_x[row] = x_b[row - n_dx_q_0];
                             diff += z_x[row] == z_p[row] ? 0 : 1;
@@ -125,8 +129,14 @@ namespace cils {
                 {
                     nres = diff;
                     diff = 0;
-                    num_iter = j;
+                    if (abs(nres) < stop) {
+                        num_iter = j;
+                        flag = true;
+                        j += nswp;
+                    }
                 }
+//                num_iter = j;
+//                cout<<omp_get_thread_num()<<" "<<j<< " "<<nres<<endl;
             }
             delete[] y_b;
             delete[] x_b;
