@@ -21,11 +21,11 @@ namespace cils {
         index k = 1;
         index SNR = 35;
         index num_trials = 10; //nswp
-        index max_iter = 10;
+        index max_iter = 4;
         index search_iter = 3;
-        index stop = 15;
+        index stop = 20;
         index schedule = 2;
-        index chunk_size = 16;
+        index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;

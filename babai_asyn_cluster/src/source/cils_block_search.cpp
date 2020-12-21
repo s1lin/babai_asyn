@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-
+#include <cblas.h>
 #include "../include/cils.h"
 
 using namespace std;
@@ -80,18 +80,17 @@ namespace cils {
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
 
-        index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc, *x_b;
-        scalar nres = INFINITY, sum = 0, res = 0, *y_b, diff = 20;
+        index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
+        scalar nres = INFINITY, sum = 0, res = 0, diff = 20, run_time;
 
-        omp_set_schedule((omp_sched_t) schedule, 1);
+        omp_set_schedule((omp_sched_t) schedule, chunk_size);
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, y_b, x_b, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, n_dx_q_0, n_dx_q_1)
         {
-            y_b = new scalar[dx]();
-            x_b = new index[dx]();
-            for (index j = 0; j < nswp; j++) {// && abs(nres) > stop
-                res = 0;
+            auto *y_b = new scalar[dx]();
+            auto *x_b = new index[dx]();
+            for (index j = 0; j < nswp && abs(nres) > stop; j++) {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i <= s) {
@@ -113,26 +112,27 @@ namespace cils {
                                 y_b[l - n_dx_q_0] = y_A->x[l];
                         }
 
-                        res += ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
+                        ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
 #pragma omp simd
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             z_x[row] = x_b[row - n_dx_q_0];
+                            diff += z_x[row] == z_p[row] ? 0 : 1;
+                            z_p[row] = x_b[row - n_dx_q_0];
                         }
                         s++;
                     }
                 }
-                num_iter = j;
-                diff = nres - std::sqrt(res);
-                nres = std::sqrt(res);
-//                cout << diff << " ";
-                if (abs(diff) < stop)
-                    break;
+#pragma omp master
+                {
+                    nres = diff;
+                    diff = 0;
+                    num_iter = j;
+                }
             }
             delete[] y_b;
             delete[] x_b;
         }
-
-        scalar run_time = omp_get_wtime() - start;
+        run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
 
         delete[] z_p;
