@@ -10,7 +10,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
+    returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
 
         index ds = d->size();
@@ -66,7 +66,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
+    returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index schedule,
                                                            const vector<index> *d,
@@ -118,7 +118,7 @@ namespace cils {
                             diff += z_x[row] == z_p[row] ? 0 : 1;
                             z_p[row] = x_b[row - n_dx_q_0];
                         }
-                        s++;
+                        s += n_proc;
                     }
                 }
 #pragma omp master

@@ -119,7 +119,7 @@ namespace cils {
                             diff += z_x[row] == z_p[row] ? 0 : 1;
                             z_p[row] = x_b[row - n_dx_q_0];
                         }
-                        s++;
+                        s += n_proc;
                     }
                 }
 #pragma omp master
