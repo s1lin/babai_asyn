@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <cblas.h>
 #include "../include/cils.h"
 
 using namespace std;
