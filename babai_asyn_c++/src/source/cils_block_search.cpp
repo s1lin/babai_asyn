@@ -5,6 +5,7 @@
 #include <random>
 #include <chrono>
 #include "../include/cils.h"
+#include <boost/numeric/ublas/vector.hpp>
 
 using namespace std;
 
@@ -125,18 +126,19 @@ namespace cils {
                     if (abs(nres - std::sqrt(res)) < stop) {
                         num_iter = j;
                         flag = true;
+                        run_time = omp_get_wtime();
                     } else {
                         nres = std::sqrt(res);
                     }
                     //diff = 0;
                 }
             }
-
             delete[] y_b;
             delete[] x_b;
         }
-        run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {z_B, run_time, num_iter};
+        scalar run_time2 = omp_get_wtime() - run_time;
+        cout << run_time2 << " ";
+        returnType<scalar, index> reT = {z_B, run_time - start, num_iter};
 
         delete[] z_p;
         return reT;
