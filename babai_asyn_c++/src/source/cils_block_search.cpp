@@ -124,16 +124,14 @@ namespace cils {
                         s += n_proc;
                     }
                 }
-#pragma omp master
-                {
-                    nres = diff;
-                    diff = 0;
-                    if (abs(nres) < stop) {
-                        num_iter = j;
-                        flag = true;
-                        j += nswp;
-                    }
+
+                if (abs(diff) < stop) {
+                    num_iter = j;
+                    flag = true;
+                    j += nswp;
                 }
+                diff = 0;
+
 //                num_iter = j;
 //                cout<<omp_get_thread_num()<<" "<<j<< " "<<nres<<endl;
             }
