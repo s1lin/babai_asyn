@@ -22,7 +22,7 @@ namespace cils {
         index SNR = 35;
         index num_trials = 10; //nswp
         index max_iter = 4;
-        index search_iter = 3;
+        index search_iter = 2;
         index stop = 20;
         index schedule = 2;
         index chunk_size = 1;

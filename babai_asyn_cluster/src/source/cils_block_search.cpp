@@ -88,11 +88,7 @@ namespace cils {
         {
             auto *y_b = new scalar[dx]();
             auto *x_b = new index[dx]();
-            for (index j = 0; j < nswp; j++) {
-                if (flag) {
-                    j += nswp;
-                    continue;
-                }
+            for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
                     if (i <= s) {
@@ -114,27 +110,28 @@ namespace cils {
                                 y_b[l - n_dx_q_0] = y_A->x[l];
                         }
 
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
-#pragma omp simd reduction(+ : diff)
+                        res += ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
+#pragma omp simd //reduction(+ : diff)
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             z_x[row] = x_b[row - n_dx_q_0];
-                            diff += z_x[row] == z_p[row] ? 0 : 1;
-                            z_p[row] = x_b[row - n_dx_q_0];
+//                            diff += z_x[row] == z_p[row] ? 0 : 1;
+//                            z_p[row] = x_b[row - n_dx_q_0];
                         }
                         s += n_proc;
                     }
                 }
-
-                if (abs(diff) < stop) {
-                    num_iter = j;
-                    flag = true;
-                    j += nswp;
+#pragma omp master
+                {
+                    if (abs(nres - std::sqrt(res)) < stop) {
+                        num_iter = j;
+                        flag = true;
+                    } else {
+                        nres = std::sqrt(res);
+                    }
+                    //diff = 0;
                 }
-                diff = 0;
-
-//                num_iter = j;
-//                cout<<omp_get_thread_num()<<" "<<j<< " "<<nres<<endl;
             }
+
             delete[] y_b;
             delete[] x_b;
         }
