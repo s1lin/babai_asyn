@@ -180,7 +180,7 @@ void plot_res() {
             for (index nswp = 0; nswp < 30; nswp++) {
                 for (index t = 0; t < 3; t++) {
                     init_guess(init, &z_B, &cils.x_R);
-                    reT = cils.cils_block_search_omp(n_proc, nswp, -1, 1, &d_s, &z_B);
+                    reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);
                     scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                     scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
                     res = newres < res ? newres : res;

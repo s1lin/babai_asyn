@@ -89,10 +89,11 @@ namespace cils {
         {
             auto *y_b = new scalar[dx]();
             auto *x_b = new index[dx]();
+#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (i <= s) {
+                    if (i <= s && !flag) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -126,7 +127,6 @@ namespace cils {
                     if (abs(nres - std::sqrt(res)) < stop) {
                         num_iter = j;
                         flag = true;
-
                     } else {
                         nres = std::sqrt(res);
                     }
@@ -136,13 +136,17 @@ namespace cils {
 #pragma omp master
             {
                 run_time = omp_get_wtime();
+//                cout << omp_get_thread_num() << " " << find_residual<scalar, index, n>(R_A, y_A, z_B) << " ";
             }
+
             delete[] y_b;
             delete[] x_b;
         }
 
         scalar run_time2 = omp_get_wtime() - start;
-        printf("%.3f, %.3f, ", run_time2, run_time2 / (run_time - start));
+#ifdef VERBOSE //1
+        printf("%.3f, %.3f, %.3f", run_time2, run_time2 / (run_time - start));
+#endif
         returnType<scalar, index> reT = {z_B, run_time - start, num_iter};
 
         delete[] z_p;
