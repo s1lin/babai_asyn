@@ -97,7 +97,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {//
 #pragma omp for schedule(runtime) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (work[i] >= -1 && !flag) {//if (!flag && work[i] != -1) {
+                    if (work[i] >= -2) {//if (!flag && work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
