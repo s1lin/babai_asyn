@@ -133,7 +133,7 @@ namespace cils {
 
                     }
                 }
-                if (count >= ds - stop) {
+                if (count >= ds - stop && j > 0) {
                     num_iter = j < num_iter ? j : num_iter;
                     flag = true;
                 }
