@@ -357,15 +357,15 @@ namespace cils {
 
 #pragma omp simd reduction(+ : sum)
             for (index col = n - i; col < n; col++)
-                sum += R_A->x[nj + col] * z_p[col];
+                sum += R_A->x[nj + col] * z_x[col];
 
             z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
 
-            if (abs(z_x[ni] - z_p[ni]) != 0) {
-                z_p[ni] = z_x[ni];
-                u_p[ni] = -1;
-            } else
-                u_p[ni] = 1;
+//            if (abs(z_x[ni] - z_p[ni]) != 0) {
+//                z_p[ni] = z_x[ni];
+//                u_p[ni] = -1;
+//            } else
+//                u_p[ni] = 0;
         }
 
 

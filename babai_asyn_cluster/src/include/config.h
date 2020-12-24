@@ -8,9 +8,10 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <iostream>
 
 #define N_4096 (4096)
-
+#define VERBOSE (0)
 
 using namespace std;
 
@@ -18,13 +19,13 @@ namespace cils {
     typedef int index;
     typedef double scalar;
     namespace program_def {
-        index k = 1;
+        index k = 3;
         index SNR = 35;
         index num_trials = 10; //nswp
         index max_iter = 4;
-        index search_iter = 2;
-        index stop = 20;
-        index schedule = 2;
+        index search_iter = 3;
+        index stop = 10;
+        index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
@@ -63,9 +64,9 @@ namespace cils {
         void init_guess(index init_value, vector<index> *z_B, vector<index> *x_R) {
             if (init_value == 0) {
                 z_B->assign(N_4096, 0);
-            } else if (init_value == -1)
+            } else if (init_value == -1) {
                 copy(z_B->begin(), z_B->end(), x_R->begin());
-            else if (init_value == 1)
+            } else if (init_value == 1)
                 z_B->assign(N_4096, std::pow(2, k) / 2);
         }
     }

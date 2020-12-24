@@ -79,30 +79,35 @@ namespace cils {
 
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
+        auto *work = new index[ds]();
         bool flag = false;
 
-        index num_iter = 0, n_dx_q_0, n_dx_q_1, s = n_proc;
-        scalar nres = INFINITY, sum = 0, res = 0, diff = 20, run_time;
-        omp_set_schedule((omp_sched_t) schedule, chunk_size);
+        index num_iter = nswp, n_dx_q_0, n_dx_q_1, s = n_proc, count = 0, row_n;
+        scalar nres = INFINITY, sum = 0, res = 0, run_time;
+
+        omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(nres, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             auto *y_b = new scalar[dx]();
             auto *x_b = new index[dx]();
+            nres = INFINITY;
+            res = 0;
 #pragma omp barrier
-            for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(runtime) nowait
+            for (index j = 0; j < nswp && !flag; j++) {//
+#pragma omp for schedule(runtime) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (i <= s && !flag) {
+                    if (work[i] >= -1 && !flag) {//if (!flag && work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
                         if (i != 0) {
                             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                                 sum = 0;
+                                row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
                                 for (index col = n_dx_q_1; col < n; col++) {
-                                    sum += R_A->x[(n * row) + col - ((row * (row + 1)) / 2)] * z_x[col];
+                                    sum += R_A->x[row_n + col] * z_x[col];
                                 }
                                 y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
@@ -112,30 +117,30 @@ namespace cils {
                                 y_b[l - n_dx_q_0] = y_A->x[l];
                         }
 
-                        res += ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
-#pragma omp simd //reduction(+ : diff)
+                        nres = ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, x_b);
+#pragma omp simd
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             z_x[row] = x_b[row - n_dx_q_0];
-//                            diff += z_x[row] == z_p[row] ? 0 : 1;
+//                            sum += z_x[row] == z_p[row] ? 0 : 1;
 //                            z_p[row] = x_b[row - n_dx_q_0];
                         }
-                        s++;
+                        if (abs(res - nres) < 1) {
+                            work[i]--;
+                            count++;
+                        } else {
+                            res = nres;
+                        }
+
                     }
                 }
-#pragma omp master
-                {
-                    if (abs(nres - std::sqrt(res)) < stop) {
-                        num_iter = j;
-                        flag = true;
-                    } else {
-                        nres = std::sqrt(res);
-                    }
-                    //diff = 0;
+                if (count >= ds - stop) {
+                    num_iter = j < num_iter ? j : num_iter;
+                    flag = true;
                 }
             }
 #pragma omp master
             {
-                run_time = omp_get_wtime();
+                run_time = omp_get_wtime() - start;
 //                cout << omp_get_thread_num() << " " << find_residual<scalar, index, n>(R_A, y_A, z_B) << " ";
             }
 
@@ -145,11 +150,12 @@ namespace cils {
 
         scalar run_time2 = omp_get_wtime() - start;
 #ifdef VERBOSE //1
-        printf("%.3f, %.3f, %.3f", run_time2, run_time2 / (run_time - start));
+        printf("%.3f, %.3f, ", run_time, run_time / run_time2);
 #endif
-        returnType<scalar, index> reT = {z_B, run_time - start, num_iter};
+        returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
         delete[] z_p;
+        delete[] work;
         return reT;
     }
 }
