@@ -1,7 +1,3 @@
-//
-// Created by shilei on 2020-12-18.
-//
-
 #ifndef CILS_CONFIG_H
 #define CILS_CONFIG_H
 
@@ -19,9 +15,9 @@ namespace cils {
     typedef int index;
     typedef double scalar;
     namespace program_def {
+
         index k = 3;
         index SNR = 35;
-        index num_trials = 8; //nswp
         index max_iter = 4;
         index search_iter = 3;
         index stop = 30;
@@ -30,16 +26,17 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;
+        index mode = 2;
+        index num_trials = 8; //nswp
+        index is_local = 1;
+
         index min_proc = 4;
         index max_proc = omp_get_max_threads();
-        index mode = 2;
-        index is_local = true;
         index max_search = 1000;
 
         string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
         string prefix = is_local ? "../../" : "";
         std::vector<index> d(N_4096 / block_size, block_size), d_s(N_4096 / block_size, block_size);
-
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
@@ -57,6 +54,7 @@ namespace cils {
                 num_trials = stoi(argv[12]);
                 is_local = stoi(argv[13]);
             }
+            prefix = is_local ? "../../" : "";
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }
