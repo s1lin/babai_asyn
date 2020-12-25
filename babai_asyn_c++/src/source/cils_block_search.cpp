@@ -99,24 +99,24 @@ namespace cils {
             for (index i = 0; i < ds; i++) {
                 n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                 n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-//                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
-//                if (prob < 0.8) {
-                if (i != 0) {
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                        sum = 0;
-                        row_n = (n * row) - ((row * (row + 1)) / 2);
+                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
+                if (prob < 0.8) {
+                    if (i != 0) {
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                            sum = 0;
+                            row_n = (n * row) - ((row * (row + 1)) / 2);
 
-                        for (index col = n_dx_q_1; col < n; col++) {
-                            sum += R_A->x[row_n + col] * z_x[col];
+                            for (index col = n_dx_q_1; col < n; col++) {
+                                sum += R_A->x[row_n + col] * z_x[col];
+                            }
+                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                         }
-                        y_b[row - n_dx_q_0] = y_A->x[row] - sum;
-                    }
-                } else
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                        y_b[l - n_dx_q_0] = y_A->x[l];
+                    } else
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                            y_b[l - n_dx_q_0] = y_A->x[l];
 
-                ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, z_x);
-//                }
+                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                }
             }
 
             for (index j = 0; j < nswp && !flag; j++) {
@@ -141,7 +141,7 @@ namespace cils {
                             for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                                 y_b[l - n_dx_q_0] = y_A->x[l];
 
-                        res = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                        res = ils_search_omp(n_dx_q_0, n_dx_q_1, j == 0, y_b, z_x);
 
                         if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
                             work[i] = -1;

@@ -452,8 +452,6 @@ namespace cils {
                     }
                 }
             }
-            if (is_first)
-                return count;
             return beta;
         }
 
