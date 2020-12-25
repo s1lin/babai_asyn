@@ -376,8 +376,8 @@ namespace cils {
          * @param y
          * @return
          */
-        inline scalar ils_search_omp(const index n_dx_q_0,
-                                     const index n_dx_q_1, const scalar *y_B, index *z_x) {
+        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const bool is_first,
+                                     const scalar *y_B, index *z_x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -400,7 +400,8 @@ namespace cils {
 
             //ILS search process
             while (true) {
-//                count++;
+#pragma omp atomic
+                count++;
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -431,7 +432,8 @@ namespace cils {
                         }
 #pragma omp atomic
                         iter++;
-                        if (iter > program_def::search_iter) break;
+                        if (iter > program_def::search_iter || is_first) break;
+                        if (count > program_def::max_search) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
@@ -450,8 +452,8 @@ namespace cils {
                     }
                 }
             }
-//            if (count > 1000) cout << n_dx_q_1 << endl;
-//            if (n_dx_q_1 == 3296) cout << count << endl;
+            if (is_first)
+                return count;
             return beta;
         }
 
