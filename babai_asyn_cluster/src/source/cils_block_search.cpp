@@ -89,7 +89,7 @@ namespace cils {
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, s = n_proc, row_n;
         scalar sum = 0, run_time, res;
 
-        omp_set_schedule((omp_sched_t) schedule, n_proc);
+        omp_set_schedule((omp_sched_t) schedule, block_size);
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(y_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
@@ -121,7 +121,7 @@ namespace cils {
             for (index j = 0; j < nswp; j++) {// && count <= 200
 #pragma omp for schedule(runtime) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (work[i] != -1) {
+//                    if (work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -142,16 +142,16 @@ namespace cils {
 
                         res = ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
 
-                        if (abs(res - nres[i]) < 1) {
-//                            work[i] = -1;
+                        if (abs(res - nres[i]) < 1 && work[i] != -1) {
+                            work[i] = -1;
 #pragma omp atomic
                             count++;
                         } else {
                             nres[i] = res;
                         }
                     }
-                }
-                if (count >= 100) {
+//                }
+                if (count >= 200) {
                     num_iter = j;
                     break;
                 }
