@@ -94,12 +94,12 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(y_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
-#pragma omp for
+#pragma omp for schedule(runtime) nowait
             for (index i = 0; i < ds; i++) {
                 n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                 n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-//                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
-//                if (prob < 0.5) {
+                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
+                if (prob < 0.8) {
                     if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
@@ -115,13 +115,13 @@ namespace cils {
                             y_b[l - n_dx_q_0] = y_A->x[l];
 
                     ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
-//                }
+                }
             }
 
             for (index j = 0; j < nswp && !flag; j++) {// && count <= 200
 #pragma omp for schedule(runtime) nowait //
                 for (index i = 0; i < ds; i++) {
-//                    if (work[i] != -1) {
+                    if (work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -150,8 +150,8 @@ namespace cils {
                             nres[i] = res;
                         }
                     }
-//                }
-                if (count >= 200) {
+                }
+                if (count >= 150) {
                     num_iter = j;
                     flag = true;
                 }
