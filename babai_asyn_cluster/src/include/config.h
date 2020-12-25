@@ -34,7 +34,7 @@ namespace cils {
         index max_proc = omp_get_max_threads();
         index mode = 2;
         index is_local = false;
-        index max_search = 1000;
+        index max_search = 700;
 
         string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
         string prefix = is_local ? "../../" : "";
