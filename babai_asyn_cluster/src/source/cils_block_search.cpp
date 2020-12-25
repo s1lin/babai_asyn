@@ -158,16 +158,16 @@ namespace cils {
                     }
                 }
             }
-//#pragma omp master
-//            {
-//                run_time = omp_get_wtime() - start;
-//            }
+#pragma omp master
+            {
+                run_time = omp_get_wtime() - start;
+            }
         }
         scalar run_time2 = omp_get_wtime() - start;
 
-//#ifdef VERBOSE //1
-//        printf("%d, %d, %.3f, %.3f, ", ds, count, run_time, run_time / run_time2);
-//#endif
+#ifdef VERBOSE //1
+        printf("%d, %d, %.3f, %.3f, ", ds, count, run_time, run_time / run_time2);
+#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
         delete[] z_p;
