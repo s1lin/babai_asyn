@@ -19,7 +19,7 @@ namespace cils {
     typedef int index;
     typedef double scalar;
     namespace program_def {
-        index k = 1;
+        index k = 3;
         index SNR = 35;
         index num_trials = 10; //nswp
         index max_iter = 4;
