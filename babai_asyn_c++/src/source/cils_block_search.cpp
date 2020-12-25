@@ -120,7 +120,7 @@ namespace cils {
 
             for (index j = 0; j < nswp; j++) {// && count <= 200
 #pragma omp for schedule(runtime) nowait //
-                for (index i = 1; i < ds; i++) {
+                for (index i = 0; i < ds; i++) {
                     if (work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
@@ -142,19 +142,19 @@ namespace cils {
 
                         res = ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
 
-//                        if (j > 2 && abs(res - nres[i]) > 1e3 && work[i] != -1) {
+                        if (abs(res - nres[i]) < 1) {
 //                            work[i] = -1;
-//#pragma omp atomic
-//                            count++;
-//                        } else {
-//                            nres[i] = res;
-//                        }
+#pragma omp atomic
+                            count++;
+                        } else {
+                            nres[i] = res;
+                        }
                     }
                 }
-//                if (count >= 20) {
-//                    num_iter = j < num_iter ? j : num_iter;
-//                    flag = true;
-//                }
+                if (count >= 100) {
+                    num_iter = j;
+                    break;
+                }
             }
 #pragma omp master
             {
