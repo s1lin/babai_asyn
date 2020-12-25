@@ -21,7 +21,7 @@ namespace cils {
     namespace program_def {
         index k = 3;
         index SNR = 35;
-        index num_trials = 10; //nswp
+        index num_trials = 5; //nswp
         index max_iter = 4;
         index search_iter = 3;
         index stop = 10;

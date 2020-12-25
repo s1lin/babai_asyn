@@ -21,11 +21,11 @@ namespace cils {
     namespace program_def {
         index k = 3;
         index SNR = 35;
-        index num_trials = 10; //nswp
+        index num_trials = 5; //nswp
         index max_iter = 4;
         index search_iter = 3;
         index stop = 10;
-        index schedule = 1;
+        index schedule = 2;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;

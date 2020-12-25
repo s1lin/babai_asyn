@@ -224,12 +224,12 @@ namespace cils {
     inline scalar find_success_prob_babai(const scalarType<scalar, index> *R_B,
                                           const index row_begin, const index row_end,
                                           const index block_size, const scalar sigma) {
-        scalar y = 1;
+        scalar p = 1;
         for (index row = row_begin; row < row_end; row++) {
             index i = (block_size * row) + row - ((row * (row + 1)) / 2);
-            y = y * erf(abs(R_B->x[i]) / 2 / sigma / sqrt(2));
+            p = p * erf(abs(R_B->x[i]) / 2 / sigma / sqrt(2));
         }
-        return y;
+        return p;
     }
 
     /**
@@ -376,13 +376,15 @@ namespace cils {
          * @param y
          * @return
          */
-        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const scalar *y_B, index *x) {
+        inline scalar ils_search_omp(const index n_dx_q_0,
+                                     const index n_dx_q_1, const scalar *y_B, index *z_x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
 
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
-            index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, row_k_end = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
+            index count = 0, end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, row_k_end =
+                    (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
             scalar p[dx], c[dx];
             index z[dx], d[dx];
@@ -398,6 +400,7 @@ namespace cils {
 
             //ILS search process
             while (true) {
+//                count++;
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -424,7 +427,7 @@ namespace cils {
                         beta = newprsd;
 #pragma omp simd
                         for (index l = 0; l < dx; l++) {
-                            x[l] = z[l];
+                            z_x[l + n_dx_q_0] = z[l];
                         }
 #pragma omp atomic
                         iter++;
@@ -447,6 +450,8 @@ namespace cils {
                     }
                 }
             }
+//            if (count > 1000) cout << n_dx_q_1 << endl;
+//            if (n_dx_q_1 == 3296) cout << count << endl;
             return beta;
         }
 
@@ -532,7 +537,7 @@ namespace cils {
         }
 
     public:
-        cils(index qam, index snr){
+        cils(index qam, index snr) {
             this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
