@@ -102,7 +102,7 @@ void plot_run() {
             ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             ser_tim[init + 1] += reT.run_time;
             index l = 0;
-            for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
+            for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
                 init_guess(init, &z_B, &cils.x_R);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
@@ -132,7 +132,7 @@ void plot_run() {
                block_size, ser_res[init + 1] / num_trials, ser_ber[init + 1] / num_trials, ser_tim[init + 1],
                ser_tim[init + 1] / num_trials);
         index l = 0;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
                    n_proc, omp_res[init + 1 + 3 * l] / num_trials, omp_ber[init + 1 + 3 * l] / num_trials,

@@ -32,7 +32,7 @@ namespace cils {
         index is_nc = false;
         index min_proc = 4;
         index max_proc = omp_get_max_threads();
-        index mode = 2;
+        index mode = 1;
         index is_local = true;
         index max_search = 500;
 
