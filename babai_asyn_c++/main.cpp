@@ -94,6 +94,7 @@ void run_test(int argc, char *argv[]) {
     program_def::min_proc = max_proc == 48? 12 : 4;
     program_def::init_program_def(argc, argv);
 
+
     switch (program_def::mode) {
         case 0:
             plot_res<scalar, int, N_4096>();

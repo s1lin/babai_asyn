@@ -85,15 +85,17 @@ namespace cils {
         index count = 0, search_count = 0;
         bool flag = false;
         auto *y_b = new scalar[dx]();
+        auto *x_b = new index[dx]();
 
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, s = n_proc, row_n, iter;
         scalar sum = 0, run_time, res;
 
         omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
+            x_b = new index[dx]();
 #pragma omp for nowait
             for (index i = 0; i < ds; i++) {
                 n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
@@ -114,7 +116,11 @@ namespace cils {
                     for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                         y_b[l - n_dx_q_0] = y_A->x[l];
 
-                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, z_x);
+                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
+#pragma omp simd
+                    for (index l = 0; l < dx; l++) {
+                        z_x[l + n_dx_q_0] = x_b[l];
+                    }
                 }
             }
 //#pragma omp barrier
@@ -140,7 +146,11 @@ namespace cils {
                             for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                                 y_b[l - n_dx_q_0] = y_A->x[l];
 
-                        res = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, x_b);
+#pragma omp simd
+                    for (index l = 0; l < dx; l++) {
+                        z_x[l + n_dx_q_0] = x_b[l];
+                    }
 
 //                        if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
 //                            work[i] = -1;
