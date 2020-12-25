@@ -89,7 +89,7 @@ namespace cils {
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, s = n_proc, row_n, iter;
         scalar sum = 0, run_time, res;
 
-        omp_set_schedule((omp_sched_t) schedule, 1);
+        omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(y_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
@@ -105,23 +105,23 @@ namespace cils {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
 
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                sum += R_A->x[row_n + col] * z_x[col];
-                            }
-                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                        for (index col = n_dx_q_1; col < n; col++) {
+                            sum += R_A->x[row_n + col] * z_x[col];
                         }
-                    } else
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                            y_b[l - n_dx_q_0] = y_A->x[l];
+                        y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                    }
+                } else
+                    for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                        y_b[l - n_dx_q_0] = y_A->x[l];
 
-                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, z_x);
                 }
             }
-#pragma omp barrier
+//#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait //
+#pragma omp for schedule(dynamic, n_proc) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (work[i] != -1) {
+//                    if (work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                         n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                         //The block operation
@@ -140,23 +140,23 @@ namespace cils {
                             for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                                 y_b[l - n_dx_q_0] = y_A->x[l];
 
-                        res = ils_search_omp(n_dx_q_0, n_dx_q_1, j == 0, y_b, z_x);
+                        res = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
 
-                        if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
-                            work[i] = -1;
-                            count++;
-                        } else {
-                            nres[i] = res;
-                        }
-                    }
+//                        if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
+//                            work[i] = -1;
+////                            count++;
+//                        } else {
+//                            nres[i] = res;
+//                        }
+//                    }
                 }
-#pragma omp master
-                {
-                    if (count >= ds - stop) {
-                        num_iter = j;
-                        flag = true;
-                    }
-                }
+//#pragma omp master
+//                {
+//                    if (count >= ds - stop) {
+//                        num_iter = j;
+//                        flag = true;
+//                    }
+//                }
             }
 #pragma omp master
             {

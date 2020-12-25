@@ -328,7 +328,7 @@ namespace cils {
         index qam, snr;
         scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index> *R_A, *y_A;
+        scalarType<scalar, index> *R_A, *y_A, *A;
 //        Eigen::MatrixXd A, R, Q;
 //        Eigen::VectorXd y, x_tV;
     private:
@@ -433,7 +433,7 @@ namespace cils {
 #pragma omp atomic
                         iter++;
                         if (iter > program_def::search_iter || is_first) break;
-                        if (count > program_def::max_search) break;
+//                        if (!is_first && count > program_def::max_search) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
