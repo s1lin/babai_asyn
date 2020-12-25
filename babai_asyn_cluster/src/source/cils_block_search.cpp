@@ -119,7 +119,7 @@ namespace cils {
             }
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, n_proc) nowait //
+#pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
 //                    if (work[i] != -1) {
                         n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
