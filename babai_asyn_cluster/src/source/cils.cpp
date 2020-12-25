@@ -5,11 +5,10 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <chrono>
+//#include <lapack.h>
 
 #define ERRCODE 2
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
-
-#define VERBOSE_LEVEL = 1;
 
 using namespace std;
 using namespace cils::program_def;
@@ -48,9 +47,9 @@ namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
     void cils<scalar, index, is_read, n>::read_csv(bool is_qr) {
-        string fy = is_qr ?  prefix + "data/y_" + suffix + ".csv" : prefix + "data/new_y_" + suffix + ".csv";
-        string fx = is_qr ?  prefix + "data/x_" + suffix + ".csv" : prefix + "data/new_x_" + suffix + ".csv";
-        string fR = is_qr ?  prefix + "data/R_A_" + suffix + ".csv" : prefix + "data/new_R_A_" + suffix + ".csv";
+        string fy = is_qr ? prefix + "data/y_" + suffix + ".csv" : prefix + "data/new_y_" + suffix + ".csv";
+        string fx = is_qr ? prefix + "data/x_" + suffix + ".csv" : prefix + "data/new_x_" + suffix + ".csv";
+        string fR = is_qr ? prefix + "data/R_A_" + suffix + ".csv" : prefix + "data/new_R_A_" + suffix + ".csv";
         string fxR = is_qr ? prefix + "data/x_R_" + suffix + ".csv" : prefix + "data/new_x_R_" + suffix + ".csv";
 
         index i = 0;
@@ -101,19 +100,17 @@ namespace cils {
             else read_nc(filename);
 
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
-        }
-        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
-        scalar end_time = omp_get_wtime() - start;
-        printf("Finish Init, time: %.5f seconds\n", end_time);
-//      else {
-//            std::random_device rd;
-//            std::mt19937 gen(rd());
-//            //mean:0, std:sqrt(1/2). same as matlab.
-//            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
-//            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-//            std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
-//
-//            this->A = MatrixXd::Zero(n, n).unaryExpr([&](double dummy) { return A_norm_dis(gen); });
+        } else {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            //mean:0, std:sqrt(1/2). same as matlab.
+            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
+            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+            std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
+            this->A->x = new scalar[n * n]();
+            this->A->size = n * n;
+
+//            this->A->x = unaryExpr([&](double dummy) { return A_norm_dis(gen); });
 ////            this->R = A.householderQr().matrixQR().triangularView<Eigen::Upper>();
 //            this->Q = A.householderQr().householderQ();
 //            this->x_tV = VectorXd::Zero(n).unaryExpr([&](int dummy) { return static_cast<double>(int_dis(gen)); });
@@ -133,6 +130,10 @@ namespace cils {
 //                x_t[i] = round(x_tV[i]);
 //            }
 //            this->x_R = *cils_back_solve(&x_R).x;
+        }
+        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
+        scalar end_time = omp_get_wtime() - start;
+        printf("Finish Init, time: %.5f seconds\n", end_time);
 
     }
 

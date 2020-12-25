@@ -21,18 +21,18 @@ namespace cils {
     namespace program_def {
         index k = 3;
         index SNR = 35;
-        index num_trials = 10; //nswp
+        index num_trials = 8; //nswp
         index max_iter = 4;
         index search_iter = 3;
         index stop = 30;
-        index schedule = 2;
+        index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;
         index min_proc = 4;
         index max_proc = omp_get_max_threads();
-        index mode = 1;
+        index mode = 2;
         index is_local = false;
         index max_search = 500;
 
