@@ -433,7 +433,7 @@ namespace cils {
 #pragma omp atomic
                         iter++;
                         if (iter > program_def::search_iter || is_first) break;
-                        if (!is_first && count > program_def::max_search) break;
+//                        if (!is_first && count > program_def::max_search) break;
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
