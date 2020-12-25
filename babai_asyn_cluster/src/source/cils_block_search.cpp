@@ -151,7 +151,7 @@ namespace cils {
                         }
                     }
 //                }
-                if (count >= 150) {
+                if (count >= 200) {
                     num_iter = j;
                     flag = true;
                 }
