@@ -432,7 +432,7 @@ namespace cils {
                         }
 #pragma omp atomic
                         iter++;
-                        if (iter > program_def::search_iter) break;
+//                        if (iter > program_def::search_iter) break;
 //                        if (!is_first && count > program_def::max_search) break;
 
                         z[0] += d[0];
@@ -452,6 +452,7 @@ namespace cils {
                     }
                 }
             }
+            if(is_first) return count;
             return beta;
         }
 

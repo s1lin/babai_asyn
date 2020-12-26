@@ -72,7 +72,7 @@ namespace cils {
                                                            const index stop, const index schedule,
                                                            const vector<index> *d,
                                                            vector<index> *z_B) {
-        index ds = d->size(), dx = d->at(ds - 1);
+        index ds = d->size(), dx = d->at(ds - 1), tt = 0;
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(d, z_B);
         }
@@ -81,67 +81,74 @@ namespace cils {
         auto *z_p = new index[n]();
         auto *work = new index[ds]();
         auto *nres = new scalar[ds]();
-        auto *p = new index[ds]();
+        auto *p = new index[n_proc][70]();
         index count = 0, search_count = 0;
         bool flag = false;
         auto *y_b = new scalar[dx]();
         auto *x_b = new index[dx]();
-
-        index num_iter = nswp, n_dx_q_0, n_dx_q_1, s = n_proc, row_n, iter;
+        index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt;
         scalar sum = 0, run_time, res;
 
         omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, pitt, tt, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
-#pragma omp for nowait
+            tt = 0;
+#pragma omp barrier
+#pragma omp for schedule(dynamic)
             for (index i = 0; i < ds; i++) {
                 n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                 n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
-                if (prob > 0.8 || i == 0) {
-                    if (i != 0) {
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            sum = 0;
-                            row_n = (n * row) - ((row * (row + 1)) / 2);
+//                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
+//                if (prob > 0.8 || i == 0) {
+                if (i != 0) {
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        sum = 0;
+                        row_n = (n * row) - ((row * (row + 1)) / 2);
 
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                sum += R_A->x[row_n + col] * z_x[col];
-                            }
-                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                        for (index col = n_dx_q_1; col < n; col++) {
+                            sum += R_A->x[row_n + col] * z_x[col];
                         }
-                    } else
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                            y_b[l - n_dx_q_0] = y_A->x[l];
-
-                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
-
-#pragma omp simd
-                    for (index l = 0; l < dx; l++) {
-                        z_x[l + n_dx_q_0] = x_b[l];
+                        y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                     }
+                } else
+                    for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                        y_b[l - n_dx_q_0] = y_A->x[l];
+
+                p[omp_get_thread_num()][tt] = i;
+                tt++;
+                work[omp_get_thread_num()] = tt;
+                ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
+#pragma omp simd
+                for (index l = 0; l < dx; l++) {
+                    z_x[l + n_dx_q_0] = x_b[l];
                 }
+//                }
             }
 
-//#pragma omp barrier
-            for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait //
-                for (index i = 1; i < ds; i++) {
-                    if (i <= s) {
-                        n_dx_q_0 = n - d->at(ds - 1 - i);
-                        n_dx_q_1 = n - d->at(ds - i);
+            for (index j = 0; j < nswp; j++) {
+#pragma omp for schedule(static) nowait //
+                for (index i = 0; i < n_proc; i++) {
+                    for (index s = 0; s < work[i]; s++) {
+                        pitt = p[i][s];
+                        n_dx_q_0 = pitt == 0 ? n - dx : n - d->at(ds - 1 - pitt);
+                        n_dx_q_1 = pitt == 0 ? n : n - d->at(ds - pitt);
                         //The block operation
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            sum = 0;
-                            row_n = (n * row) - ((row * (row + 1)) / 2);
-#pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                sum += R_A->x[row_n + col] * z_x[col];
+                        if (pitt != 0) {
+                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                                sum = 0;
+                                row_n = (n * row) - ((row * (row + 1)) / 2);
+
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    sum += R_A->x[row_n + col] * z_x[col];
+                                }
+                                y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                             }
-                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
-                        }
+                        } else
+                            for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                                y_b[l - n_dx_q_0] = y_A->x[l];
 
                         nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, x_b);
 #pragma omp simd
@@ -155,8 +162,9 @@ namespace cils {
 ////                            count++;
 //                        } else {
 //                            nres[i] = res;
-                        s+=n_proc;
+//                    s += n_proc;
                     }
+//                    }
 //                    }
                 }
 //#pragma omp master
@@ -179,6 +187,14 @@ namespace cils {
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
+//        for (index i = 0; i < n_proc; i++) {
+//            for (index j = 0; j < work[i]; j++) {
+//                index pitt = p[i][j];
+//                n_dx_q_0 = pitt == 0 ? n - dx : n - d->at(ds - 1 - pitt);
+//                n_dx_q_1 = pitt == 0 ? n : n - d->at(ds - pitt);
+//                cout << pitt << "," << n_dx_q_0 << "," << n_dx_q_1 << "\n";
+//            }
+//        }
         delete[] z_p;
         delete[] work;
         delete[] nres;
