@@ -96,35 +96,6 @@ namespace cils {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
 #pragma omp barrier
-#pragma omp for nowait
-            for (index i = 0; i < ds; i++) {
-                n_dx_q_0 = n - (i + 1) * dx;
-                n_dx_q_1 = n - i * dx;
-//                scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
-//                if (prob > 0.8 || i == 0) {
-                if (i != 0) {
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                        sum = 0;
-                        row_n = (n * row) - ((row * (row + 1)) / 2);
-
-                        for (index col = n_dx_q_1; col < n; col++) {
-                            sum += R_A->x[row_n + col] * z_x[col];
-                        }
-                        y_b[row - n_dx_q_0] = y_A->x[row] - sum;
-                    }
-                } else
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                        y_b[l - n_dx_q_0] = y_A->x[l];
-
-                ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
-
-#pragma omp simd
-                for (index l = 0; l < dx; l++) {
-                    z_x[l + n_dx_q_0] = x_b[l];
-                }
-//                }
-            }
-
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
@@ -182,14 +153,6 @@ namespace cils {
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
-//        for (index i = 0; i < n_proc; i++) {
-//            for (index j = 0; j < work[i]; j++) {
-//                index pitt = p[i][j];
-//                n_dx_q_0 = pitt == 0 ? n - dx : n - d->at(ds - 1 - pitt);
-//                n_dx_q_1 = pitt == 0 ? n : n - d->at(ds - pitt);
-//                cout << pitt << "," << n_dx_q_0 << "," << n_dx_q_1 << "\n";
-//            }
-//        }
         delete[] z_p;
         delete[] work;
         delete[] nres;

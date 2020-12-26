@@ -75,7 +75,7 @@ void plot_run() {
     cils::returnType<scalar, index> reT;
     cils.init(is_qr, is_nc);
 
-    for (index p = 0; p < num_trials; p++) {
+    for (index p = 0; p < max_iter; p++) {
         if (p == 0) {
             printf("init_res: %.5f, sigma: %.5f\n", cils.init_res, cils.sigma);
         }
@@ -106,7 +106,7 @@ void plot_run() {
                 init_guess(init, &z_B, &cils.x_R);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
-                reT = cils.cils_block_search_omp(n_proc, max_iter, stop, schedule, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc, num_trials, stop, schedule, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
