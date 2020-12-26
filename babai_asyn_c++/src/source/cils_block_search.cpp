@@ -101,63 +101,62 @@ namespace cils {
                 n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
                 n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
                 scalar prob = find_success_prob_babai(R_A, n_dx_q_0, n_dx_q_1, n, sigma);
-                if (prob < 0.8) {
+                if (prob > 0.8 || i == 0) {
                     if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
 
-                        for (index col = n_dx_q_1; col < n; col++) {
-                            sum += R_A->x[row_n + col] * z_x[col];
+                            for (index col = n_dx_q_1; col < n; col++) {
+                                sum += R_A->x[row_n + col] * z_x[col];
+                            }
+                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                         }
-                        y_b[row - n_dx_q_0] = y_A->x[row] - sum;
-                    }
-                } else
-                    for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                        y_b[l - n_dx_q_0] = y_A->x[l];
+                    } else
+                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                            y_b[l - n_dx_q_0] = y_A->x[l];
 
                     nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
+
 #pragma omp simd
                     for (index l = 0; l < dx; l++) {
                         z_x[l + n_dx_q_0] = x_b[l];
                     }
                 }
             }
+
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait //
-                for (index i = 0; i < ds; i++) {
-//                    if (work[i] != -1) {
-                        n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
-                        n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+                for (index i = 1; i < ds; i++) {
+                    if (i <= s) {
+                        n_dx_q_0 = n - d->at(ds - 1 - i);
+                        n_dx_q_1 = n - d->at(ds - i);
                         //The block operation
-                        if (i != 0) {
-                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                                sum = 0;
-                                row_n = (n * row) - ((row * (row + 1)) / 2);
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                            sum = 0;
+                            row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
-                                for (index col = n_dx_q_1; col < n; col++) {
-                                    sum += R_A->x[row_n + col] * z_x[col];
-                                }
-                                y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                            for (index col = n_dx_q_1; col < n; col++) {
+                                sum += R_A->x[row_n + col] * z_x[col];
                             }
-                        } else
-#pragma omp simd
-                            for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                                y_b[l - n_dx_q_0] = y_A->x[l];
+                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                        }
 
-                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, x_b);
+                        nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, x_b);
 #pragma omp simd
-                    for (index l = 0; l < dx; l++) {
-                        z_x[l + n_dx_q_0] = x_b[l];
-                    }
-
+                        for (index l = 0; l < dx; l++) {
+                            z_x[l + n_dx_q_0] = x_b[l];
+                        }
+//                        if (i == work[0] + 1)
+//                            work[0] = i;
 //                        if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
 //                            work[i] = -1;
 ////                            count++;
 //                        } else {
 //                            nres[i] = res;
-//                        }
+                        s+=n_proc;
+                    }
 //                    }
                 }
 //#pragma omp master
