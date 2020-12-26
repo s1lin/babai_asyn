@@ -86,12 +86,12 @@ namespace cils {
         bool flag = false;
         auto *y_b = new scalar[dx]();
         auto *x_b = new index[dx]();
-        index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt;
+        index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
         scalar sum = 0, run_time, res;
 
         omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, pitt, res, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
@@ -99,6 +99,7 @@ namespace cils {
             for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
+
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     //The block operation
@@ -121,16 +122,7 @@ namespace cils {
                     for (index l = 0; l < dx; l++) {
                         z_x[l + n_dx_q_0] = x_b[l];
                     }
-//                        if (i == work[0] + 1)
-//                            work[0] = i;
-//                        if (abs(res - nres[i]) < 1e-1 && work[i] != -1) {
-//                            work[i] = -1;
-////                            count++;
-//                        } else {
-//                            nres[i] = res;
-//                    s += n_proc;
 
-//                    }
 //                    }
                 }
 //#pragma omp master

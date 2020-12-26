@@ -126,18 +126,18 @@ void plot_run() {
         std::cout << "Block, size: " << block_size << std::endl;
         std::cout << "Init, value: " << init << std::endl;
         printf("Method: BBA_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
-               block_size, bab_res[init + 1] / num_trials, bab_ber[init + 1] / num_trials, bab_tim[init + 1],
-               bab_tim[init + 1] / num_trials);
+               block_size, bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1],
+               bab_tim[init + 1] / max_iter);
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs, Avg Time: %.5fs\n",
-               block_size, ser_res[init + 1] / num_trials, ser_ber[init + 1] / num_trials, ser_tim[init + 1],
-               ser_tim[init + 1] / num_trials);
+               block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
+               ser_tim[init + 1] / max_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             n_proc = n_proc == 96 ? 64 : n_proc;
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
-                   n_proc, omp_res[init + 1 + 3 * l] / num_trials, omp_ber[init + 1 + 3 * l] / num_trials,
-                   omp_itr[init + 1 + 3 * l] / num_trials,
-                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / num_trials,
+                   n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
+                   omp_itr[init + 1 + 3 * l] / max_iter,
+                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
                    ser_tim[init + 1] / omp_tim[init + 1 + 3 * l]);
             l++;
         }
