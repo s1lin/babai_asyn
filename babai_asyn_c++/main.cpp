@@ -90,8 +90,8 @@ int mpi_test_2(int argc, char *argv[]) {
 
 void run_test(int argc, char *argv[]) {
     std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    program_def::max_proc = omp_get_max_threads();
-    program_def::min_proc = max_proc == 48? 12 : 4;
+    program_def::max_proc = omp_get_max_threads() - 4;
+    program_def::min_proc = max_proc == 44 ? 8 : 2;
     program_def::init_program_def(argc, argv);
 
 
