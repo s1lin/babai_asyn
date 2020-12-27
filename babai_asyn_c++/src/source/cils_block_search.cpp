@@ -80,7 +80,7 @@ namespace cils {
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
         auto *work = new index[ds]();
-        auto *nres = new scalar[ds]();
+        index nres[nswp + 1][ds + 1];
         auto *p = new index[n_proc][70]();
         index count = 0, search_count = 0;
         bool flag = false;
@@ -89,47 +89,72 @@ namespace cils {
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
         scalar sum = 0, run_time, res;
 
+        for (int i = 0; i < ds; i += 2 * n_proc) {
+            for (int j = i; j < i + n_proc; j++) {
+                work[j] = j;
+            }
+            if (i + 2 * n_proc < ds) {
+                count = i + 2 * n_proc - 1;
+                for (int j = i + n_proc; j < i + 2 * n_proc; j++) {
+                    work[j] = count;
+                    count--;
+                }
+            } else {
+                for (int j = i + n_proc; j < ds; j++) {
+                    work[j] = j;
+                }
+            }
+        }
+        for (int i = 0; i < ds; i++) {
+            cout << work[i] << " ";
+        }
+        cout << endl;
+
         omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, count, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
 #pragma omp barrier
-            for (index j = 0; j < nswp; j++) {
-#pragma omp for schedule(dynamic) nowait //
+            for (index j = 0; j < nswp; j++) {//&& res < stop
+#pragma omp for schedule(static, 1) nowait //
                 for (index i = 0; i < ds; i++) {
-                    n_dx_q_0 = n - (i + 1) * dx;
-                    n_dx_q_1 = n - i * dx;
+                    count = 0;
+                    n_dx_q_0 = n - (work[i] + 1) * dx;
+                    n_dx_q_1 = n - work[i] * dx;
                     //The block operation
-                    if (i != 0) {
+                    if (work[i] != 0) {
+
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
-
+#pragma omp simd reduction(+ : sum)
                             for (index col = n_dx_q_1; col < n; col++) {
                                 sum += R_A->x[row_n + col] * z_x[col];
+                                count++;
                             }
                             y_b[row - n_dx_q_0] = y_A->x[row] - sum;
                         }
                     } else
+#pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                             y_b[l - n_dx_q_0] = y_A->x[l];
-
-                    nres[i] = ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, x_b);
+                    if (j != 0)
+                        nres[j][i] = count + ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
+                    else
+                        nres[j][i] = omp_get_thread_num();
 #pragma omp simd
                     for (index l = 0; l < dx; l++) {
                         z_x[l + n_dx_q_0] = x_b[l];
                     }
-
-//                    }
                 }
 //#pragma omp master
 //                {
-//                    if (count >= ds - stop) {
-//                        num_iter = j;
-//                        flag = true;
-//                    }
+//                    res = std::sqrt(res);
+//                    num_iter = j;
+//                    flag=true;
+////                    cout << res << " ";
 //                }
             }
 #pragma omp master
@@ -140,13 +165,19 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
+        for (index j = 0; j < 2; j++) {
+            for (index i = 0; i < ds; i++) {
+                cout << nres[j][i] << ",";
+            }
+            cout << endl;
+        }
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
         delete[] z_p;
         delete[] work;
-        delete[] nres;
+//        delete[] nres;
         delete[] y_b;
 
         return reT;

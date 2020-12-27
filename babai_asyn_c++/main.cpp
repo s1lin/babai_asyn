@@ -89,9 +89,15 @@ int mpi_test_2(int argc, char *argv[]) {
 }
 
 void run_test(int argc, char *argv[]) {
-    std::cout << "Maximum Threads: " << omp_get_max_threads() << std::endl;
-    program_def::max_proc = omp_get_max_threads() - 4;
-    program_def::min_proc = max_proc == 44 ? 8 : 2;
+    int nThreads = 1;
+#pragma omp parallel
+    {
+        nThreads = omp_get_num_threads();
+    }
+
+    std::cout << "Maximum Threads: " << nThreads << std::endl;
+    program_def::max_proc = 48 - 2;
+    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);
 
 

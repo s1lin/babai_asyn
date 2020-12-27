@@ -18,7 +18,7 @@ namespace cils {
 
         index k = 3;
         index SNR = 35;
-        index max_iter = 4;
+        index max_iter = 1;
         index search_iter = 3;
         index stop = 30;
         index schedule = 1;
@@ -27,7 +27,7 @@ namespace cils {
         index is_qr = true;
         index is_nc = false;
         index mode = 2;
-        index num_trials = 6; //nswp
+        index num_trials = 10; //nswp
         index is_local = 1;
 
         index min_proc = 4;
