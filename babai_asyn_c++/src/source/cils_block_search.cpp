@@ -118,7 +118,7 @@ namespace cils {
             x_b = new index[dx]();
 #pragma omp barrier
             for (index j = 0; j < nswp; j++) {//&& res < stop
-#pragma omp for schedule(static, 1) nowait //
+#pragma omp for schedule(static) nowait //
                 for (index i = 0; i < ds; i++) {
                     count = 0;
                     n_dx_q_0 = n - (work[i] + 1) * dx;
