@@ -189,12 +189,12 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
-        for (index j = 0; j < 2; j++) {
-            for (index i = 0; i < ds; i++) {
-                cout << nres[j][i] << ",";
-            }
-            cout << endl;
-        }
+//        for (index j = 0; j < 2; j++) {
+//            for (index i = 0; i < ds; i++) {
+//                cout << nres[j][i] << ",";
+//            }
+//            cout << endl;
+//        }
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
