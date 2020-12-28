@@ -91,12 +91,12 @@ namespace cils {
 
         int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
         for (int i = 0; i < n_proc; i++) {
-            for (int j = i * gap; j < (i + 1) * gap - gap/2; j++) {
+            for (int j = i * gap; j < (i + 1) * gap - gap/2 && j < ds; j++) {
 //                cout << count << " ";
                 work[j] = count;
                 count++;
             }
-            for (int j = (i + 1) * gap - gap/2; j < (i + 1) * gap; j++) {
+            for (int j = (i + 1) * gap - gap/2; j < (i + 1) * gap && j < ds; j++) {
 //                cout << search_count << " ";
                 work[j] = search_count;
                 search_count--;
@@ -120,14 +120,15 @@ namespace cils {
 
 
         }
-
+//        sort(work, work + ds);
 
         for (int i = 0; i < ds; i++) {
-            cout << work[i] << " ";
+//            if(i != work[i])
+                cout << work[i] << " ";
         }
         cout << endl;
 
-        omp_set_schedule((omp_sched_t) schedule, n_proc);
+//        omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, count, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
