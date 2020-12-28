@@ -89,22 +89,28 @@ namespace cils {
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
         scalar sum = 0, run_time, res;
 
-        for (int i = 0; i < ds; i += 2 * n_proc) {
-            for (int j = i; j < i + n_proc; j++) {
-                work[j] = j;
-            }
-            if (i + 2 * n_proc < ds) {
-                count = i + 2 * n_proc - 1;
-                for (int j = i + n_proc; j < i + 2 * n_proc; j++) {
-                    work[j] = count;
-                    count--;
-                }
-            } else {
-                for (int j = i + n_proc; j < ds; j++) {
-                    work[j] = j;
-                }
-            }
+        for (int i = 0; i < ds; i+=2) {
+//            for (int j = i; j < i + n_proc; j++) {
+//                work[j] = j;
+//            }
+//            if (i + 2 * n_proc < ds) {
+//                count = i + 2 * n_proc - 1;
+//                for (int j = i + n_proc; j < i + 2 * n_proc; j++) {
+//                    work[j] = count;
+//                    count--;
+//                }
+//            } else {
+//                for (int j = i + n_proc; j < ds; j++) {
+//                    work[j] = j;
+//                }
+//            }
+
+            work[i] = count;
+            work[i + 1] = ds - 1 - count;
+            count++;
         }
+
+
         for (int i = 0; i < ds; i++) {
             cout << work[i] << " ";
         }
