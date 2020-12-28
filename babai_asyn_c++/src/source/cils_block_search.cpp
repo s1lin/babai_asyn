@@ -79,7 +79,8 @@ namespace cils {
 
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
-        auto *work = new index[ds]();
+//        auto *work = new index[ds]();
+        vector<index> work(ds);
         index nres[nswp + 1][ds + 1];
         auto *p = new index[n_proc][70]();
         index count = 0, search_count = 255;
@@ -122,27 +123,32 @@ namespace cils {
         }
 //        sort(work, work + ds);
 
-        for (int i = 0; i < ds; i++) {
-//            if(i != work[i])
-                cout << work[i] << " ";
+        for (index i = 0; i < ds; i++){
+            work[i] = i;
         }
-        cout << endl;
 
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
+//        for (int i = 0; i < ds; i++) {
+////            if(i != work[i])
+//            cout << work[i] << " ";
+//        }
 //        omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, count, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             y_b = new scalar[dx]();
             x_b = new index[dx]();
 #pragma omp barrier
             for (index j = 0; j < nswp; j++) {//&& res < stop
-#pragma omp for schedule(static) nowait //
+#pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
+                    pitt = i;//j == 0 ? i : work[i];
                     count = 0;
-                    n_dx_q_0 = n - (work[i] + 1) * dx;
-                    n_dx_q_1 = n - work[i] * dx;
+                    n_dx_q_0 = n - (pitt + 1) * dx;
+                    n_dx_q_1 = n - pitt * dx;
                     //The block operation
-                    if (work[i] != 0) {
+                    if (pitt != 0) {
 
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
@@ -183,18 +189,18 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
-//        for (index j = 0; j < 2; j++) {
-//            for (index i = 0; i < ds; i++) {
-//                cout << nres[j][i] << ",";
-//            }
-//            cout << endl;
-//        }
+        for (index j = 0; j < 2; j++) {
+            for (index i = 0; i < ds; i++) {
+                cout << nres[j][i] << ",";
+            }
+            cout << endl;
+        }
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
         delete[] z_p;
-        delete[] work;
+//        delete[] work;
 //        delete[] nres;
         delete[] y_b;
 
