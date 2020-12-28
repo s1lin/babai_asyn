@@ -27,7 +27,7 @@ namespace cils {
         index is_qr = true;
         index is_nc = false;
         index mode = 2;
-        index num_trials = 10; //nswp
+        index num_trials = 7; //nswp
         index is_local = 1;
 
         index min_proc = 4;

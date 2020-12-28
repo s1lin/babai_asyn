@@ -82,14 +82,27 @@ namespace cils {
         auto *work = new index[ds]();
         index nres[nswp + 1][ds + 1];
         auto *p = new index[n_proc][70]();
-        index count = 0, search_count = 0;
+        index count = 0, search_count = 255;
         bool flag = false;
         auto *y_b = new scalar[dx]();
         auto *x_b = new index[dx]();
         index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
         scalar sum = 0, run_time, res;
 
-        for (int i = 0; i < ds; i+=2) {
+        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
+        for (int i = 0; i < n_proc; i++) {
+            for (int j = i * gap; j < (i + 1) * gap - gap/2; j++) {
+//                cout << count << " ";
+                work[j] = count;
+                count++;
+            }
+            for (int j = (i + 1) * gap - gap/2; j < (i + 1) * gap; j++) {
+//                cout << search_count << " ";
+                work[j] = search_count;
+                search_count--;
+            }
+//            cout << endl;
+
 //            for (int j = i; j < i + n_proc; j++) {
 //                work[j] = j;
 //            }
@@ -105,9 +118,7 @@ namespace cils {
 //                }
 //            }
 
-            work[i] = count;
-            work[i + 1] = ds - 1 - count;
-            count++;
+
         }
 
 
@@ -171,12 +182,12 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
-        for (index j = 0; j < 2; j++) {
-            for (index i = 0; i < ds; i++) {
-                cout << nres[j][i] << ",";
-            }
-            cout << endl;
-        }
+//        for (index j = 0; j < 2; j++) {
+//            for (index i = 0; i < ds; i++) {
+//                cout << nres[j][i] << ",";
+//            }
+//            cout << endl;
+//        }
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
