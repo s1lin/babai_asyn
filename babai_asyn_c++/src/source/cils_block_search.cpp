@@ -138,9 +138,11 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
 #pragma omp barrier
-            for (index j = 0; j < nswp; j++) {
+            for (index j = 0; j < nswp && !flag; j++) {
+                res = 0;
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
+                    if (flag) continue;
                     pitt = i;//j == 0 ? i : work[i];
                     count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
@@ -153,7 +155,6 @@ namespace cils {
 #pragma omp simd reduction(+ : sum)
                             for (index col = n_dx_q_1; col < n; col++) {
                                 sum += R_A->x[row_n + col] * z_x[col];
-//                                count++;
                             }
                             y_b[row] = y_A->x[row] - sum;
                         }
@@ -162,17 +163,15 @@ namespace cils {
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                             y_b[l] = y_A->x[l];
 
-                    ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                    res += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                }
+
+#pragma omp master
+                {
+                    num_iter = j;
+                    flag = std::sqrt(res) < stop;
                 }
             }
-//#pragma omp master
-//                {
-//                    res = std::sqrt(res);
-//                    num_iter = j;
-//                    flag=true;
-////                    cout << res << " ";
-//                }
-
 #pragma omp master
             {
                 run_time = omp_get_wtime() - start;
