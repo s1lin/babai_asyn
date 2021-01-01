@@ -60,11 +60,24 @@ namespace cils {
             }
         }
 
+        template<typename scalar, typename index, index n>
+        inline scalar diff(const vector<scalar> *x,
+                           const vector<scalar> *y) {
+            scalar d = 0;
+#pragma omp simd reduction(+ : d)
+            for (index i = 0; i < n; i++) {
+                d += (y->at(i) - x->at(i));
+            }
+            return d;
+        }
+
         void init_guess(index init_value, vector<index> *z_B, vector<index> *x_R) {
-            if (init_value == 0) {
-                z_B->assign(N_4096, 0);
-            } else if (init_value == -1) {
-                copy(z_B->begin(), z_B->end(), x_R->begin());
+            z_B->assign(N_4096, 0);
+            if (init_value == -1) {
+//                cout << "before:" << diff<index, index, N_4096>(z_B, x_R);
+                for (index i = 0; i < N_4096; i++)
+                    z_B->at(i) = x_R->at(i);
+//                cout << " after:" << diff<index, index, N_4096>(z_B, x_R) << endl;
             } else if (init_value == 1)
                 z_B->assign(N_4096, std::pow(2, k) / 2);
         }

@@ -57,7 +57,7 @@ void ils_block_search() {
     }
 }
 
-template<typename scalar, typename index, index n> 
+template<typename scalar, typename index, index n>
 void plot_run() {
 
     printf("plot_run-------------------------------------------\n");
@@ -85,28 +85,25 @@ void plot_run() {
 
         for (index init = -1; init <= 1; init++) {
             init_guess(init, &z_B, &cils.x_R);
-
+            if (init == -1)
+                cout << cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &z_B) << " ";
             reT = cils.cils_babai_search_serial(&z_B);
             bab_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             bab_tim[init + 1] += reT.run_time;
 
-            z_B.assign(n, 0);
-            if (init == -1)
-                copy(z_B.begin(), z_B.end(), cils.x_R.begin());
-            else if (init == 1)
-                z_B.assign(n, std::pow(2, k) / 2);
-
+            init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_block_search_serial(&d_s, &z_B);
             ser_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             ser_tim[init + 1] += reT.run_time;
+
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
                 init_guess(init, &z_B, &cils.x_R);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
-                reT = cils.cils_block_search_omp(n_proc, num_trials, stop, schedule, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
@@ -116,7 +113,6 @@ void plot_run() {
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
                 l++;
             }
-
         }
     }
 

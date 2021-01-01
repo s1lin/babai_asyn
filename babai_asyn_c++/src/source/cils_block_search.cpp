@@ -69,7 +69,7 @@ namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
     returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
-                                                           const index stop, const index schedule,
+                                                           const index stop, const index init,
                                                            const vector<index> *d,
                                                            vector<index> *z_B) {
         index ds = d->size(), dx = d->at(ds - 1), tt = 0;
@@ -78,16 +78,11 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        auto *z_p = new index[n]();
-//        auto *work = new index[ds]();
         index work[ds];
-        index nres[nswp + 1][ds + 1];
-        auto *p = new index[n_proc][70]();
+        scalar y_b[n];
         index count = 0, search_count = 255;
         bool flag = false;
-        auto *y_b = new scalar[dx]();
-        auto *x_b = new index[dx]();
-        index num_iter = nswp, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
         scalar sum = 0, run_time, res;
 
         int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
@@ -102,48 +97,32 @@ namespace cils {
                 work[j] = search_count;
                 search_count--;
             }
-//            cout << endl;
-
-//            for (int j = i; j < i + n_proc; j++) {
-//                work[j] = j;
-//            }
-//            if (i + 2 * n_proc < ds) {
-//                count = i + 2 * n_proc - 1;
-//                for (int j = i + n_proc; j < i + 2 * n_proc; j++) {
-//                    work[j] = count;
-//                    count--;
-//                }
-//            } else {
-//                for (int j = i + n_proc; j < ds; j++) {
-//                    work[j] = j;
-//                }
-//            }
-
-
         }
-//        sort(work, work + ds);
-
-        for (index i = 0; i < ds; i++) {
-            work[i] = i;
-        }
-        y_b = new scalar[n]();
-//        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-//        shuffle(work.begin(), work.end(), std::default_random_engine(seed));
 //        for (int i = 0; i < ds; i++) {
-////            if(i != work[i])
-//            cout << work[i] << " ";
+//            cout << work[i]<<" ";
 //        }
-//        omp_set_schedule((omp_sched_t) schedule, n_proc);
+
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-#pragma omp barrier
+            if (init != -1) {
+#pragma omp for
+                for (index i = 0; i < n; i++) {
+                    sum = 0;
+                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+#pragma omp simd reduction(+ : sum)
+                    for (index col = n - i; col < n; col++)
+                        sum += R_A->x[nj + col] * z_x[col];
+                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
+                }
+            }
+
             for (index j = 0; j < nswp && !flag; j++) {
                 res = 0;
-#pragma omp for schedule(dynamic) nowait //
+#pragma omp for schedule(static) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
-                    pitt = i;//j == 0 ? i : work[i];
+                    pitt = j == 0 ? i : work[i];
                     count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
                     n_dx_q_1 = n - pitt * dx;
@@ -187,18 +166,12 @@ namespace cils {
 //            }
 //            cout << endl;
 //        }
-        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
+//        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
-        delete[]
-                z_p;
-//        delete[] work;
-//        delete[] nres;
-        delete[]
-                y_b;
+//        delete[] y_b;
 
-        return
-                reT;
+        return reT;
     }
 }
