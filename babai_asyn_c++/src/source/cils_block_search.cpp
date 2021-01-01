@@ -147,8 +147,10 @@ namespace cils {
 
 #pragma omp master
                 {
-                    num_iter = j;
-                    flag = std::sqrt(res) < stop;
+                    if (j > 0) {
+                        num_iter = j;
+                        flag = std::sqrt(res) < stop;
+                    }
                 }
             }
 #pragma omp master
