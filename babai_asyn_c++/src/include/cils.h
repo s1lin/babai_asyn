@@ -376,7 +376,8 @@ namespace cils {
          * @param y
          * @return
          */
-        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const bool is_first,
+        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                     const bool is_first,
                                      const scalar *y_B, index *z_x) {
 
             //variables
@@ -387,11 +388,11 @@ namespace cils {
             index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
             scalar p[dx], c[dx];
-            index z[dx], d[dx];
+            index z[dx], d[dx], x[dx];
 
             //  Initial squared search radius
             scalar R_kk = R_A->x[row_kk];
-            c[k] = y_B[k] / R_kk;
+            c[k] = y_B[row_k] / R_kk;
             z[k] = round(c[k]);
             gamma = R_kk * (c[k] - z[k]);
 
@@ -402,6 +403,13 @@ namespace cils {
             while (true) {
 #pragma omp atomic
                 count++;
+                if (!is_first && count > program_def::max_search) {
+#pragma omp simd
+                    for (index l = 0; l < dx; l++) {
+                        x[l] = z[l];
+                    }
+                    break;
+                }
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -418,7 +426,7 @@ namespace cils {
                         R_kk = R_A->x[row_kk + row_k];
 
                         p[k] = newprsd;
-                        c[k] = (y_B[k] - sum) / R_kk;
+                        c[k] = (y_B[row_k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         gamma = R_kk * (c[k] - z[k]);
 
@@ -428,12 +436,12 @@ namespace cils {
                         beta = newprsd;
 #pragma omp simd
                         for (index l = 0; l < dx; l++) {
-                            z_x[l] = z[l];
+                            x[l] = z[l];
                         }
 #pragma omp atomic
                         iter++;
                         if (iter > program_def::search_iter) break;
-//                        if (!is_first && count > program_def::max_search) break;
+
 
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
@@ -452,7 +460,11 @@ namespace cils {
                     }
                 }
             }
-            if(is_first) return count;
+#pragma omp simd
+            for (index l = 0; l < dx; l++) {
+                z_x[l + n_dx_q_0] = x[l];
+            }
+            if (is_first) return count;
             return beta;
         }
 

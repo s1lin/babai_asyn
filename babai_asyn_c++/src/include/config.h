@@ -26,8 +26,8 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;
-        index mode = 1;
-        index num_trials = 8; //nswp
+        index mode = 2;
+        index num_trials = 10; //nswp
         index is_local = 1;
 
         index min_proc = 4;

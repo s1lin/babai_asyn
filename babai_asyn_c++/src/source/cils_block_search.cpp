@@ -80,7 +80,7 @@ namespace cils {
         auto z_x = z_B->data();
         auto *z_p = new index[n]();
 //        auto *work = new index[ds]();
-        vector<index> work(ds);
+        index work[ds];
         index nres[nswp + 1][ds + 1];
         auto *p = new index[n_proc][70]();
         index count = 0, search_count = 255;
@@ -92,12 +92,12 @@ namespace cils {
 
         int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
         for (int i = 0; i < n_proc; i++) {
-            for (int j = i * gap; j < (i + 1) * gap - gap/2 && j < ds; j++) {
+            for (int j = i * gap; j < (i + 1) * gap - gap / 2 && j < ds; j++) {
 //                cout << count << " ";
                 work[j] = count;
                 count++;
             }
-            for (int j = (i + 1) * gap - gap/2; j < (i + 1) * gap && j < ds; j++) {
+            for (int j = (i + 1) * gap - gap / 2; j < (i + 1) * gap && j < ds; j++) {
 //                cout << search_count << " ";
                 work[j] = search_count;
                 search_count--;
@@ -123,24 +123,22 @@ namespace cils {
         }
 //        sort(work, work + ds);
 
-        for (index i = 0; i < ds; i++){
+        for (index i = 0; i < ds; i++) {
             work[i] = i;
         }
-
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        shuffle (work.begin(), work.end(), std::default_random_engine(seed));
+        y_b = new scalar[n]();
+//        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+//        shuffle(work.begin(), work.end(), std::default_random_engine(seed));
 //        for (int i = 0; i < ds; i++) {
 ////            if(i != work[i])
 //            cout << work[i] << " ";
 //        }
 //        omp_set_schedule((omp_sched_t) schedule, n_proc);
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(y_b, x_b, res, count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-            y_b = new scalar[dx]();
-            x_b = new index[dx]();
 #pragma omp barrier
-            for (index j = 0; j < nswp; j++) {//&& res < stop
+            for (index j = 0; j < nswp; j++) {
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     pitt = i;//j == 0 ? i : work[i];
@@ -149,30 +147,24 @@ namespace cils {
                     n_dx_q_1 = n - pitt * dx;
                     //The block operation
                     if (pitt != 0) {
-
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
                             for (index col = n_dx_q_1; col < n; col++) {
                                 sum += R_A->x[row_n + col] * z_x[col];
-                                count++;
+//                                count++;
                             }
-                            y_b[row - n_dx_q_0] = y_A->x[row] - sum;
+                            y_b[row] = y_A->x[row] - sum;
                         }
                     } else
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                            y_b[l - n_dx_q_0] = y_A->x[l];
-                    if (j != 0)
-                        nres[j][i] = count + ils_search_omp(n_dx_q_0, n_dx_q_1, 1, y_b, x_b);
-                    else
-                        nres[j][i] = omp_get_thread_num();
-#pragma omp simd
-                    for (index l = 0; l < dx; l++) {
-                        z_x[l + n_dx_q_0] = x_b[l];
-                    }
+                            y_b[l] = y_A->x[l];
+
+                    ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
                 }
+            }
 //#pragma omp master
 //                {
 //                    res = std::sqrt(res);
@@ -180,12 +172,13 @@ namespace cils {
 //                    flag=true;
 ////                    cout << res << " ";
 //                }
-            }
+
 #pragma omp master
             {
                 run_time = omp_get_wtime() - start;
             }
         }
+
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
@@ -199,11 +192,14 @@ namespace cils {
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
-        delete[] z_p;
+        delete[]
+                z_p;
 //        delete[] work;
 //        delete[] nres;
-        delete[] y_b;
+        delete[]
+                y_b;
 
-        return reT;
+        return
+                reT;
     }
 }
