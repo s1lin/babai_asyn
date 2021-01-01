@@ -119,10 +119,10 @@ namespace cils {
 
             for (index j = 0; j < nswp && !flag; j++) {
                 res = 0;
-#pragma omp for schedule(static) nowait //
+#pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
-                    pitt = j == 0 ? i : work[i];
+                    pitt = i; //j == 0 ? i : work[i];
                     count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
                     n_dx_q_1 = n - pitt * dx;
