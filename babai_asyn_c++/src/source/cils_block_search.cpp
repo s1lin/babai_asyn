@@ -72,18 +72,16 @@ namespace cils {
                                                            const index stop, const index init,
                                                            const vector<index> *d,
                                                            vector<index> *z_B) {
-        index ds = d->size(), dx = d->at(ds - 1), tt = 0;
+        index ds = d->size(), dx = d->at(ds - 1);
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(d, z_B);
         }
 
         auto z_x = z_B->data();
-        index work[ds];
-        scalar y_b[n];
         index count = 0, search_count = 255;
         bool flag = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc;
-        scalar sum = 0, run_time, res;
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc, work[ds] = {};
+        scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {};
 
         int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
         for (int i = 0; i < n_proc; i++) {
@@ -98,9 +96,6 @@ namespace cils {
                 search_count--;
             }
         }
-//        for (int i = 0; i < ds; i++) {
-//            cout << work[i]<<" ";
-//        }
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
@@ -118,7 +113,6 @@ namespace cils {
             }
 
             for (index j = 0; j < nswp && !flag; j++) {
-                res = 0;
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
@@ -142,14 +136,13 @@ namespace cils {
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                             y_b[l] = y_A->x[l];
 
-                    res += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
+                    res[j] += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
                 }
-
 #pragma omp master
                 {
                     if (j > 0) {
                         num_iter = j;
-                        flag = std::sqrt(res) < stop;
+                        flag = std::sqrt(res[j] - res[j - 1]) < stop;
                     }
                 }
             }
@@ -162,13 +155,7 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 #ifdef VERBOSE //1
-//        for (index j = 0; j < 2; j++) {
-//            for (index i = 0; i < ds; i++) {
-//                cout << nres[j][i] << ",";
-//            }
-//            cout << endl;
-//        }
-//        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
+        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 
