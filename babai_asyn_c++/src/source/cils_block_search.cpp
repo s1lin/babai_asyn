@@ -100,23 +100,24 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-            if (init != -1) {
-#pragma omp for
-                for (index i = 0; i < n; i++) {
-                    sum = 0;
-                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
-#pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++)
-                        sum += R_A->x[nj + col] * z_x[col];
-                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                }
-            }
+//            if (init != -1) {
+//#pragma omp for nowait
+//                for (index i = 0; i < n; i++) {
+//                    sum = 0;
+//                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+//#pragma omp simd reduction(+ : sum)
+//                    for (index col = n - i; col < n; col++)
+//                        sum += R_A->x[nj + col] * z_x[col];
+//                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
+//                }
+//            }
 
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait //
+#pragma omp for schedule(static) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
-                    pitt = i; //j == 0 ? i : work[i];
+//                    pitt = i;
+                    pitt = j == 0 ? i : work[i];
                     count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
                     n_dx_q_1 = n - pitt * dx;
@@ -140,9 +141,9 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 0) {
+                    if (j > 0 || init == -1) {
                         num_iter = j;
-                        flag = std::sqrt(res[j] - res[j - 1]) < stop;
+                        flag = std::sqrt(res[j]) < stop;
                     }
                 }
             }
@@ -158,8 +159,6 @@ namespace cils {
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-
-//        delete[] y_b;
 
         return reT;
     }
