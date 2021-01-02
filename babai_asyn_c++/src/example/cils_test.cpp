@@ -85,8 +85,8 @@ void plot_run() {
 
         for (index init = -1; init <= 1; init++) {
             init_guess(init, &z_B, &cils.x_R);
-            if (init == -1)
-                cout << cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &z_B) << " ";
+//            if (init == -1)
+//                cout << cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &z_B) << " ";
             reT = cils.cils_babai_search_serial(&z_B);
             bab_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);

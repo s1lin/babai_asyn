@@ -96,7 +96,7 @@ void run_test(int argc, char *argv[]) {
     }
 
     std::cout << "Maximum Threads: " << nThreads << std::endl;
-    program_def::max_proc = 50;
+    program_def::max_proc = 54;
 //    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);
 

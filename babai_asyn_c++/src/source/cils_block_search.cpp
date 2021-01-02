@@ -63,7 +63,7 @@ namespace cils {
         }
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, 0};
-        cout << res << ",";
+//        cout << res << ",";
         return reT;
     }
 
@@ -84,7 +84,7 @@ namespace cils {
         index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, pitt = n_proc, work[ds] = {};
         scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {};
 
-        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
+//        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
 //        for (int i = 0; i < n_proc; i++) {
 //            for (int j = i * gap; j < (i + 1) * gap - gap / 2 && j < ds; j++) {
 ////                cout << count << " ";
@@ -157,13 +157,13 @@ namespace cils {
 
         scalar run_time2 = omp_get_wtime() - start;
 
-#ifdef VERBOSE //1
-        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
-#endif
+//#ifdef VERBOSE //1
+//        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
+//#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-        for (index i = 0; i < nswp; i++)
-            cout << res[i] << " ";
-        cout << endl;
+//        for (index i = 0; i < nswp; i++)
+//            cout << res[i] << " ";
+//        cout << endl;
         return reT;
     }
 }
