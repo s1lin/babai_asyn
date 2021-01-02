@@ -63,7 +63,7 @@ namespace cils {
         }
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, 0};
-        cout << res <<",";
+        cout << res << ",";
         return reT;
     }
 
@@ -81,22 +81,22 @@ namespace cils {
         auto z_x = z_B->data();
         index count = 0, search_count = 255;
         bool flag = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter, pitt = n_proc, work[ds] = {};
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, pitt = n_proc, work[ds] = {};
         scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {};
 
         int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
-        for (int i = 0; i < n_proc; i++) {
-            for (int j = i * gap; j < (i + 1) * gap - gap / 2 && j < ds; j++) {
-//                cout << count << " ";
-                work[j] = count;
-                count++;
-            }
-            for (int j = (i + 1) * gap - gap / 2; j < (i + 1) * gap && j < ds; j++) {
-//                cout << search_count << " ";
-                work[j] = search_count;
-                search_count--;
-            }
-        }
+//        for (int i = 0; i < n_proc; i++) {
+//            for (int j = i * gap; j < (i + 1) * gap - gap / 2 && j < ds; j++) {
+////                cout << count << " ";
+//                work[j] = count;
+//                count++;
+//            }
+//            for (int j = (i + 1) * gap - gap / 2; j < (i + 1) * gap && j < ds; j++) {
+////                cout << search_count << " ";
+//                work[j] = search_count;
+//                search_count--;
+//            }
+//        }
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
@@ -116,7 +116,8 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic, 1) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (flag) continue;
+                    if (flag || i > iter) continue;
+                    iter += n_proc;
                     pitt = i;
 //                    pitt = j == 0 ? i : work[i];
                     count = 0;
