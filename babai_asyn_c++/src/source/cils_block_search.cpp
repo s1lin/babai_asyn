@@ -39,7 +39,7 @@ namespace cils {
         vector<scalar> R_b = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
         vector<scalar> y_b = find_block_x<scalar, index>(y_A, n - q, n);
         vector<index> x_b(n - q, 0);
-        ils_search(&R_b, &y_b, &x_b);
+        scalar res = ils_search(&R_b, &y_b, &x_b);
         for (index l = n - q; l < n; l++) {
             z_B->at(l) = x_b[l - n + q];
         }
@@ -54,7 +54,7 @@ namespace cils {
 
             R_b = find_block_Rii<scalar, index>(R_A, n - d->at(q), n - d->at(q + 1), n - d->at(q), n - d->at(q + 1), n);
 
-            ils_search(&R_b, &y_b, &x_b);
+            res += ils_search(&R_b, &y_b, &x_b);
 
             for (index l = n - d->at(q); l < n - d->at(q + 1); l++) {
                 z_B->at(l) = x_b[l - n + d->at(q)];
@@ -63,6 +63,7 @@ namespace cils {
         }
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, 0};
+        cout << res <<",";
         return reT;
     }
 
@@ -100,24 +101,24 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-//            if (init != -1) {
-//#pragma omp for nowait
-//                for (index i = 0; i < n; i++) {
-//                    sum = 0;
-//                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
-//#pragma omp simd reduction(+ : sum)
-//                    for (index col = n - i; col < n; col++)
-//                        sum += R_A->x[nj + col] * z_x[col];
-//                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-//                }
-//            }
+            if (init != -1) {
+#pragma omp for nowait
+                for (index i = 0; i < n; i++) {
+                    sum = 0;
+                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+#pragma omp simd reduction(+ : sum)
+                    for (index col = n - i; col < n; col++)
+                        sum += R_A->x[nj + col] * z_x[col];
+                    z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
+                }
+            }
 
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(static) nowait //
+#pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
-//                    pitt = i;
-                    pitt = j == 0 ? i : work[i];
+                    pitt = i;
+//                    pitt = j == 0 ? i : work[i];
                     count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
                     n_dx_q_1 = n - pitt * dx;
@@ -159,7 +160,9 @@ namespace cils {
         printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 #endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-
+        for (index i = 0; i < nswp; i++)
+            cout << res[i] << " ";
+        cout << endl;
         return reT;
     }
 }

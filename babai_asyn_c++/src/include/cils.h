@@ -475,7 +475,7 @@ namespace cils {
          * @param y_B
          * @param x
          */
-        inline void ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
+        inline scalar ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
                                vector<index> *x) {
 
             //variables
@@ -533,6 +533,7 @@ namespace cils {
                     }
                 }
             }
+            return beta;
         }
 
 
