@@ -30,7 +30,7 @@ namespace cils {
         index num_trials = 10; //nswp
         index is_local = 1;
 
-        index min_proc = 10;
+        index min_proc = 4;
         index max_proc = omp_get_max_threads();
         index max_search = 500;
 
