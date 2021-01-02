@@ -20,7 +20,7 @@ namespace cils {
         index SNR = 35;
         index max_iter = 5;
         index search_iter = 2;
-        index stop = 163;
+        index stop = 170;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
@@ -30,7 +30,7 @@ namespace cils {
         index num_trials = 10; //nswp
         index is_local = 1;
 
-        index min_proc = 12;
+        index min_proc = 10;
         index max_proc = omp_get_max_threads();
         index max_search = 500;
 
