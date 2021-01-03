@@ -145,7 +145,7 @@ namespace cils {
                 {
                     if (j > 0 || init == -1) {
                         num_iter = j;
-                        flag = std::sqrt(res[j]) < stop;
+                        flag = std::sqrt(abs(res[j] - res[j - 1])) < stop;
                     }
                 }
             }

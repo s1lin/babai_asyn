@@ -91,6 +91,16 @@ namespace cils {
         return std::sqrt(res);
     }
 
+    /**
+     *
+     * @tparam scalar
+     * @tparam index
+     * @tparam n
+     * @param x_b
+     * @param x_t
+     * @param is_binary
+     * @return
+     */
     template<typename scalar, typename index, index n>
     inline scalar find_bit_error_rate(const vector<index> *x_b,
                                       const vector<index> *x_t,
@@ -346,31 +356,6 @@ namespace cils {
 
         /**
          *
-         * @param i
-         * @param z_B
-         * @param z_B_p
-         * @param update
-         */
-        inline void babai_solve_omp(const index i, index *z_x, index *z_p, index *u_p) {
-            scalar sum = 0;
-            index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
-
-#pragma omp simd reduction(+ : sum)
-            for (index col = n - i; col < n; col++)
-                sum += R_A->x[nj + col] * z_x[col];
-
-            z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-
-//            if (abs(z_x[ni] - z_p[ni]) != 0) {
-//                z_p[ni] = z_x[ni];
-//                u_p[ni] = -1;
-//            } else
-//                u_p[ni] = 0;
-        }
-
-
-        /**
-         *
          * @param n_dx_q_0
          * @param n_dx_q_1
          * @param y
@@ -476,7 +461,7 @@ namespace cils {
          * @param x
          */
         inline scalar ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
-                               vector<index> *x) {
+                                 vector<index> *x) {
 
             //variables
             index block_size = y_B->size();

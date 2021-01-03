@@ -9,39 +9,44 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, x_max = n_proc, x_min = 0, flag = 0;
+        index count = 0, num_iter = 0, s = n_proc, x_min = 0, flag = 0, ni, nj;
         auto z_x = z_B->data();
-        auto *u_p = new index[n](), *z_p = new index[n](), *work = new index[n]();
+        scalar res[nswp] = {}, sum, sum2;
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, sum2, ni, nj)
         {
-#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 1) nowait
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < n; i++) {
-                    if (i <= min(x_max, n) && work[i] <= search_iter && !flag) {
-                        x_max++;
-                        babai_solve_omp(i, z_x, z_p, u_p);
-                        if (z_x[n - 1 - i] == z_p[n - 1 - i]) {
-                            work[i]++;
-                            count++;
-                        } else{
-                            z_p[n - 1 - i] = z_x[n - 1 - i];
-                        }
+                    if (flag) continue;
+                    sum = sum2 = 0;
+                    ni = n - 1 - i;
+                    nj = ni * n - (ni * (n - i)) / 2;
+
+#pragma omp simd reduction(+ : sum) reduction(+ : sum2)
+                    for (index col = n - i; col < n; col++) {
+                        sum += R_A->x[nj + col] * z_x[col];
+//                        sum2 += z_x[col] * R_A->x[(n * i) + col - ((i * (i + 1)) / 2)];
                     }
+                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
+
+                    res[j] += (y_A->x[ni] - sum) * (y_A->x[ni] - sum);
                 }
-                if(count >= n) {
-                    num_iter = j;
-                    flag = true;
+#pragma omp master
+                {
+                    if (j > 0) {
+                        num_iter = j;
+                        flag = std::sqrt(abs(res[j] - res[j - 1])) < stop;
+                    }
                 }
             }
         }
         scalar run_time = omp_get_wtime() - start;
+        for (index i = 0; i < nswp; i++)
+            cout << sqrt(res[i]) << " ";
+
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
-        delete[] u_p;
-        delete[] z_p;
-        delete[] work;
         return reT;
     }
 
