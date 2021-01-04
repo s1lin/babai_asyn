@@ -101,6 +101,7 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
+#pragma omp barrier
             if (init != -1) {
 #pragma omp for nowait
                 for (index i = 0; i < n; i++) {
@@ -114,9 +115,9 @@ namespace cils {
             }
 
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 1) nowait //
+#pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (flag || i > iter) continue;
+                    if (flag) continue; // || i > iter
                     iter++;
                     pitt = i;
 //                    pitt = j == 0 ? i : work[i];
@@ -143,7 +144,7 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 0) {
+                    if (j > 0 || init == -1) {
                         num_iter = j;
                         flag = res[j] < stop;
                     }
@@ -161,8 +162,8 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-//        for (index i = 0; i < nswp; i++)
-//            cout << res[i] << " ";
+        for (index i = 0; i < nswp; i++)
+            cout << res[i] << " ";
 //        cout << endl;
         return reT;
     }

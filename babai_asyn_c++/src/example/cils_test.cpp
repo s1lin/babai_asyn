@@ -46,8 +46,8 @@ void ils_block_search() {
         }
 
         for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += 4) {
-            init_guess(0, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc, num_trials, stop, schedule, &d_s, &z_B);
+            init_guess(init, &z_B, &cils.x_R);
+            reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
