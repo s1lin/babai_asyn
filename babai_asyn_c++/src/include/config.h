@@ -7,6 +7,7 @@
 #include <iostream>
 
 #define N_4096 (4096)
+//#define N_4096 (8192)
 #define VERBOSE (0)
 
 using namespace std;
