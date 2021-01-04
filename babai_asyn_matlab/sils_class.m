@@ -10,7 +10,7 @@ classdef sils_class
                 for SNR = 15:20:45
                     	m = 12;
                         s = sils_class(k, m, SNR);
-                        %s.write_to_nc();
+                        s.write_to_nc();
                         s.write_to_files();
                 end
             end
@@ -28,7 +28,7 @@ classdef sils_class
             sils.x0_R = zeros(sils.n, 1);
             %sils.x0_R_LLL = zeros(sils.n, 1);
             sils.x0 = randi([0, 2^k - 1], sils.n, 1);
-            sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)));
+            sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)))
             v = normrnd(0, sils.sigma, sils.n, 1);
             sils.y = sils.R * sils.x0 + sils.Q *  v;
             sils.init_res = norm(sils.y - sils.R * sils.x0);
@@ -56,7 +56,7 @@ classdef sils_class
                 end
             end
             
-            filename = append('../data/new', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
+            filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});

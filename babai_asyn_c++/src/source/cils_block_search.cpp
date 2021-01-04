@@ -11,7 +11,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
+    returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
 
         index ds = d->size();
@@ -68,7 +68,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
+    returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index init,
                                                            const vector<index> *d,
@@ -145,7 +145,7 @@ namespace cils {
                 {
                     if (j > 0 || init == -1) {
                         num_iter = j;
-                        flag = std::sqrt(abs(res[j] - res[j - 1])) < stop;
+                        flag = res[j - 1] - res[j] < stop;
                     }
                 }
             }

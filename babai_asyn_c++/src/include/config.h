@@ -19,8 +19,8 @@ namespace cils {
         index k = 3;
         index SNR = 35;
         index max_iter = 10;
-        index search_iter = 2;
-        index stop = 170;
+        index search_iter = 4;
+        index stop = 10;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
@@ -32,7 +32,7 @@ namespace cils {
 
         index min_proc = 4;
         index max_proc = omp_get_max_threads();
-        index max_search = 500;
+        index max_search = 1000;
 
         string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
         string prefix = is_local ? "../../" : "";

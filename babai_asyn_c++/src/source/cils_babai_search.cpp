@@ -43,8 +43,8 @@ namespace cils {
             }
         }
         scalar run_time = omp_get_wtime() - start;
-        for (index i = 0; i < nswp; i++)
-            cout << sqrt(res[i]) << " ";
+//        for (index i = 0; i < nswp; i++)
+//            cout << sqrt(res[i]) << " ";
 
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;
