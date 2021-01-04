@@ -143,9 +143,9 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 0 || init == -1) {
+                    if (j > 0) {
                         num_iter = j;
-                        flag = res[j - 1] - res[j] < stop;
+                        flag = res[j] < stop;
                     }
                 }
             }

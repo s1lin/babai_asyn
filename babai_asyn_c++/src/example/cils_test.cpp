@@ -17,11 +17,11 @@ void ils_block_search() {
     cils.init(is_qr, is_nc);
     vector<index> z_B(n, 0);
     init_guess(0, &z_B, &cils.x_R);
-
+    index init = -1;
     //Initialize the block vector
     for (index i = 0; i < 1; i++) {
         printf("++++++++++++++++++++++++++++++++++++++\n");
-        z_B.assign(n, 0);
+        init_guess(init, &z_B, &cils.x_R);
         auto reT = cils.cils_block_search_serial(&d_s, &z_B);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
@@ -29,7 +29,7 @@ void ils_block_search() {
                block_size, res, ber, reT.run_time);
         scalar ils_tim = reT.run_time;
 
-        z_B.assign(n, 0);
+        init_guess(init, &z_B, &cils.x_R);
         reT = cils.cils_babai_search_serial(&z_B);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
@@ -37,7 +37,7 @@ void ils_block_search() {
         scalar ser_tim = reT.run_time;
 
         for (index n_proc = 4; n_proc <= 48; n_proc += 4) {
-            init_guess(0, &z_B, &cils.x_R);
+            init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc, num_trials, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
