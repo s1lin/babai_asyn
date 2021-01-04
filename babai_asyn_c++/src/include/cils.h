@@ -427,7 +427,6 @@ namespace cils {
                         iter++;
                         if (iter > program_def::search_iter) break;
 
-
                         z[0] += d[0];
                         gamma = R_A->x[0] * (c[0] - z[0]);
                         d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
