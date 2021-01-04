@@ -20,14 +20,14 @@ namespace cils {
         index SNR = 35;
         index max_iter = 10;
         index search_iter = 2;
-        index stop = 400;
+        index stop = 1000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;
         index mode = 2;
-        index num_trials = 4; //nswp
+        index num_trials = 10; //nswp
         index is_local = 1;
 
         index min_proc = 4;
