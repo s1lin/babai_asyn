@@ -102,7 +102,6 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
 #pragma omp barrier
-            if (init != -1) {
 #pragma omp for nowait
                 for (index i = 0; i < n; i++) {
                     sum = 0;
@@ -112,7 +111,7 @@ namespace cils {
                         sum += R_A->x[nj + col] * z_x[col];
                     z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
                 }
-            }
+
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic, 1) nowait //
@@ -162,8 +161,8 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-        for (index i = 0; i < nswp; i++)
-            cout << res[i] << " ";
+//        for (index i = 0; i < nswp; i++)
+//            cout << res[i] << " ";
 //        cout << endl;
         return reT;
     }

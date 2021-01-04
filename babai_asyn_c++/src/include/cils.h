@@ -548,7 +548,7 @@ namespace cils {
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
-            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * log2(n)) / (6 * pow(10, ((scalar) snr / 20.0))));
+            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * log2(n)) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
         }

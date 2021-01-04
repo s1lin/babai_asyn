@@ -6,8 +6,8 @@ classdef sils_class
 
     methods(Static)
         function auto_gen()
-            for k = 1:2:3
-                for SNR = 35:20:45
+            for k = 3:2:3
+                for SNR = 35:10:35
                     	m = 12;
                         s = sils_class(k, m, SNR);
                         %s.write_to_nc();
@@ -30,7 +30,7 @@ classdef sils_class
             sils.x0 = randi([0, 2^k - 1], sils.n, 1);
             sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)))
             v = normrnd(0, sils.sigma, sils.n, 1);
-            sils.y = sils.R * sils.x0 + sils.Q *  v;
+            sils.y = sils.R * sils.x0 + sils.Q * v;
             sils.init_res = norm(sils.y - sils.R * sils.x0);
             disp([sils.init_res]);
         end

@@ -17,7 +17,7 @@ void ils_block_search() {
     cils.init(is_qr, is_nc);
     vector<index> z_B(n, 0);
     init_guess(0, &z_B, &cils.x_R);
-    index init = -1;
+    index init = 0;
     //Initialize the block vector
     for (index i = 0; i < 1; i++) {
         printf("++++++++++++++++++++++++++++++++++++++\n");
@@ -76,9 +76,6 @@ void plot_run() {
     cils.init(is_qr, is_nc);
 
     for (index p = 0; p < max_iter; p++) {
-        if (p == 0) {
-            printf("init_res: %.5f, sigma: %.5f\n", cils.init_res, cils.sigma);
-        }
         if (p % 10 == 0) cout << "-";
         if (p % 500 == 0) cout << endl;
         std::cout.flush();
@@ -103,6 +100,7 @@ void plot_run() {
                 init_guess(init, &z_B, &cils.x_R);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
+                num_trials = init == -1? 3 : num_trials;
                 reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
