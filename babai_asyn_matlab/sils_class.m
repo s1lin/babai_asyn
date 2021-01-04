@@ -6,11 +6,11 @@ classdef sils_class
 
     methods(Static)
         function auto_gen()
-            for k = 1:3
-                for SNR = 15:20:45
+            for k = 1:2:3
+                for SNR = 35:20:45
                     	m = 12;
                         s = sils_class(k, m, SNR);
-                        s.write_to_nc();
+                        %s.write_to_nc();
                         s.write_to_files();
                 end
             end
