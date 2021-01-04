@@ -100,7 +100,7 @@ void plot_run() {
                 init_guess(init, &z_B, &cils.x_R);
 
                 n_proc = n_proc == 96 ? 64 : n_proc;
-                num_trials = init == -1? 3 : num_trials;
+//                num_trials = num_trials;
                 reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
@@ -180,7 +180,7 @@ void plot_res() {
                     res = newres < res ? newres : res;
                     ber = newbrr < ber ? newbrr : ber;
                 }
-                printf("res = %.5f, ber =%.5f,", res, ber);
+                printf("nswp=%d, res=%.5f, ber=%.5f\n", nswp, res, ber);
                 res = ber = INFINITY;
             }
             cout << endl;

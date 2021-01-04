@@ -11,7 +11,7 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
 
         index ds = d->size();
@@ -68,7 +68,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index init,
                                                            const vector<index> *d,
@@ -103,14 +103,14 @@ namespace cils {
         {
 #pragma omp barrier
 #pragma omp for nowait
-                for (index i = 0; i < n; i++) {
-                    sum = 0;
-                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+            for (index i = 0; i < n; i++) {
+                sum = 0;
+                index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
 #pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++)
-                        sum += R_A->x[nj + col] * z_x[col];
-                    z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
-                }
+                for (index col = n - i; col < n; col++)
+                    sum += R_A->x[nj + col] * z_x[col];
+                z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
+            }
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait //
@@ -142,7 +142,7 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 0 || init == -1) {
+                    if (j > 0 && mode != 0) {
                         num_iter = j;
                         flag = res[j - 1] - res[j] < stop;
                     }
@@ -160,9 +160,9 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-//        for (index i = 0; i < nswp; i++)
-//            cout << res[i] << " ";
-//        cout << endl;
+        if (mode == 0)
+            for (index i = 1; i < nswp; i++)
+                cout << res[i - 1] - res[i] << ",";
         return reT;
     }
 }
