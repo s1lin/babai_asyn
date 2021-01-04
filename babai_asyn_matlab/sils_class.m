@@ -7,11 +7,11 @@ classdef sils_class
     methods(Static)
         function auto_gen()
             for k = 3:2:3
-                for SNR = 35:10:35
+                for SNR = 35:20:35
                     	m = 12;
                         s = sils_class(k, m, SNR);
-                        %s.write_to_nc();
-                        s.write_to_files();
+                        s.write_to_nc();
+                        %s.write_to_files();
                 end
             end
         end
@@ -55,8 +55,9 @@ classdef sils_class
                     end
                 end
             end
-            
+          
             filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
+            delete(filename);
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
