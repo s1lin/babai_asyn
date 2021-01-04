@@ -20,23 +20,23 @@ namespace cils {
         index SNR = 35;
         index max_iter = 10;
         index search_iter = 3;
-        index stop = 500;
+        index stop = 200;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = false;
-        index mode = 1;
+        index mode = 2;
         index num_trials = 5; //nswp
         index is_local = 1;
-
+        index max_search = 2000;
         index min_proc = 4;
+
         index max_proc = omp_get_max_threads();
-        index max_search = 1000;
 
         string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
         string prefix = is_local ? "../../" : "";
-        std::vector<index> d(N_4096 / block_size, block_size), d_s(N_4096 / block_size, block_size);
+        std::vector<index> d_s(N_4096 / block_size, block_size);
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
@@ -53,6 +53,8 @@ namespace cils {
                 mode = stoi(argv[11]);
                 num_trials = stoi(argv[12]);
                 is_local = stoi(argv[13]);
+                max_search = stoi(argv[14]);
+                min_proc = stoi(argv[15]);
             }
             prefix = is_local ? "../../" : "";
             for (index i = d_s.size() - 2; i >= 0; i--) {
@@ -63,12 +65,12 @@ namespace cils {
         template<typename scalar, typename index, index n>
         inline scalar diff(const vector<scalar> *x,
                            const vector<scalar> *y) {
-            scalar d = 0;
-#pragma omp simd reduction(+ : d)
+            scalar diff = 0;
+#pragma omp simd reduction(+ : diff)
             for (index i = 0; i < n; i++) {
-                d += (y->at(i) - x->at(i));
+                diff += (y->at(i) - x->at(i));
             }
-            return d;
+            return diff;
         }
 
         void init_guess(index init_value, vector<index> *z_B, vector<index> *x_R) {
