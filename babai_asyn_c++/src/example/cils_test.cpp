@@ -7,33 +7,33 @@
 
 using namespace cils::program_def;
 
-template<typename scalar, typename index, index n>
-void qr(scalar *Qx, scalar *Rx, scalar *Ax) {
-    // Maximal rank is used by Lapacke
-    const size_t rank = n;
-    const index N = n;
-
-    // Tmp Array for Lapacke
-    const std::unique_ptr<scalar[]> tau(new scalar[rank]);
-    const std::unique_ptr<scalar[]> work(new scalar[rank]);
-    index info = 0;
-
-    // Calculate QR factorisations
-    dgeqrf_(&N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
-
-    // Copy the upper triangular Matrix R (rank x _n) into position
-    for (size_t row = 0; row < rank; ++row) {
-        memset(Rx + row * N, 0, row * sizeof(scalar)); // Set starting zeros
-        memcpy(Rx + row * N + row, Ax + row * N + row,
-               (N - row) * sizeof(scalar)); // Copy upper triangular part from Lapack result.
-    }
-
-    // Create orthogonal matrix Q (in tmpA)
-    dorgqr_(&N, &N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
-
-    //Copy Q (_m x rank) into position
-    memcpy(Qx, Ax, sizeof(scalar) * (N * N));
-}
+//template<typename scalar, typename index, index n>
+//void qr(scalar *Qx, scalar *Rx, scalar *Ax) {
+//    // Maximal rank is used by Lapacke
+//    const size_t rank = n;
+//    const index N = n;
+//
+//    // Tmp Array for Lapacke
+//    const std::unique_ptr<scalar[]> tau(new scalar[rank]);
+//    const std::unique_ptr<scalar[]> work(new scalar[rank]);
+//    index info = 0;
+//
+//    // Calculate QR factorisations
+//    dgeqrf_(&N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
+//
+//    // Copy the upper triangular Matrix R (rank x _n) into position
+//    for (size_t row = 0; row < rank; ++row) {
+//        memset(Rx + row * N, 0, row * sizeof(scalar)); // Set starting zeros
+//        memcpy(Rx + row * N + row, Ax + row * N + row,
+//               (N - row) * sizeof(scalar)); // Copy upper triangular part from Lapack result.
+//    }
+//
+//    // Create orthogonal matrix Q (in tmpA)
+//    dorgqr_(&N, &N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
+//
+//    //Copy Q (_m x rank) into position
+//    memcpy(Qx, Ax, sizeof(scalar) * (N * N));
+//}
 
 template<typename scalar, typename index, index n>
 void ils_block_search() {
