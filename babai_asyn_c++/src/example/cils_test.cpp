@@ -3,7 +3,7 @@
 #include "../source/cils_block_search.cpp"
 #include "../source/cils_babai_search.cpp"
 #include <mpi.h>
-#include <lapack.h>
+//#include <lapack.h>
 
 using namespace cils::program_def;
 
