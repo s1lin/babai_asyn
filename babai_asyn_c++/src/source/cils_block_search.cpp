@@ -115,7 +115,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (flag || i > iter) continue; // || i > iter
+                    if (flag) continue; // || i > iter
                     iter++;
                     pitt = i;
 //                    pitt = j == 0 ? i : work[i];
@@ -143,7 +143,7 @@ namespace cils {
                 {
                     if (j > 1 && mode != 0) {
                         num_iter = j;
-                        flag = res[j - 1] - res[j] > stop;
+                        flag = abs(res[j - 1] - res[j]) > stop;
                     }
                 }
             }
