@@ -143,7 +143,7 @@ namespace cils {
                 {
                     if (j > 0 && mode != 0) {
                         num_iter = j;
-                        flag = res[j - 1] - res[j] < stop;
+                        flag = res[j - 1] - res[j] > stop;
                     }
                 }
             }
