@@ -141,7 +141,7 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 0 && mode != 0) {
+                    if (j > 1 && mode != 0) {
                         num_iter = j;
                         flag = res[j - 1] - res[j] > stop;
                     }
