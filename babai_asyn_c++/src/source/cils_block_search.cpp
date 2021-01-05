@@ -115,7 +115,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
-                    if (flag) continue; // || i > iter
+                    if (i > iter) continue; //
                     iter++;
                     pitt = i;
 //                    pitt = j == 0 ? i : work[i];
@@ -132,6 +132,7 @@ namespace cils {
                             }
                             y_b[row] = y_A->x[row] - sum;
                         }
+
                     } else
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
@@ -141,9 +142,9 @@ namespace cils {
                 }
 #pragma omp master
                 {
-                    if (j > 2 && mode != 0) {
+                    if (j > 1 && mode != 0) {
                         num_iter = j;
-                        flag = abs(res[j - 1] - res[j]) > stop;
+                        flag = res[j - 1] - res[j] > stop;
                     }
                 }
             }

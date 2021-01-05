@@ -147,7 +147,7 @@ def plot_runtime(n, f, stop, file):
         print(lines[k].split(","))
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
-        k = k + 10
+        k = k + 9
 
         axes2[j, 0].set_title('Iterations ' + str(SNRs[j]) + '-SNR', fontsize=13)
         axes2[j, 1].set_title('Residual ' + str(SNRs[j]) + '-SNR', fontsize=13)
@@ -257,7 +257,7 @@ def plot_runtime(n, f, stop, file):
 
 def plot_res(n):
     stops = [0]
-    for f in range(1, 4, 3):
+    for f in range(3, 4, 3):
         # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
         # plot_residual(n, f, file)
 
