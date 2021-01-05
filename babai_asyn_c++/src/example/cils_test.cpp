@@ -36,7 +36,16 @@ void ils_block_search() {
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
         scalar ser_tim = reT.run_time;
 
-        for (index n_proc = 4; n_proc <= 48; n_proc += 4) {
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
+            init_guess(init, &z_B, &cils.x_R);
+            reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
+            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+            printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                   n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
+        }
+
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc, num_trials, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
@@ -45,15 +54,7 @@ void ils_block_search() {
                    n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
         }
 
-        for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += 4) {
-            init_guess(init, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
-            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
-            printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
-                   n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
 
-        }
     }
 }
 
@@ -97,10 +98,8 @@ void plot_run() {
 
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
+                if (max_proc + min_proc > 48) n_proc = 48;
                 init_guess(init, &z_B, &cils.x_R);
-
-                n_proc = n_proc == 96 ? 64 : n_proc;
-//                num_trials = num_trials;
                 reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
 
                 omp_res[init + 1 + 3 * l] +=
@@ -127,7 +126,7 @@ void plot_run() {
                ser_tim[init + 1] / max_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            n_proc = n_proc == 96 ? 64 : n_proc;
+            if (max_proc + min_proc > 48) n_proc = 48;
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
                    omp_itr[init + 1 + 3 * l] / max_iter,
@@ -167,8 +166,7 @@ void plot_res() {
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n", block_size, res, ber,
                reT.run_time);
         res = ber = INFINITY;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += 12) {
-            n_proc = n_proc == 96 ? 64 : n_proc;
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
             for (index nswp = 0; nswp < 30; nswp++) {
@@ -211,8 +209,7 @@ void test_ils_search() {
 
 template<typename scalar, typename index, index n>
 void plot_run_mpi(int argc, char *argv[]) {
-    index k = 1, index_2 = 0, stop = 0, mode = 1, num_trials = 2000, SNR = 15;
-
+    index index_2;
     if (argc != 1) {
         k = stoi(argv[1]);
         index_2 = stoi(argv[2]);

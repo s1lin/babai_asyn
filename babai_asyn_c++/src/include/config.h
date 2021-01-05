@@ -27,10 +27,10 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 1;
-        index num_trials = 5; //nswp
+        index mode = 2;
+        index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 500;
         index min_proc = 4;
 
         index max_proc = omp_get_max_threads();

@@ -101,16 +101,17 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-#pragma omp barrier
+//#pragma omp barrier
+            if (init != -1)
 #pragma omp for nowait
-            for (index i = 0; i < n; i++) {
-                sum = 0;
-                index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+                for (index i = 0; i < n; i++) {
+                    sum = 0;
+                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
 #pragma omp simd reduction(+ : sum)
-                for (index col = n - i; col < n; col++)
-                    sum += R_A->x[nj + col] * z_x[col];
-                z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
-            }
+                    for (index col = n - i; col < n; col++)
+                        sum += R_A->x[nj + col] * z_x[col];
+                    z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
+                }
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait //
@@ -140,7 +141,7 @@ namespace cils {
 
                     res[j] += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
                 }
-#pragma omp master
+#pragma omp single
                 {
                     if (j > 0 && mode != 0) {
                         num_iter = j;
@@ -148,7 +149,7 @@ namespace cils {
                     }
                 }
             }
-#pragma omp master
+#pragma omp single
             {
                 run_time = omp_get_wtime() - start;
             }
@@ -160,7 +161,7 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-        if (mode == 0)
+        if (mode != 1)
             for (index i = 1; i < nswp; i++)
                 cout << res[i - 1] - res[i] << ",";
         return reT;
