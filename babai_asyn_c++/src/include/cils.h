@@ -33,12 +33,10 @@
 #include <netcdf.h>
 #include <bitset>
 #include <math.h>
-//#include <Eigen/Dense>
 #include "config.h"
 
 using namespace std;
-//using Eigen::MatrixXd;
-//using Eigen::VectorXd;
+
 /**
  * namespace of cils
  */
@@ -338,9 +336,8 @@ namespace cils {
         index qam, snr;
         scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index> *R_A, *y_A, *A;
-//        Eigen::MatrixXd A, R, Q;
-//        Eigen::VectorXd y, x_tV;
+        scalarType<scalar, index> *R_A, *y_A, *A, *R, *Q, *v_A;
+
     private:
         /**
          *
@@ -534,10 +531,13 @@ namespace cils {
             }
         }
 
+
+
     public:
         cils(index qam, index snr) {
             this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
             this->y_A->x = new scalar[n]();
 
@@ -555,6 +555,11 @@ namespace cils {
         ~cils() {
             free(R_A);
             free(y_A);
+            if (!is_read) {
+                free(A);
+                free(v_A);
+                free(Q);
+            }
         }
 
         void init(bool is_qr, bool is_nc);

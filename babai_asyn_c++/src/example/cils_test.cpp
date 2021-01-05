@@ -3,8 +3,37 @@
 #include "../source/cils_block_search.cpp"
 #include "../source/cils_babai_search.cpp"
 #include <mpi.h>
+#include <lapack.h>
 
 using namespace cils::program_def;
+
+template<typename scalar, typename index, index n>
+void qr(scalar *Qx, scalar *Rx, scalar *Ax) {
+    // Maximal rank is used by Lapacke
+    const size_t rank = n;
+    const index N = n;
+
+    // Tmp Array for Lapacke
+    const std::unique_ptr<scalar[]> tau(new scalar[rank]);
+    const std::unique_ptr<scalar[]> work(new scalar[rank]);
+    index info = 0;
+
+    // Calculate QR factorisations
+    dgeqrf_(&N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
+
+    // Copy the upper triangular Matrix R (rank x _n) into position
+    for (size_t row = 0; row < rank; ++row) {
+        memset(Rx + row * N, 0, row * sizeof(scalar)); // Set starting zeros
+        memcpy(Rx + row * N + row, Ax + row * N + row,
+               (N - row) * sizeof(scalar)); // Copy upper triangular part from Lapack result.
+    }
+
+    // Create orthogonal matrix Q (in tmpA)
+    dorgqr_(&N, &N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
+
+    //Copy Q (_m x rank) into position
+    memcpy(Qx, Ax, sizeof(scalar) * (N * N));
+}
 
 template<typename scalar, typename index, index n>
 void ils_block_search() {
@@ -15,6 +44,8 @@ void ils_block_search() {
 
     cils::cils<scalar, index, true, n> cils(k, SNR);
     cils.init(is_qr, is_nc);
+//    qr<scalar, index, n>(cils.Q->x, cils.R->x, cils.A->x);
+
     vector<index> z_B(n, 0);
     init_guess(0, &z_B, &cils.x_R);
     index init = 0;
@@ -98,7 +129,7 @@ void plot_run() {
 
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
-                if (max_proc + min_proc > 48) n_proc = 48;
+                if (n_proc > 48) n_proc = 48;
                 init_guess(init, &z_B, &cils.x_R);
                 reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
 
@@ -126,7 +157,7 @@ void plot_run() {
                ser_tim[init + 1] / max_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            if (max_proc + min_proc > 48) n_proc = 48;
+            if (n_proc > 48) n_proc = 48;
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
                    n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
                    omp_itr[init + 1 + 3 * l] / max_iter,
@@ -140,7 +171,6 @@ void plot_run() {
     printf("End of current TASK.\n");
     printf("-------------------------------------------\n");
 }
-
 
 template<typename scalar, typename index, index n>
 void plot_res() {
@@ -205,7 +235,6 @@ void test_ils_search() {
     auto res = cils::find_residual<double, int, n>(&cils.R_A, &cils.y_A, z_B);
     printf("Thread: ILS, Sweep: 0, Res: %.5f, Time: %.5fs\n", res, end_time);
 }
-
 
 template<typename scalar, typename index, index n>
 void plot_run_mpi(int argc, char *argv[]) {

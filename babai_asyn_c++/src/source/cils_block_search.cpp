@@ -1,12 +1,3 @@
-//
-// Created by shilei on 2020-12-05.
-//
-#include <algorithm>
-#include <random>
-#include <chrono>
-#include "../include/cils.h"
-#include <boost/numeric/ublas/vector.hpp>
-
 using namespace std;
 
 namespace cils {
@@ -79,9 +70,9 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        index count = 0, search_count = 255;
+        //index count = 0, search_count = 255;
         bool flag = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, pitt = n_proc, work[ds] = {};
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, pitt = n_proc;//, work[ds] = {};
         scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {};
 
 //        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
@@ -99,7 +90,7 @@ namespace cils {
 //        }
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(count, pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(pitt, sum, row_n, n_dx_q_0, n_dx_q_1)
         {
 //#pragma omp barrier
             if (init != -1)
@@ -120,7 +111,6 @@ namespace cils {
                     iter++;
                     pitt = i;
 //                    pitt = j == 0 ? i : work[i];
-                    count = 0;
                     n_dx_q_0 = n - (pitt + 1) * dx;
                     n_dx_q_1 = n - pitt * dx;
                     //The block operation
@@ -141,7 +131,7 @@ namespace cils {
 
                     res[j] += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
                 }
-#pragma omp single
+#pragma omp master
                 {
                     if (j > 0 && mode != 0) {
                         num_iter = j;
@@ -149,7 +139,7 @@ namespace cils {
                     }
                 }
             }
-#pragma omp single
+#pragma omp master
             {
                 run_time = omp_get_wtime() - start;
             }
