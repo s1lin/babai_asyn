@@ -159,7 +159,7 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-//        if (mode != 1)
+        if (mode != 1)
             for (index i = 1; i < nswp; i++)
                 cout << res[i - 1] - res[i] << ",";
         return reT;

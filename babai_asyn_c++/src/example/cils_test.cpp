@@ -128,11 +128,9 @@ void plot_run() {
             ser_tim[init + 1] += reT.run_time;
 
             index l = 0;
-            for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-//                if (n_proc > 48) n_proc = 48;
+            for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
                 init_guess(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
-
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, init, &d_s, &z_B);
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
@@ -156,10 +154,9 @@ void plot_run() {
                block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
                ser_tim[init + 1] / max_iter);
         index l = 0;
-        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-//            if (n_proc > 48) n_proc = 48;
+        for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
-                   n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
+                   n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
                    omp_itr[init + 1 + 3 * l] / max_iter,
                    omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
                    ser_tim[init + 1] / omp_tim[init + 1 + 3 * l]);
