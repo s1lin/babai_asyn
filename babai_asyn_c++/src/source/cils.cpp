@@ -1,6 +1,6 @@
 #include <cstring>
 #include <algorithm>
-#include <lapack.h>
+//#include <lapack.h>
 
 #include "../include/cils.h"
 
