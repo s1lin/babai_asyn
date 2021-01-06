@@ -162,7 +162,7 @@ namespace cils {
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
         if (mode == 0)
-            for (index i = 1; i < nswp; i++)
+            for (index i = 0; i < nswp; i++)
                 cout << diff[i] << ",";
 
         return reT;

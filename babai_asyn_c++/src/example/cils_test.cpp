@@ -103,7 +103,8 @@ void plot_run() {
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
                 init_guess(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, init, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, init, &d_s,
+                                                 &z_B);
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
@@ -129,7 +130,8 @@ void plot_run() {
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, Speed up: %.3f\n",
-                   n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter, omp_ber[init + 1 + 3 * l] / max_iter,
+                   n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
+                   omp_ber[init + 1 + 3 * l] / max_iter,
                    omp_itr[init + 1 + 3 * l] / max_iter,
                    omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
                    ser_tim[init + 1] / omp_tim[init + 1 + 3 * l]);
@@ -157,7 +159,7 @@ void plot_res() {
     vector<index> z_B(n, 0);
 
     for (index init = -1; init <= 1; init++) {
-        cout << init << "\n";
+        cout << "init," << init << "\n";
         init_guess(init, &z_B, &cils.x_R);
         auto reT = cils.cils_block_search_serial(&d_s, &z_B);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
@@ -167,21 +169,18 @@ void plot_res() {
                block_size, res, ber, reT.run_time);
         res = ber = INFINITY;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
+            cout << d_s[d_s.size() - 1] << "," << n_proc << "," << endl;
             std::cout.flush();
             for (index nswp = 0; nswp < max_iter; nswp++) {
-                for (index t = 0; t < 3; t++) {
-                    init_guess(init, &z_B, &cils.x_R);
-                    reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);
-                    scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-                    scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                    res = newres < res ? newres : res;
-                    ber = newbrr < ber ? newbrr : ber;
-                }
+                init_guess(init, &z_B, &cils.x_R);
+                reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);
+                scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+                res = newres < res ? newres : res;
+                ber = newbrr < ber ? newbrr : ber;
                 printf("nswp=%d, res=%.5f, ber=%.5f\n", nswp, res, ber);
                 res = ber = INFINITY;
             }
-            cout << endl;
         }
     }
 
