@@ -7,33 +7,6 @@
 
 using namespace cils::program_def;
 
-//template<typename scalar, typename index, index n>
-//void qr(scalar *Qx, scalar *Rx, scalar *Ax) {
-//    // Maximal rank is used by Lapacke
-//    const size_t rank = n;
-//    const index N = n;
-//
-//    // Tmp Array for Lapacke
-//    const std::unique_ptr<scalar[]> tau(new scalar[rank]);
-//    const std::unique_ptr<scalar[]> work(new scalar[rank]);
-//    index info = 0;
-//
-//    // Calculate QR factorisations
-//    dgeqrf_(&N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
-//
-//    // Copy the upper triangular Matrix R (rank x _n) into position
-//    for (size_t row = 0; row < rank; ++row) {
-//        memset(Rx + row * N, 0, row * sizeof(scalar)); // Set starting zeros
-//        memcpy(Rx + row * N + row, Ax + row * N + row,
-//               (N - row) * sizeof(scalar)); // Copy upper triangular part from Lapack result.
-//    }
-//
-//    // Create orthogonal matrix Q (in tmpA)
-//    dorgqr_(&N, &N, &N, Ax, &N, tau.get(), work.get(), &N, &info);
-//
-//    //Copy Q (_m x rank) into position
-//    memcpy(Qx, Ax, sizeof(scalar) * (N * N));
-//}
 
 template<typename scalar, typename index, index n>
 void ils_block_search() {
@@ -55,7 +28,7 @@ void ils_block_search() {
         init_guess(init, &z_B, &cils.x_R);
         auto reT = cils.cils_block_search_serial(&d_s, &z_B);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Time: %.5fs\n",
                block_size, res, ber, reT.run_time);
         scalar ils_tim = reT.run_time;
@@ -63,7 +36,7 @@ void ils_block_search() {
         init_guess(init, &z_B, &cils.x_R);
         reT = cils.cils_babai_search_serial(&z_B);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
         scalar ser_tim = reT.run_time;
 
@@ -71,7 +44,7 @@ void ils_block_search() {
             init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                    n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim / reT.run_time));
         }
@@ -80,7 +53,7 @@ void ils_block_search() {
             init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc, num_trials, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                    n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
         }
@@ -118,13 +91,13 @@ void plot_run() {
 //                cout << cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &z_B) << " ";
             reT = cils.cils_babai_search_serial(&z_B);
             bab_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-            bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+            bab_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             bab_tim[init + 1] += reT.run_time;
 
             init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_block_search_serial(&d_s, &z_B);
             ser_res[init + 1] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-            ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+            ser_ber[init + 1] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             ser_tim[init + 1] += reT.run_time;
 
             index l = 0;
@@ -134,7 +107,7 @@ void plot_run() {
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
-                                                                                         cils.qam == 1);
+                                                                                         k);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
                 l++;
@@ -188,7 +161,7 @@ void plot_res() {
         init_guess(init, &z_B, &cils.x_R);
         auto reT = cils.cils_block_search_serial(&d_s, &z_B);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
 
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n", block_size, res, ber,
                reT.run_time);
@@ -201,7 +174,7 @@ void plot_res() {
                     init_guess(init, &z_B, &cils.x_R);
                     reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);
                     scalar newres = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-                    scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, cils.qam == 1);
+                    scalar newbrr = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                     res = newres < res ? newres : res;
                     ber = newbrr < ber ? newbrr : ber;
                 }

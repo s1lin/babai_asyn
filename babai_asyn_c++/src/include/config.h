@@ -17,25 +17,25 @@ namespace cils {
     typedef double scalar;
     namespace program_def {
 
-        index k = 3;
-        index SNR = 35;
+        index k = 1;
+        index SNR = 15;
         index max_iter = 10;
         index search_iter = 3;
-        index stop = 50;
+        index stop = 4000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 1;
-        index num_trials = 10; //nswp
+        index mode = 2;
+        index num_trials = 20; //nswp
         index is_local = 1;
         index max_search = 500;
         index min_proc = 4;
 
         index max_proc = omp_get_max_threads();
 
-        string suffix = to_string(N_4096) + "_" + to_string(SNR) + "_" + to_string(k);
+        string suffix = to_string(N_4096);
         string prefix = is_local ? "../../" : "";
         std::vector<index> d_s(N_4096 / block_size, block_size);
 
@@ -57,6 +57,10 @@ namespace cils {
                 max_search = stoi(argv[14]);
                 min_proc = stoi(argv[15]);
             }
+            printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
+                   "nswp=%d, max_search=%d\n",
+                   k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
+            suffix += "_" + to_string(SNR) + "_" + to_string(k);
             prefix = is_local ? "../../" : "";
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
