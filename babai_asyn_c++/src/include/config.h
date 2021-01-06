@@ -27,7 +27,7 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 0;
+        index mode = 0; //test mode
         index num_trials = 10; //nswp
         index is_local = 1;
         index max_search = 1000;
