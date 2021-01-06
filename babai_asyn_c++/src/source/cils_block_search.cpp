@@ -117,12 +117,10 @@ namespace cils {
                 for (index i = 0; i < ds; i++) {
                     if (flag || i > iter) continue; //
                     iter++;
-                    pitt = i;
-//                    pitt = j == 0 ? i : work[i];
-                    n_dx_q_0 = n - (pitt + 1) * dx;
-                    n_dx_q_1 = n - pitt * dx;
+                    n_dx_q_0 = n - (i + 1) * dx;
+                    n_dx_q_1 = n - i * dx;
                     //The block operation
-                    if (pitt != 0) {
+                    if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
@@ -132,25 +130,20 @@ namespace cils {
                             }
                             y_b[row] = y_A->x[row] - sum;
                         }
-
                     } else
 #pragma omp simd
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                             y_b[l] = y_A->x[l];
 
-                    res[j] += ils_search_omp(n_dx_q_0, n_dx_q_1, 0, y_b, z_x);
-                    if(i == ds - 1)
+                    res[j] += ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+                    if (i == ds - 1)
                         check = true;
                 }
-//#pragma omp master
-//                {
-                    if (j > 1 && mode != 0 && check) {
-                        num_iter = j;
-                        flag = res[j - 1] - res[j] > stop;
-//                        cout<<res[j - 1] - res[j]<<" ";
-                        check = false;
-                    }
-//                }
+                if (mode != 0 && check && j > 1) {
+                    num_iter = j;
+                    flag = abs(res[j - 1] - res[j]) > stop;
+                    check = false;
+                }
             }
 #pragma omp master
             {

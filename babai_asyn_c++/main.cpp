@@ -91,8 +91,7 @@ using namespace cils;
 
 
 void run_test(int argc, char *argv[]) {
-//
-    cout << "Maximum Threads: " << max_proc << endl;
+
 //    program_def::max_proc = 54;
 //    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);

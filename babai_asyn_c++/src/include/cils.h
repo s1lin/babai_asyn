@@ -365,7 +365,6 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                     const bool is_first,
                                      const scalar *y_B, index *z_x) {
 
             //variables
@@ -389,16 +388,18 @@ namespace cils {
 
             //ILS search process
             while (true) {
+                newprsd = p[k] + gamma * gamma;
 #pragma omp atomic
                 count++;
-                if (!is_first && count > program_def::max_search) {
+                if (count > program_def::max_search) {
 #pragma omp simd
                     for (index l = 0; l < dx; l++) {
                         x[l] = z[l];
                     }
+                    beta = newprsd;
                     break;
                 }
-                newprsd = p[k] + gamma * gamma;
+
                 if (newprsd < beta) {
                     if (k != 0) {
 #pragma omp atomic
@@ -451,7 +452,6 @@ namespace cils {
             for (index l = 0; l < dx; l++) {
                 z_x[l + n_dx_q_0] = x[l];
             }
-            if (is_first) return count;
             return beta;
         }
 
