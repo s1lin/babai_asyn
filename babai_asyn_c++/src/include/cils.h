@@ -110,12 +110,15 @@ namespace cils {
                 case 1:
                     binary_x_b = std::bitset<1>(x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<1>(x_t->at(i)).to_string();
+                    break;
                 case 2:
                     binary_x_b = std::bitset<2>(x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<2>(x_t->at(i)).to_string();
+                    break;
                 default:
                     binary_x_b = std::bitset<3>(x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<3>(x_t->at(i)).to_string();
+                    break;
             }
 
             for (index j = 0; j < k; j++) {
