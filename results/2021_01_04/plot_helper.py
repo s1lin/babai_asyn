@@ -1,9 +1,8 @@
 from textwrap import wrap
 
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt2
-import matplotlib.pyplot as plt3
+import numpy as np
 import pandas as pd
 
 
@@ -132,8 +131,7 @@ def plot_residual(n, f, file):
         k = k + 5
 
 
-def plot_runtime(n, f, stop, file):
-    lines = file.readlines()
+def plot_runtime(n, SNRs):
     plt2.rcParams["figure.figsize"] = (20, 8)
     fig, axes2 = plt2.subplots(2, 5, constrained_layout=True)
     color = ['r', 'g', 'b', 'y']
@@ -141,19 +139,23 @@ def plot_runtime(n, f, stop, file):
     index = ['Iter', 'Time', 'Res', 'BER']
     omp_tab = pd.DataFrame(np.random.randn(4, 6),
                            columns=['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'])
-    k = 6
-    SNRs = [35]
-    for j in range(0, 1):
+
+    f = [1, 3]
+    for j in range(0, 2):
+        k = 6
+        SNR = SNRs[0]
+        file = open(str(n) + '_' + str(f[j]) + '_' + str(SNR) + '_plot.out', 'r')
+        lines = file.readlines()
         print(lines[k].split(","))
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
         k = k + 9
 
-        axes2[j, 0].set_title('Iterations ' + str(SNRs[j]) + '-SNR', fontsize=13)
-        axes2[j, 1].set_title('Residual ' + str(SNRs[j]) + '-SNR', fontsize=13)
-        axes2[j, 2].set_title('BER ' + str(SNRs[j]) + '-SNR', fontsize=13)
-        axes2[j, 3].set_title('Running Time ' + str(SNRs[j]) + '-SNR', fontsize=13)
-        axes2[j, 4].set_title('Speed Up ' + str(SNRs[j]) + '-SNR', fontsize=13)
+        axes2[j, 0].set_title('Iterations ' + str(pow(4, f[j])) + '-QAM', fontsize=13)
+        axes2[j, 1].set_title('Residual ' + str(pow(4, f[j])) + '-QAM', fontsize=13)
+        axes2[j, 2].set_title('BER ' + str(pow(4, f[j])) + '-QAM', fontsize=13)
+        axes2[j, 3].set_title('Running Time ' + str(pow(4, f[j])) + '-QAM', fontsize=13)
+        axes2[j, 4].set_title('Speed Up ' + str(pow(4, f[j])) + '-QAM', fontsize=13)
 
         axes2[j, 0].set_ylabel('Avg. Iterations', fontsize=13)
         axes2[j, 1].set_ylabel('Avg. Residual', fontsize=13)
@@ -211,28 +213,30 @@ def plot_runtime(n, f, stop, file):
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
             axes2[j, 2].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_ber,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            axes2[j, 3].semilogy(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_tim,
+            axes2[j, 3].plot(['Babai', 'B-seq', 'NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_tim,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
             axes2[j, 4].plot(['NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_spu,
-                                 color=color[x], marker=marker[x], label=labels[init_value + 1])
+                             color=color[x], marker=marker[x], label=labels[init_value + 1])
             # if SNR == 15:
-            #     axes2[j, 3].set_ylim(130, 450)
-            #     ax.set_ylim(130 / 2000, 450 / 2000)
+            axes2[j, 3].set_ylim(10, 400)
+            ax.set_ylim(10 / 2000, 400 / 2000)
             #     if f == 3:
-            #         axes2[j, 2].set_ylim(0.4, 0.5)
+            # axes2[j, 2].set_ylim(0.4, 0.5)
             # if SNR == 35:
             #     if f == 1:
             #         axes2[j, 1].set_ylim(2, 4)
-            #         axes2[j, 2].set_ylim(-0.0001, 0.001)
+            axes2[0, 2].set_ylim(-0.001, 0.001)
+            axes2[1, 2].set_ylim(-0.1, 0.5)
             #
             #     axes2[j, 3].set_ylim(130, 400)
             #     ax.set_ylim(130 / 2000, 400 / 2000)
 
             axes2[j, 0].legend(loc="upper left")
-            axes2[0, 1].legend(loc="center right")
+            axes2[0, 1].legend(loc="upper left")
             axes2[1, 1].legend(loc="upper right")
-            axes2[j, 2].legend(loc="center right")
-            axes2[j, 3].legend(loc="lower left")
+            axes2[j, 2].legend(loc="upper left")
+            axes2[j, 3].legend(loc="upper right")
+            axes2[j, 4].legend(loc="lower right")
 
             k = k + 3
 
@@ -248,22 +252,19 @@ def plot_runtime(n, f, stop, file):
 
         k = k + 3
 
-    title = 'Residual Convergence and Bit Error Rate for 15-SNR, 35-SNR and ' \
-            + str(pow(4, f)) + '-QAM with different number of threads and block size 16'
+    title = 'Residual Convergence and Bit Error Rate for 35-SNR and ' \
+            + str(pow(4, f[0])) + ',' + str(pow(4, f[1])) + '-QAM with different number of threads and block size 16'
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
-    plt.savefig('./' + str(n) + '_run_plot_' + str(f) + '_' + str(stop))
+    plt.savefig('./' + str(n) + '_run_plot_' + str(SNRs[0]))
     plt.close()
 
 
 def plot_res(n):
-    stops = [0]
-    for f in range(3, 4, 3):
-        # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
-        # plot_residual(n, f, file)
+    SNRs = [35]
 
-        for stop in stops:
-            file = open(str(n) + '_' + str(f) + '_plot_' + str(stop) + '.out', 'r')
-            plot_runtime(n, f, stop, file)
+    # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
+    # plot_residual(n, f, file)
+    plot_runtime(n, SNRs)
 
 
 if __name__ == "__main__":

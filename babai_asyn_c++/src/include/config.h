@@ -17,8 +17,8 @@ namespace cils {
     typedef double scalar;
     namespace program_def {
 
-        index k = 1;
-        index SNR = 15;
+        index k = 3;
+        index SNR = 35;
         index max_iter = 10;
         index search_iter = 3;
         index stop = 4000;
@@ -27,7 +27,7 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 2;
+        index mode = 0;
         index num_trials = 20; //nswp
         index is_local = 1;
         index max_search = 500;
