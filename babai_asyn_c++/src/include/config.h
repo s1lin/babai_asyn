@@ -27,7 +27,7 @@ namespace cils {
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 1;
+        index mode = 2;
         index num_trials = 6; //nswp
         index is_local = 1;
         index max_search = 500;
@@ -35,7 +35,7 @@ namespace cils {
 
         index max_proc = omp_get_max_threads();
 
-        string suffix = to_string(N_4096) + "_" + to_string(SNR);
+        string suffix = to_string(N_4096);
         string prefix = is_local ? "../../" : "";
         std::vector<index> d_s(N_4096 / block_size, block_size);
 
@@ -60,7 +60,7 @@ namespace cils {
             printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d\n",
                    k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
-            suffix += "_" + to_string(k);
+            suffix += "_" + to_string(SNR) + "_" + to_string(k);
             prefix = is_local ? "../../" : "";
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];

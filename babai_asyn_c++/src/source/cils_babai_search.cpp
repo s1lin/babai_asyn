@@ -9,36 +9,41 @@ namespace cils {
     cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                            vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, s = n_proc, x_min = 0, flag = 0, ni, nj;
+        index count = 0, num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, z_p[n] = {};
+        bool flag = false, check = false;
         auto z_x = z_B->data();
         scalar res[nswp] = {}, sum, sum2;
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, sum2, ni, nj)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, diff, ni, nj)
         {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < n; i++) {
-                    if (flag) continue;
-                    sum = sum2 = 0;
+                    if (flag || i > s) continue; //
+                    s++;
+                    sum = 0;
                     ni = n - 1 - i;
                     nj = ni * n - (ni * (n - i)) / 2;
 
-#pragma omp simd reduction(+ : sum) reduction(+ : sum2)
+#pragma omp simd reduction(+ : sum)
                     for (index col = n - i; col < n; col++) {
                         sum += R_A->x[nj + col] * z_x[col];
-//                        sum2 += z_x[col] * R_A->x[(n * i) + col - ((i * (i + 1)) / 2)];
                     }
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-
-                    res[j] += (y_A->x[ni] - sum) * (y_A->x[ni] - sum);
+                    if (i == n - 1)
+                        check = true;
                 }
-#pragma omp master
-                {
-                    if (j > 0) {
-                        num_iter = j;
-                        flag = std::sqrt(abs(res[j] - res[j - 1])) < stop;
+                if (mode != 0 && check) {
+                    num_iter = j;
+                    check = false;
+                    diff = 0;
+#pragma omp simd reduction(+ : diff)
+                    for (index l = 0; l < n; l++) {
+                        diff += z_x[l] == z_p[l];
+                        z_p[l] = z_x[l];
                     }
+                    flag = diff > stop;
                 }
             }
         }
