@@ -143,12 +143,13 @@ namespace cils {
                     num_iter = j;
 //                    flag = abs(res[j - 1] - res[j]) > stop;
                     check = false;
+                    pitt = 0;
 #pragma omp simd reduction(+ : pitt)
                     for (index l = 0; l < n; l++) {
-                        pitt += abs(z_x[l] - z_p[l]);
+                        pitt += z_x[l] == z_p[l];
                         z_p[l] = z_x[l];
                     }
-                    flag = pitt < stop;
+                    flag = pitt > stop;
                 }
             }
 #pragma omp master
