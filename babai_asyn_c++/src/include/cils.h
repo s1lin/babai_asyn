@@ -442,6 +442,7 @@ namespace cils {
                         k++;
 #pragma omp atomic
                         row_k++;
+#pragma omp atomic
                         z[k] += d[k];
                         gamma = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
                         d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;

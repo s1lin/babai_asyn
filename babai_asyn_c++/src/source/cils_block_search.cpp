@@ -81,7 +81,7 @@ namespace cils {
         //index count = 0, search_count = 255;
         bool flag = false, check = false;
         index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, pitt = n_proc;//, work[ds] = {};
-        scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {};
+        scalar sum = 0, run_time, res[ds] = {}, y_b[n] = {}, z_p[n] = {};
 
 //        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
 //        for (int i = 0; i < n_proc; i++) {
@@ -139,10 +139,16 @@ namespace cils {
                     if (i == ds - 1)
                         check = true;
                 }
-                if (mode != 0 && check && j > 1) {
+                if (mode != 0 && check) {
                     num_iter = j;
-                    flag = abs(res[j - 1] - res[j]) > stop;
+//                    flag = abs(res[j - 1] - res[j]) > stop;
                     check = false;
+#pragma omp simd reduction(+ : pitt)
+                    for (index l = 0; l < n; l++) {
+                        pitt += abs(z_x[l] - z_p[l]);
+                        z_p[l] = z_x[l];
+                    }
+                    flag = pitt < stop;
                 }
             }
 #pragma omp master
@@ -154,7 +160,7 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - start;
 
 //#ifdef VERBOSE //1
-//        printf("%d, %.3f, %.3f, ", count, run_time, run_time / run_time2);
+//        printf("%d, %.3f, %.3f, ", pitt, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
         if (mode == 0)
