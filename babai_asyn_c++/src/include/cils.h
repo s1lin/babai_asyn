@@ -102,22 +102,28 @@ namespace cils {
     template<typename scalar, typename index, index n>
     inline scalar find_bit_error_rate(const vector<index> *x_b,
                                       const vector<index> *x_t,
-                                      const index is_binary) {
-        index error = 0, size = is_binary ? 1 : sizeof(index);
+                                      const index k) {
+        index error = 0;
         for (index i = 0; i < n; i++) {
-            std::string binary_x_b = std::bitset<sizeof(index)>(x_b->at(i)).to_string(); //to binary
-            std::string binary_x_t = std::bitset<sizeof(index)>(x_t->at(i)).to_string();
-            if (is_binary) {
-                if (binary_x_b[sizeof(index) - 1] != binary_x_t[sizeof(index) - 1])
+            std::string binary_x_b, binary_x_t;
+            switch (k) {
+                case 1:
+                    binary_x_b = std::bitset<1>(x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<1>(x_t->at(i)).to_string();
+                case 2:
+                    binary_x_b = std::bitset<2>(x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<2>(x_t->at(i)).to_string();
+                default:
+                    binary_x_b = std::bitset<3>(x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<3>(x_t->at(i)).to_string();
+            }
+
+            for (index j = 0; j < k; j++) {
+                if (binary_x_b[j] != binary_x_t[j])
                     error++;
-            } else {
-                for (index j = 0; j < (index) sizeof(index); j++) {
-                    if (binary_x_b[j] != binary_x_t[j])
-                        error++;
-                }
             }
         }
-        return (scalar) error / (n * size);
+        return (scalar) error / (n * k);
     }
 
     /**
@@ -530,7 +536,6 @@ namespace cils {
 
             }
         }
-
 
 
     public:
