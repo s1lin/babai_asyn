@@ -163,13 +163,13 @@ void plot_res() {
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
 
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n", block_size, res, ber,
-               reT.run_time);
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n",
+               block_size, res, ber, reT.run_time);
         res = ber = INFINITY;
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
-            for (index nswp = 0; nswp < 30; nswp++) {
+            for (index nswp = 0; nswp < max_iter; nswp++) {
                 for (index t = 0; t < 3; t++) {
                     init_guess(init, &z_B, &cils.x_R);
                     reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);

@@ -78,7 +78,7 @@ namespace cils {
         auto z_x = z_B->data();
         //index count = 0, search_count = 255;
         bool flag = false, check = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, diff[20] = {}, z_p[n] = {};
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, diff[100] = {}, z_p[n] = {};
         scalar sum = 0, run_time, y_b[n] = {};
 
 //        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
@@ -161,8 +161,10 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", diff, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-        for (index i = 1; i < nswp; i++)
-            cout << diff[i] << ",";
+        if (mode == 0)
+            for (index i = 1; i < nswp; i++)
+                cout << diff[i] << ",";
+
         return reT;
     }
 }
