@@ -18,7 +18,7 @@ namespace cils {
     namespace program_def {
 
         index k = 3;
-        index SNR = 15;
+        index SNR = 35;
         index max_iter = 10;
         index search_iter = 3;
         index stop = 2000;

@@ -19,7 +19,7 @@ void ils_block_search() {
     cils.init(is_qr, is_nc);
 //    qr<scalar, index, n>(cils.Q->x, cils.R->x, cils.A->x);
 
-    vector <index> z_B(n, 0);
+    vector<index> z_B(n, 0);
     init_guess(0, &z_B, &cils.x_R);
     index init = 0;
     //Initialize the block vector
@@ -72,11 +72,11 @@ void plot_run() {
     std::cout << "Init, SNR: " << SNR << std::endl;
 
     cils::cils<scalar, index, true, n> cils(k, SNR);
-    vector <index> z_B(n, 0);
+    vector<index> z_B(n, 0);
 
-    vector <scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
-    vector <scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
-    vector <scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
+    vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
+    vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
+    vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
     cils::returnType<scalar, index> reT;
     cils.init(is_qr, is_nc);
 
@@ -156,7 +156,7 @@ void plot_res() {
     cils.init(is_qr, is_nc);
     printf("init_res: %.5f, sigma: %.5f\n", cils.init_res, cils.sigma);
 
-    vector <index> z_B(n, 0);
+    vector<index> z_B(n, 0);
 
     for (index init = -1; init <= 1; init++) {
         cout << "init," << init << "\n";
@@ -165,19 +165,20 @@ void plot_res() {
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
 
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Brr: %.5f, Time: %.5fs\n",
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, Ber: %.5f, Time: %.5fs\n",
                block_size, res, ber, reT.run_time);
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            cout << d_s[d_s.size() - 1] << "," << n_proc << "," << endl;
+            cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
             for (index nswp = 0; nswp < max_iter; nswp++) {
                 init_guess(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, 0, init,
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, 0, init,
                                                  &d_s, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                printf("diff=%d, res=%.5f, ber=%.5f,", 4096 - reT.num_iter, res, ber);
+                printf("diff=%d, res=%.5f, ber=%.5f, ", 4096 - reT.num_iter, res, ber);
             }
+            cout << endl;
         }
     }
 
@@ -239,7 +240,7 @@ void plot_run_mpi(int argc, char *argv[]) {
     cils::cils<scalar, index, false, n> cils(k, SNR);
     index size = 4, iter = 10;
 
-    vector <index> z_B(n, 0);
+    vector<index> z_B(n, 0);
 
     MPI_Type_vector(n, n_ranks, 50, MPI_DOUBLE, &omp_res);
     MPI_Type_vector(n, n_ranks, 50, MPI_DOUBLE, &omp_ber);
