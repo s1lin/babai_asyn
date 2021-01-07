@@ -172,10 +172,11 @@ void plot_res() {
             std::cout.flush();
             for (index nswp = 0; nswp < max_iter; nswp++) {
                 init_guess(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc, nswp, -1, schedule, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, 0, init,
+                                                 &d_s, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                printf("diff=%d, res=%.5f, ber=%.5f", 4096 - reT.num_iter, res, ber);
+                printf("diff=%d, res=%.5f, ber=%.5f,", 4096 - reT.num_iter, res, ber);
             }
         }
     }
