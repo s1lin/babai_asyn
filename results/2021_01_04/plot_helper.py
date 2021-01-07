@@ -7,11 +7,12 @@ import pandas as pd
 
 
 def plot_residual(n, SNRs):
-    k = 6
+
     f = [1, 3]
-    for j in range(1, 2):
+    for j in range(0, 2):
+        k = 6
         SNR = SNRs[0]
-        file = open(str(n) + '_' + str(f[j]) + '_' + str(SNR) + '_plot.out', 'r')
+        file = open(str(n) + '_' + str(f[j]) + '_' + str(SNR) + '_res.out', 'r')
         lines = file.readlines()
         plt.rcParams["figure.figsize"] = (13, 13)
         fig, axes = plt.subplots(3, 3, constrained_layout=True)
@@ -39,10 +40,12 @@ def plot_residual(n, SNRs):
                 ber = []
                 diff = []
                 while index < len(line_str) - 1:
-                    res.append(float(line_str[index].split("=")[1]))
-                    ber.append(float(line_str[index + 1].split("=")[1]))
-                    index = index + 2
-                if SNR == 35:
+                    diff.append(float(line_str[index].split("=")[1]))
+                    res.append(float(line_str[index + 1].split("=")[1]))
+                    ber.append(float(line_str[index + 2].split("=")[1]))
+                    # print(float(line_str[index + 2].split("=")[1]))
+                    index = index + 3
+                if SNRs[0] == 35:
                     if init + 1 == 0:
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                    marker=marker[m], label='num_thread = ' + str(num_thread))
@@ -51,45 +54,24 @@ def plot_residual(n, SNRs):
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                    marker=marker[m])
 
-                    axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m],
-                                           marker=marker[m])
-                elif SNR == 25:
-                    if init + 1 == 0:
-                        axes[0, init + 1].semilogy(range(0, 15), np.array(res)[0:15], color=color[m],
-                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
-
-                    else:
-                        axes[0, init + 1].semilogy(range(0, 15), np.array(res)[0:15], color=color[m],
-                                                   marker=marker[m])
-                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
-                        #                           linestyle='dotted')
-                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
-                        #                           linestyle='dotted')
-
-                    axes[1, init + 1].plot(range(0, 15), np.array(ber)[0:15], color=color[m],
-                                           marker=marker[m])
+                    axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m], marker=marker[m])
+                    axes[2, init + 1].plot(range(0, 10), np.array(diff)[0:10], color=color[m], marker=marker[m])
                 else:
                     if init + 1 == 0:
-                        axes[0, init + 1].plot(range(0, 10), np.array(res)[0:10], color=color[m],
-                                               label='num_thread = ' + str(num_thread))  # marker=marker[m],
-
+                        axes[0, init + 1].plot(range(0, 100), np.array(res)[0:100], color=color[m],
+                                               label='num_thread = ' + str(num_thread))
                     else:
-                        axes[0, init + 1].plot(range(0, 10), np.array(res)[0:10], color=color[m])
-                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
-                        #                           linestyle='dotted')
-                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
-                        #                           linestyle='dotted')
+                        axes[0, init + 1].plot(range(0, 100), np.array(res)[0:100], color=color[m])
 
-                    axes[1, init + 1].plot(range(0, 100), np.array(ber)[0:100], color=color[m])
-                    if f == 1 and SNR == 15:
-                        axes[1, init + 1].set_ylim(0.4, 0.6)
+                    axes[1, init + 1].plot(range(1, 100), np.array(ber)[1:100], color=color[m])
+                    axes[2, init + 1].plot(range(0, 100), np.array(diff)[0:100], color=color[m])
+                    axes[1, init + 1].set_ylim(0.4, 0.6)
 
                 k = k + 1
-
+            axes[2, init + 1].set_ylim(-100, 4200)
             if init + 1 == 0:
                 axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=2.5,
-                                          linestyle='dotted',
-                                          label='True parameter')
+                                          linestyle='dotted', label='True parameter')
                 axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='m', linewidth=2.5, linestyle='dotted',
                                           label='Block Residual')
                 axes[1, init + 1].axhline(y=ser_ber, xmin=0.0, xmax=1.0, color='k', linewidth=2.5, linestyle='dotted',
@@ -103,30 +85,36 @@ def plot_residual(n, SNRs):
             # axes[1, init + 1].legend(loc="center right")
 
             title_1 = 'Residual Convergence'
-            title_2 = 'BER'
+            title_2 = 'BER Convergence'
+            title_3 = 'Difference Convergence'
 
-            if init_value in '1':
+            if init == 1:
                 title_1 = title_1 + ' $x_{init} = avg$'
                 title_2 = title_2 + ' $x_{init} = avg$'
-            elif init_value in '-1':
+                title_3 = title_3 + ' $x_{init} = avg$'
+            elif init == -1:
                 title_1 = title_1 + ' $x_{init} = round(x_R)$'
                 title_2 = title_2 + ' $x_{init} = round(x_R)$'
-            elif init_value in '0':
+                title_3 = title_3 + ' $x_{init} = round(x_R)$'
+            elif init == 0:
                 title_1 = title_1 + ' $x_{init} = 0$'
                 title_2 = title_2 + ' $x_{init} = 0$'
+                title_3 = title_3 + ' $x_{init} = 0$'
 
             axes[0, init + 1].set_title(title_1, fontsize=13)
             axes[1, init + 1].set_title(title_2, fontsize=13)
-            axes[1, init + 1].set_xlabel('Number of Iterations')
-        title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) + '-SNR and ' \
-                + str(pow(4, f)) + '-QAM with different number of threads and block size 16'
+            axes[2, init + 1].set_title(title_3, fontsize=13)
+            axes[2, init + 1].set_xlabel('Number of Iterations')
+        title = 'Residual Convergence, Bit Error Rate, and differences for ' + str(SNRs[0]) + '-SNR and ' \
+                + str(pow(4, f[j])) + '-QAM with different number of threads and block size 16'
 
         axes[0, 0].set_ylabel('Residual', fontsize=13)
         axes[1, 0].set_ylabel('Bit Error Rate', fontsize=13)
+        axes[2, 0].set_ylabel('Difference of $z_{j+1}-z_{j}$', fontsize=13)
         fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
         fig.legend(loc='center right', title='Legend')
         fig.subplots_adjust(right=0.85)
-        plt.savefig('./' + str(n) + '_res_plot_' + str(f) + '_' + str(SNR))
+        plt.savefig('./' + str(n) + '_res_plot_' + str(f[j]) + '_' + str(SNRs[0]))
         plt.close()
         k = k + 5
 
@@ -260,7 +248,7 @@ def plot_runtime(n, SNRs):
 
 
 def plot_res(n):
-    SNRs = [35]
+    SNRs = [15]
 
     # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
     plot_residual(n, SNRs)
