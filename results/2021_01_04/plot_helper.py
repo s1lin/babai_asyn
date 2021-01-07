@@ -217,16 +217,16 @@ def plot_runtime(n, SNRs):
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
             axes2[j, 4].plot(['NT-12', 'NT-24', 'NT-36', 'NT-48'], omp_spu,
                              color=color[x], marker=marker[x], label=labels[init_value + 1])
-            # if SNR == 15:
-            axes2[j, 3].set_ylim(10, 400)
-            ax.set_ylim(10 / 2000, 400 / 2000)
-            #     if f == 3:
-            # axes2[j, 2].set_ylim(0.4, 0.5)
-            # if SNR == 35:
-            #     if f == 1:
-            #         axes2[j, 1].set_ylim(2, 4)
-            axes2[0, 2].set_ylim(-0.001, 0.001)
-            axes2[1, 2].set_ylim(-0.1, 0.5)
+            if SNR == 35:
+                axes2[j, 3].set_ylim(10, 400)
+                ax.set_ylim(10 / 2000, 400 / 2000)
+                #     if f == 3:
+                # axes2[j, 2].set_ylim(0.4, 0.5)
+                # if SNR == 35:
+                #     if f == 1:
+                #         axes2[j, 1].set_ylim(2, 4)
+                axes2[0, 2].set_ylim(-0.001, 0.001)
+                axes2[1, 2].set_ylim(-0.1, 0.5)
             #
             #     axes2[j, 3].set_ylim(130, 400)
             #     ax.set_ylim(130 / 2000, 400 / 2000)
@@ -260,7 +260,7 @@ def plot_runtime(n, SNRs):
 
 
 def plot_res(n):
-    SNRs = [35]
+    SNRs = [15]
 
     # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
     # plot_residual(n, f, file)

@@ -1,0 +1,49 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+The settings are: k=3, SNR=15, max_iter=2000, search_iter=3, stop=3000, block_size=16, nswp=15, max_search=1000
+plot_run-------------------------------------------
+Init, size: 4096
+Init, QAM: 64
+Init, SNR: 15
+init_res: 126.42687, sigma: 1.99611
+Finish Init, time: 1.49123 seconds
+-
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+-------------------------------------------------++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: -1
+Method: BBA_SER, Block size: 16, Res: 591.44796, BER: 0.49967, Time: 268.91362s, Avg Time: 0.13446s
+Method: ILS_SER, Block size: 16, Res: 594.70576, BER: 0.48470, Time: 340.31717s, Avg Time: 0.17016s
+Method: ILS_OMP, n_proc: 12, Res :684.56105, BER: 0.48578, num_iter: 13.96550, Time: 206.84513s, Avg Time: 0.10342s, Speed up: 1.645
+Method: ILS_OMP, n_proc: 24, Res :750.31701, BER: 0.48557, num_iter: 13.87650, Time: 123.13985s, Avg Time: 0.06157s, Speed up: 2.764
+Method: ILS_OMP, n_proc: 36, Res :808.24898, BER: 0.48551, num_iter: 13.78400, Time: 91.42247s, Avg Time: 0.04571s, Speed up: 3.722
+Method: ILS_OMP, n_proc: 48, Res :859.74172, BER: 0.48512, num_iter: 13.60350, Time: 76.09043s, Avg Time: 0.03805s, Speed up: 4.473
+++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 0
+Method: BBA_SER, Block size: 16, Res: 591.44796, BER: 0.49967, Time: 268.77061s, Avg Time: 0.13439s
+Method: ILS_SER, Block size: 16, Res: 594.70576, BER: 0.48470, Time: 339.85961s, Avg Time: 0.16993s
+Method: ILS_OMP, n_proc: 12, Res :662.01516, BER: 0.48611, num_iter: 5.26200, Time: 113.23755s, Avg Time: 0.05662s, Speed up: 3.001
+Method: ILS_OMP, n_proc: 24, Res :723.89258, BER: 0.48587, num_iter: 13.83550, Time: 129.91372s, Avg Time: 0.06496s, Speed up: 2.616
+Method: ILS_OMP, n_proc: 36, Res :778.74630, BER: 0.48640, num_iter: 13.78500, Time: 96.75808s, Avg Time: 0.04838s, Speed up: 3.512
+Method: ILS_OMP, n_proc: 48, Res :843.72667, BER: 0.48613, num_iter: 13.53150, Time: 82.79842s, Avg Time: 0.04140s, Speed up: 4.105
+++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++
+Block, size: 16
+Init, value: 1
+Method: BBA_SER, Block size: 16, Res: 591.44796, BER: 0.49967, Time: 268.55241s, Avg Time: 0.13428s
+Method: ILS_SER, Block size: 16, Res: 594.70576, BER: 0.48470, Time: 341.85634s, Avg Time: 0.17093s
+Method: ILS_OMP, n_proc: 12, Res :662.15743, BER: 0.48598, num_iter: 5.13600, Time: 111.64538s, Avg Time: 0.05582s, Speed up: 3.062
+Method: ILS_OMP, n_proc: 24, Res :722.92382, BER: 0.48584, num_iter: 13.81250, Time: 129.70376s, Avg Time: 0.06485s, Speed up: 2.636
+Method: ILS_OMP, n_proc: 36, Res :779.08738, BER: 0.48645, num_iter: 13.77200, Time: 97.91875s, Avg Time: 0.04896s, Speed up: 3.491
+Method: ILS_OMP, n_proc: 48, Res :844.27705, BER: 0.48612, num_iter: 13.47350, Time: 82.80094s, Avg Time: 0.04140s, Speed up: 4.129
+++++++++++++++++++++++++++++++++++++++
+End of current TASK.
+-------------------------------------------
+
+real	156m59.850s
+user	1081m20.094s
+sys	2m18.750s
