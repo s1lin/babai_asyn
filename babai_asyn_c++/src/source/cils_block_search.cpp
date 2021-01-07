@@ -9,8 +9,8 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
+    returnType<scalar, index>
+    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector <index> *d, vector <index> *z_B) {
 
         index ds = d->size();
         //special cases:
@@ -19,8 +19,8 @@ namespace cils {
                 z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
                 return {z_B, 0, 0};
             } else {
-                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
-                vector<scalar> y_B = find_block_x(y_A, 0, n);
+                vector <scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
+                vector <scalar> y_B = find_block_x(y_A, 0, n);
                 ils_search(&R_B, &y_B, z_B);
                 return {z_B, 0, 0};
             }
@@ -34,9 +34,9 @@ namespace cils {
 
         scalar start = omp_get_wtime();
         //the last block
-        vector<scalar> R_b = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
-        vector<scalar> y_b = find_block_x<scalar, index>(y_A, n - q, n);
-        vector<index> x_b(n - q, 0);
+        vector <scalar> R_b = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
+        vector <scalar> y_b = find_block_x<scalar, index>(y_A, n - q, n);
+        vector <index> x_b(n - q, 0);
         scalar res = ils_search(&R_b, &y_b, &x_b);
         for (index l = n - q; l < n; l++) {
             z_B->at(l) = x_b[l - n + q];
@@ -65,11 +65,11 @@ namespace cils {
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
+    returnType<scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index init,
-                                                           const vector<index> *d,
-                                                           vector<index> *z_B) {
+                                                           const vector <index> *d,
+                                                           vector <index> *z_B) {
         index ds = d->size(), dx = d->at(ds - 1);
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(d, z_B);
@@ -162,8 +162,8 @@ namespace cils {
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
         if (mode == 0)
-            for (index i = 0; i < nswp; i++)
-                cout << diff[i] << ",";
+//            for (index i = 0; i < nswp; i++)
+            reT = {z_B, run_time2, diff[nswp - 1]};
 
         return reT;
     }

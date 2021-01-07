@@ -6,12 +6,15 @@ import numpy as np
 import pandas as pd
 
 
-def plot_residual(n, f, file):
-    lines = file.readlines()
+def plot_residual(n, SNRs):
     k = 6
+    f = [1, 3]
     for j in range(1, 2):
-        plt.rcParams["figure.figsize"] = (13, 7)
-        fig, axes = plt.subplots(2, 3, constrained_layout=True)
+        SNR = SNRs[0]
+        file = open(str(n) + '_' + str(f[j]) + '_' + str(SNR) + '_plot.out', 'r')
+        lines = file.readlines()
+        plt.rcParams["figure.figsize"] = (13, 13)
+        fig, axes = plt.subplots(3, 3, constrained_layout=True)
         print(lines[k])
         SNR = int(lines[k].split(":")[1].split("\n")[0])
         init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
@@ -34,6 +37,7 @@ def plot_residual(n, f, file):
                 index = 2
                 res = []
                 ber = []
+                diff = []
                 while index < len(line_str) - 1:
                     res.append(float(line_str[index].split("=")[1]))
                     ber.append(float(line_str[index + 1].split("=")[1]))
@@ -46,10 +50,6 @@ def plot_residual(n, f, file):
                     else:
                         axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
                                                    marker=marker[m])
-                        # axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='r', linewidth=3,
-                        #                           linestyle='dotted')
-                        # axes[0, init + 1].axhline(y=ser_res, xmin=0.0, xmax=1.0, color='y', linewidth=3,
-                        #                           linestyle='dotted')
 
                     axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m],
                                            marker=marker[m])
@@ -260,10 +260,10 @@ def plot_runtime(n, SNRs):
 
 
 def plot_res(n):
-    SNRs = [15]
+    SNRs = [35]
 
     # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
-    # plot_residual(n, f, file)
+    plot_residual(n, SNRs)
     plot_runtime(n, SNRs)
 
 
