@@ -9,70 +9,65 @@ using namespace std;
 
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector <index> *d, vector <index> *z_B) {
+    returnType <scalar, index>
+    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B, bool is_constrained) {
 
-        index ds = d->size();
+        index ds = d->size(), dx = d->at(ds - 1), n_dx_q_0, n_dx_q_1;
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
                 z_B->at(0) = round(y_A->x[0] / R_A->x[0]);
                 return {z_B, 0, 0};
             } else {
-                vector <scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
-                vector <scalar> y_B = find_block_x(y_A, 0, n);
-                ils_search(&R_B, &y_B, z_B);
+                vector<scalar> R_B = find_block_Rii(R_A, 0, n, 0, n, n);
+                vector<scalar> y_B = find_block_x(y_A, 0, n);
+                ils_search(&R_B, &y_B, z_B, is_constrained);
                 return {z_B, 0, 0};
             }
         } else if (ds == n) {
             //Find the Babai point
-            return cils_babai_search_serial(z_B);
+            return cils_babai_search_serial(z_B, is_constrained);
         }
 
-        //last block:
-        index q = d->at(ds - 1);
+        scalar start = omp_get_wtime(), res = 0;
+        vector<scalar> R_b, y_b;
+        vector<index> x_b(dx, 0);
 
-        scalar start = omp_get_wtime();
-        //the last block
-        vector <scalar> R_b = find_block_Rii<scalar, index>(R_A, n - q, n, n - q, n, n);
-        vector <scalar> y_b = find_block_x<scalar, index>(y_A, n - q, n);
-        vector <index> x_b(n - q, 0);
-        scalar res = ils_search(&R_b, &y_b, &x_b);
-        for (index l = n - q; l < n; l++) {
-            z_B->at(l) = x_b[l - n + q];
-        }
+        for (index i = 0; i < ds; i++) {
+            n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
+            n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
 
-        //Therefore, skip the last block, start from the second-last block till the first block.
-        for (index i = 0; i < ds - 1; i++) {
-            q = ds - 2 - i;
-            //accumulate the block size
-            y_b = find_block_x<scalar, index>(y_A, n - d->at(q), n - d->at(q + 1));
-            x_b = find_block_x<scalar, index>(z_B, n - d->at(q + 1), n);
-            y_b = block_residual_vector(R_A, &x_b, &y_b, n - d->at(q), n - d->at(q + 1), n - d->at(q + 1), n);
+            y_b = find_block_x<scalar, index>(y_A, n_dx_q_0, n_dx_q_1);
+            R_b = find_block_Rii<scalar, index>(R_A, n_dx_q_0, n_dx_q_1, n_dx_q_0, n_dx_q_1, n);
 
-            R_b = find_block_Rii<scalar, index>(R_A, n - d->at(q), n - d->at(q + 1), n - d->at(q), n - d->at(q + 1), n);
-
-            res += ils_search(&R_b, &y_b, &x_b);
-
-            for (index l = n - d->at(q); l < n - d->at(q + 1); l++) {
-                z_B->at(l) = x_b[l - n + d->at(q)];
+            if (i != 0){
+                //accumulate the block size
+                x_b = find_block_x<scalar, index>(z_B, n_dx_q_1, n);
+                y_b = block_residual_vector(R_A, &x_b, &y_b, n_dx_q_0, n_dx_q_1, n_dx_q_1, n);
             }
 
+            res += ils_search(&R_b, &y_b, &x_b, is_constrained);
+
+            for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                z_B->at(l) = x_b[l - n_dx_q_0];
+            }
         }
+
         scalar run_time = omp_get_wtime() - start;
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
 
     template<typename scalar, typename index, bool is_read, index n>
-    returnType<scalar, index>
+    returnType <scalar, index>
     cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
                                                            const index stop, const index init,
-                                                           const vector <index> *d,
-                                                           vector <index> *z_B) {
+                                                           const vector<index> *d,
+                                                           vector<index> *z_B,
+                                                           const bool is_constrained) {
         index ds = d->size(), dx = d->at(ds - 1);
         if (ds == 1 || ds == n) {
-            return cils_block_search_serial(d, z_B);
+            return cils_block_search_serial(d, z_B, is_constrained);
         }
 
         auto z_x = z_B->data();
@@ -133,7 +128,7 @@ namespace cils {
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++)
                             y_b[l] = y_A->x[l];
 
-                    ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+                    ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
                     if (i == ds - 1)
                         check = true;
                 }

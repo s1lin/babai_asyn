@@ -360,186 +360,31 @@ namespace cils {
          */
         void read_csv(bool is_qr);
 
-        /**
-         *
-         * @param n_dx_q_0
-         * @param n_dx_q_1
-         * @param y
-         * @return
-         */
+       /**
+        *
+        * @param n_dx_q_0
+        * @param n_dx_q_1
+        * @param y_B
+        * @param z_x
+        * @param is_constrained
+        * @return
+        */
         inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                     const scalar *y_B, index *z_x) {
-
-            //variables
-            scalar sum, newprsd, gamma, beta = INFINITY;
-
-            index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
-            index count = 0, end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
-            index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
-
-            scalar p[dx], c[dx];
-            index z[dx], d[dx], x[dx];
-
-            //  Initial squared search radius
-            scalar R_kk = R_A->x[row_kk];
-            c[k] = y_B[row_k] / R_kk;
-            z[k] = round(c[k]);
-            gamma = R_kk * (c[k] - z[k]);
-
-            //  Determine enumeration direction at level block_size
-            d[k] = c[k] > z[k] ? 1 : -1;
-
-            //ILS search process
-            while (true) {
-                newprsd = p[k] + gamma * gamma;
-#pragma omp atomic
-                count++;
-                if (count > program_def::max_search) {
-#pragma omp simd
-                    for (index l = 0; l < dx; l++) {
-                        x[l] = z[l];
-                    }
-                    beta = newprsd;
-                    break;
-                }
-
-                if (newprsd < beta) {
-                    if (k != 0) {
-#pragma omp atomic
-                        k--;
-#pragma omp atomic
-                        row_k--;
-                        sum = 0;
-                        row_kk = (n * row_k) - ((row_k * (row_k + 1)) / 2);
-#pragma omp simd reduction(+ : sum)
-                        for (index col = k + 1; col < dx; col++) {
-                            sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
-                        }
-                        R_kk = R_A->x[row_kk + row_k];
-
-                        p[k] = newprsd;
-                        c[k] = (y_B[row_k] - sum) / R_kk;
-                        z[k] = round(c[k]);
-                        gamma = R_kk * (c[k] - z[k]);
-
-                        d[k] = c[k] > z[k] ? 1 : -1;
-
-                    } else {
-                        beta = newprsd;
-#pragma omp simd
-                        for (index l = 0; l < dx; l++) {
-                            x[l] = z[l];
-                        }
-#pragma omp atomic
-                        iter++;
-                        if (iter > program_def::search_iter) break;
-
-                        z[0] += d[0];
-                        gamma = R_A->x[0] * (c[0] - z[0]);
-                        d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
-                    }
-                } else {
-                    if (k == dx - 1) break;
-                    else {
-#pragma omp atomic
-                        k++;
-#pragma omp atomic
-                        row_k++;
-#pragma omp atomic
-                        z[k] += d[k];
-                        gamma = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
-                        d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
-                    }
-                }
-            }
-#pragma omp simd
-            for (index l = 0; l < dx; l++) {
-                z_x[l + n_dx_q_0] = x[l];
-            }
-            return beta;
-        }
+                                     const scalar *y_B, index *z_x, const bool is_constrained);
 
 
-        /**
-         *
-         * @param R_B
-         * @param y_B
-         * @param x
-         */
+       /**
+        *
+        * @param R_B
+        * @param y_B
+        * @param x
+        * @param is_constrained
+        * @return
+        */
         inline scalar ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
-                                 vector<index> *x) {
-
-            //variables
-            index block_size = y_B->size();
-
-            vector<index> z(block_size, 0), d(block_size, 0);
-            vector<scalar> p(block_size, 0), c(block_size, 0);
-
-            scalar newprsd, gamma, beta = INFINITY;
-            index k = block_size - 1;
-
-            c[block_size - 1] = y_B->at(block_size - 1) / R_B->at(R_B->size() - 1);
-            z[block_size - 1] = round(c[block_size - 1]);
-            gamma = R_B->at(R_B->size() - 1) * (c[block_size - 1] - z[block_size - 1]);
-
-            //  Determine enumeration direction at level block_size
-            d[block_size - 1] = c[block_size - 1] > z[block_size - 1] ? 1 : -1;
-
-            while (true) {
-                newprsd = p[k] + gamma * gamma;
-                if (newprsd < beta) {
-                    if (k != 0) {
-                        k--;
-                        scalar sum = 0;
-                        for (index col = k + 1; col < block_size; col++) {
-                            sum += R_B->at((block_size * k) + col - ((k * (k + 1)) / 2)) * z[col];
-                        }
-                        scalar s = y_B->at(k) - sum;
-                        scalar R_kk = R_B->at((block_size * k) + k - ((k * (k + 1)) / 2));
-                        p[k] = newprsd;
-                        c[k] = s / R_kk;
-
-                        z[k] = round(c[k]);
-                        gamma = R_kk * (c[k] - z[k]);
-                        d[k] = c[k] > z[k] ? 1 : -1;
-
-                    } else {
-                        beta = newprsd;
-                        //Deep Copy of the result
-                        for (index l = 0; l < block_size; l++) {
-                            x->at(l) = z[l];
-                        }
-
-                        z[0] += d[0];
-                        gamma = R_B->at(0) * (c[0] - z[0]);
-                        d[0] = d[0] > 0 ? -d[0] - 1 : -d[0] + 1;
-                    }
-                } else {
-                    if (k == block_size - 1) break;
-                    else {
-                        k++;
-                        z[k] += d[k];
-                        gamma = R_B->at((block_size * k) + k - ((k * (k + 1)) / 2)) * (c[k] - z[k]);
-                        d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
-                    }
-                }
-            }
-            return beta;
-        }
+                                 vector<index> *x, const bool is_constrained);
 
 
-        inline vector<index> ils_reduction(const scalarType<scalar, index> *B, const vector<scalar> *y_B) {
-            std::array<std::array<index, n>, 2> colNormB;
-            for (index j = 0; j < n; j++) {
-                scalar b_0 = B[0][j];
-                scalar b_1 = B[1][j];
-                colNormB[0][j] = b_0 * b_0 + b_1 * b_1;
-            }
-            index n_dim = n;
-            for (index k = 0; k < n_dim; k++) {
-
-            }
-        }
 
 
     public:
@@ -572,6 +417,7 @@ namespace cils {
         }
 
         void init(bool is_qr, bool is_nc);
+
         /**
          *
          * @param n_proc
@@ -595,21 +441,13 @@ namespace cils {
         cils_back_solve(vector<index> *z_B);
 
         /**
-        * Unconstrained version of Serial Babai solver
+        * Serial Babai solver
         * @param z_B
+        * @param is_constrained
         * @return
         */
         returnType<scalar, index>
-        cils_babai_search_serial(vector<index> *z_B);
-
-        /**
-         * Constrained version of Serial Babai solver
-         * @param z_B
-         * @return
-         */
-        returnType<scalar, index>
-        cils_babai_search_serial_constrained(vector<index> *z_B);
-
+        cils_babai_search_serial(vector<index> *z_B, bool is_constrained);
 
         /**
          * Unconstrained version of Parallel Babai solver
@@ -632,16 +470,36 @@ namespace cils {
         cils_babai_search_omp_constrained(const index n_proc, const index nswp, vector<index> *z_B);
 
         /**
-         *
+         * Unconstrained serial version of Block Babai solver
          * @param z_B
          * @param d
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(const vector<index> *d, vector<index> *z_B);
+        cils_block_search_serial(const vector<index> *d, vector<index> *z_B, bool is_constrained);
+
 
         /**
-         *
+         * Unconstrained Parallel version of Block Babai solver
+         * @param n_proc
+         * @param nswp
+         * @param stop
+         * @param init
+         * @param d
+         * @param z_B
+         * @return
+         */
+        returnType<scalar, index>
+        cils_block_search_omp(const index n_proc, const index nswp, const index stop, const index init,
+                              const vector<index> *d, vector<index> *z_B, const bool is_constrained);
+
+
+
+        returnType<scalar, index>
+        cils_QR_decomposition();
+
+        /**
+         * Unconstrained GPU version of Block Babai solver
          * @param n_proc
          * @param nswp
          * @param R_B
@@ -652,24 +510,6 @@ namespace cils {
          */
         returnType<scalar, index>
         cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<index> *z_B);
-
-
-        /**
-         *
-         * @param n_proc
-         * @param nswp
-         * @param R_B
-         * @param y_B
-         * @param z_B
-         * @param d
-         * @return
-         */
-        returnType<scalar, index>
-        cils_block_search_omp(const index n_proc, const index nswp, const index stop, const index schedule,
-                              const vector<index> *d, vector<index> *z_B);
-
-        returnType<scalar, index>
-        cils_reduction();
 
 
     };

@@ -109,28 +109,7 @@ namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_serial(vector<index> *z_B) {
-        scalar sum = 0;
-        scalar start = omp_get_wtime();
-
-        z_B->at(n - 1) = round(y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1]);
-        for (index i = 1; i < n; i++) {
-            index k = n - i - 1;
-            for (index col = n - i; col < n; col++) {
-                sum += R_A->x[k * n - (k * (n - i)) / 2 + col] * z_B->at(col);
-            }
-            z_B->at(k) = round((y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i]);
-            sum = 0;
-        }
-        scalar run_time = omp_get_wtime() - start;
-        returnType<scalar, index> reT = {z_B, run_time, 0};
-        return reT;
-    }
-
-
-    template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_serial_constrained(vector<index> *z_B) {
+    cils<scalar, index, is_read, n>::cils_babai_search_serial(vector<index> *z_B, bool is_constrained) {
         scalar sum = 0, upper = pow(2, k) - 1;
         scalar start = omp_get_wtime();
 
@@ -143,7 +122,7 @@ namespace cils {
                 sum += R_A->x[k * n - (k * (n - i)) / 2 + col] * z_B->at(col);
             }
             result = round((y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i]);
-            z_B->at(k) = result < 0 ? 0 : result > upper ? upper : result;
+            z_B->at(k) = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
             sum = 0;
         }
         scalar run_time = omp_get_wtime() - start;

@@ -17,8 +17,8 @@ namespace cils {
     typedef double scalar;
     namespace program_def {
 
-        index k = 1;
-        index SNR = 15;
+        index k = 3;
+        index SNR = 35;
         index max_iter = 100;
         index search_iter = 3;
         index stop = 2000;
@@ -35,7 +35,7 @@ namespace cils {
 
         index max_proc = omp_get_max_threads();
 
-        string suffix = "new" + to_string(N_4096);
+        string suffix = "" + to_string(N_4096);
         string prefix = is_local ? "../../" : "";
         std::vector<index> d_s(N_4096 / block_size, block_size);
 
