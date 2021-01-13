@@ -7,7 +7,7 @@ classdef sils_class
     methods(Static)
         function auto_gen()
             for k = 1:2:3
-                for SNR = 15:20:15
+                for SNR = 15:20:35
                     	m = 12;
                         s = sils_class(k, m, SNR);
                         s.write_to_nc();
@@ -17,21 +17,41 @@ classdef sils_class
         end
     end
     methods
+        
         %Constructor
         function sils = sils_class(k, m, SNR)
+            %Initialize Variables
             sils.k = k;
-            sils.n = 2^m;
-            sils.SNR = SNR;
+            sils.n = 2^m; %The real size
+            sils.SNR = SNR;            
             sils.z = ones(sils.n, 1);
-            sils.A = normrnd(0, sqrt(0.5), sils.n, sils.n);
-            [sils.Q, sils.R] = qr(sils.A);
             sils.x0_R = zeros(sils.n, 1);
-            %sils.x0_R_LLL = zeros(sils.n, 1);
-            sils.x0 = randi([0, 2^k - 1], sils.n, 1);
-            sils.sigma = sqrt(((4^k-1)*m)/(6*10^(SNR/10)))
+            sils.sigma = sqrt(((4^k-1)*sils.n/2)/(6*10^(SNR/10)));            
+            
+            %Initialize A:
+            Ar = normrnd(0, sqrt(1/2), sils.n/2, sils.n/2);
+            Ai = normrnd(0, sqrt(1/2), sils.n/2, sils.n/2);
+            Abar = [Ar -Ai; Ai, Ar];
+            var(Abar,0, 'all')
+            sils.A = 2 * Abar;
+            
+            %True parameter x:
+            low = -2^(k-1);
+            upp = 2^(k-1) - 1;
+            xr = 1 + 2 * randi([low upp], sils.n/2, 1);
+            xi = 1 + 2 * randi([low upp], sils.n/2, 1);
+            xbar = [xr; xi];
+            sils.x0 = (2^k - 1 + xbar)./2;                    
+            
+            %Get Upper triangular matrix
+            [sils.Q, sils.R] = qr(sils.A);
+            
+             %Right-hand side y:
             v = normrnd(0, sils.sigma, sils.n, 1);
-            sils.y = sils.R * sils.x0 + sils.Q * v;
+            sils.y = sils.R * sils.x0 + sils.Q' * v;
+            
             sils.init_res = norm(sils.y - sils.R * sils.x0);
+            
             disp([sils.init_res]);
         end
 
@@ -56,7 +76,7 @@ classdef sils_class
                 end
             end
           
-            filename = append('../data/', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
+            filename = append('../data/new', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
             delete(filename);
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});

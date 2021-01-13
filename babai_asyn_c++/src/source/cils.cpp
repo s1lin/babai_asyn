@@ -16,7 +16,7 @@ namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
     void cils<scalar, index, is_read, n>::read_nc(string filename) {
-
+        cout << filename;
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
 

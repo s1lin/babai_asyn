@@ -40,6 +40,13 @@ void ils_block_search() {
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
         scalar ser_tim = reT.run_time;
 
+        init_guess(init, &z_B, &cils.x_R);
+        reT = cils.cils_babai_search_serial_constrained(&z_B);
+        res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, 2);
+        printf("Method: BAB_CON, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
+        scalar ser_tim_constrained = reT.run_time;
+
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             init_guess(init, &z_B, &cils.x_R);
             reT = cils.cils_block_search_omp(n_proc, num_trials, stop, init, &d_s, &z_B);
@@ -56,6 +63,15 @@ void ils_block_search() {
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
                    n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim / reT.run_time));
+        }
+
+        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
+            init_guess(init, &z_B, &cils.x_R);
+            reT = cils.cils_babai_search_omp_constrained(n_proc, num_trials, &z_B);
+            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+            printf("Method: BAB_OCN, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                   n_proc, res, ber, reT.num_iter, reT.run_time, (ser_tim_constrained / reT.run_time));
         }
 
 
@@ -103,7 +119,8 @@ void plot_run() {
             index l = 0;
             for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
                 init_guess(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, init, &d_s,
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, init,
+                                                 &d_s,
                                                  &z_B);
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);

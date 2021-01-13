@@ -82,8 +82,7 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             sum = 0;
             for (index j = i; j < n; j++) {
-                index x_j = std::stoi(std::bitset<1>(x->at(j)).to_string()); //to binary
-                sum += x_j * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
+                sum += x->at(j) * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
             }
             res += (y->x[i] - sum) * (y->x[i] - sum);
         }
@@ -573,17 +572,6 @@ namespace cils {
         }
 
         void init(bool is_qr, bool is_nc);
-
-        /**
-         *
-         * @param n_proc: number of Processors/Threads
-         * @param nswp: maximum number of iterations
-         * @param z_B: estimation of the true parameter
-         * @return
-         */
-        returnType<scalar, index>
-        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
-
         /**
          *
          * @param n_proc
@@ -606,14 +594,42 @@ namespace cils {
         returnType<scalar, index>
         cils_back_solve(vector<index> *z_B);
 
+        /**
+        * Unconstrained version of Serial Babai solver
+        * @param z_B
+        * @return
+        */
+        returnType<scalar, index>
+        cils_babai_search_serial(vector<index> *z_B);
 
         /**
-         *
+         * Constrained version of Serial Babai solver
          * @param z_B
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_serial(vector<index> *z_B);
+        cils_babai_search_serial_constrained(vector<index> *z_B);
+
+
+        /**
+         * Unconstrained version of Parallel Babai solver
+         * @param n_proc: number of Processors/Threads
+         * @param nswp: maximum number of iterations
+         * @param z_B: estimation of the true parameter
+         * @return
+         */
+        returnType<scalar, index>
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
+
+        /**
+         * Constrained version of Parallel Babai solver
+         * @param n_proc: number of Processors/Threads
+         * @param nswp: maximum number of iterations
+         * @param z_B: estimation of the true parameter
+         * @return
+         */
+        returnType<scalar, index>
+        cils_babai_search_omp_constrained(const index n_proc, const index nswp, vector<index> *z_B);
 
         /**
          *
