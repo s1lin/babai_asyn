@@ -82,7 +82,8 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             sum = 0;
             for (index j = i; j < n; j++) {
-                sum += x->at(j) * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
+                index x_j = std::stoi(std::bitset<1>(x->at(j)).to_string()); //to binary
+                sum += x_j * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
             }
             res += (y->x[i] - sum) * (y->x[i] - sum);
         }

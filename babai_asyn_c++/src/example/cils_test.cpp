@@ -36,7 +36,7 @@ void ils_block_search() {
         init_guess(init, &z_B, &cils.x_R);
         reT = cils.cils_babai_search_serial(&z_B);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, 2);
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Time: %.5fs\n", res, ber, reT.run_time);
         scalar ser_tim = reT.run_time;
 
@@ -107,8 +107,7 @@ void plot_run() {
                                                  &z_B);
                 omp_res[init + 1 + 3 * l] +=
                         cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t,
-                                                                                         k);
+                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
                 l++;
