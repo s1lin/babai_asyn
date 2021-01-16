@@ -7,7 +7,7 @@
 #include <iostream>
 
 #define N_4096 (4096)
-#define N_10 (6)
+#define N_10 (1024)
 //#define N_4096 (8192)
 #define VERBOSE (0)
 
@@ -18,11 +18,11 @@ namespace cils {
     typedef double scalar;
     namespace program_def {
 
-        index k = 3;
-        index SNR = 35;
+        index k = 1;
+        index SNR = 45;
         index max_iter = 1;
-        index search_iter = 10;
-        index stop = 2000;
+        index search_iter = 3;
+        index stop = 250;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
@@ -31,7 +31,7 @@ namespace cils {
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 300;
         index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
@@ -39,7 +39,7 @@ namespace cils {
 
         string suffix = "" + to_string(N_4096);
         string prefix = is_local ? "../../" : "";
-        std::vector<index> d_s(N_4096 / block_size, block_size);
+        std::vector<index> d_s(N_10 / block_size, block_size);
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {

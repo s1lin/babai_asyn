@@ -93,7 +93,6 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-#pragma omp barrier
             if (init != -1)
 #pragma omp for nowait
                 for (index i = 0; i < n; i++) {

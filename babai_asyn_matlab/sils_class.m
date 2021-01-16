@@ -52,7 +52,7 @@ classdef sils_class
             [sils.Q, sils.R] = qr(sils.A);
             
              %Right-hand side y:
-            sils.y = sils.R * sils.x0;% + sils.Q' * v;
+            sils.y = sils.R * sils.x0 + sils.Q' * v;
             
             sils.init_res = norm(sils.y - sils.R * sils.x0)
             
