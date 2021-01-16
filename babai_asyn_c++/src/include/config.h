@@ -18,11 +18,11 @@ namespace cils {
     typedef double scalar;
     namespace program_def {
 
-        index k = 1;
+        index k = 3;
         index SNR = 45;
         index max_iter = 1;
         index search_iter = 3;
-        index stop = 250;
+        index stop = 4000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
@@ -31,7 +31,7 @@ namespace cils {
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 300;
+        index max_search = 3000;
         index min_proc = 3;
 
         index max_proc = omp_get_max_threads();

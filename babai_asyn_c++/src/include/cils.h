@@ -330,91 +330,18 @@ namespace cils {
     }
 
     /**
-     * Parallel version of QR-factorization using modified Gram-Schmidt algorithm
-     * @tparam scalar
-     * @tparam index
-     * @param A
-     * @param Q
-     * @param R
-     * @param n_proc
-     * @return
-     */
-    template<typename scalar, typename index, index n>
-    inline scalar qr_decomposition(scalarType<scalar, index> *A,
-                                   scalarType<scalar, index> *Q,
-                                   scalarType<scalar, index> *R) {
-
-        index i, j, k, m;
-        scalar error, d, time, s_time, r_sum = 0;
-        auto t = new scalar[n * n]();
-
-        time = omp_get_wtime();
-        for (i = 0; i < n; i++) {
-            for (j = 0; j < n; j++) {
-                t[i * n + j] = A->x[i * n + j];
-            }
-        }
-
-        //First column of ( Q[][0] )
-        for (i = 0; i < n; i++) {
-            r_sum = r_sum + t[0 * n + i] * t[0 * n + i];
-        }
-        R->x[0 * n + 0] = sqrt(r_sum);
-        for (i = 0; i < n; i++) {
-            Q->x[0 * n + i] = t[0 * n + i] / R->x[0 * n + 0];
-        }
-
-        for (k = 1; k < n; k++) {
-            //Check if Q[][i-1] (the previous column) is computed.
-            for (j = 0; j < n; j++) {
-                if (j >= k) {
-                    R->x[(k - 1) * n + j] = 0;
-                    for (i = 0; i < n; i++) {
-                        R->x[j * n + (k - 1)] += Q->x[(k - 1) * n + i] * t[j * n + i];
-                    }
-                    for (i = 0; i < n; i++) {
-                        t[j * n + i] = t[j * n + i] - R->x[j * n + (k - 1)] * Q->x[(k - 1) * n + i];
-                    }
-
-                    //Only one thread calculates the norm ||A||
-                    if (j == k) {
-                        r_sum = 0;
-                        for (i = 0; i < n; i++) {
-                            r_sum = r_sum + t[k * n + i] * t[k * n + i];
-                        }
-                        R->x[k * n + k] = sqrt(r_sum);
-
-                        //#pragma omp for schedule(static,1) nowait
-                        for (i = 0; i < n; i++) {
-                            Q->x[k * n + i] = t[k * n + i] / R->x[k * n + k];
-                        }
-                        //printf("I am thread %d and I unset lock %d.\n", thrid,k);
-//                                omp_unset_lock(&lock[k]);
-                    }
-                }
-            }
-            r_sum = 0;
-        }
-
-        time = omp_get_wtime() - time;
-        printf("(Serial QR Execution)Elapsed time: %f ", time);
-        delete[] t;
-        return time;
-    }
-
-
-    /**
      * Evaluating the decomposition
      * @param eval
      * @param qr_eval
      */
     template<typename scalar, typename index, index n>
-    void qr_validation(const scalarType<scalar, index> *A,
+    scalar qr_validation(const scalarType<scalar, index> *A,
                        const scalarType<scalar, index> *Q,
                        const scalarType<scalar, index> *R,
+                       const scalarType<scalar, index> *R_A,
                        const index eval, const index qr_eval) {
         index i, j, k;
-        scalar sum;
+        scalar sum, error = 0;
         auto c = new scalar[n * n]();
         if (eval == 1) {
             printf("\nPrinting A...\n");
@@ -448,6 +375,14 @@ namespace cils {
                 }
                 printf("\n");
             }
+
+            printf("\nPrinting R_A...\n");
+            for (i = 0; i < n; i++) {
+                for (j = i; j < n; j++) {
+                    printf("%.3f ", R_A->x[(n * i) + j - ((i * (i + 1)) / 2)]);
+                }
+                printf("\n");
+            }
         }
         if (qr_eval == 1) {
             for (i = 0; i < n; i++) {
@@ -468,15 +403,17 @@ namespace cils {
                     printf("\n");
                 }
             }
-            scalar error = 0;
+
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
                     error += fabs(c[j * n + i] - A->x[j * n + i]);
                 }
             }
-            printf("\nError: %e\n", error);
+//            printf(", Error: %e\n", error);
         }
+
         delete[] c;
+        return error;
     }
 
     /**
@@ -563,9 +500,43 @@ namespace cils {
             }
         }
 
-        void init(bool is_qr, bool is_nc);
+        /**
+         * Initialize the problem either reading from files (.csv or .nc) or generating the problem
+         * @param is_nc
+         */
+        void init(bool is_nc);
 
-        void init_omp(const index n_proc);
+        /**
+         * Only invoke is function when it is not reading from files and after completed qr!
+         */
+        void init_y();
+
+        /**
+         * Serial version of QR-factorization using modified Gram-Schmidt algorithm
+         * @tparam scalar
+         * @tparam index
+         * @param A
+         * @param Q
+         * @param R
+         * @param n_proc
+         * @return
+         */
+        returnType<scalar, index>
+        cils_qr_decomposition_serial(const index eval, const index qr_eval);
+
+
+        /**
+         * Serial version of QR-factorization using modified Gram-Schmidt algorithm
+         * @tparam scalar
+         * @tparam index
+         * @param A
+         * @param Q
+         * @param R
+         * @param n_proc
+         * @return
+         */
+        returnType<scalar, index>
+        cils_qr_decomposition_omp(const index eval, const index qr_eval, const index n_proc);
 
         /**
          *
