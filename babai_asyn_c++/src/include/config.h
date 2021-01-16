@@ -7,6 +7,7 @@
 #include <iostream>
 
 #define N_4096 (4096)
+#define N_10 (6)
 //#define N_4096 (8192)
 #define VERBOSE (0)
 
@@ -19,21 +20,22 @@ namespace cils {
 
         index k = 3;
         index SNR = 35;
-        index max_iter = 100;
-        index search_iter = 3;
+        index max_iter = 1;
+        index search_iter = 10;
         index stop = 2000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;
         index is_nc = true;
-        index mode = 2; //test mode
+        index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
         index max_search = 1000;
         index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
+        index max_thre = 100000;//maximum search allowed for serial ils.
 
         string suffix = "" + to_string(N_4096);
         string prefix = is_local ? "../../" : "";
@@ -68,25 +70,22 @@ namespace cils {
         }
 
         template<typename scalar, typename index, index n>
-        inline scalar diff(const vector<scalar> *x,
-                           const vector<scalar> *y) {
+        inline scalar diff(const vector<scalar> *x, const vector<scalar> *y) {
             scalar diff = 0;
-#pragma omp simd reduction(+ : diff)
             for (index i = 0; i < n; i++) {
                 diff += (y->at(i) - x->at(i));
             }
             return diff;
         }
 
+        template<typename scalar, typename index, index n>
         void init_guess(index init_value, vector<index> *z_B, vector<index> *x_R) {
-            z_B->assign(N_4096, 0);
+            z_B->assign(n, 0);
             if (init_value == -1) {
-//                cout << "before:" << diff<index, index, N_4096>(z_B, x_R);
-                for (index i = 0; i < N_4096; i++)
+                for (index i = 0; i < n; i++)
                     z_B->at(i) = x_R->at(i);
-//                cout << " after:" << diff<index, index, N_4096>(z_B, x_R) << endl;
             } else if (init_value == 1)
-                z_B->assign(N_4096, std::pow(2, k) / 2);
+                z_B->assign(n, std::pow(2, k) / 2);
         }
     }
 

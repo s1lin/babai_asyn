@@ -7,8 +7,8 @@ classdef sils_class
     methods(Static)
         function auto_gen()
             for k = 1:2:3
-                for SNR = 15:20:35
-                    	m = 12;
+                for SNR = 15:10:45
+                    	m = 10;
                         s = sils_class(k, m, SNR);
                         s.write_to_nc();
                         %s.write_to_files();
@@ -26,7 +26,7 @@ classdef sils_class
             sils.SNR = SNR;            
             sils.z = ones(sils.n, 1);
             sils.x0_R = zeros(sils.n, 1);
-            sils.sigma = sqrt(((4^k-1)*sils.n/2)/(6*10^(SNR/10)));            
+            sils.sigma = sqrt(((4^k-1)*sils.n)/(6*10^(SNR/10)));            
             
             %Initialize A:
             Ar = normrnd(0, sqrt(1/2), sils.n/2, sils.n/2);
@@ -43,14 +43,18 @@ classdef sils_class
             xbar = [xr; xi];
             sils.x0 = (2^k - 1 + xbar)./2;                    
             
+            %Noise vector v:
+            vr = normrnd(0, sils.sigma, sils.n/2, 1);
+            vi = normrnd(0, sils.sigma, sils.n/2, 1);
+            v = [vr; vi];
+            sqrt(var(v))
             %Get Upper triangular matrix
             [sils.Q, sils.R] = qr(sils.A);
             
              %Right-hand side y:
-            v = normrnd(0, sils.sigma, sils.n, 1);
-            sils.y = sils.R * sils.x0 + sils.Q' * v;
+            sils.y = sils.R * sils.x0;% + sils.Q' * v;
             
-            sils.init_res = norm(sils.y - sils.R * sils.x0);
+            sils.init_res = norm(sils.y - sils.R * sils.x0)
             
             disp([sils.init_res]);
         end

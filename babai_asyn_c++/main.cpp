@@ -142,7 +142,6 @@ void run_test(int argc, char *argv[]) {
 //    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);
 
-
     switch (program_def::mode) {
         case 0:
             plot_res<scalar, int, N_4096>();
@@ -150,8 +149,11 @@ void run_test(int argc, char *argv[]) {
         case 1:
             plot_run<scalar, int, N_4096>();
             break;
-        default:
+        case 2:
             ils_block_search<scalar, int, N_4096>();
+            break;
+        default:
+            test_ils_search<scalar, int, N_10>();
             break;
     }
 }

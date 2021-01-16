@@ -14,20 +14,24 @@ namespace cils {
         vector<index> z(block_size, 0), d(block_size, 0);
         vector<scalar> p(block_size, 0), c(block_size, 0);
 
-        scalar newprsd, gamma, beta = INFINITY;
+        scalar newprsd, gamma, beta = INFINITY, counter = 0;
 
-        c[block_size - 1] = y_B->at(block_size - 1) / R_B->at(R_B->size() - 1);
-        z[block_size - 1] = !is_constrained ? round(c[block_size - 1]) : round(c[block_size - 1]) < 0 ?
-                                                                         0 : round(c[block_size - 1]) > upper ? upper
-                                                                                                              : round(
-                                c[block_size - 1]);
-        gamma = R_B->at(R_B->size() - 1) * (c[block_size - 1] - z[block_size - 1]);
+        c[k] = y_B->at(k) / R_B->at(R_B->size() - 1);
+        z[k] = !is_constrained ? round(c[k]) : round(c[k]) < 0 ? 0 : round(c[k]) > upper ? upper : round(c[k]);
+        gamma = R_B->at(R_B->size() - 1) * (c[k] - z[k]);
 
         //  Determine enumeration direction at level block_size
-        d[block_size - 1] = c[block_size - 1] > z[block_size - 1] ? 1 : -1;
+        d[k] = c[k] > z[k] ? 1 : -1;
 
         while (true) {
             newprsd = p[k] + gamma * gamma;
+            counter++;
+            if (counter > max_thre) {
+                for (index l = 0; l < block_size; l++) {
+                    x->at(l) = z[l];
+                }
+                break;
+            }
             if (newprsd < beta) {
                 if (k != 0) {
                     k--;
@@ -76,7 +80,7 @@ namespace cils {
         //variables
         scalar sum, newprsd, gamma, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0, upper = pow(2, k) - 1, result;
         index count = 0, end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
         index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
@@ -85,12 +89,13 @@ namespace cils {
 
 #pragma omp simd
         for (index l = 0; l < dx; l++) {
-            x[l] = z[l + n_dx_q_0];
+            x[l] = z_x[l + n_dx_q_0];
         }
         //  Initial squared search radius
         scalar R_kk = R_A->x[row_kk];
         c[k] = y_B[row_k] / R_kk;
-        z[k] = round(c[k]);
+        result = round(c[k]);
+        z[k] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
         gamma = R_kk * (c[k] - z[k]);
 
         //  Determine enumeration direction at level block_size
@@ -126,7 +131,8 @@ namespace cils {
 
                     p[k] = newprsd;
                     c[k] = (y_B[row_k] - sum) / R_kk;
-                    z[k] = round(c[k]);
+                    result = round(c[k]);
+                    z[k] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
                     gamma = R_kk * (c[k] - z[k]);
 
                     d[k] = c[k] > z[k] ? 1 : -1;

@@ -100,46 +100,74 @@ namespace cils {
             else read_nc(filename);
 
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
+        } else {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            //mean:0, std:sqrt(1/2). same as matlab.
+            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
+            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+            std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
+
+            this->A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->A->x = new scalar[n * n]();
+            this->A->size = n * n;
+
+            this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->v_A->x = new scalar[n]();
+            this->v_A->size = n;
+
+            this->R = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->R->x = new scalar[n * n]();
+            this->R->size = n * n;
+
+            this->Q = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->Q->x = new scalar[n * n]();
+            this->Q->size = n * n;
+
+#pragma omp parallel for schedule(dynamic)
+            for (index i = 0; i < n / 2; i++) {
+                for (index j = 0; j < n / 2; j++) {
+                    A->x[j + i * n] = A_norm_dis(gen);
+                    A->x[j + n / 2 + i * n] = A_norm_dis(gen);
+                    A->x[j + n / 2 + (i + n / 2) * n] = A->x[j + i * n];
+                    A->x[j + (i + n / 2) * n] = -A->x[j + n / 2 + i * n];
+                }
+                this->x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+                this->v_A->x[i] = v_norm_dis(gen);
+                this->x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+                this->v_A->x[i + n / 2] = v_norm_dis(gen);
+            }
+
+            cils_qr(1);
+            scalar rx = 0, qv = 0;
+            index counter = 0;
+
+            for (index i = 0; i < n; i++) {
+                rx = qv = 0;
+                for (index j = 0; j < n; j++) {
+                    if (i <= j) { //For some reason the QR stored in Transpose way?
+                        this->R_A->x[counter] = this->R->x[j * n + i];
+                        rx += this->R_A->x[counter] * this->x_t[j];
+                        counter++;
+                    }
+                    qv += this->Q->x[i * n + j] * this->v_A->x[j]; //Transpose Q
+                }
+                this->y_A->x[i] = rx + qv;
+            }
+
+            for (index i = 0; i < n; i++) {
+                for (index j = i; j < n; j++) {
+                    printf("%.3f ", this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)]);
+                }
+                cout << endl;
+            }
+
+            cout << counter << " " << R_A->size << endl;
+            this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
+
+            printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
+            scalar end_time = omp_get_wtime() - start;
+            printf("Finish Init, time: %.5f seconds\n", end_time);
         }
-//        else {
-//            std::random_device rd;
-//            std::mt19937 gen(rd());
-//
-//            //mean:0, std:sqrt(1/2). same as matlab.
-//            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
-//            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-//            std::uniform_int_distribution<index> int_dis(0, pow(2, qam) - 1);
-//            this->A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-//            this->A->x = new scalar[n * n]();
-//            this->A->size = n * n;
-//
-//            this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-//            this->v_A->x = new scalar[n]();
-//            this->v_A->size = n;
-//
-//            this->R = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-//            this->R->x = new scalar[n * n]();
-//            this->R->size = n * n;
-//
-//            this->Q = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-//            this->Q->x = new scalar[n * n]();
-//            this->Q->size = n * n;
-//
-//
-//#pragma omp parallel for
-//            for (index i = 0; i < n * n; i++) {
-//                this->A->x[i] = A_norm_dis(gen);
-//                if (i < n) {
-//                    this->x_t[i] = int_dis(gen);
-//                    this->v_A->x[i] = v_norm_dis(gen);
-//                }
-//            }
-//        }
-        printf("init_res: %.5f, sigma: %.5f\n", this->init_res, this->sigma);
-        scalar end_time = omp_get_wtime() - start;
-        printf("Finish Init, time: %.5f seconds\n", end_time);
-
     }
-
-
 }
