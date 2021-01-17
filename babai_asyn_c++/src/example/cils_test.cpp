@@ -229,8 +229,9 @@ void test_ils_search() {
 
     cils::cils<scalar, index, false, n> cils(k, SNR);
 
-    for (index i = 0; i < max_iter; i++) {
-        cils.sigma = i * 0.1;
+//    for (index i = 0; i < max_iter; i++) {
+    for (index i = 1; i < 2; i++) {
+        cils.sigma = i * 0.3;
         cils.init(is_nc);
         auto qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         cils.init_y();
@@ -257,10 +258,10 @@ void test_ils_search() {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
 //        cils.init_y();
-            cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
+//            cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
 
             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 0);
+            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 1);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "

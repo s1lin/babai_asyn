@@ -7,7 +7,7 @@
 #include <iostream>
 
 #define N_4096 (4096)
-#define N_10 (256)
+#define N_10 (1024)
 //#define N_4096 (8192)
 #define VERBOSE (0)
 
@@ -31,8 +31,8 @@ namespace cils {
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 3000;
-        index min_proc = 3;
+        index max_search = 1000;
+        index min_proc = 4;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 100000;//maximum search allowed for serial ils.

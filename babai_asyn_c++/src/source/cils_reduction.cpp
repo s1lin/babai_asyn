@@ -51,7 +51,7 @@ namespace cils {
 
         if (eval || qr_eval) {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
-            cout << error << " ";
+//            cout << error << " ";
         }
 
         delete[] t;
@@ -65,10 +65,13 @@ namespace cils {
 
         index i, j, k, m;
         scalar error, time, r_sum = 0;
-        omp_lock_t *lock;
+
         auto t = new scalar[n * n]();
-        lock = (omp_lock_t *) malloc(n * sizeof(omp_lock_t));
+        auto lock = new omp_lock_t[n]();
+
         time = omp_get_wtime() - time;
+//        cout<<"here";
+//        cout.flush();
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(i, j, k, r_sum)
         {
@@ -102,14 +105,15 @@ namespace cils {
                 //Check if Q[][i-1] (the previous column) is computed.
                 omp_set_lock(&lock[k - 1]);
                 omp_unset_lock(&lock[k - 1]);
-
 #pragma omp for schedule(static,1) nowait
                 for (j = 0; j < n; j++) {
                     if (j >= k) {
                         R->x[(k - 1) * n + j] = 0;
+//#pragma omp for
                         for (i = 0; i < n; i++) {
                             R->x[j * n + (k - 1)] += Q->x[(k - 1) * n + i] * t[j * n + i];
                         }
+//#pragma omp for
                         for (i = 0; i < n; i++) {
                             t[j * n + i] = t[j * n + i] - R->x[j * n + (k - 1)] * Q->x[(k - 1) * n + i];
                         }
@@ -118,12 +122,14 @@ namespace cils {
                         //and unsets the lock for the next column.
                         if (j == k) {
                             r_sum = 0;
+//#pragma omp for
                             for (i = 0; i < n; i++) {
                                 r_sum = r_sum + t[k * n + i] * t[k * n + i];
                             }
                             R->x[k * n + k] = sqrt(r_sum);
 
                             //#pragma omp for schedule(static,1) nowait
+//#pragma omp for
                             for (i = 0; i < n; i++) {
                                 Q->x[k * n + i] = t[k * n + i] / R->x[k * n + k];
                             }
@@ -133,15 +139,16 @@ namespace cils {
                 }
             }
         }
-
+//        cout<<"here";
+//        cout.flush();
 
         time = omp_get_wtime() - time;
         if (eval || qr_eval) {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
-            cout << error << " ";
+//            cout << error << " ";
         }
 
-        free(lock);
+        delete[] lock;
         delete[] t;
 
         return {nullptr, time, (index) error};
