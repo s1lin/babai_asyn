@@ -10,7 +10,8 @@ using namespace std;
 namespace cils {
     template<typename scalar, typename index, bool is_read, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B, bool is_constrained) {
+    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B,
+                                                              bool is_constrained) {
 
         index ds = d->size(), dx = d->at(ds - 1), n_dx_q_0, n_dx_q_1;
         //special cases:
@@ -40,7 +41,7 @@ namespace cils {
             y_b = find_block_x<scalar, index>(y_A, n_dx_q_0, n_dx_q_1);
             R_b = find_block_Rii<scalar, index>(R_A, n_dx_q_0, n_dx_q_1, n_dx_q_0, n_dx_q_1, n);
 
-            if (i != 0){
+            if (i != 0) {
                 //accumulate the block size
                 x_b = find_block_x<scalar, index>(z_B, n_dx_q_1, n);
                 y_b = block_residual_vector(R_A, &x_b, &y_b, n_dx_q_0, n_dx_q_1, n_dx_q_1, n);
@@ -73,7 +74,7 @@ namespace cils {
         auto z_x = z_B->data();
         //index count = 0, search_count = 255;
         bool flag = false, check = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 1.5 * n_proc, diff[100] = {}, z_p[n] = {};
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, diff[100] = {}, z_p[n] = {};
         scalar sum = 0, run_time, y_b[n] = {};
 
 //        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
@@ -91,6 +92,8 @@ namespace cils {
 //        }
 
         scalar start = omp_get_wtime();
+        auto lock = new omp_lock_t[ds]();
+
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, row_n, n_dx_q_0, n_dx_q_1)
         {
             if (init != -1)
@@ -102,9 +105,21 @@ namespace cils {
                     for (index col = n - i; col < n; col++)
                         sum += R_A->x[nj + col] * z_x[col];
                     z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
+                    if (i < ds) omp_set_lock(&lock[i]);
                 }
 
-            for (index j = 0; j < nswp && !flag; j++) {
+            if (omp_get_thread_num() == 0) {
+                // Calculation of ||A||
+                for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+                    y_b[l] = y_A->x[l];
+
+                ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
+                omp_unset_lock(&lock[0]);
+            }
+
+            for (index j = 1; j < nswp && !flag; j++) {
+                omp_set_lock(&lock[j - 1]);
+                omp_unset_lock(&lock[j - 1]);
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue; // || i > iter
@@ -112,7 +127,7 @@ namespace cils {
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     //The block operation
-                    if (i != 0) {
+//                    if (i != 0) {
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             sum = 0;
                             row_n = (n * row) - ((row * (row + 1)) / 2);
@@ -122,14 +137,16 @@ namespace cils {
                             }
                             y_b[row] = y_A->x[row] - sum;
                         }
-                    } else
-#pragma omp simd
-                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                            y_b[l] = y_A->x[l];
+//                    } else
+//#pragma omp simd
+//                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+//                            y_b[l] = y_A->x[l];
 
                     ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
                     if (i == ds - 1)
                         check = true;
+                    omp_unset_lock(&lock[i]);
+
                 }
                 if (check) {
                     num_iter = j;

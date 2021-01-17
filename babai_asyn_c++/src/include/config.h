@@ -21,7 +21,7 @@ namespace cils {
         index k = 3;
         index SNR = 55;
         index max_iter = 10;
-        index search_iter = 3;
+        index search_iter = 30;
         index stop = 1000;
         index schedule = 1;
         index chunk_size = 1;
@@ -31,7 +31,7 @@ namespace cils {
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 3000;
         index min_proc = 4;
 
         index max_proc = omp_get_max_threads();

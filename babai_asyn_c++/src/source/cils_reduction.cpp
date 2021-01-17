@@ -109,11 +109,9 @@ namespace cils {
                 for (j = 0; j < n; j++) {
                     if (j >= k) {
                         R->x[(k - 1) * n + j] = 0;
-//#pragma omp for
                         for (i = 0; i < n; i++) {
                             R->x[j * n + (k - 1)] += Q->x[(k - 1) * n + i] * t[j * n + i];
                         }
-//#pragma omp for
                         for (i = 0; i < n; i++) {
                             t[j * n + i] = t[j * n + i] - R->x[j * n + (k - 1)] * Q->x[(k - 1) * n + i];
                         }
@@ -122,14 +120,10 @@ namespace cils {
                         //and unsets the lock for the next column.
                         if (j == k) {
                             r_sum = 0;
-//#pragma omp for
                             for (i = 0; i < n; i++) {
                                 r_sum = r_sum + t[k * n + i] * t[k * n + i];
                             }
                             R->x[k * n + k] = sqrt(r_sum);
-
-                            //#pragma omp for schedule(static,1) nowait
-//#pragma omp for
                             for (i = 0; i < n; i++) {
                                 Q->x[k * n + i] = t[k * n + i] / R->x[k * n + k];
                             }
