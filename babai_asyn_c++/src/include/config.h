@@ -19,10 +19,10 @@ namespace cils {
     namespace program_def {
 
         index k = 3;
-        index SNR = 45;
+        index SNR = 55;
         index max_iter = 1;
         index search_iter = 3;
-        index stop = 4000;
+        index stop = 1000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;

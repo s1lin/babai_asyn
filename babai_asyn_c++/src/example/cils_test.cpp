@@ -253,8 +253,8 @@ void test_ils_search() {
     scalar ils_tim_constrained = reT.run_time;
 
     for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-        auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 0, n_proc > max_proc ? max_proc : n_proc);
-        cils.init_y();
+        auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
+//        cils.init_y();
         cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
 
         init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
