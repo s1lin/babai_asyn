@@ -7,7 +7,7 @@
 #include <iostream>
 
 #define N_4096 (4096)
-#define N_10 (1024)
+#define N_10 (256)
 //#define N_4096 (8192)
 #define VERBOSE (0)
 
