@@ -262,7 +262,7 @@ void test_ils_search() {
             auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
 
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_babai_search_omp_constrained(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
+            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "

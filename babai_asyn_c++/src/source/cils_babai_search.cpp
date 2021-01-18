@@ -29,60 +29,29 @@ namespace cils {
                 omp_unset_lock(&lock[0]);
             }
 
-            for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 1) nowait
-                for (index i = 0; i < n; i++) {
+            for (index j = 0; j < 2; j++) {//&& !flag
+#pragma omp for schedule(static, 1) nowait
+                for (index i = 1; i < n; i++) {
+                    omp_set_lock(&lock[i - 1]);
+                    omp_unset_lock(&lock[i - 1]);
                     if (flag) continue;
                     sum = 0;
                     ni = n - 1 - i;
                     nj = ni * n - (ni * (n - i)) / 2;
-#pragma omp simd reduction(+:sum)
+//#pragma omp simd reduction(+:sum)
                     for (index col = n - i; col < n; col++) {
-                        sum += R_A->x[nj + col] * z_x[col];
-                        if (col == n - i) {
+                        sum = sum + R_A->x[nj + col] * z_x[col];
+                        if (col == n - 1) {
                             omp_unset_lock(&lock[i]);
                         }
                     }
-                    omp_set_lock(&lock[i]);
+
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                    omp_unset_lock(&lock[i]);
+
                     if (i == n - 1)
                         check = true;
                 }
 
-                if (mode != 0 && check) {
-                    num_iter = j;
-                    check = false;
-                    diff = 0;
-#pragma omp simd reduction(+ : diff)
-                    for (index l = 0; l < n; l++) {
-                        diff += z_x[l] == z_p[l];
-                        z_p[l] = z_x[l];
-                    }
-                    flag = diff > stop;
-                }
-            }
-
-
-//            for (index j = 0; j < nswp && !flag; j++) {
-//#pragma omp for schedule(dynamic) nowait
-//                for (index i = 0; i < n; i++) {
-//                    if (flag || i > s) continue; //
-//                    s++;
-//                    sum = 0;
-//                    ni = n - 1 - i;
-//                    nj = ni * n - (ni * (n - i)) / 2;
-//
-//#pragma omp simd reduction(+ : sum)
-//                    for (index col = n - i; col < n; col++) {
-//                        sum += R_A->x[nj + col] * z_x[col];
-//                    }
-//                    omp_set_lock(&lock[ni]);
-//                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-//                    omp_unset_lock(&lock[ni]);
-//                    if (i == n - 1)
-//                        check = true;
-//                }
 //                if (mode != 0 && check) {
 //                    num_iter = j;
 //                    check = false;
@@ -94,7 +63,7 @@ namespace cils {
 //                    }
 //                    flag = diff > stop;
 //                }
-//            }
+            }
         }
         scalar run_time = omp_get_wtime() - start;
 //        for (index i = 0; i < nswp; i++)
