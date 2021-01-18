@@ -116,7 +116,7 @@ namespace cils {
                             t[j * n + i] = t[j * n + i] - R->x[j * n + (k - 1)] * Q->x[(k - 1) * n + i];
                         }
 
-                        //Only one thread calculates the norm ||A||
+                        //Only one thread calculates the norm(A)
                         //and unsets the lock for the next column.
                         if (j == k) {
                             r_sum = 0;

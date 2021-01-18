@@ -108,18 +108,16 @@ namespace cils {
                     if (i < ds) omp_set_lock(&lock[i]);
                 }
 
-            if (omp_get_thread_num() == 0) {
-                // Calculation of ||A||
-                for (index l = n_dx_q_0; l < n_dx_q_1; l++)
-                    y_b[l] = y_A->x[l];
-
-                ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
-                omp_unset_lock(&lock[0]);
-            }
+//            if (omp_get_thread_num() == 0) {
+//                // Calculation of ||A||
+//                for (index l = n_dx_q_0; l < n_dx_q_1; l++)
+//                    y_b[l] = y_A->x[l];
+//
+//                ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
+//                omp_unset_lock(&lock[0]);
+//            }
 
             for (index j = 1; j < nswp && !flag; j++) {
-                omp_set_lock(&lock[j - 1]);
-                omp_unset_lock(&lock[j - 1]);
 #pragma omp for schedule(dynamic) nowait //
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue; // || i > iter
@@ -143,9 +141,11 @@ namespace cils {
 //                            y_b[l] = y_A->x[l];
 
                     ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
+//                    omp_set_lock(&lock[i]);
+//                    omp_unset_lock(&lock[i]);
+
                     if (i == ds - 1)
                         check = true;
-                    omp_unset_lock(&lock[i]);
 
                 }
                 if (check) {
