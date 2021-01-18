@@ -32,7 +32,7 @@ namespace cils {
         index num_trials = 10; //nswp
         index is_local = 1;
         index max_search = 3000;
-        index min_proc = 4;
+        index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 100000;//maximum search allowed for serial ils.

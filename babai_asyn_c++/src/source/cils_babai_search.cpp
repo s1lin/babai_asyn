@@ -29,10 +29,8 @@ namespace cils {
                 omp_unset_lock(&lock[0]);
             }
 
-            for (index j = 1; j < nswp && !flag; j++) {
-//                omp_set_lock(&lock[j - 1]);
-//                omp_unset_lock(&lock[j - 1]);
-#pragma omp for schedule(dynamic) nowait
+            for (index j = 0; j < nswp && !flag; j++) {
+#pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 1; i < n; i++) {
                     if (flag) continue;
                     sum = 0;
@@ -41,14 +39,18 @@ namespace cils {
 #pragma omp simd reduction(+:sum)
                     for (index col = n - i; col < n; col++) {
                         sum += R_A->x[nj + col] * z_x[col];
-//                        if (col == n - i) {
-//                            omp_unset_lock(&lock[j]);
-//                        }
+                        if (col == n - i) {
+                            omp_unset_lock(&lock[i]);
+                        }
                     }
+
+                    omp_set_lock(&lock[i - 1]);
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
+                    omp_unset_lock(&lock[i - 1]);
                     if (i == n - 1)
                         check = true;
                 }
+
                 if (mode != 0 && check) {
                     num_iter = j;
                     check = false;
