@@ -40,13 +40,6 @@ namespace cils {
             }
         }
 
-        for (i = 0; i < n; i++) {
-            for (j = i; j < n; j++) {
-                R_A->x[counter] = R->x[j * n + i];
-                counter++;
-            }
-        }
-
         time = omp_get_wtime() - time;
 
         if (eval || qr_eval) {
@@ -69,7 +62,7 @@ namespace cils {
         auto t = new scalar[n * n]();
         auto lock = new omp_lock_t[n]();
 
-        time = omp_get_wtime() - time;
+        time = omp_get_wtime();
 //        cout<<"here";
 //        cout.flush();
 
@@ -105,7 +98,7 @@ namespace cils {
                 //Check if Q[][i-1] (the previous column) is computed.
                 omp_set_lock(&lock[k - 1]);
                 omp_unset_lock(&lock[k - 1]);
-#pragma omp for schedule(static,1) nowait
+#pragma omp for schedule(static, 1) nowait
                 for (j = 0; j < n; j++) {
                     if (j >= k) {
                         R->x[(k - 1) * n + j] = 0;

@@ -145,6 +145,14 @@ namespace cils {
 
     template<typename scalar, typename index, bool is_read, index n>
     void cils<scalar, index, is_read, n>::init_y(){
+        index counter = 0;
+        for (index i = 0; i < n; i++) {
+            for (index j = i; j < n; j++) {
+                R_A->x[counter] = R->x[j * n + i];
+                counter++;
+            }
+        }
+
         scalar rx =0, qv = 0;
         for (index i = 0; i < n; i++) {
             rx = qv = 0;
