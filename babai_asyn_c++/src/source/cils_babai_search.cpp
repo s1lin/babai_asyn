@@ -31,7 +31,7 @@ namespace cils {
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic, 1) nowait
-                for (index i = 1; i < n; i++) {
+                for (index i = 0; i < n; i++) {
                     if (flag) continue;
                     sum = 0;
                     ni = n - 1 - i;
@@ -43,10 +43,9 @@ namespace cils {
                             omp_unset_lock(&lock[i]);
                         }
                     }
-
-                    omp_set_lock(&lock[i - 1]);
+                    omp_set_lock(&lock[i]);
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                    omp_unset_lock(&lock[i - 1]);
+                    omp_unset_lock(&lock[i]);
                     if (i == n - 1)
                         check = true;
                 }
