@@ -231,7 +231,7 @@ void test_ils_search() {
 
 //    for (index i = 0; i < max_iter; i++) {
     for (index i = 1; i < 2; i++) {
-        cils.sigma = i * 0.3;
+        cils.sigma = i * 0.2;
         cils.init(is_nc);
         auto qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         cils.init_y();
