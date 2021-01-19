@@ -29,7 +29,7 @@ namespace cils {
                 omp_unset_lock(&lock[ni]);
             }
 
-            for (index j = 0; j < nswp; j++) {//&& !flag
+            for (index j = 0; j < nswp&& !flag; j++) {//
 #pragma omp for schedule(static, 1) nowait
                 for (index i = 1; i < n; i++) {
                     ni = n - 1 - i;
@@ -48,17 +48,17 @@ namespace cils {
                         check = true;
                 }
 
-//                if (mode != 0 && check) {
-//                    num_iter = j;
-//                    check = false;
-//                    diff = 0;
-//#pragma omp simd reduction(+ : diff)
-//                    for (index l = 0; l < n; l++) {
-//                        diff += z_x[l] == z_p[l];
-//                        z_p[l] = z_x[l];
-//                    }
-//                    flag = diff > stop;
-//                }
+                if (mode != 0 && check) {
+                    num_iter = j;
+                    check = false;
+                    diff = 0;
+#pragma omp simd reduction(+ : diff)
+                    for (index l = 0; l < n; l++) {
+                        diff += z_x[l] == z_p[l];
+                        z_p[l] = z_x[l];
+                    }
+                    flag = diff > stop;
+                }
             }
         }
         scalar run_time = omp_get_wtime() - start;
