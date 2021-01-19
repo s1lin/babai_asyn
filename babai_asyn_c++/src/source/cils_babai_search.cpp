@@ -29,7 +29,7 @@ namespace cils {
                 omp_unset_lock(&lock[ni]);
             }
 
-            for (index j = 0; j < 5 && !flag; j++) {//
+            for (index j = 0; j < nswp && !flag; j++) {//
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < n; i++) {
                     if (flag) continue;
