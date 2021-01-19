@@ -20,13 +20,13 @@ namespace cils {
 
         index k = 3;
         index SNR = 55;
-        index max_iter = 10;
+        index max_iter = 1;
         index search_iter = 3;
         index stop = 900;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
-        index is_qr = true;
+        index is_qr = true;//use as is_constrained in mode==3.
         index is_nc = true;
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp

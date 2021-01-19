@@ -105,7 +105,7 @@ namespace cils {
                     for (index col = n - i; col < n; col++)
                         sum += R_A->x[nj + col] * z_x[col];
                     z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
-                    if (i < ds) omp_set_lock(&lock[i]);
+//                    if (i < ds) omp_set_lock(&lock[i]);
                 }
 
 //            if (omp_get_thread_num() == 0) {
@@ -139,9 +139,8 @@ namespace cils {
 //#pragma omp simd
 //                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)
 //                            y_b[l] = y_A->x[l];
-
-                    ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
 //                    omp_set_lock(&lock[i]);
+                    ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
 //                    omp_unset_lock(&lock[i]);
 
                     if (i == ds - 1)
@@ -172,9 +171,9 @@ namespace cils {
 //        printf("%d, %.3f, %.3f, ", diff, run_time, run_time / run_time2);
 //#endif
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
-        if (mode == 0)
+//        if (mode == 0)
 //            for (index i = 0; i < nswp; i++)
-            reT = {z_B, run_time2, diff[nswp - 1]};
+//            reT = {z_B, run_time2, diff[nswp - 1]};
 
         return reT;
     }

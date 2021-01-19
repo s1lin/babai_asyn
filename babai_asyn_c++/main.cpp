@@ -1,7 +1,8 @@
 //
 // Created by shilei on 2020-11-04.
-//
-#include "src/example/cils_test.cpp"
+
+//#include "src/example/cils_test.cpp"
+#include "src/example/cils_gen_test.cpp"
 //#include <lapack.h>
 #include <mpi.h>
 
@@ -141,21 +142,21 @@ void run_test(int argc, char *argv[]) {
 //    program_def::max_proc = 54;
 //    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);
-
-    switch (program_def::mode) {
-        case 0:
-            plot_res<scalar, int, N_4096>();
-            break;
-        case 1:
-            plot_run<scalar, int, N_4096>();
-            break;
-        case 2:
-            ils_block_search<scalar, int, N_4096>();
-            break;
-        default:
-            test_ils_search<scalar, int, N_10>();
-            break;
-    }
+    plot_res_2<scalar, int, N_10>(program_def::is_qr);
+//    switch (program_def::mode) {
+//        case 0:
+//            plot_res<scalar, int, N_4096>();
+//            break;
+//        case 1:
+//            plot_run<scalar, int, N_4096>();
+//            break;
+//        case 2:
+//            ils_block_search<scalar, int, N_4096>();
+//            break;
+//        default:
+//    test_ils_search<scalar, int, N_10>();
+//            break;
+//    }
 }
 
 int main(int argc, char *argv[]) {

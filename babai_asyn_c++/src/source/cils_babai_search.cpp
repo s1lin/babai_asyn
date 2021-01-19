@@ -21,7 +21,7 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, diff, ni, nj)
         {
-
+#pragma omp barrier
             if (omp_get_thread_num() == 0) {
                 ni = n - 1;
                 nj = ni * n - (ni * n) / 2;
@@ -43,7 +43,6 @@ namespace cils {
                     }
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
                     omp_set_lock(&lock[ni]);
-
                     if (i == n - 1)
                         check = true;
                 }
@@ -160,8 +159,9 @@ namespace cils {
             z_B_tmp[k] = (y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i];
             sum = 0;
         }
+        scalar upper = pow(2, k) - 1;
         for (index i = 0; i < n; i++) {
-            z_B->at(i) = round(z_B_tmp[i]);
+            z_B->at(i) = round(z_B_tmp[i]) < 0 ? 0 : round(z_B_tmp[i]) > upper ? upper : round(z_B_tmp[i]);
         }
 
         scalar run_time = omp_get_wtime() - start;
