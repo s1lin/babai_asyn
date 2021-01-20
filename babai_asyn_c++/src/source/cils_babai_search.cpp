@@ -64,6 +64,7 @@ namespace cils {
             }
         }
         scalar run_time = omp_get_wtime() - start;
+#pragma omp flush
         delete[] z_p;
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;

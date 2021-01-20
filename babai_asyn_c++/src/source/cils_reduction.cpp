@@ -123,10 +123,10 @@ namespace cils {
         time = omp_get_wtime() - time;
         if (eval || qr_eval) {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
-            cout << error << " ";
-            cout.flush();
+//            cout << error << " ";
+//            cout.flush();
         }
-
+#pragma omp flush
         delete[] lock;
         delete[] A_t;
 
