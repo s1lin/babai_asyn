@@ -140,7 +140,8 @@ namespace cils {
         }
 
         scalar end_time = omp_get_wtime() - start;
-        printf("Finish Init, time: %.5f seconds\n", end_time);
+        if(mode != 3)
+            printf("Finish Init, time: %.5f seconds\n", end_time);
     }
 
     template<typename scalar, typename index, index n>

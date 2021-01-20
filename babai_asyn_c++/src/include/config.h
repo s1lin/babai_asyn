@@ -19,20 +19,20 @@ namespace cils {
     namespace program_def {
 
         index k = 3;
-        index SNR = 55;
-        index max_iter = 1;
+        index SNR = 15;
+        index max_iter = 3;
         index search_iter = 3;
         index stop = 900;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
-        index is_qr = true;//use as is_constrained in mode==3.
+        index is_constrained = true;//use as is_constrained in mode==3.
         index is_read = false;
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
         index max_search = 3000;
-        index min_proc = 2;
+        index min_proc = 4;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 100000;//maximum search allowed for serial ils.
@@ -51,7 +51,7 @@ namespace cils {
                 schedule = stoi(argv[6]);
                 chunk_size = stoi(argv[7]);
                 block_size = stoi(argv[8]);
-                is_qr = stoi(argv[9]);
+                is_constrained = stoi(argv[9]);
                 is_read = stoi(argv[10]);
                 mode = stoi(argv[11]);
                 num_trials = stoi(argv[12]);

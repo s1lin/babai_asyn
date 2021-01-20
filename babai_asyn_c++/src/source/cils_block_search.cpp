@@ -167,9 +167,7 @@ namespace cils {
 
         scalar run_time2 = omp_get_wtime() - start;
 
-//#ifdef VERBOSE //1
-//        printf("%d, %.3f, %.3f, ", diff, run_time, run_time / run_time2);
-//#endif
+#pragma omp flush
         returnType<scalar, index> reT = {z_B, run_time2, num_iter};
 //        if (mode == 0)
 //            for (index i = 0; i < nswp; i++)

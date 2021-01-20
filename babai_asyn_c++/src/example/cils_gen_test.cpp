@@ -18,8 +18,8 @@ void plot_res_2(bool is_constrained) {
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     vector<index> z_B(n, 0);
 
-    for (index m = 1; m < 10; m++) {
-        scalar sigma = m * 0.1;
+//    for (index m = 1; m < 10; m++) {
+//        scalar sigma = m * 0.1;
         scalar ser_qrd = 0;
         vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
         vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
@@ -28,14 +28,14 @@ void plot_res_2(bool is_constrained) {
         for (index i = 0; i < max_iter; i++) {
             if (i % 10 == 0) cout << "-";
             if (i % 500 == 0) cout << endl;
-            cils::cils<scalar, index, false, n> cils(k, SNR);
-            cils.init(is_nc);
+            cils::cils<scalar, index, n> cils(k, SNR);
+            cils.init(is_read);
             auto qr_reT = cils.cils_qr_decomposition_serial(0, 1);
             ser_qrd += qr_reT.run_time;
             cils.init_y();
             cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
             cils.cils_back_solve(&cils.x_R);
-            printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, qr_reT.num_iter);
+//            printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, qr_reT.num_iter);
 
             for (index init = -1; init <= 1; init++) {
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
@@ -98,5 +98,5 @@ void plot_res_2(bool is_constrained) {
 
         printf("End of current TASK.\n");
         printf("-------------------------------------------\n");
-    }
+//    }
 }

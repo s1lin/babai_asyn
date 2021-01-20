@@ -21,7 +21,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_babai_search_omp(const index n_proc, const index nswp,
-                                                           vector<index> *z_B, bool is_constrained) {
+                                                  vector<index> *z_B, bool is_constrained) {
 
         index num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, upper = pow(2, k) - 1;
         bool flag = false, check = false;
@@ -62,8 +62,10 @@ namespace cils {
                     flag = diff > stop;
                 }
             }
+
         }
         scalar run_time = omp_get_wtime() - start;
+#pragma parallel omp cancellation point
 #pragma omp flush
         delete[] z_p;
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
