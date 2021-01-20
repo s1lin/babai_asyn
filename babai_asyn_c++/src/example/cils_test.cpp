@@ -259,20 +259,22 @@ void test_ils_search() {
 
 
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
-
+            //auto qr_reT_omp = cils.cils_qr_decomposition_serial(0, 1);
+            //cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-            printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "
-                   "Solve Time: %.5fs, Solve SpeedUp: %.3f, "
-                   "QR Error: %d, QR Time: %.5fs, QR SpeedUp: %.3f, "
-                   "Total Time: %.5fs, Total SpeedUp: %.3f\n",
-                   n_proc, res, ber, reT.num_iter, reT.run_time, (bab_tim_constrained / reT.run_time),
-                   qr_reT_omp.num_iter, qr_reT_omp.run_time, qr_reT.run_time / qr_reT_omp.run_time,
-                   reT.run_time + qr_reT_omp.run_time,
-                   (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
+            printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
+                   n_proc, res, ber, reT.num_iter, reT.run_time, (bab_tim_constrained / reT.run_time));
+//            printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "
+//                   "Solve Time: %.5fs, Solve SpeedUp: %.3f, "
+//                   "QR Error: %d, QR Time: %.5fs, QR SpeedUp: %.3f, "
+//                   "Total Time: %.5fs, Total SpeedUp: %.3f\n",
+//                   n_proc, res, ber, reT.num_iter, reT.run_time, (bab_tim_constrained / reT.run_time),
+//                   qr_reT_omp.num_iter, qr_reT_omp.run_time, qr_reT.run_time / qr_reT_omp.run_time,
+//                   reT.run_time + qr_reT_omp.run_time,
+//                   (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
 
 //            init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
 //            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 1);

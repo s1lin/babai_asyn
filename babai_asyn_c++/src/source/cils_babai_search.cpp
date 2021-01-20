@@ -12,7 +12,7 @@ namespace cils {
         index count = 0, num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, z_p[n] = {};
         bool flag = false, check = false;
         auto z_x = z_B->data();
-        scalar res[nswp] = {}, sum, sum2;
+        scalar res[nswp] = {}, sum = 0;
         auto lock = new omp_lock_t[n]();
         for (index i = 0; i < n; i++) {
             omp_set_lock(&lock[i]);
@@ -21,28 +21,29 @@ namespace cils {
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, diff, ni, nj)
         {
-#pragma omp barrier
             if (omp_get_thread_num() == 0) {
                 ni = n - 1;
                 nj = ni * n - (ni * n) / 2;
                 z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                omp_unset_lock(&lock[ni]);
+                omp_unset_lock(&lock[0]);
             }
 
-            for (index j = 0; j < nswp && !flag; j++) {//
+            for (index j = 1; j < nswp && !flag; j++) {//
+                omp_set_lock(&lock[j - 1]);
+                omp_unset_lock(&lock[j - 1]);
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < n; i++) {
                     if (flag) continue;
                     ni = n - 1 - i;
                     nj = ni * n - (ni * (n - i)) / 2;
                     sum = 0;
-                    omp_unset_lock(&lock[ni]);
 #pragma omp simd reduction(+ : sum)
                     for (index col = n - i; col < n; col++) {
                         sum += R_A->x[nj + col] * z_x[col];
                     }
+                    omp_unset_lock(&lock[j]);
                     z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                    omp_set_lock(&lock[ni]);
+
                     if (i == n - 1)
                         check = true;
                 }
@@ -126,15 +127,16 @@ namespace cils {
         scalar sum = 0, upper = pow(2, k) - 1;
         scalar start = omp_get_wtime();
 
-        index result = round(y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1]);
+        index result = round(y_A->x[n - 1] / R->x[n * n - 1]);
         z_B->at(n - 1) = result < 0 ? 0 : result > upper ? upper : result;
 
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
-                sum += R_A->x[k * n - (k * (n - i)) / 2 + col] * z_B->at(col);
+                sum += R->x[col * n + k] * z_B->at(col);
+//              sum += R_A->x[k * n - (k * (n - i)) / 2 + col] * z_B->at(col);
             }
-            result = round((y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i]);
+            result = round((y_A->x[k] - sum) / R->x[k * n + k]);
             z_B->at(k) = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
             sum = 0;
         }
