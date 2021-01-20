@@ -77,36 +77,22 @@ namespace cils {
         index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, diff[100] = {}, z_p[n] = {};
         scalar sum = 0, run_time, y_b[n] = {};
 
-//        int gap = ds % n_proc == 0 ? ds / n_proc : ds / n_proc + 1;
-//        for (int i = 0; i < n_proc; i++) {
-//            for (int j = i * gap; j < (i + 1) * gap - gap / 2 && j < ds; j++) {
-//                cout << count << " ";
-//                work[j] = count;
-//                count++;
-//            }
-//            for (int j = (i + 1) * gap - gap / 2; j < (i + 1) * gap && j < ds; j++) {
-//                cout << search_count << " ";
-//                work[j] = search_count;
-//                search_count--;
-//            }
-//        }
-
         scalar start = omp_get_wtime();
         auto lock = new omp_lock_t[ds]();
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, row_n, n_dx_q_0, n_dx_q_1)
         {
-            if (init != -1)
-#pragma omp for nowait
-                for (index i = 0; i < n; i++) {
-                    sum = 0;
-                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
-#pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++)
-                        sum += R_A->x[nj + col] * z_x[col];
-                    z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
-//                    if (i < ds) omp_set_lock(&lock[i]);
-                }
+//            if (init != -1)
+//#pragma omp for nowait
+//                for (index i = 0; i < n; i++) {
+//                    sum = 0;
+//                    index ni = n - 1 - i, nj = ni * n - (ni * (n - i)) / 2;
+//#pragma omp simd reduction(+ : sum)
+//                    for (index col = n - i; col < n; col++)
+//                        sum += R_A->x[nj + col] * z_x[col];
+//                    z_x[ni] = (y_A->x[ni] - sum) / R_A->x[nj + ni];
+////                    if (i < ds) omp_set_lock(&lock[i]);
+//                }
 
 //            if (omp_get_thread_num() == 0) {
 //                // Calculation of ||A||
