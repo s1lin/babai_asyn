@@ -70,10 +70,10 @@ void plot_res_2(bool is_constrained) {
             printf("++++++++++++++++++++++++++++++++++++++\n");
             std::cout << "Block, size: " << block_size << std::endl;
             std::cout << "Init, value: " << init << std::endl;
-            printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
+            printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
                    bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1], ser_qrd / max_iter,
                    (ser_qrd + bab_tim[init + 1]) / max_iter);
-            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
+            printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
                    block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
                    ser_qrd / max_iter,
                    (ser_qrd + ser_tim[init + 1]) / max_iter);
