@@ -19,8 +19,8 @@ void ils_block_search() {
     std::cout << "Init, SNR: " << SNR << std::endl;
     std::cout << "Init, init: " << init << std::endl;
 
-    cils::cils<scalar, index, true, n> cils(k, SNR);
-    cils.init(is_nc);
+    cils::cils<scalar, index, n> cils(k, SNR);
+    cils.init(is_read);
 //    qr<scalar, index, n>(cils.Q->x, cils.R->x, cils.A->x);
     printf("init_res: %.5f, sigma: %.5f\n", cils.init_res, cils.sigma);
 //    printf("(Serial QR Execution)Elapsed time: %f ", time);
@@ -82,7 +82,7 @@ void ils_block_search() {
         cout << endl;
         for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
+            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B, 0);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",
@@ -109,14 +109,14 @@ void plot_run() {
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     std::cout << "Init, SNR: " << SNR << std::endl;
 
-    cils::cils<scalar, index, true, n> cils(k, SNR);
+    cils::cils<scalar, index, n> cils(k, SNR);
     vector<index> z_B(n, 0);
 
     vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
     vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
     vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0);
     cils::returnType<scalar, index> reT;
-    cils.init(is_nc);
+    cils.init(is_read);
 
     for (index p = 0; p < max_iter; p++) {
         if (p % 10 == 0) cout << "-";
@@ -189,8 +189,8 @@ void plot_res() {
     std::cout << "Init, SNR: " << SNR << std::endl;
 
     //bool read_r, bool read_ra, bool read_xy
-    cils::cils<scalar, index, true, n> cils(k, SNR);
-    cils.init(is_nc);
+    cils::cils<scalar, index, n> cils(k, SNR);
+    cils.init(is_read);
     printf("init_res: %.5f, sigma: %.5f\n", cils.init_res, cils.sigma);
 
     vector<index> z_B(n, 0);
@@ -227,12 +227,12 @@ template<typename scalar, typename index, index n>
 void test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
-    cils::cils<scalar, index, false, n> cils(k, SNR);
+    cils::cils<scalar, index, n> cils(k, SNR);
     index init = 0;
 //    for (index i = 0; i < max_iter; i++) {
     for (index i = 1; i < 2; i++) {
         cils.sigma = i * 0.1;
-        cils.init(is_nc);
+        cils.init(is_read);
         auto qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         cils.init_y();
         cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
@@ -262,7 +262,7 @@ void test_ils_search() {
             //auto qr_reT_omp = cils.cils_qr_decomposition_serial(0, 1);
             //cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
+            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B, 1);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, Time: %.5fs, SpeedUp: %.3f\n",

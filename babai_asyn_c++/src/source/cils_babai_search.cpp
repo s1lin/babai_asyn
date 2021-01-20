@@ -1,85 +1,33 @@
-//
-// Created by Shilei Lin on 2020-12-17.
-//
-#include "../include/cils.h"
+/** \file
+ * \brief Computation of integer least square problem by constrained non-block Babai Estimator
+ * \author Shilei Lin
+ * This file is part of CILS.
+ *   CILS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   CILS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 namespace cils {
-    template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_omp(const index n_proc, const index nswp,
-                                                           vector<index> *z_B) {
 
-        index count = 0, num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, z_p[n] = {};
+    template<typename scalar, typename index, index n>
+    returnType <scalar, index>
+    cils<scalar, index, n>::cils_babai_search_omp(const index n_proc, const index nswp,
+                                                           vector<index> *z_B, bool is_constrained) {
+
+        index num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, upper = pow(2, k) - 1;
         bool flag = false, check = false;
         auto z_x = z_B->data();
-        scalar res[nswp] = {}, sum = 0;
-        auto lock = new omp_lock_t[n]();
-//        for (index i = 0; i < n; i++) {
-//            omp_set_lock(&lock[i]);
-//        }
-
-        scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, diff, ni, nj)
-        {
-
-            if (omp_get_thread_num() == 0) {
-                ni = n - 1;
-                nj = ni * n - (ni * n) / 2;
-                z_x[ni] = round((y_A->x[ni]) / R_A->x[nj + ni]);
-//                omp_unset_lock(&lock[0]);
-            }
-
-            for (index j = 0; j < nswp && !flag; j++) {//
-//                omp_set_lock(&lock[j - 1]);
-//                omp_unset_lock(&lock[j - 1]);
-#pragma omp for schedule(dynamic) nowait
-                for (index i = 1; i < n; i++) {
-                    if (flag || i > s) continue;
-                    s++;
-                    ni = n - 1 - i;
-                    nj = ni * n - (ni * (n - i)) / 2;
-                    sum = 0;
-#pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++) {
-                        sum += R_A->x[nj + col] * z_x[col];
-                    }
-//                    omp_unset_lock(&lock[j]);
-                    z_x[ni] = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-
-                    if (i == n - 1)
-                        check = true;
-                }
-
-                if (mode != 0 && check) {
-                    num_iter = j;
-                    check = false;
-                    diff = 0;
-#pragma omp simd reduction(+ : diff)
-                    for (index l = 0; l < n; l++) {
-                        diff += z_x[l] == z_p[l];
-                        z_p[l] = z_x[l];
-                    }
-                    flag = diff > stop;
-                }
-            }
-        }
-        scalar run_time = omp_get_wtime() - start;
-//        for (index i = 0; i < nswp; i++)
-//            cout << sqrt(res[i]) << " ";
-        delete[] lock;
-        returnType<scalar, index> reT = {z_B, run_time, num_iter};
-        return reT;
-    }
-
-    template<typename scalar, typename index, bool is_read, index n>
-    returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_omp_constrained(const index n_proc, const index nswp,
-                                                                       vector<index> *z_B) {
-
-        index count = 0, num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, z_p[n] = {}, upper = pow(2, k) - 1;
-        bool flag = false, check = false;
-        auto z_x = z_B->data();
-        scalar res[nswp] = {}, sum, result;
+        auto z_p = new index[n]();
+        scalar sum = 0, result;
 
         scalar start = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(result, sum, diff, ni, nj)
@@ -98,7 +46,7 @@ namespace cils {
                         sum += R_A->x[nj + col] * z_x[col];
                     }
                     result = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
-                    z_x[ni] = result < 0 ? 0 : result > upper ? upper : result;
+                    z_x[ni] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
                     if (i == n - 1)
                         check = true;
                 }
@@ -116,16 +64,14 @@ namespace cils {
             }
         }
         scalar run_time = omp_get_wtime() - start;
-//        for (index i = 0; i < nswp; i++)
-//            cout << sqrt(res[i]) << " ";
-
+        delete[] z_p;
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_babai_search_serial(vector<index> *z_B, bool is_constrained) {
+    cils<scalar, index, n>::cils_babai_search_serial(vector<index> *z_B, bool is_constrained) {
         scalar sum = 0, upper = pow(2, k) - 1;
         scalar start = omp_get_wtime();
 
@@ -147,9 +93,9 @@ namespace cils {
         return reT;
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_back_solve(vector<index> *z_B) {
+    cils<scalar, index, n>::cils_back_solve(vector<index> *z_B) {
         scalar sum = 0;
         scalar start = omp_get_wtime();
         vector<scalar> z_B_tmp(n, 0);

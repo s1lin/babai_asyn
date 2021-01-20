@@ -3,9 +3,9 @@
 #include "../include/cils.h"
 
 namespace cils {
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_qr_decomposition_serial(const index eval, const index qr_eval) {
+    cils<scalar, index, n>::cils_qr_decomposition_serial(const index eval, const index qr_eval) {
 
         index i, j, k, m, counter = 0;
         scalar error, time, sum;
@@ -51,10 +51,10 @@ namespace cils {
         return {nullptr, time, (index) error};
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_qr_decomposition_omp(const index eval, const index qr_eval,
-                                                               const index n_proc) {
+    cils<scalar, index, n>::cils_qr_decomposition_omp(const index eval, const index qr_eval,
+                                                      const index n_proc) {
 
         scalar error, time, sum = 0;
 

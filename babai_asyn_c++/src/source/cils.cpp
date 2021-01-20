@@ -14,8 +14,8 @@ using namespace cils::program_def;
 
 namespace cils {
 
-    template<typename scalar, typename index, bool is_read, index n>
-    void cils<scalar, index, is_read, n>::read_nc(string filename) {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::read_nc(string filename) {
         cout << filename;
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
@@ -45,8 +45,8 @@ namespace cils {
         if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
-    void cils<scalar, index, is_read, n>::read_csv() {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::read_csv() {
         string fy = prefix + "data/y_" + suffix + ".csv";
         string fx = prefix + "data/x_" + suffix + ".csv";
         string fR = prefix + "data/R_A_" + suffix + ".csv";
@@ -88,8 +88,8 @@ namespace cils {
         f3.close();
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
-    void cils<scalar, index, is_read, n>::init(bool is_nc) {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init(bool is_nc) {
         scalar start = omp_get_wtime();
         if (is_read) {
             string filename = prefix + "data/" + suffix + ".nc";
@@ -143,8 +143,8 @@ namespace cils {
         printf("Finish Init, time: %.5f seconds\n", end_time);
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
-    void cils<scalar, index, is_read, n>::init_y(){
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init_y(){
         index counter = 0;
         for (index i = 0; i < n; i++) {
             for (index j = i; j < n; j++) {

@@ -27,12 +27,12 @@ namespace cils {
         index chunk_size = 1;
         index block_size = 16;
         index is_qr = true;//use as is_constrained in mode==3.
-        index is_nc = true;
+        index is_read = false;
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
         index max_search = 3000;
-        index min_proc = 4;
+        index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 100000;//maximum search allowed for serial ils.
@@ -52,7 +52,7 @@ namespace cils {
                 chunk_size = stoi(argv[7]);
                 block_size = stoi(argv[8]);
                 is_qr = stoi(argv[9]);
-                is_nc = stoi(argv[10]);
+                is_read = stoi(argv[10]);
                 mode = stoi(argv[11]);
                 num_trials = stoi(argv[12]);
                 is_local = stoi(argv[13]);

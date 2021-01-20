@@ -424,7 +424,7 @@ namespace cils {
      * @tparam is_write
      * @tparam n
      */
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     class cils {
 
     public:
@@ -491,10 +491,17 @@ namespace cils {
         }
 
         ~cils() {
+            free(R_A->x);
+            free(y_A->x);
             free(R_A);
             free(y_A);
-            if (!is_read) {
+            if (!program_def::is_read) {
+                free(A->x);
+                free(R->x);
+                free(v_A->x);
+                free(Q->x);
                 free(A);
+                free(R);
                 free(v_A);
                 free(Q);
             }
@@ -570,16 +577,6 @@ namespace cils {
         cils_babai_search_serial(vector<index> *z_B, bool is_constrained);
 
         /**
-         * Unconstrained version of Parallel Babai solver
-         * @param n_proc: number of Processors/Threads
-         * @param nswp: maximum number of iterations
-         * @param z_B: estimation of the true parameter
-         * @return
-         */
-        returnType<scalar, index>
-        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
-
-        /**
          * Constrained version of Parallel Babai solver
          * @param n_proc: number of Processors/Threads
          * @param nswp: maximum number of iterations
@@ -587,7 +584,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp_constrained(const index n_proc, const index nswp, vector<index> *z_B);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B, bool is_constrained);
 
         /**
          * Unconstrained serial version of Block Babai solver

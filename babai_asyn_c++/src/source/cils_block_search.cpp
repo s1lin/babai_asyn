@@ -8,10 +8,10 @@
 using namespace std;
 
 namespace cils {
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B,
-                                                              bool is_constrained) {
+    cils<scalar, index, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B,
+                                                     bool is_constrained) {
 
         index ds = d->size(), dx = d->at(ds - 1), n_dx_q_0, n_dx_q_1;
         //special cases:
@@ -59,13 +59,13 @@ namespace cils {
         return reT;
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, is_read, n>::cils_block_search_omp(const index n_proc, const index nswp,
-                                                           const index stop, const index init,
-                                                           const vector<index> *d,
-                                                           vector<index> *z_B,
-                                                           const bool is_constrained) {
+    cils<scalar, index, n>::cils_block_search_omp(const index n_proc, const index nswp,
+                                                  const index stop, const index init,
+                                                  const vector<index> *d,
+                                                  vector<index> *z_B,
+                                                  const bool is_constrained) {
         index ds = d->size(), dx = d->at(ds - 1);
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(d, z_B, is_constrained);
@@ -126,15 +126,15 @@ namespace cils {
                     n_dx_q_1 = n - i * dx;
                     //The block operation
 //                    if (i != 0) {
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            sum = 0;
-                            row_n = (n * row) - ((row * (row + 1)) / 2);
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        sum = 0;
+                        row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
-                            for (index col = n_dx_q_1; col < n; col++) {
-                                sum += R_A->x[row_n + col] * z_x[col];
-                            }
-                            y_b[row] = y_A->x[row] - sum;
+                        for (index col = n_dx_q_1; col < n; col++) {
+                            sum += R_A->x[row_n + col] * z_x[col];
                         }
+                        y_b[row] = y_A->x[row] - sum;
+                    }
 //                    } else
 //#pragma omp simd
 //                        for (index l = n_dx_q_0; l < n_dx_q_1; l++)

@@ -4,9 +4,9 @@
 #include "../include/cils.h"
 
 namespace cils {
-    template<typename scalar, typename index, bool is_read, index n>
-    inline scalar cils<scalar, index, is_read, n>::ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
-                                                              vector<index> *x, const bool is_constrained) {
+    template<typename scalar, typename index, index n>
+    inline scalar cils<scalar, index, n>::ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
+                                                     vector<index> *x, const bool is_constrained) {
 
         //variables
         index block_size = y_B->size(), k = block_size - 1, upper = pow(2, k) - 1;
@@ -72,10 +72,10 @@ namespace cils {
         return beta;
     }
 
-    template<typename scalar, typename index, bool is_read, index n>
-    inline scalar cils<scalar, index, is_read, n>::ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                                                  const scalar *y_B, index *z_x,
-                                                                  const bool is_constrained) {
+    template<typename scalar, typename index, index n>
+    inline scalar cils<scalar, index, n>::ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                                         const scalar *y_B, index *z_x,
+                                                         const bool is_constrained) {
 
         //variables
         scalar sum, newprsd, gamma, beta = INFINITY;
