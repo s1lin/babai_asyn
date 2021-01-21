@@ -274,7 +274,7 @@ void test_ils_search() {
 //                   (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
 
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 1);
+            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 0);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "

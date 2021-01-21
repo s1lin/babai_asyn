@@ -215,15 +215,23 @@ namespace cils {
                                          const index block_size) {
         index size = col_end - col_begin;
         vector<scalar> R_b_s(size * (1 + size) / 2, 0);
+        vector<scalar> R_b_s_2(size * (1 + size) / 2, 0);
         index counter = 0, i = 0;
 
         //The block operation
         for (index row = row_begin; row < row_end; row++) {
-            //Translating the index from R(matrix) to R_B(compressed array).
             for (index col = row; col < col_end; col++) {
                 i = (block_size * row) + col - ((row * (row + 1)) / 2);
                 //Put the value into the R_b_s
                 R_b_s[counter] = R_B->x[i];
+                counter++;
+            }
+        }
+        for (index row = row_begin; row < row_end; row++) {
+            for (index col = row; col < col_end; col++) {
+                i = (block_size * row) + col;
+                //Put the value into the R_b_s
+                R_b_s_2[counter] = R_B->x[i];
                 counter++;
             }
         }
@@ -467,8 +475,9 @@ namespace cils {
          * @param is_constrained
          * @return
          */
-        inline scalar ils_search(const vector<scalar> *R_B, const vector<scalar> *y_B,
-                                 vector<index> *x, const bool is_constrained);
+        inline scalar ils_search(const index n_dx_q_0, const index n_dx_q_1,
+                                 const vector<scalar> *y_B, vector<index> *z_x,
+                                 const bool is_constrained);
 
 
     public:
