@@ -146,6 +146,9 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_y(){
+        this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
+        this->y_A->x = new scalar[n]();
+
         index counter = 0;
         for (index i = 0; i < n; i++) {
             for (index j = i; j < n; j++) {

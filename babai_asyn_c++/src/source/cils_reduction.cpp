@@ -10,6 +10,8 @@ namespace cils {
         index i, j, k, m, counter = 0;
         scalar error, time, sum;
         auto A_t = new scalar[n * n]();
+        R->x = new scalar[n * n]();
+        Q->x = new scalar[n * n]();
 
         time = omp_get_wtime();
         for (i = 0; i < n * n; i++) {
@@ -59,10 +61,11 @@ namespace cils {
         scalar error, time, sum = 0;
 
         auto A_t = new scalar[n * n]();
+        R->x = new scalar[n * n]();
+        Q->x = new scalar[n * n]();
         auto lock = new omp_lock_t[n]();
 
         time = omp_get_wtime();
-        cout.flush();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum)
         {
 
@@ -123,9 +126,8 @@ namespace cils {
         time = omp_get_wtime() - time;
         if (eval || qr_eval) {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
-//            cout << error << " ";
-//            cout.flush();
         }
+#pragma parallel omp cancellation point
 #pragma omp flush
         delete[] lock;
         delete[] A_t;

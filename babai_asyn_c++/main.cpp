@@ -142,7 +142,7 @@ void run_test(int argc, char *argv[]) {
 //    program_def::max_proc = 54;
 //    program_def::min_proc = max_proc == 46 ? 4 : 2;
     program_def::init_program_def(argc, argv);
-    plot_res_2<scalar, int, N_10>(program_def::is_constrained);
+    plot_res_2<scalar, int, N_10>();
 //    switch (program_def::mode) {
 //        case 0:
 //            plot_res<scalar, int, N_4096>();
