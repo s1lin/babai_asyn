@@ -94,8 +94,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (flag || i > iter) continue;
-                    iter++;
+                    if (flag) continue;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     //The block operation

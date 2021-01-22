@@ -35,8 +35,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < n; i++) {
-                    if (flag || i > s) continue; //
-                    s++;
+                    if (flag) continue; //
                     sum = 0;
                     ni = n - 1 - i;
                     nj = ni * n - (ni * (n - i)) / 2;
@@ -51,7 +50,7 @@ namespace cils {
                     if (i == n - 1)
                         check = true;
                 }
-                if (mode != 0 && check) {
+                if (j > 0 && check) {
                     num_iter = j;
                     check = false;
                     diff = 0;
