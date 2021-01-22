@@ -30,7 +30,7 @@ namespace cils {
         scalar sum = 0, result;
 
         scalar start = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(result, sum, diff, ni, nj)
+#pragma omp parallel default(shared) num_threads(n_proc) private(check, result, sum, diff, ni, nj)
         {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
@@ -47,6 +47,7 @@ namespace cils {
                     }
                     result = round((y_A->x[ni] - sum) / R_A->x[nj + ni]);
                     z_x[ni] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
+
                     if (i == n - 1)
                         check = true;
                 }

@@ -100,7 +100,7 @@ namespace cils {
         index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
         scalar p[dx], c[dx];
-        index z[dx], d[dx];
+        index z[dx], d[dx], x[dx];
 
 #pragma omp simd
         for (index l = 0; l < dx; l++) {
@@ -117,18 +117,8 @@ namespace cils {
         d[k] = c[k] > z[k] ? 1 : -1;
 
         //ILS search process
-        while (true) {
+        for(count = 0; count < program_def::max_search; count++){
             newprsd = p[k] + gamma * gamma;
-            count++;
-            if (count > program_def::max_search) {
-#pragma omp simd
-                for (index l = 0; l < dx; l++) {
-                    z_x[l + n_dx_q_0] = z[l];
-                }
-                beta = newprsd;
-                break;
-            }
-
             if (newprsd < beta) {
                 if (k != 0) {
                     k--;
@@ -149,9 +139,11 @@ namespace cils {
 
                 } else {
                     beta = newprsd;
-#pragma omp simd
-                    for (index l = 0; l < dx; l++) {
-                        z_x[l + n_dx_q_0] = z[l];
+#pragma omp critical
+                    {
+                        for (index l = 0; l < dx; l++) {
+                            z_x[l + n_dx_q_0] = z[l];
+                        }
                     }
                     iter++;
                     if (iter > program_def::search_iter) break;
@@ -168,6 +160,14 @@ namespace cils {
                     z[k] += d[k];
                     gamma = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
                     d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
+                }
+            }
+        }
+        if(count == program_def::max_search) {
+#pragma omp critical
+            {
+                for (index l = 0; l < dx; l++) {
+                    z_x[l + n_dx_q_0] = z[l];
                 }
             }
         }
