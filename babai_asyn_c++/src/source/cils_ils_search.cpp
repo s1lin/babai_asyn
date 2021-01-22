@@ -16,7 +16,6 @@
  *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace cils {
     template<typename scalar, typename index, index n>
     inline scalar cils<scalar, index, n>::ils_search(const index n_dx_q_0, const index n_dx_q_1,
@@ -100,7 +99,7 @@ namespace cils {
         index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
         scalar p[dx], c[dx];
-        index z[dx], d[dx], x[dx];
+        index z[dx], d[dx];
 
 #pragma omp simd
         for (index l = 0; l < dx; l++) {

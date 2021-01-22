@@ -1,9 +1,20 @@
-//
-// Created by shilei on 2020-12-05.
-//
-#include <algorithm>
-#include <random>
-#include "../include/cils.h"
+/** \file
+ * \brief Computation of Block Babai Algorithm
+ * \author Shilei Lin
+ * This file is part of CILS.
+ *   CILS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   CILS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 using namespace std;
 
@@ -65,17 +76,16 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        bool flag = false, check = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, diff[100] = {}, z_p[n] = {}, upper =
-                pow(2, k) - 1, k, count, row_k;
-        scalar sum = 0, result = 0, run_time;
+        bool flag = false;
+        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, k) - 1;
+        scalar sum = 0, result = 0;
         auto y_b = new scalar[n]();
+        auto z_p = new index[n]();
+        auto diff = new index[nswp]();
 
-        scalar start = omp_get_wtime();
-        auto lock = new omp_lock_t[ds]();
+        scalar run_time = omp_get_wtime();
 
-
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1, k, count, row_k)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1)
         {
             if (init != -1)
 #pragma omp for schedule(dynamic) nowait
@@ -110,14 +120,15 @@ namespace cils {
                     ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x, is_constrained);
                     if (i == ds - 1) {
                         num_iter = j;
-                        check = false;
-#pragma omp simd reduction(+ : diff)
+                        sum = 0;
+#pragma omp simd reduction(+ : sum)
                         for (index l = 0; l < n; l++) {
-                            diff[j] += z_x[l] == z_p[l];
+                            sum += z_x[l] == z_p[l];
                             z_p[l] = z_x[l];
                         }
                         if (mode != 0 && !flag) {
-                            flag = diff[j] > stop;
+                            diff[j] = sum;
+                            flag = sum > stop;
 #pragma omp flush (flag)
                         }
                     }
@@ -125,12 +136,14 @@ namespace cils {
             }
         }
 
-        scalar run_time2 = omp_get_wtime() - start;
+        run_time = omp_get_wtime() - run_time;
 
 #pragma parallel omp cancellation point
 #pragma omp flush
-        returnType<scalar, index> reT = {z_B, run_time2, num_iter};
+        returnType<scalar, index> reT = {z_B, run_time, num_iter};
         delete[] y_b;
+        delete[] z_p;
+        delete[] diff;
         return reT;
     }
 }

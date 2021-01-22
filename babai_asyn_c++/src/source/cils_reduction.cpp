@@ -74,6 +74,7 @@ namespace cils {
                 for (index j = 0; j < n; j++) {
                     A_t[i * n + j] = A->x[i * n + j];
                 }
+                omp_init_lock((&lock[i]));
                 omp_set_lock(&lock[i]);
             }
 
@@ -126,6 +127,9 @@ namespace cils {
         time = omp_get_wtime() - time;
         if (eval || qr_eval) {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
+        }
+        for (index i = 0; i < n; i++) {
+            omp_destroy_lock(&lock[i]);
         }
 #pragma parallel omp cancellation point
 #pragma omp flush
