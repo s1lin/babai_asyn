@@ -154,7 +154,7 @@ void run_test(int argc, char *argv[]) {
 //            ils_block_search<scalar, int, N_4096>();
             break;
         default:
-            test_ils_search<scalar, int, N_10>();
+            test_ils_search<scalar, int, N_4096>();
             break;
     }
 }

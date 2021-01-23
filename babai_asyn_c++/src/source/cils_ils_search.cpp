@@ -17,6 +17,7 @@
  */
 
 namespace cils {
+
     template<typename scalar, typename index, index n>
     inline scalar cils<scalar, index, n>::ils_search(const index n_dx_q_0, const index n_dx_q_1,
                                                      const vector<scalar> *y_B, vector<index> *z_x,
@@ -54,7 +55,6 @@ namespace cils {
                         sum += R->x[n * (col + n_dx_q_0) + row_k] * z[col];
                     }
                     R_kk = R->x[n * row_k + row_k];
-
                     p[k] = newprsd;
                     c[k] = (y_B->at(row_k) - sum) / R_kk;
                     result = round(c[k]);
@@ -99,7 +99,7 @@ namespace cils {
         index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
 
         scalar p[dx], c[dx];
-        index z[dx], d[dx];
+        index z[dx], d[dx], x[dx];
 
 #pragma omp simd
         for (index l = 0; l < dx; l++) {
@@ -138,12 +138,12 @@ namespace cils {
 
                 } else {
                     beta = newprsd;
-#pragma omp critical
-                    {
+//#pragma omp critical
+//                    {
                         for (index l = 0; l < dx; l++) {
-                            z_x[l + n_dx_q_0] = z[l];
+                            x[l] = z[l];
                         }
-                    }
+//                    }
                     iter++;
                     if (iter > program_def::search_iter) break;
 
@@ -162,14 +162,14 @@ namespace cils {
                 }
             }
         }
-        if(count == program_def::max_search) {
-#pragma omp critical
-            {
-                for (index l = 0; l < dx; l++) {
-                    z_x[l + n_dx_q_0] = z[l];
-                }
-            }
+//        if(count == program_def::max_search) {
+//#pragma omp critical
+//            {
+        for (index l = 0; l < dx; l++) {
+            z_x[l + n_dx_q_0] = x[l];
         }
+//            }
+//        }
         return beta;
     }
 

@@ -14,7 +14,7 @@ void plot_run() {
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
     vector<index> z_B(n, 0);
-    cils::cils<scalar, index, n> cils(k, SNR);
+
     scalar ser_qrd = 0, run_time;
     vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
     vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
@@ -24,6 +24,7 @@ void plot_run() {
     for (index i = 0; i < max_iter; i++) {
         run_time = omp_get_wtime();
         if (i % 500 == 0 && i != 0) cout << endl;
+        cils::cils<scalar, index, n> cils(k, SNR);
         cils.init(is_read);
         qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         ser_qrd += qr_reT.run_time;
@@ -58,7 +59,6 @@ void plot_run() {
                 omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                 omp_tim[init + 1 + 3 * l] += reT.run_time;
                 omp_itr[init + 1 + 3 * l] += reT.num_iter;
-
                 l++;
             }
         }
@@ -107,11 +107,11 @@ void test_ils_search() {
 
     cils::cils<scalar, index, n> cils(k, SNR);
     index init = 0;
-//    for (index i = 0; i < max_iter; i++) {
-    for (index i = 1; i < 2; i++) {
-        cils.sigma = i * 0.1;
+    cils::returnType<scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
+    for (index i = 0; i < max_iter; i++) {
+
         cils.init(is_read);
-        auto qr_reT = cils.cils_qr_decomposition_serial(0, 1);
+        qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         cils.init_y();
         cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
         cils.cils_back_solve(&cils.x_R);
@@ -120,7 +120,7 @@ void test_ils_search() {
         vector<index> z_B(n, 0);
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
 
-        auto reT = cils.cils_babai_search_serial(&z_B, 0);
+        reT = cils.cils_babai_search_serial(&z_B, is_constrained);
         auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
@@ -128,7 +128,7 @@ void test_ils_search() {
         scalar bab_tim_constrained = reT.run_time;
 
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-        reT = cils.cils_block_search_serial(&d_s, &z_B, 0);
+        reT = cils.cils_block_search_serial(&d_s, &z_B, is_constrained);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
@@ -137,7 +137,7 @@ void test_ils_search() {
 
 
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            auto qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
+            qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B, 1);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
@@ -152,7 +152,8 @@ void test_ils_search() {
                    (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
 
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B, 0);
+            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, stop, 0, &d_s, &z_B,
+                                             is_constrained);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "
@@ -164,9 +165,9 @@ void test_ils_search() {
                    reT.run_time + qr_reT_omp.run_time,
                    (ils_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time)
             );
-
         }
     }
+
 }
 
 template<typename scalar, typename index, index n>
@@ -184,6 +185,18 @@ void plot_res() {
     printf("init_res: %.5f, sigma: %.5f, qr time: %.5fs\n", cils.init_res, cils.sigma, reT.run_time);
 
     vector<index> z_B(n, 0);
+    reT = cils.cils_babai_search_serial(&z_B, 0);
+    scalar res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+    scalar ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+    printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs\n",
+           res, ber, reT.run_time);
+
+    z_B.assign(n, 0);
+    reT = cils.cils_block_search_serial(&d_s, &z_B, 0);
+    res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+    ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+    printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs\n",
+           block_size, res, ber, reT.run_time);
 
     for (index init = -1; init <= 1; init++) {
         cout << "init," << init << "\n";

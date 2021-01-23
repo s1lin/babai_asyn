@@ -43,6 +43,17 @@ namespace cils {
 
         /* Read the data. */
         if ((retval = nc_get_var_double(ncid, varid, &R_A->x[0]))) ERR(retval);
+        this->R = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        this->R->x = new scalar[n * n]();
+        this->R->size = n * n;
+        index counter = 0;
+        for (index i = 0; i < n; i++) {
+            for (index j = i; j < n; j++) {
+                R->x[j * n + i] = R_A->x[counter];
+                counter++;
+            }
+        }
+
     }
 
     template<typename scalar, typename index, index n>

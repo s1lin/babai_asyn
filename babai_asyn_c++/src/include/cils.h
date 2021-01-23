@@ -215,7 +215,6 @@ namespace cils {
                                          const index block_size) {
         index size = col_end - col_begin;
         vector<scalar> R_b_s(size * (1 + size) / 2, 0);
-        vector<scalar> R_b_s_2(size * (1 + size) / 2, 0);
         index counter = 0, i = 0;
 
         //The block operation
@@ -227,15 +226,6 @@ namespace cils {
                 counter++;
             }
         }
-        for (index row = row_begin; row < row_end; row++) {
-            for (index col = row; col < col_end; col++) {
-                i = (block_size * row) + col;
-                //Put the value into the R_b_s
-                R_b_s_2[counter] = R_B->x[i];
-                counter++;
-            }
-        }
-
         return R_b_s;
     }
 
@@ -479,7 +469,6 @@ namespace cils {
                                  const vector<scalar> *y_B, vector<index> *z_x,
                                  const bool is_constrained);
 
-
     public:
         cils(index qam, index snr) {
             this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
@@ -602,7 +591,8 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(const vector<index> *d, vector<index> *z_B, bool is_constrained);
+        cils_block_search_serial(const vector<index> *d, vector<index> *z_B,
+                                 bool is_constrained);
 
 
         /**

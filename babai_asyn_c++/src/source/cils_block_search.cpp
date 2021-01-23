@@ -41,7 +41,7 @@ namespace cils {
             //Find the Babai point
             return cils_babai_search_serial(z_B, is_constrained);
         }
-        scalar start = omp_get_wtime(), res = 0;
+        scalar start = omp_get_wtime();
         for (index i = 0; i < n; i++) {
             y_b[i] = y_A->x[i];
         }
@@ -54,6 +54,15 @@ namespace cils {
                     y_b[row] = y_b[row] - R->x[col * n + row] * z_B->at(col);
                 }
             }
+
+//            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//                scalar sum = 0;
+//                index row_n = (n * row) - ((row * (row + 1)) / 2);
+//                for (index col = n_dx_q_1; col < n; col++) {
+//                    sum += R_A->x[row_n + col] * z_B->at(col);
+//                }
+//                y_b[row] = y_A->x[row] - sum;
+//            }
 
             ils_search(n_dx_q_0, n_dx_q_1, &y_b, z_B, is_constrained);
         }
@@ -77,29 +86,27 @@ namespace cils {
 
         auto z_x = z_B->data();
         bool flag = false;
-        index num_iter, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, k) - 1;
-        scalar sum = 0, result = 0;
-        auto y_b = new scalar[n]();
-        auto z_p = new index[n]();
-        auto diff = new index[nswp]();
+        index num_iter = 0, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, k) - 1;
+        scalar sum = 0, result = 0, y_b[n];
+        index z_p[n], diff[nswp];
 
         scalar run_time = omp_get_wtime();
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1)
         {
-            if (init != -1)
-#pragma omp for schedule(dynamic) nowait
-                for (index i = 0; i < nswp; i++) {
-                    sum = 0;
-                    n_dx_q_0 = n - 1 - i;
-                    n_dx_q_1 = n_dx_q_0 * n - (n_dx_q_0 * (n - i)) / 2;
-#pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++)
-                        sum += R_A->x[n_dx_q_1 + col] * z_x[col];
-                    result = round((y_A->x[n_dx_q_0] - sum) / R_A->x[n_dx_q_0 + n_dx_q_1]);
-                    z_x[n_dx_q_0] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
-                    z_p[n_dx_q_0] = z_x[n_dx_q_0];
-                }
+//            if (init != -1)
+//#pragma omp for schedule(dynamic) nowait
+//                for (index i = 0; i < nswp; i++) {
+//                    sum = 0;
+//                    n_dx_q_0 = n - 1 - i;
+//                    n_dx_q_1 = n_dx_q_0 * n - (n_dx_q_0 * (n - i)) / 2;
+//#pragma omp simd reduction(+ : sum)
+//                    for (index col = n - i; col < n; col++)
+//                        sum += R_A->x[n_dx_q_1 + col] * z_x[col];
+//                    result = round((y_A->x[n_dx_q_0] - sum) / R_A->x[n_dx_q_0 + n_dx_q_1]);
+//                    z_x[n_dx_q_0] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
+//                    z_p[n_dx_q_0] = z_x[n_dx_q_0];
+//                }
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
@@ -108,7 +115,7 @@ namespace cils {
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     //The block operation
-                    for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                         sum = 0;
                         row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
@@ -141,9 +148,6 @@ namespace cils {
 #pragma parallel omp cancellation point
 #pragma omp flush
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
-        delete[] y_b;
-        delete[] z_p;
-        delete[] diff;
         return reT;
     }
 }
