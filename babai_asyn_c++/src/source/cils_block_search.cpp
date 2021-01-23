@@ -119,7 +119,7 @@ namespace cils {
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     //The block operation
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                    for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
                         sum = 0;
                         row_n = (n * row) - ((row * (row + 1)) / 2);
 #pragma omp simd reduction(+ : sum)
