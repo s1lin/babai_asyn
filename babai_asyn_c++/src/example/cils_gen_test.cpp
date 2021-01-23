@@ -23,7 +23,36 @@ void plot_run() {
 
     for (index i = 0; i < max_iter; i++) {
         run_time = omp_get_wtime();
-        if (i % 500 == 0 && i != 0) cout << endl;
+        if (i % 20 == 0 && i != 0) {
+            for (index init = -1; init <= 1; init++) {
+                printf("++++++++++++++++++++++++++++++++++++++\n");
+                std::cout << "Block, size: " << block_size << std::endl;
+                std::cout << "Init, value: " << init << std::endl;
+                printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+                       bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1], ser_qrd / max_iter,
+                       (ser_qrd + bab_tim[init + 1]) / max_iter);
+                printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+                       block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
+                       ser_qrd / max_iter, (ser_qrd + ser_tim[init + 1]) / max_iter);
+                index l = 0;
+                for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
+                    printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
+                           "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
+                           n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
+                           omp_ber[init + 1 + 3 * l] / max_iter,
+                           omp_itr[init + 1 + 3 * l] / max_iter,
+                           omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
+                           ser_tim[init + 1] / omp_tim[init + 1 + 3 * l],
+                           omp_err[init + 1 + 3 * l] / max_iter, omp_qrd[3 * l] / max_iter,
+                           ser_qrd / omp_qrd[3 * l],
+                           (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l]) / max_iter,
+                           (ser_qrd + ser_tim[init + 1]) / (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l])
+                    );
+                    l++;
+                }
+                printf("++++++++++++++++++++++++++++++++++++++\n");
+            }
+        }
         cils::cils<scalar, index, n> cils(k, SNR);
         cils.init(is_read);
         qr_reT = cils.cils_qr_decomposition_serial(0, 1);
