@@ -120,7 +120,7 @@ namespace cils {
                     binary_x_t = std::bitset<3>(x_t->at(i)).to_string();
                     break;
             }
-
+//            cout << binary_x_b << "-" << binary_x_t << " ";
             for (index j = 0; j < k; j++) {
                 if (binary_x_b[j] != binary_x_t[j])
                     error++;
@@ -334,10 +334,10 @@ namespace cils {
      */
     template<typename scalar, typename index, index n>
     scalar qr_validation(const scalarType<scalar, index> *A,
-                       const scalarType<scalar, index> *Q,
-                       const scalarType<scalar, index> *R,
-                       const scalarType<scalar, index> *R_A,
-                       const index eval, const index qr_eval) {
+                         const scalarType<scalar, index> *Q,
+                         const scalarType<scalar, index> *R,
+                         const scalarType<scalar, index> *R_A,
+                         const index eval, const index qr_eval) {
         index i, j, k;
         scalar sum, error = 0;
         auto c = new scalar[n * n]();
@@ -433,19 +433,19 @@ namespace cils {
 
     private:
         /**
-         *
          * read the problem from files
          */
         void read_nc(string filename);
 
         /**
-         *
          * read the problem from files
          */
         void read_csv();
 
         /**
-         *
+         * ils_search_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular integer least squares problem
+         * min_{z}||y-Rz|| by a depth-first search algorithm.
          * @param n_dx_q_0
          * @param n_dx_q_1
          * @param y_B
@@ -454,11 +454,13 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                     const scalar *y_B, index *z_x, const bool is_constrained);
+                                     const scalar *y_B, index *z_x);
 
 
         /**
-         *
+         * ils_search(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular integer least squares problem
+         * min_{z}||y-Rz|| by a depth-first search algorithm.
          * @param R_B
          * @param y_B
          * @param x
@@ -466,8 +468,36 @@ namespace cils {
          * @return
          */
         inline scalar ils_search(const index n_dx_q_0, const index n_dx_q_1,
-                                 const vector<scalar> *y_B, vector<index> *z_x,
-                                 const bool is_constrained);
+                                 const vector<scalar> *y_B, vector<index> *z_x);
+
+
+        /**
+         * ils_search_obils(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular box-constrained integer least squares problem
+         * min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
+         * @param n_dx_q_0
+         * @param n_dx_q_1
+         * @param y_B
+         * @param z_x
+         * @return
+         */
+        inline scalar ils_search_obils(const index n_dx_q_0, const index n_dx_q_1,
+                                       const vector<scalar> *y_B, vector<index> *z_x);
+
+
+        /**
+         * ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular box-constrained integer least squares problem
+         * min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
+         * @param n_dx_q_0
+         * @param n_dx_q_1
+         * @param y_B
+         * @param z_x
+         * @return
+         */
+        inline scalar ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                           const scalar *y_B, index *z_x);
+
 
     public:
         cils(index qam, index snr) {

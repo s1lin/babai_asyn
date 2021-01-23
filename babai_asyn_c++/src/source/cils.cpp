@@ -46,11 +46,13 @@ namespace cils {
         this->R = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
         this->R->x = new scalar[n * n]();
         this->R->size = n * n;
-        index counter = 0;
+
         for (index i = 0; i < n; i++) {
-            for (index j = i; j < n; j++) {
-                R->x[j * n + i] = R_A->x[counter];
-                counter++;
+            for (index j = 0; j < n; j++) {
+                if(j >= i) {
+                    index row = (n * i) - ((i * (i + 1)) / 2);
+                    R->x[j * n + i] = R_A->x[row + j];
+                }
             }
         }
 
@@ -103,7 +105,7 @@ namespace cils {
     void cils<scalar, index, n>::init(bool is_nc) {
         scalar start = omp_get_wtime();
         if (is_read) {
-            string filename = prefix + "data/" + suffix + ".nc";
+            string filename = prefix + "data/new" + suffix + ".nc";
             if (!is_nc) read_csv();
             else read_nc(filename);
 

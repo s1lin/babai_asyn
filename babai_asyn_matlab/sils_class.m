@@ -113,7 +113,7 @@ classdef sils_class
 
         %Search - find the Babai solustion to the reduced problem
         function [z_B, res, tEnd] = sils_search_babai(sils, init_value)
-
+            upper = 2^sils.k - 1;
             if init_value ~= -1
                 z_B = zeros(sils.n, 1) + init_value;
             else
@@ -123,7 +123,13 @@ classdef sils_class
             tStart = tic;
             for j = sils.n:-1:1
                 z_B(j) = (sils.y(j) - sils.R(j, j + 1:sils.n) * z_B(j + 1:sils.n)) / sils.R(j, j);
-                z_B(j) = round(z_B(j));
+                if(round(z_B(j)) > (2^sils.k - 1))
+                    z_B(j) = upper;
+                elseif (round(z_B(j)) < 0)
+                    z_B(j) = 0;
+                else
+                    z_B(j) = round(z_B(j));
+                end
             end
             tEnd = toc(tStart);
             res = norm(sils.y - sils.R * z_B);
@@ -140,10 +146,10 @@ classdef sils_class
             res = norm(sils.x0 - x_R);
         end
 
-         %Search - rescurisive block solver.
-        function [x, res] = sils_block_search(sils, Rb, yb, x, d, init_value)
+        %Search - rescurisive block solver.
+        function x = sils_block_search2(sils, Rb, yb, x, d, l, u)
             %BOB with input partition vector d
-            [~, l] = size(Rb);
+            [~, nn] = size(Rb);
             [ds, ~] = size(d);
             %1 dimension
             if ds == 1
@@ -157,26 +163,38 @@ classdef sils_class
 
             else
                 %Babai
-                if ds == l
-                    [x, res] = sils.sils_search_babai(sils, init_value);
+                if ds == nn
+                    raw_x0 = zeros(nn, 1);
+                    for h = nn:-1:1
+                        raw_x0(h) = (yb(h) - Rb(h, h + 1:nn) * x(h + 1:nn)) / Rb(h, h);
+                        raw_x0(h) = round(raw_x0(h));
+                    end
+                    x = raw_x0;
                     return
                 else
                     q = d(1);
-                    xx1 = sils_block_search(Rb(q + 1:l, q + 1:l), yb(q + 1:l), x, d(2:ds));
-                    yb2 = yb(1:q) - Rb(1:q, q + 1:l) * xx1;
-                    if q == 1%Babai
+                    xx1 = sils.sils_block_search2(Rb(q + 1:nn, q + 1:nn), yb(q + 1:nn), x, d(2:ds), l, u);
+                    yb2 = yb(1:q) - Rb(1:q, q + 1:nn) * xx1;
+                    if q == 1 %Babai
                         xx2 = round(yb2 / Rb(1, 1));
                     else
-                        Rb(1:q, 1:q)
                         xx2 = sils_search(Rb(1:q, 1:q), yb2, 1);
                     end
                     x = [xx2; xx1];
                 end
-            end
-            res = norm(yb - Rb * x);
-
+            end   
         end
-
+           
+        %find BER
+        function ber = sils_ber(sils, xt, xb)
+            ber = 0;
+            for i = 1:sils.n
+                if xt(i) ~= xb(i)
+                    ber = ber + 1;
+                end
+            end
+            ber = ber / (sils.n * sils.k);
+        end
 
 
     end

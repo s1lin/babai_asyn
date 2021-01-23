@@ -1,4 +1,4 @@
-function  [iter, Zhat] = sils_search(R,y,p)
+function Zhat = sils_search(R,y,p)
 %
 % Zhat = sils_search(R,y,p) produces p optimal solutions to 
 % the upper triangular integer least squares problem min_{z}||y-Rz|| 

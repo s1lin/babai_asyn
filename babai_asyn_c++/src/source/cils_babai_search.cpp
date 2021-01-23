@@ -23,7 +23,7 @@ namespace cils {
     cils<scalar, index, n>::cils_babai_search_omp(const index n_proc, const index nswp,
                                                   vector<index> *z_B, bool is_constrained) {
 
-        index num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, upper = pow(2, k) - 1;
+        index num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, upper = pow(2, qam) - 1;
         bool flag = false, check = false;
         auto z_x = z_B->data();
         auto z_p = new index[n]();
@@ -75,7 +75,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_babai_search_serial(vector<index> *z_B, bool is_constrained) {
-        scalar sum = 0, upper = pow(2, k) - 1;
+        scalar sum = 0, upper = pow(2, qam) - 1;
         scalar start = omp_get_wtime();
 
         index result = round(y_A->x[n - 1] / R->x[n * n - 1]);
@@ -111,7 +111,7 @@ namespace cils {
             z_B_tmp[k] = (y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i];
             sum = 0;
         }
-        scalar upper = pow(2, k) - 1;
+        scalar upper = pow(2, qam) - 1;
         for (index i = 0; i < n; i++) {
             z_B->at(i) = round(z_B_tmp[i]) < 0 ? 0 : round(z_B_tmp[i]) > upper ? upper : round(z_B_tmp[i]);
         }

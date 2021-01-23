@@ -29,7 +29,8 @@ void plot_run() {
                 std::cout << "Block, size: " << block_size << std::endl;
                 std::cout << "Init, value: " << init << std::endl;
                 printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-                       bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1], ser_qrd / max_iter,
+                       bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1],
+                       ser_qrd / max_iter,
                        (ser_qrd + bab_tim[init + 1]) / max_iter);
                 printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
                        block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
@@ -140,10 +141,13 @@ void test_ils_search() {
     for (index i = 0; i < max_iter; i++) {
 
         cils.init(is_read);
-        qr_reT = cils.cils_qr_decomposition_serial(0, 1);
-        cils.init_y();
-        cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
-        cils.cils_back_solve(&cils.x_R);
+
+        if(!is_read) {
+            qr_reT = cils.cils_qr_decomposition_serial(0, 1);
+            cils.init_y();
+            cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
+            cils.cils_back_solve(&cils.x_R);
+        }
         printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, qr_reT.num_iter);
 
         vector<index> z_B(n, 0);
@@ -166,7 +170,7 @@ void test_ils_search() {
 
 
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-            qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
+//            qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
             reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B, 1);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);

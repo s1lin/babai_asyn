@@ -8,8 +8,6 @@
 
 #define N_4096 (1024)
 #define N_10 (1024)
-//#define N_4096 (8192)
-#define VERBOSE (0)
 
 using namespace std;
 
@@ -21,17 +19,17 @@ namespace cils {
         index k = 3;
         index SNR = 35;
         index max_iter = 3;
-        index search_iter = 5;
+        index search_iter = 3;
         index stop = 1000;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
-        index is_constrained = true;//use as is_constrained in mode==3.
+        index is_constrained = true;
         index is_read = false;
         index mode = 1; //test mode 3: c++ gen
-        index num_trials = 10; //nswp
+        index num_trials = 100; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 10000;
         index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
