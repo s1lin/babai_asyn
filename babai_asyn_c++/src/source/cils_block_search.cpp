@@ -98,19 +98,19 @@ namespace cils {
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1)
         {
-            if (init != -1)
-#pragma omp for schedule(dynamic) nowait
-                for (index i = 0; i < nswp; i++) {
-                    sum = 0;
-                    n_dx_q_0 = n - 1 - i;
-                    n_dx_q_1 = n_dx_q_0 * n - (n_dx_q_0 * (n - i)) / 2;
-#pragma omp simd reduction(+ : sum)
-                    for (index col = n - i; col < n; col++)
-                        sum += R_A->x[n_dx_q_1 + col] * z_x[col];
-                    result = round((y_A->x[n_dx_q_0] - sum) / R_A->x[n_dx_q_0 + n_dx_q_1]);
-                    z_x[n_dx_q_0] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
-                    z_p[n_dx_q_0] = z_x[n_dx_q_0];
-                }
+//            if (init != -1)
+//#pragma omp for schedule(dynamic) nowait
+//                for (index i = 0; i < nswp; i++) {
+//                    sum = 0;
+//                    n_dx_q_0 = n - 1 - i;
+//                    n_dx_q_1 = n_dx_q_0 * n - (n_dx_q_0 * (n - i)) / 2;
+//#pragma omp simd reduction(+ : sum)
+//                    for (index col = n - i; col < n; col++)
+//                        sum += R_A->x[n_dx_q_1 + col] * z_x[col];
+//                    result = round((y_A->x[n_dx_q_0] - sum) / R_A->x[n_dx_q_0 + n_dx_q_1]);
+//                    z_x[n_dx_q_0] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
+//                    z_p[n_dx_q_0] = z_x[n_dx_q_0];
+//                }
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
@@ -132,6 +132,7 @@ namespace cils {
                         ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
                     else
                         ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+
                     if (i == ds - 1) {
                         num_iter = j;
                         sum = 0;

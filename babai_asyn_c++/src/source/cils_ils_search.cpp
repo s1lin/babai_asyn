@@ -279,9 +279,9 @@ namespace cils {
         // Variables
         scalar sum, newprsd, gamma, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, result;
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, result, iter = 0;
         index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
-        index row_kk = n * end_1 + end_1, dflag = 1;
+        index row_kk = n * end_1 + end_1, dflag = 1, count = 0;
 
         scalar p[dx], c[dx];
         index z[dx], d[dx], x[dx], l[dx], u[dx];
@@ -311,7 +311,7 @@ namespace cils {
 
         gamma = R_kk * (c[k] - z[k]);
         //ILS search process
-        while (true) {
+        for (count = 0; count < program_def::max_search; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -348,8 +348,10 @@ namespace cils {
                     } else {
                         beta = newprsd;
                         for (index h = 0; h < dx; h++) {
-                            z_x[h + n_dx_q_0] = z[h];
+                            x[h] = z[h];
                         }
+                        iter++;
+                        if (iter > program_def::search_iter) break;
                     }
                 } else {
                     dflag = 0;
@@ -380,6 +382,9 @@ namespace cils {
                     }
                 }
             }
+        }
+        for (index h = 0; h < dx; h++) {
+            z_x[h + n_dx_q_0] = x[h];
         }
         return beta;
     }
