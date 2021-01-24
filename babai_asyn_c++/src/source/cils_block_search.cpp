@@ -45,26 +45,19 @@ namespace cils {
             return cils_babai_search_serial(z_B, is_constrained);
         }
         scalar start = omp_get_wtime();
-        for (index i = 0; i < n; i++) {
-            y_b[i] = y_A->x[i];
-        }
+
         for (index i = 0; i < ds; i++) {
             n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
             n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
 
-            for (index col = n_dx_q_1; col < n; col++) {
-                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                    y_b[row] = y_b[row] - R->x[col * n + row] * z_B->at(col);
+            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                scalar sum = 0;
+                for (index col = n_dx_q_1; col < n; col++) {
+                    sum += R->x[col * n + row] * z_B->at(col);
                 }
+                y_b[row] = y_A->x[row] - sum;
             }
-//            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-//                scalar sum = 0;
-//                index row_n = (n * row) - ((row * (row + 1)) / 2);
-//                for (index col = n_dx_q_1; col < n; col++) {
-//                    sum += R_A->x[row_n + col] * z_B->at(col);
-//                }
-//                y_b[row] = y_A->x[row] - sum;
-//            }
+
             if (is_constrained)
                 ils_search_obils(n_dx_q_0, n_dx_q_1, &y_b, z_B);
             else

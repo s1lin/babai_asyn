@@ -312,7 +312,7 @@ namespace cils {
         gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        for (count = 0; count < program_def::max_search; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -330,18 +330,15 @@ namespace cils {
                         c[k] = (y_B[row_k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         if (z[k] <= 0) {
-                            z[k] = 0;
-                            l[k] = 1;
-                            u[k] = 0;
-                            d[k] = 1;
+                            z[k] = u[k] = 0;
+                            l[k] = d[k] = 1;
                         } else if (z[k] >= upper) {
                             z[k] = upper;
                             u[k] = 1;
                             l[k] = 0;
                             d[k] = -1;
                         } else {
-                            l[k] = 0;
-                            u[k] = 0;
+                            l[k] = u[k] = 0;
                             d[k] = c[k] > z[k] ? 1 : -1;
                         }
                         gamma = R_kk * (c[k] - z[k]);
@@ -385,8 +382,11 @@ namespace cils {
                 }
             }
         }
-//        if(count == program_def::max_search)
-//            cout<<iter<<" ";
+        if (count == program_def::max_search && iter == 0) {
+            for (index h = 0; h < dx; h++) {
+                z_x[h + n_dx_q_0] = z[h];
+            }
+        }
         return beta;
     }
 

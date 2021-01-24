@@ -29,7 +29,7 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 300;
+        index max_search = 100;
         index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
