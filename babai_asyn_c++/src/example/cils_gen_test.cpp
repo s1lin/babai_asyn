@@ -21,6 +21,7 @@ void plot_run() {
     vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0), omp_qrd(50, 0), omp_err(50, 0);
     cils::returnType<scalar, index> reT, qr_reT, qr_reT_omp;
 
+
     for (index i = 0; i < max_iter; i++) {
         run_time = omp_get_wtime();
         if (i % 20 == 0 && i != 0) {
@@ -36,7 +37,7 @@ void plot_run() {
                        block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
                        ser_qrd / max_iter, (ser_qrd + ser_tim[init + 1]) / max_iter);
                 index l = 0;
-                for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
+                for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
                     printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
                            "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
                            n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
@@ -55,6 +56,15 @@ void plot_run() {
             }
         }
         cils::cils<scalar, index, n> cils(k, SNR);
+        if (i == 0) {
+            cils.init(is_read);
+            cils.init_y();
+            cils.cils_qr_decomposition_omp(0, 1, max_proc);
+            init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
+            cils.cils_block_search_omp(max_proc, num_trials, stop, 0, &d_s, &z_B, is_constrained);
+            continue;
+        }
+
         cils.init(is_read);
         qr_reT = cils.cils_qr_decomposition_serial(0, 1);
         ser_qrd += qr_reT.run_time;
@@ -76,7 +86,7 @@ void plot_run() {
             ser_tim[init + 1] += reT.run_time;
 
             index l = 0;
-            for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
+            for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
                 if (init == -1) {
                     qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
                     omp_qrd[init + 1 + 3 * l] += qr_reT_omp.run_time;
@@ -96,7 +106,7 @@ void plot_run() {
         printf("%d-Time: %.5fs, ", i, run_time);
         cout.flush();
     }
-
+    max_iter--;
     for (index init = -1; init <= 1; init++) {
         printf("++++++++++++++++++++++++++++++++++++++\n");
         std::cout << "Block, size: " << block_size << std::endl;
@@ -108,7 +118,7 @@ void plot_run() {
                block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
                ser_qrd / max_iter, (ser_qrd + ser_tim[init + 1]) / max_iter);
         index l = 0;
-        for (index n_proc = min_proc; n_proc <= max_proc + min_proc; n_proc += min_proc) {
+        for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
                    "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
                    n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
@@ -142,7 +152,7 @@ void test_ils_search() {
 
         cils.init(is_read);
 
-        if(!is_read) {
+        if (!is_read) {
             qr_reT = cils.cils_qr_decomposition_serial(0, 1);
             cils.init_y();
             cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);

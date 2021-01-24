@@ -98,7 +98,7 @@ namespace cils {
 #pragma omp parallel default(none) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1) shared(z_x, init, nswp, is_constrained, upper, z_p, ds, flag, iter, dx, y_b, diff, num_iter, mode, stop)
         {
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue; // || i > iter
                     iter++;
@@ -114,7 +114,7 @@ namespace cils {
                             sum += R_A->x[row_n + col] * z_x[col];
                         }
                         y_b[row] = y_A->x[row] - sum;
-                        if (row == n_dx_q_1 - 1) {
+                        if (row == n_dx_q_1 - 1 && !flag) {
                             if (is_constrained)
                                 ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
                             else
@@ -128,8 +128,8 @@ namespace cils {
                     }
 
                     if (i == ds - 1) {
-                        num_iter = j;
                         if (mode != 0 && j >= 1 && !flag) {
+                            num_iter = j;
                             flag = diff[j] > stop;
                         }
                     }

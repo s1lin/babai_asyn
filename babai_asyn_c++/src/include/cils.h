@@ -519,15 +519,15 @@ namespace cils {
         }
 
         ~cils() {
-            free(R_A->x);
-            free(y_A->x);
+            delete[] R_A->x;
+            delete[] y_A->x;
             free(R_A);
             free(y_A);
             if (!program_def::is_read) {
-                free(A->x);
-                free(R->x);
-                free(v_A->x);
-                free(Q->x);
+                delete[] A->x;
+                delete[] R->x;
+                delete[] v_A->x;
+                delete[] Q->x;
                 free(A);
                 free(R);
                 free(v_A);
