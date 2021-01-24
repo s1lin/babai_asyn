@@ -195,19 +195,19 @@ namespace cils {
         //variables
         scalar sum, newprsd, gamma, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0;
-        index count = 0, end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
-        index row_kk = (n + 1) * end_1 - ((end_1 * (end_1 + 1)) / 2);
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0, count = 0;
+        index row_k = k + n_dx_q_0, row_kk = n * row_k - ((row_k * (row_k + 1)) / 2);
 
-        scalar p[dx], c[dx];
-        index z[dx], d[dx], x[dx];
+        scalar p[dx] = {}, c[dx];
+        index z[dx], d[dx] = {}, x[dx];
 
 #pragma omp simd
-        for (index l = 0; l < dx; l++) {
-            z[l] = z_x[l + n_dx_q_0];
+        for (index col = 0; col < dx; col++) {
+            z[col] = z_x[col + n_dx_q_0];
         }
-        //  Initial squared search radius
-        scalar R_kk = R_A->x[row_kk];
+
+        //Initial squared search radius
+        scalar R_kk = R_A->x[row_kk + row_k];
         c[k] = y_B[row_k] / R_kk;
         z[k] = round(c[k]);
         gamma = R_kk * (c[k] - z[k]);
@@ -223,7 +223,7 @@ namespace cils {
                     k--;
                     row_k--;
                     sum = 0;
-                    row_kk = (n * row_k) - ((row_k * (row_k + 1)) / 2);
+                    row_kk -= (n - row_k - 1);
 #pragma omp simd reduction(+ : sum)
                     for (index col = k + 1; col < dx; col++) {
                         sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
@@ -255,8 +255,9 @@ namespace cils {
                 else {
                     k++;
                     row_k++;
+                    row_kk += n - row_k;
                     z[k] += d[k];
-                    gamma = R_A->x[(n * row_k) + row_k - ((row_k * (row_k + 1)) / 2)] * (c[k] - z[k]);
+                    gamma = R_A->x[row_kk + row_k] * (c[k] - z[k]);
                     d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
                 }
             }
@@ -277,14 +278,13 @@ namespace cils {
                                                                const scalar *y_B, index *z_x) {
 
         // Variables
-        scalar sum, newprsd, gamma, beta = INFINITY;
+        scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, result, iter = 0;
-        index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
-        index row_kk = n * end_1 + end_1, dflag = 1, count = 0;
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0;
+        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2);
 
-        scalar p[dx], c[dx];
-        index z[dx], d[dx], x[dx], l[dx], u[dx];
+        scalar p[dx] = {}, c[dx];
+        index z[dx], d[dx] = {}, l[dx], u[dx];
 
 #pragma omp simd
         for (index col = 0; col < dx; col++) {
@@ -292,7 +292,7 @@ namespace cils {
         }
 
         //Initial squared search radius
-        scalar R_kk = R->x[n * end_1 + end_1];
+        scalar R_kk = R_A->x[row_kk + row_k];
         c[k] = y_B[row_k] / R_kk;
         z[k] = round(c[k]);
         if (z[k] <= 0) {
@@ -310,8 +310,9 @@ namespace cils {
         }
 
         gamma = R_kk * (c[k] - z[k]);
+
         //ILS search process
-        for (count = 0; count < program_def::max_search; count++) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -319,26 +320,26 @@ namespace cils {
                         k--;
                         row_k--;
                         sum = 0;
+                        row_kk -= (n - row_k - 1);
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R->x[n * (col + n_dx_q_0) + row_k] * z[col];
+                            sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
                         }
-                        R_kk = R->x[n * row_k + row_k];
+                        R_kk = R_A->x[row_kk + row_k];
                         p[k] = newprsd;
                         c[k] = (y_B[row_k] - sum) / R_kk;
-                        result = round(c[k]);
-                        if (result <= 0) {
+                        z[k] = round(c[k]);
+                        if (z[k] <= 0) {
                             z[k] = 0;
                             l[k] = 1;
                             u[k] = 0;
                             d[k] = 1;
-                        } else if (result >= upper) {
+                        } else if (z[k] >= upper) {
                             z[k] = upper;
                             u[k] = 1;
                             l[k] = 0;
                             d[k] = -1;
                         } else {
-                            z[k] = result;
                             l[k] = 0;
                             u[k] = 0;
                             d[k] = c[k] > z[k] ? 1 : -1;
@@ -348,7 +349,7 @@ namespace cils {
                     } else {
                         beta = newprsd;
                         for (index h = 0; h < dx; h++) {
-                            x[h] = z[h];
+                            z_x[h + n_dx_q_0] = z[h];
                         }
                         iter++;
                         if (iter > program_def::search_iter) break;
@@ -362,6 +363,7 @@ namespace cils {
                 else {
                     k++;
                     row_k++;
+                    row_kk += n - row_k;
                     if (l[k] != 1 || u[k] != 1) {
                         z[k] += d[k];
                         if (z[k] == 0) {
@@ -377,15 +379,14 @@ namespace cils {
                         } else {
                             d[k] = d[k] > 0 ? -d[k] - 1 : -d[k] + 1;
                         }
-                        gamma = R->x[n * row_k + row_k] * (c[k] - z[k]);
+                        gamma = R_A->x[row_kk + row_k] * (c[k] - z[k]);
                         dflag = 1;
                     }
                 }
             }
         }
-        for (index h = 0; h < dx; h++) {
-            z_x[h + n_dx_q_0] = x[h];
-        }
+//        if(count == program_def::max_search)
+//            cout<<iter<<" ";
         return beta;
     }
 

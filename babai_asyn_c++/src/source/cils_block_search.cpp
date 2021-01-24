@@ -92,59 +92,45 @@ namespace cils {
         bool flag = false;
         index num_iter = 0, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, qam) - 1;
         scalar sum = 0, result = 0, y_b[n];
-        index z_p[n], diff[nswp];
-
+        index z_p[n] = {}, diff[nswp] = {};
         scalar run_time = omp_get_wtime();
 
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(none) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1) shared(z_x, init, nswp, is_constrained, upper, z_p, ds, flag, iter, dx, y_b, diff, num_iter, mode, stop)
         {
-//            if (init != -1)
-//#pragma omp for schedule(dynamic) nowait
-//                for (index i = 0; i < nswp; i++) {
-//                    sum = 0;
-//                    n_dx_q_0 = n - 1 - i;
-//                    n_dx_q_1 = n_dx_q_0 * n - (n_dx_q_0 * (n - i)) / 2;
-//#pragma omp simd reduction(+ : sum)
-//                    for (index col = n - i; col < n; col++)
-//                        sum += R_A->x[n_dx_q_1 + col] * z_x[col];
-//                    result = round((y_A->x[n_dx_q_0] - sum) / R_A->x[n_dx_q_0 + n_dx_q_1]);
-//                    z_x[n_dx_q_0] = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
-//                    z_p[n_dx_q_0] = z_x[n_dx_q_0];
-//                }
-
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (flag) continue;
+                    if (flag) continue; // || i > iter
+                    iter++;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
+                    row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
                     //The block operation
                     for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
                         sum = 0;
-                        row_n = (n * row) - ((row * (row + 1)) / 2);
+                        row_n += n - row;
 #pragma omp simd reduction(+ : sum)
                         for (index col = n_dx_q_1; col < n; col++) {
                             sum += R_A->x[row_n + col] * z_x[col];
                         }
                         y_b[row] = y_A->x[row] - sum;
+                        if (row == n_dx_q_1 - 1) {
+                            if (is_constrained)
+                                ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+                            else
+                                ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+#pragma omp simd
+                            for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
+                                diff[j] += z_x[l] == z_p[l];
+                                z_p[l] = z_x[l];
+                            }
+                        }
                     }
-                    if (is_constrained)
-                        ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
-                    else
-                        ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
 
                     if (i == ds - 1) {
                         num_iter = j;
-                        sum = 0;
-#pragma omp simd reduction(+ : sum)
-                        for (index l = 0; l < n; l++) {
-                            sum += z_x[l] == z_p[l];
-                            z_p[l] = z_x[l];
-                        }
-                        if (mode != 0 && !flag) {
-                            diff[j] = sum;
-                            flag = sum > stop;
-#pragma omp flush (flag)
+                        if (mode != 0 && j >= 1 && !flag) {
+                            flag = diff[j] > stop;
                         }
                     }
                 }
