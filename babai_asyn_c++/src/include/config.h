@@ -6,7 +6,7 @@
 #include <cmath>
 #include <iostream>
 
-#define N_4096 (1024)
+#define N_4096 (256)
 #define N_10 (1024)
 
 using namespace std;
