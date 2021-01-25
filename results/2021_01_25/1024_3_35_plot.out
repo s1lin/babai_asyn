@@ -4,7 +4,8 @@ The settings are: k=3, SNR=35, max_iter=50, search_iter=5, stop=900, block_size=
 plot_res-------------------------------------------
 Init, size: 1024
 Init, QAM: 64
-Finish Init, time: 0.08978 seconds
+Init, SNR: 35
+Finish Init, time: 1.49123 seconds
 -
 --------------------------------------------------
 --------------------------------------------------
