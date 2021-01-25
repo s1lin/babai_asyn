@@ -292,10 +292,10 @@ namespace cils {
 
         //Initial squared search radius
         scalar R_kk = R_A->x[row_kk + row_k];
-        c[k] = y_B[row_k] / R_kk;
+        c[k] = (y_A->x[row_k] - y_B[row_k - n_dx_q_0]) / R_kk;
         z[k] = round(c[k]);
         if (z[k] <= 0) {
-            z[k]= u[k] = 0; //The lower bound is reached
+            z[k] = u[k] = 0; //The lower bound is reached
             l[k] = d[k] = 1;
         } else if (z[k] >= upper) {
             z[k] = upper; //The upper bound is reached
@@ -326,7 +326,7 @@ namespace cils {
                         }
                         R_kk = R_A->x[row_kk + row_k];
                         p[k] = newprsd;
-                        c[k] = (y_B[row_k] - sum) / R_kk;
+                        c[k] = (y_A->x[row_k] - y_B[row_k - n_dx_q_0] - sum) / R_kk;
                         z[k] = round(c[k]);
                         if (z[k] <= 0) {
                             z[k] = u[k] = 0;

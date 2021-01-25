@@ -36,8 +36,8 @@ namespace cils {
                 }
                 if (is_constrained)
                     ils_search_obils(0, n, &y_b, z_B);
-//                else
-//                    ils_search(0, n, &y_b, z_B);
+                else
+                    ils_search(0, n, &y_b, z_B);
                 return {z_B, 0, 0};
             }
         } else if (ds == n) {
@@ -86,8 +86,8 @@ namespace cils {
         index num_iter = 0, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, qam) - 1;
         scalar result[ds] = {}, y_b[n];
         index z_p[n] = {}, diff[nswp] = {};
-        auto sum = new scalar[dx]();
         scalar run_time = omp_get_wtime();
+        auto sum = new scalar[dx]();
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, row_n, n_dx_q_0, n_dx_q_1)
         {
@@ -98,31 +98,29 @@ namespace cils {
                     if (flag) continue;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
+//                    row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
                     //The block operation
                     if (result[i] == 0 && !flag) {
-#pragma omp simd collapse(2)
+#pragma omp simd
                         for (index col = n_dx_q_1; col < n; col++) {
-                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                                sum[row - n_dx_q_0] += R_A->x[(n * row) - ((row * (row + 1)) / 2) + col] * z_x[col];
+//                            row_n += n - row;
+                            for (index row = 0; row < dx; row++) {
+                                row_n = ((n_dx_q_0 + row) * (2 * n - n_dx_q_0 - row - 1)) / 2 + col;
+                                sum[row] += R_A->x[row_n] * z_x[col];
                             }
                         }
-#pragma omp simd
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                            y_b[row] = y_A->x[row] - sum[row - n_dx_q_0];
-                            sum[row - n_dx_q_0] = 0;
-                        }
-                    }
 
-                    if (!flag) {
                         if (is_constrained)
-                            ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+                            ils_search_obils_omp(n_dx_q_0, n_dx_q_1, sum, z_x);
                         else
                             ils_search_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
+
                         row_n = 0;
-#pragma omp simd reduction(+ : row_n)
+#pragma omp simd reduction(+ : row_n) simdlen(16)
                         for (index l = n_dx_q_0; l < n_dx_q_1; l++) {
                             row_n += z_x[l] == z_p[l];
                             z_p[l] = z_x[l];
+                            sum[l - n_dx_q_0] = 0;
                         }
                         diff[j] += row_n;
                         if (row_n == dx) {

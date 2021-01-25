@@ -496,7 +496,7 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                           const scalar *y_B, index *z_x);
+                                           const scalar *sum, index *z_x);
 
 
     public:
