@@ -87,16 +87,9 @@ namespace cils {
         scalar sum = 0, result = 0, y_b[n];
         index z_p[n] = {}, diff[nswp] = {};
         scalar run_time = omp_get_wtime();
-        auto lock = new omp_lock_t[nswp]();
 
-#pragma omp parallel default(none) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1) shared(lock, z_x, init, nswp, is_constrained, upper, z_p, ds, flag, iter, dx, y_b, diff, num_iter, mode, stop)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1)
         {
-#pragma omp for schedule(static, 1)
-            for (index i = 0; i < nswp; i++) {
-                omp_init_lock((&lock[i]));
-                omp_set_lock(&lock[i]);
-            }
-
             if (omp_get_thread_num() == 0) {
 #pragma omp simd
                 for (index row = n - dx; row < n; row++) {
@@ -111,19 +104,12 @@ namespace cils {
                     diff[0] += z_x[l] == z_p[l];
                     z_p[l] = z_x[l];
                 }
-                omp_unset_lock(&lock[0]);
             }
 
-            for (index j = 1; j < nswp && !flag; j++) {
-                omp_set_lock(&lock[j - 1]);
-                omp_unset_lock(&lock[j - 1]);
+            for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (flag) {
-//                        omp_unset_lock(&lock[j]);
-                        continue; //
-                    }
-//                    iter++;
+                    if (flag) continue;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
@@ -150,7 +136,6 @@ namespace cils {
                         }
                     }
                     if (i == ds - 1) {
-                        omp_unset_lock(&lock[j]);
                         if (mode != 0 && !flag) {
                             num_iter = j;
                             flag = diff[j] > stop;
@@ -161,13 +146,9 @@ namespace cils {
         }
 
         run_time = omp_get_wtime() - run_time;
-        for (index i = 0; i < nswp; i++) {
-            omp_destroy_lock(&lock[i]);
-        }
 #pragma parallel omp cancellation point
 #pragma omp flush
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
-        delete[] lock;
         return reT;
     }
 }
