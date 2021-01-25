@@ -244,8 +244,8 @@ void plot_res() {
         cout << "init," << init << "\n";
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
         reT = cils.cils_block_search_serial(&d_s, &z_B, 0);
-        auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+        res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+        ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
 
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, Ber: %.5f, Time: %.5fs\n",
                block_size, res, ber, reT.run_time);
@@ -254,8 +254,8 @@ void plot_res() {
             std::cout.flush();
             for (index nswp = 1; nswp < max_iter; nswp++) {
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, 0, init,
-                                                 &d_s, &z_B, 0);
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, stop, init,
+                                                 &d_s, &z_B, is_constrained);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                 printf("diff=%d, res=%.5f, ber=%.5f, ", N_10 - reT.num_iter, res, ber);
