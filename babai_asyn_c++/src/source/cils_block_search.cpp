@@ -120,15 +120,15 @@ namespace cils {
 #pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < ds; i++) {
                     if (flag) {
-                        omp_unset_lock(&lock[j]);
+//                        omp_unset_lock(&lock[j]);
                         continue; //
                     }
-                    iter++;
+//                    iter++;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
                     //The block operation
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                    for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
                         sum = 0;
                         row_n += n - row;
 #pragma omp simd reduction(+ : sum)
@@ -147,12 +147,10 @@ namespace cils {
                                 diff[j] += z_x[l] == z_p[l];
                                 z_p[l] = z_x[l];
                             }
-                            omp_unset_lock(&lock[j]);
                         }
                     }
-
                     if (i == ds - 1) {
-
+                        omp_unset_lock(&lock[j]);
                         if (mode != 0 && !flag) {
                             num_iter = j;
                             flag = diff[j] > stop;
