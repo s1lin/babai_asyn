@@ -117,9 +117,12 @@ namespace cils {
             for (index j = 1; j < nswp && !flag; j++) {
                 omp_set_lock(&lock[j - 1]);
                 omp_unset_lock(&lock[j - 1]);
-#pragma omp for schedule(dynamic, 1) nowait
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (flag) continue; //
+                    if (flag) {
+                        omp_unset_lock(&lock[j]);
+                        continue; //
+                    }
                     iter++;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
