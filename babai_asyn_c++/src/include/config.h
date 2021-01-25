@@ -26,11 +26,11 @@ namespace cils {
         index block_size = 16;
         index is_constrained = true;
         index is_read = false;
-        index mode = 1; //test mode 3: c++ gen
+        index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 100;
-        index min_proc = 3;
+        index max_search = 200;
+        index min_proc = 2;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 100000;//maximum search allowed for serial ils.

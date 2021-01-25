@@ -87,19 +87,45 @@ namespace cils {
         scalar sum = 0, result = 0, y_b[n];
         index z_p[n] = {}, diff[nswp] = {};
         scalar run_time = omp_get_wtime();
+        auto lock = new omp_lock_t[nswp]();
 
-#pragma omp parallel default(none) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1) shared(z_x, init, nswp, is_constrained, upper, z_p, ds, flag, iter, dx, y_b, diff, num_iter, mode, stop)
+#pragma omp parallel default(none) num_threads(n_proc) private(sum, result, row_n, n_dx_q_0, n_dx_q_1) shared(lock, z_x, init, nswp, is_constrained, upper, z_p, ds, flag, iter, dx, y_b, diff, num_iter, mode, stop)
         {
-            for (index j = 0; j < nswp && !flag; j++) {
+#pragma omp for schedule(static, 1)
+            for (index i = 0; i < nswp; i++) {
+                omp_init_lock((&lock[i]));
+                omp_set_lock(&lock[i]);
+            }
+
+            if (omp_get_thread_num() == 0) {
+#pragma omp simd
+                for (index row = n - dx; row < n; row++) {
+                    y_b[row] = y_A->x[row];
+                }
+                if (is_constrained)
+                    ils_search_obils_omp(n - dx, n, y_b, z_x);
+                else
+                    ils_search_omp(n - dx, n, y_b, z_x);
+#pragma omp simd
+                for (index l = n - dx; l < n; l++) {
+                    diff[0] += z_x[l] == z_p[l];
+                    z_p[l] = z_x[l];
+                }
+                omp_unset_lock(&lock[0]);
+            }
+
+            for (index j = 1; j < nswp && !flag; j++) {
+                omp_set_lock(&lock[j - 1]);
+                omp_unset_lock(&lock[j - 1]);
 #pragma omp for schedule(dynamic, 1) nowait
-                for (index i = 0; i < ds; i++) {
-                    if (flag) continue; // || i > iter
+                for (index i = 1; i < ds; i++) {
+                    if (flag) continue; //
                     iter++;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
                     row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
                     //The block operation
-                    for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                         sum = 0;
                         row_n += n - row;
 #pragma omp simd reduction(+ : sum)
@@ -107,7 +133,8 @@ namespace cils {
                             sum += R_A->x[row_n + col] * z_x[col];
                         }
                         y_b[row] = y_A->x[row] - sum;
-                        if (row == n_dx_q_1 - 1 && !flag) {
+                        if (row == n_dx_q_1 - 1) {//&& !flag
+
                             if (is_constrained)
                                 ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_b, z_x);
                             else
@@ -117,11 +144,13 @@ namespace cils {
                                 diff[j] += z_x[l] == z_p[l];
                                 z_p[l] = z_x[l];
                             }
+                            omp_unset_lock(&lock[j]);
                         }
                     }
 
                     if (i == ds - 1) {
-                        if (mode != 0 && j >= 1 && !flag) {
+
+                        if (mode != 0 && !flag) {
                             num_iter = j;
                             flag = diff[j] > stop;
                         }
@@ -131,10 +160,13 @@ namespace cils {
         }
 
         run_time = omp_get_wtime() - run_time;
-
+        for (index i = 0; i < nswp; i++) {
+            omp_destroy_lock(&lock[i]);
+        }
 #pragma parallel omp cancellation point
 #pragma omp flush
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
+        delete[] lock;
         return reT;
     }
 }

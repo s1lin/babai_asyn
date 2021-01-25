@@ -345,6 +345,7 @@ namespace cils {
 
                     } else {
                         beta = newprsd;
+#pragma omp simd
                         for (index h = 0; h < dx; h++) {
                             z_x[h + n_dx_q_0] = z[h];
                         }
@@ -383,6 +384,7 @@ namespace cils {
             }
         }
         if (count == program_def::max_search && iter == 0) {
+#pragma omp simd
             for (index h = 0; h < dx; h++) {
                 z_x[h + n_dx_q_0] = z[h];
             }
