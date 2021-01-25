@@ -125,10 +125,10 @@ void plot_run() {
                    omp_itr[init + 1][l] / max_iter,
                    omp_tim[init + 1][l], omp_tim[init + 1][l] / max_iter,
                    ser_tim[init + 1] / omp_tim[init + 1][l],
-                   omp_err[init + 1][l] / max_iter, omp_qrd[init + 1][l] / max_iter,
-                   ser_qrd / omp_qrd[init + 1][l],
-                   (omp_qrd[init + 1][l] + omp_tim[init + 1][l]) / max_iter,
-                   (ser_qrd + ser_tim[init + 1]) / (omp_qrd[init + 1][l] + omp_tim[init + 1][l])
+                   omp_err[0][l] / max_iter, omp_qrd[0][l] / max_iter,
+                   ser_qrd / omp_qrd[0][l],
+                   (omp_qrd[0][l] + omp_tim[init + 1][l]) / max_iter,
+                   (ser_qrd + ser_tim[init + 1]) / (omp_qrd[0][l] + omp_tim[init + 1][l])
             );
             l++;
         }
