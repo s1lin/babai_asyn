@@ -18,9 +18,8 @@ void plot_run() {
     scalar ser_qrd = 0, run_time;
     vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
     vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
-    vector<scalar> omp_res(50, 0), omp_ber(50, 0), omp_tim(50, 0), omp_itr(50, 0), omp_qrd(50, 0), omp_err(50, 0);
+    scalar omp_res[3][50]={}, omp_ber[3][50]={}, omp_tim[3][50]={}, omp_itr[3][50]={}, omp_qrd[3][50]={}, omp_err[3][50]={};
     cils::returnType<scalar, index> reT, qr_reT, qr_reT_omp;
-
 
     for (index i = 0; i < max_iter; i++) {
         run_time = omp_get_wtime();
@@ -40,15 +39,15 @@ void plot_run() {
                 for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
                     printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
                            "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
-                           n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
-                           omp_ber[init + 1 + 3 * l] / max_iter,
-                           omp_itr[init + 1 + 3 * l] / max_iter,
-                           omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
-                           ser_tim[init + 1] / omp_tim[init + 1 + 3 * l],
-                           omp_err[init + 1 + 3 * l] / max_iter, omp_qrd[3 * l] / max_iter,
-                           ser_qrd / omp_qrd[3 * l],
-                           (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l]) / max_iter,
-                           (ser_qrd + ser_tim[init + 1]) / (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l])
+                           n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1][l] / max_iter,
+                           omp_ber[init + 1][l] / max_iter,
+                           omp_itr[init + 1][l] / max_iter,
+                           omp_tim[init + 1][l], omp_tim[init + 1][l] / max_iter,
+                           ser_tim[init + 1] / omp_tim[init + 1][l],
+                           omp_err[init + 1][l] / max_iter, omp_qrd[init + 1][l] / max_iter,
+                           ser_qrd / omp_qrd[init + 1][l],
+                           (omp_qrd[init + 1][l] + omp_tim[init + 1][l]) / max_iter,
+                           (ser_qrd + ser_tim[init + 1]) / (omp_qrd[init + 1][l] + omp_tim[init + 1][l])
                     );
                     l++;
                 }
@@ -89,16 +88,16 @@ void plot_run() {
             for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
                 if (init == -1) {
                     qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
-                    omp_qrd[init + 1 + 3 * l] += qr_reT_omp.run_time;
-                    omp_err[init + 1 + 3 * l] += qr_reT_omp.num_iter;
+                    omp_qrd[init + 1][l] += qr_reT_omp.run_time;
+                    omp_err[init + 1][l] += qr_reT_omp.num_iter;
                 }
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                 reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials,
                                                  stop, init, &d_s, &z_B, is_constrained);
-                omp_res[init + 1 + 3 * l] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-                omp_ber[init + 1 + 3 * l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                omp_tim[init + 1 + 3 * l] += reT.run_time;
-                omp_itr[init + 1 + 3 * l] += reT.num_iter;
+                omp_res[init + 1][l] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+                omp_ber[init + 1][l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
+                omp_tim[init + 1][l] += reT.run_time;
+                omp_itr[init + 1][l] += reT.num_iter;
                 l++;
             }
         }
@@ -111,25 +110,25 @@ void plot_run() {
         printf("++++++++++++++++++++++++++++++++++++++\n");
         std::cout << "Block, size: " << block_size << std::endl;
         std::cout << "Init, value: " << init << std::endl;
-        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-               bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1], ser_qrd / max_iter,
+        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Avg Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+               bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1]/ max_iter, ser_qrd / max_iter,
                (ser_qrd + bab_tim[init + 1]) / max_iter);
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-               block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1],
+        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Avg Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+               block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1] / max_iter,
                ser_qrd / max_iter, (ser_qrd + ser_tim[init + 1]) / max_iter);
         index l = 0;
         for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
             printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
                    "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
-                   n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1 + 3 * l] / max_iter,
-                   omp_ber[init + 1 + 3 * l] / max_iter,
-                   omp_itr[init + 1 + 3 * l] / max_iter,
-                   omp_tim[init + 1 + 3 * l], omp_tim[init + 1 + 3 * l] / max_iter,
-                   ser_tim[init + 1] / omp_tim[init + 1 + 3 * l],
-                   omp_err[init + 1 + 3 * l] / max_iter, omp_qrd[3 * l] / max_iter,
-                   ser_qrd / omp_qrd[3 * l],
-                   (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l]) / max_iter,
-                   (ser_qrd + ser_tim[init + 1]) / (omp_qrd[3 * l] + omp_tim[init + 1 + 3 * l])
+                   n_proc > max_proc ? max_proc : n_proc, omp_res[init + 1][l] / max_iter,
+                   omp_ber[init + 1][l] / max_iter,
+                   omp_itr[init + 1][l] / max_iter,
+                   omp_tim[init + 1][l], omp_tim[init + 1][l] / max_iter,
+                   ser_tim[init + 1] / omp_tim[init + 1][l],
+                   omp_err[init + 1][l] / max_iter, omp_qrd[init + 1][l] / max_iter,
+                   ser_qrd / omp_qrd[init + 1][l],
+                   (omp_qrd[init + 1][l] + omp_tim[init + 1][l]) / max_iter,
+                   (ser_qrd + ser_tim[init + 1]) / (omp_qrd[init + 1][l] + omp_tim[init + 1][l])
             );
             l++;
         }
@@ -253,7 +252,7 @@ void plot_res() {
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
             cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
             std::cout.flush();
-            for (index nswp = 0; nswp < max_iter; nswp++) {
+            for (index nswp = 1; nswp < max_iter; nswp++) {
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                 reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, 0, init,
                                                  &d_s, &z_B, 0);

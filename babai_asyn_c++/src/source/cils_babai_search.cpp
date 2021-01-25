@@ -98,11 +98,12 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_back_solve(vector<index> *z_B) {
-        scalar sum = 0;
-        scalar start = omp_get_wtime();
+        scalar sum = 0, upper = pow(2, qam) - 1;
         vector<scalar> z_B_tmp(n, 0);
-        z_B_tmp[n - 1] = y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1];
 
+        scalar start = omp_get_wtime();
+
+        z_B_tmp[n - 1] = y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1];
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
@@ -111,7 +112,7 @@ namespace cils {
             z_B_tmp[k] = (y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i];
             sum = 0;
         }
-        scalar upper = pow(2, qam) - 1;
+
         for (index i = 0; i < n; i++) {
             z_B->at(i) = round(z_B_tmp[i]) < 0 ? 0 : round(z_B_tmp[i]) > upper ? upper : round(z_B_tmp[i]);
         }

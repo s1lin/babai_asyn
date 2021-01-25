@@ -25,7 +25,7 @@ namespace cils {
         // Variables
         scalar sum, newprsd, gamma, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, result;
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1;
         index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0;
         index row_kk = n * end_1 + end_1, dflag = 1;
         vector<scalar> p(dx, 0), c(dx, 0);
@@ -65,19 +65,18 @@ namespace cils {
                         R_kk = R->x[n * row_k + row_k];
                         p[k] = newprsd;
                         c[k] = (y_B->at(row_k) - sum) / R_kk;
-                        result = round(c[k]);
-                        if (result <= 0) {
+                        z[k] = round(c[k]);
+                        if (z[k] <= 0) {
                             z[k] = 0;
                             l[k] = 1;
                             u[k] = 0;
                             d[k] = 1;
-                        } else if (result >= upper) {
+                        } else if (z[k] >= upper) {
                             z[k] = upper;
                             u[k] = 1;
                             l[k] = 0;
                             d[k] = -1;
                         } else {
-                            z[k] = result;
                             l[k] = 0;
                             u[k] = 0;
                             d[k] = c[k] > z[k] ? 1 : -1;
@@ -286,30 +285,30 @@ namespace cils {
         scalar p[dx] = {}, c[dx];
         index z[dx], d[dx] = {}, l[dx], u[dx];
 
+#pragma omp simd
+        for (index col = 0; col < dx; col++) {
+            z[col] = z_x[col + n_dx_q_0];
+        }
+
         //Initial squared search radius
         scalar R_kk = R_A->x[row_kk + row_k];
         c[k] = y_B[row_k] / R_kk;
-        z_x[row_k] = round(c[k]);
-        if (z_x[row_k] <= 0) {
-            z_x[row_k] = u[k] = 0; //The lower bound is reached
+        z[k] = round(c[k]);
+        if (z[k] <= 0) {
+            z[k]= u[k] = 0; //The lower bound is reached
             l[k] = d[k] = 1;
-        } else if (z_x[row_k] >= upper) {
-            z_x[row_k]= upper; //The upper bound is reached
+        } else if (z[k] >= upper) {
+            z[k] = upper; //The upper bound is reached
             u[k] = 1;
             l[k] = 0;
             d[k] = -1;
         } else {
             l[k] = u[k] = 0;
             //  Determine enumeration direction at level block_size
-            d[k] = c[k] > z_x[row_k] ? 1 : -1;
+            d[k] = c[k] > z[k] ? 1 : -1;
         }
 
-        gamma = R_kk * (c[k] - z_x[row_k]);
-
-#pragma omp simd
-        for (index col = 0; col < dx; col++) {
-            z[col] = z_x[col + n_dx_q_0];
-        }
+        gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
         for (count = 0; count < program_def::max_search; count++) {
