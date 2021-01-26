@@ -4,8 +4,8 @@ import numpy as np
 from textwrap import wrap
 
 
-def plot_residual(n, SNRs):
-    f = [1, 3]
+def plot_residual(n, SNRs, f):
+
     for j in range(0, 2):
         k = 6
         SNR = SNRs[0]
@@ -15,7 +15,7 @@ def plot_residual(n, SNRs):
         fig, axes = plt.subplots(3, 3, constrained_layout=True)
         print(lines[k])
         SNR = int(lines[k].split(":")[1].split("\n")[0])
-        init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
+        init_res = 0 #float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
 
         k = k + 4
         for init in range(-1, 2):
@@ -42,30 +42,30 @@ def plot_residual(n, SNRs):
                     ber.append(float(line_str[index + 2].split("=")[1]))
                     # print(float(line_str[index + 2].split("=")[1]))
                     index = index + 3
-                if SNRs[0] == 35:
-                    if init + 1 == 0:
-                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
+                # if SNRs[0] == 35:
+                if init + 1 == 0:
+                    axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
+                                               marker=marker[m], label='num_thread = ' + str(num_thread))
 
-                    else:
-                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                                   marker=marker[m])
-
-                    axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m], marker=marker[m])
-                    axes[2, init + 1].plot(range(0, 10), np.array(diff)[0:10], color=color[m], marker=marker[m])
                 else:
-                    if init + 1 == 0:
-                        axes[0, init + 1].plot(range(0, 100), np.array(res)[0:100], color=color[m],
-                                               label='num_thread = ' + str(num_thread))
-                    else:
-                        axes[0, init + 1].plot(range(0, 100), np.array(res)[0:100], color=color[m])
+                    axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
+                                               marker=marker[m])
 
-                    axes[1, init + 1].plot(range(1, 100), np.array(ber)[1:100], color=color[m])
-                    axes[2, init + 1].plot(range(0, 100), np.array(diff)[0:100], color=color[m])
-                    axes[1, init + 1].set_ylim(0.4, 0.6)
+                axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m], marker=marker[m])
+                axes[2, init + 1].plot(range(0, 10), np.array(diff)[0:10], color=color[m], marker=marker[m])
+                # else:
+                #     if init + 1 == 0:
+                #         axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m],
+                #                                label='num_thread = ' + str(num_thread))
+                #     else:
+                #         axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m])
+                #
+                #     axes[1, init + 1].plot(range(1, 99), np.array(ber)[1:99], color=color[m])
+                #     axes[2, init + 1].plot(range(0, 99), np.array(diff)[0:99], color=color[m])
+                #     axes[1, init + 1].set_ylim(0.4, 0.6)
 
                 k = k + 1
-            axes[2, init + 1].set_ylim(-100, 4200)
+            # axes[2, init + 1].set_ylim(-99, 4200)
             if init + 1 == 0:
                 axes[0, init + 1].axhline(y=init_res, xmin=0.0, xmax=1.0, color='c', linewidth=2.5,
                                           linestyle='dotted', label='True parameter')
@@ -247,8 +247,8 @@ def plot_res(n):
     SNRs = [15]
     f = [3]
     # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
-    # plot_residual(n, SNRs)
-    plot_runtime(n, SNRs, f)
+    plot_residual(n, SNRs, f)
+    # plot_runtime(n, SNRs, f)
 
 
 if __name__ == "__main__":

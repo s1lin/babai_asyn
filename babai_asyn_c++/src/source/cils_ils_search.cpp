@@ -311,7 +311,7 @@ namespace cils {
         gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-        for (count = 0; count < program_def::max_search; count++) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -382,12 +382,12 @@ namespace cils {
                 }
             }
         }
-        if (count == program_def::max_search && iter == 0) {
-#pragma omp simd
-            for (index h = 0; h < dx; h++) {
-                z_x[h + n_dx_q_0] = z[h];
-            }
-        }
+//        if (count == program_def::max_search && iter == 0) {
+//#pragma omp simd
+//            for (index h = 0; h < dx; h++) {
+//                z_x[h + n_dx_q_0] = z[h];
+//            }
+//        }
         return beta;
     }
 

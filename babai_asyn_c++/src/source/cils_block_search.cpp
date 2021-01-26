@@ -85,7 +85,7 @@ namespace cils {
         bool flag = false;
         index num_iter = 0, n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, qam) - 1;
         scalar result[ds] = {}, y_b[n];
-        index z_p[n] = {}, diff[nswp] = {};
+        index z_p[n] = {}, diff = 0;
         scalar run_time = omp_get_wtime();
         auto sum = new scalar[dx]();
 
@@ -109,7 +109,6 @@ namespace cils {
                                 sum[row] += R_A->x[row_n] * z_x[col];
                             }
                         }
-
                         if (is_constrained)
                             ils_search_obils_omp(n_dx_q_0, n_dx_q_1, sum, z_x);
                         else
@@ -122,29 +121,23 @@ namespace cils {
                             z_p[l] = z_x[l];
                             sum[l - n_dx_q_0] = 0;
                         }
-                        diff[j] += row_n;
                         result[i] = row_n == dx;
-
-                    } else if (mode == 0) {
-                        diff[j] += dx;
+                        diff += result[i];
                     }
-
                     if (mode != 0 && !flag && i == ds - 1) {
                         num_iter = j;
-                        flag = diff[j] < stop;
-
+                        flag = diff >= ds - stop;
                     }
                 }
             }
         }
-
 
         scalar run_time2 = omp_get_wtime() - run_time;
 #pragma parallel omp cancellation point
 #pragma omp flush
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff[nswp - 1]};
+            reT = {z_B, run_time2, diff};
         else
             reT = {z_B, run_time2, num_iter};
 
