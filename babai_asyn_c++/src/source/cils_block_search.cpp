@@ -90,13 +90,14 @@ namespace cils {
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
                     //The block operation
-                    if (result[i] == 0 && !flag) {
-                        if (is_constrained)
+                    if (result[i] == 0) {
+                        if (is_constrained && !flag)
                             result[i] = ils_search_obils_omp(n - (i + 1) * dx, n - i * dx, z_x) == dx;
 //                        else
 //                            ils_search_omp(n_dx_q_0, n_dx_q_1, sum, z_x);
-                        diff += result[i];
                         if (mode != 0 && !flag) {
+                            diff += result[i];
+                            num_iter = j;
                             flag = diff >= ds - stop;
                         }
                     }
