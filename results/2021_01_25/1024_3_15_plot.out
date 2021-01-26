@@ -4,6 +4,7 @@ The settings are: k=3, SNR=15, max_iter=50, search_iter=5, stop=900, block_size=
 plot_res-------------------------------------------
 Init, size: 1024
 Init, QAM: 64
+Init, SNR: 35
 Finish Init, time: 0.12438 seconds
 -
 --------------------------------------------------
@@ -12,42 +13,36 @@ Finish Init, time: 0.12438 seconds
 -------------------------------------------------++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: -1
-Method: BAB_SER, Res: 265.93437, BER: 0.29133, Avg Solve Time: 0.01135s, qr_time: 7.21124, Total Time: 7.22259s
-Method: ILS_SER, Block size: 16, Res: 238.24263, BER: 0.27339, Avg Solve Time: 0.82518s, qr_time: 7.21124, Total Time: 8.03642s
-Method: ILS_OMP, n_proc: 12, Res :273.41270, BER: 0.28810, num_iter: 9.00000, Time: 0.47296s, Avg Time: 0.00965s, Speed up: 85.491, QR Error: 0.000, QR Time: 0.73738s, QR SpeedUp: 9.780, Total Time: 0.74703s, Total SpeedUp: 10.758
-Method: ILS_OMP, n_proc: 24, Res :284.74623, BER: 0.28615, num_iter: 9.00000, Time: 0.28860s, Avg Time: 0.00589s, Speed up: 140.106, QR Error: 0.000, QR Time: 0.38242s, QR SpeedUp: 18.857, Total Time: 0.38831s, Total SpeedUp: 20.696
-Method: ILS_OMP, n_proc: 36, Res :304.30172, BER: 0.28726, num_iter: 9.00000, Time: 0.20889s, Avg Time: 0.00426s, Speed up: 193.564, QR Error: 0.000, QR Time: 0.26187s, QR SpeedUp: 27.537, Total Time: 0.26614s, Total SpeedUp: 30.197
-Method: ILS_OMP, n_proc: 48, Res :319.22108, BER: 0.29000, num_iter: 9.00000, Time: 0.22518s, Avg Time: 0.00460s, Speed up: 179.560, QR Error: 0.000, QR Time: 0.28185s, QR SpeedUp: 25.586, Total Time: 0.28644s, Total SpeedUp: 28.056
-Method: ILS_OMP, n_proc: 48, Res :314.24433, BER: 0.29004, num_iter: 9.00000, Time: 0.18113s, Avg Time: 0.00370s, Speed up: 223.234, QR Error: 0.000, QR Time: 0.21020s, QR SpeedUp: 34.307, Total Time: 0.21390s, Total SpeedUp: 37.572
-Method: ILS_OMP, n_proc: 48, Res :311.33827, BER: 0.28824, num_iter: 8.97959, Time: 0.18806s, Avg Time: 0.00384s, Speed up: 215.004, QR Error: 0.000, QR Time: 0.21203s, QR SpeedUp: 34.011, Total Time: 0.21587s, Total SpeedUp: 37.229
+Method: BAB_SER, Res: 277.96383, BER: 0.29252, Avg Solve Time: 0.01152s, qr_time: 7.18848, Total Time: 7.20000s
+Method: ILS_SER, Block size: 16, Res: 229.19295, BER: 0.26877, Avg Solve Time: 0.50741s, qr_time: 7.18848, Total Time: 7.69589s
+Method: ILS_OMP, n_proc: 10, Res :272.89569, BER: 0.28937, num_iter: 99.00000, Time: 0.77305s, Avg Time: 0.01578s, Speed up: 32.163, QR Error: 0.000, QR Time: 0.86859s, QR SpeedUp: 8.276, Total Time: 0.88437s, Total SpeedUp: 8.702
+Method: ILS_OMP, n_proc: 20, Res :274.85305, BER: 0.28902, num_iter: 99.00000, Time: 1.38912s, Avg Time: 0.02835s, Speed up: 17.899, QR Error: 0.000, QR Time: 0.44313s, QR SpeedUp: 16.222, Total Time: 0.47148s, Total SpeedUp: 16.323
+Method: ILS_OMP, n_proc: 30, Res :284.11938, BER: 0.28953, num_iter: 99.00000, Time: 0.44274s, Avg Time: 0.00904s, Speed up: 56.157, QR Error: 0.000, QR Time: 0.40608s, QR SpeedUp: 17.702, Total Time: 0.41511s, Total SpeedUp: 18.539
+Method: ILS_OMP, n_proc: 40, Res :305.72325, BER: 0.29191, num_iter: 99.00000, Time: 0.34657s, Avg Time: 0.00707s, Speed up: 71.741, QR Error: 0.000, QR Time: 0.24249s, QR SpeedUp: 29.645, Total Time: 0.24956s, Total SpeedUp: 30.838
 ++++++++++++++++++++++++++++++++++++++
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
-Method: BAB_SER, Res: 265.93437, BER: 0.29133, Avg Solve Time: 0.01432s, qr_time: 7.21124, Total Time: 7.22556s
-Method: ILS_SER, Block size: 16, Res: 238.24263, BER: 0.27339, Avg Solve Time: 0.83628s, qr_time: 7.21124, Total Time: 8.04752s
-Method: ILS_OMP, n_proc: 12, Res :271.65984, BER: 0.28653, num_iter: 9.00000, Time: 0.47366s, Avg Time: 0.00967s, Speed up: 86.512, QR Error: 0.000, QR Time: 0.73738s, QR SpeedUp: 9.780, Total Time: 0.74705s, Total SpeedUp: 10.772
-Method: ILS_OMP, n_proc: 24, Res :285.66937, BER: 0.28787, num_iter: 9.00000, Time: 0.23154s, Avg Time: 0.00473s, Speed up: 176.982, QR Error: 0.000, QR Time: 0.38242s, QR SpeedUp: 18.857, Total Time: 0.38715s, Total SpeedUp: 20.787
-Method: ILS_OMP, n_proc: 36, Res :288.76016, BER: 0.28807, num_iter: 9.00000, Time: 0.16299s, Avg Time: 0.00333s, Speed up: 251.405, QR Error: 0.000, QR Time: 0.26187s, QR SpeedUp: 27.537, Total Time: 0.26520s, Total SpeedUp: 30.345
-Method: ILS_OMP, n_proc: 48, Res :289.79155, BER: 0.28672, num_iter: 9.00000, Time: 0.93690s, Avg Time: 0.01912s, Speed up: 43.737, QR Error: 0.000, QR Time: 0.28185s, QR SpeedUp: 25.586, Total Time: 0.30097s, Total SpeedUp: 26.739
-Method: ILS_OMP, n_proc: 48, Res :289.93046, BER: 0.28779, num_iter: 9.00000, Time: 0.50780s, Avg Time: 0.01036s, Speed up: 80.696, QR Error: 0.000, QR Time: 0.21020s, QR SpeedUp: 34.307, Total Time: 0.22056s, Total SpeedUp: 36.486
-Method: ILS_OMP, n_proc: 48, Res :290.99499, BER: 0.28631, num_iter: 9.00000, Time: 0.43279s, Avg Time: 0.00883s, Speed up: 94.681, QR Error: 0.000, QR Time: 0.21203s, QR SpeedUp: 34.011, Total Time: 0.22086s, Total SpeedUp: 36.437
+Method: BAB_SER, Res: 277.96383, BER: 0.29252, Avg Solve Time: 0.01859s, qr_time: 7.18848, Total Time: 7.20707s
+Method: ILS_SER, Block size: 16, Res: 229.19295, BER: 0.26877, Avg Solve Time: 0.63178s, qr_time: 7.18848, Total Time: 7.82026s
+Method: ILS_OMP, n_proc: 10, Res :272.12767, BER: 0.29102, num_iter: 99.00000, Time: 0.78353s, Avg Time: 0.01599s, Speed up: 39.510, QR Error: 0.000, QR Time: 0.86859s, QR SpeedUp: 8.276, Total Time: 0.88458s, Total SpeedUp: 8.841
+Method: ILS_OMP, n_proc: 20, Res :274.60418, BER: 0.28989, num_iter: 99.00000, Time: 0.45135s, Avg Time: 0.00921s, Speed up: 68.588, QR Error: 0.000, QR Time: 0.44313s, QR SpeedUp: 16.222, Total Time: 0.45235s, Total SpeedUp: 17.288
+Method: ILS_OMP, n_proc: 30, Res :274.01730, BER: 0.28964, num_iter: 99.00000, Time: 0.33247s, Avg Time: 0.00679s, Speed up: 93.114, QR Error: 0.000, QR Time: 0.40608s, QR SpeedUp: 17.702, Total Time: 0.41286s, Total SpeedUp: 18.942
+Method: ILS_OMP, n_proc: 40, Res :275.53259, BER: 0.29019, num_iter: 99.00000, Time: 0.27291s, Avg Time: 0.00557s, Speed up: 113.434, QR Error: 0.000, QR Time: 0.24249s, QR SpeedUp: 29.645, Total Time: 0.24806s, Total SpeedUp: 31.526
 ++++++++++++++++++++++++++++++++++++++
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
-Method: BAB_SER, Res: 265.93437, BER: 0.29133, Avg Solve Time: 0.01198s, qr_time: 7.21124, Total Time: 7.22322s
-Method: ILS_SER, Block size: 16, Res: 238.24263, BER: 0.27339, Avg Solve Time: 0.82554s, qr_time: 7.21124, Total Time: 8.03679s
-Method: ILS_OMP, n_proc: 12, Res :272.28220, BER: 0.28864, num_iter: 9.00000, Time: 0.45280s, Avg Time: 0.00924s, Speed up: 89.337, QR Error: 0.000, QR Time: 0.73738s, QR SpeedUp: 9.780, Total Time: 0.74662s, Total SpeedUp: 10.764
-Method: ILS_OMP, n_proc: 24, Res :282.29260, BER: 0.28922, num_iter: 9.00000, Time: 0.22532s, Avg Time: 0.00460s, Speed up: 179.530, QR Error: 0.000, QR Time: 0.38242s, QR SpeedUp: 18.857, Total Time: 0.38702s, Total SpeedUp: 20.766
-Method: ILS_OMP, n_proc: 36, Res :288.56769, BER: 0.28785, num_iter: 9.00000, Time: 0.16149s, Avg Time: 0.00330s, Speed up: 250.483, QR Error: 0.000, QR Time: 0.26187s, QR SpeedUp: 27.537, Total Time: 0.26517s, Total SpeedUp: 30.308
-Method: ILS_OMP, n_proc: 48, Res :294.60879, BER: 0.28866, num_iter: 8.97959, Time: 0.98664s, Avg Time: 0.02014s, Speed up: 40.999, QR Error: 0.000, QR Time: 0.28185s, QR SpeedUp: 25.586, Total Time: 0.30198s, Total SpeedUp: 26.613
-Method: ILS_OMP, n_proc: 48, Res :290.52805, BER: 0.28721, num_iter: 9.00000, Time: 0.53704s, Avg Time: 0.01096s, Speed up: 75.323, QR Error: 0.000, QR Time: 0.21020s, QR SpeedUp: 34.307, Total Time: 0.22116s, Total SpeedUp: 36.339
-Method: ILS_OMP, n_proc: 48, Res :293.34009, BER: 0.28809, num_iter: 9.00000, Time: 0.44503s, Avg Time: 0.00908s, Speed up: 90.897, QR Error: 0.000, QR Time: 0.21203s, QR SpeedUp: 34.011, Total Time: 0.22111s, Total SpeedUp: 36.347
+Method: BAB_SER, Res: 277.96383, BER: 0.29252, Avg Solve Time: 0.01203s, qr_time: 7.18848, Total Time: 7.20051s
+Method: ILS_SER, Block size: 16, Res: 229.19295, BER: 0.26877, Avg Solve Time: 0.50737s, qr_time: 7.18848, Total Time: 7.69585s
+Method: ILS_OMP, n_proc: 10, Res :273.26921, BER: 0.29031, num_iter: 99.00000, Time: 0.75051s, Avg Time: 0.01532s, Speed up: 33.125, QR Error: 0.000, QR Time: 0.86859s, QR SpeedUp: 8.276, Total Time: 0.88391s, Total SpeedUp: 8.707
+Method: ILS_OMP, n_proc: 20, Res :274.55661, BER: 0.28870, num_iter: 99.00000, Time: 0.41943s, Avg Time: 0.00856s, Speed up: 59.274, QR Error: 0.000, QR Time: 0.44313s, QR SpeedUp: 16.222, Total Time: 0.45169s, Total SpeedUp: 17.038
+Method: ILS_OMP, n_proc: 30, Res :276.15689, BER: 0.29026, num_iter: 99.00000, Time: 0.31723s, Avg Time: 0.00647s, Speed up: 78.369, QR Error: 0.000, QR Time: 0.40608s, QR SpeedUp: 17.702, Total Time: 0.41255s, Total SpeedUp: 18.654
+Method: ILS_OMP, n_proc: 40, Res :279.31124, BER: 0.29037, num_iter: 99.00000, Time: 0.25550s, Avg Time: 0.00521s, Speed up: 97.305, QR Error: 0.000, QR Time: 0.24249s, QR SpeedUp: 29.645, Total Time: 0.24770s, Total SpeedUp: 31.069
 ++++++++++++++++++++++++++++++++++++++
 End of current TASK.
 -------------------------------------------
 
-real	55m59.476s
-user	120m30.359s
-sys	0m12.165s
+real    57m52.484s
+user    119m55.927s
+sys     0m17.211s

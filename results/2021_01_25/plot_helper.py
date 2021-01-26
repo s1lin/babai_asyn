@@ -224,13 +224,13 @@ def plot_runtime(n, SNRs, f):
             if SNR == 35 and f[0] == 1:
                 axes2[0, 2].set_ylim(-0.01, 0.01)
 
-            axes2[j + 0, 0].legend(loc="center right")
+            axes2[j + 0, 0].legend(loc="lower right")
             axes2[j + 0, 1].legend(loc="upper left")
-            axes2[j + 0, 2].legend(loc="upper right")
+            axes2[j + 0, 2].legend(loc="lower right")
             axes2[j + 1, 0].legend(loc="center right")
             # axes2[j + 1, 1].legend(loc="upper right")
             axes2[j + 1, 2].legend(loc="upper right")
-            axes2[j + 2, 0].legend(loc="center right")
+            axes2[j + 2, 0].legend(loc="lower right")
             # axes2[j + 2, 1].legend(loc="upper right")
             axes2[j + 2, 2].legend(loc="lower right")
 
