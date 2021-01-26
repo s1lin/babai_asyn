@@ -13,13 +13,13 @@ void plot_run() {
     printf("plot_res-------------------------------------------\n");
     std::cout << "Init, size: " << n << std::endl;
     std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
-    vector<index> z_B(n, 0);
+    vector <index> z_B(n, 0);
 
     scalar ser_qrd = 0, run_time;
-    vector<scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
-    vector<scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
-    scalar omp_res[3][50]={}, omp_ber[3][50]={}, omp_tim[3][50]={}, omp_itr[3][50]={}, omp_qrd[3][50]={}, omp_err[3][50]={};
-    cils::returnType<scalar, index> reT, qr_reT, qr_reT_omp;
+    vector <scalar> bab_res(3, 0), bab_tim(3, 0), bab_ber(3, 0);
+    vector <scalar> ser_res(3, 0), ser_tim(3, 0), ser_ber(3, 0);
+    scalar omp_res[3][50] = {}, omp_ber[3][50] = {}, omp_tim[3][50] = {}, omp_itr[3][50] = {}, omp_qrd[3][50] = {}, omp_err[3][50] = {};
+    cils::returnType <scalar, index> reT, qr_reT, qr_reT_omp;
 
     for (index i = 0; i < max_iter; i++) {
         run_time = omp_get_wtime();
@@ -54,7 +54,7 @@ void plot_run() {
                 printf("++++++++++++++++++++++++++++++++++++++\n");
             }
         }
-        cils::cils<scalar, index, n> cils(k, SNR);
+        cils::cils <scalar, index, n> cils(k, SNR);
         if (i == 0) {
             cils.init(is_read);
             cils.init_y();
@@ -110,7 +110,8 @@ void plot_run() {
         std::cout << "Block, size: " << block_size << std::endl;
         std::cout << "Init, value: " << init << std::endl;
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Avg Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-               bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1]/ max_iter, ser_qrd / max_iter,
+               bab_res[init + 1] / max_iter, bab_ber[init + 1] / max_iter, bab_tim[init + 1] / max_iter,
+               ser_qrd / max_iter,
                (ser_qrd + bab_tim[init + 1]) / max_iter);
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Avg Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
                block_size, ser_res[init + 1] / max_iter, ser_ber[init + 1] / max_iter, ser_tim[init + 1] / max_iter,
@@ -141,9 +142,9 @@ template<typename scalar, typename index, index n>
 void test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
-    cils::cils<scalar, index, n> cils(k, SNR);
+    cils::cils <scalar, index, n> cils(k, SNR);
     index init = 0;
-    cils::returnType<scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
+    cils::returnType <scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
     for (index i = 0; i < max_iter; i++) {
 
         cils.init(is_read);
@@ -156,7 +157,7 @@ void test_ils_search() {
         }
         printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, qr_reT.num_iter);
 
-        vector<index> z_B(n, 0);
+        vector <index> z_B(n, 0);
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
 
         reT = cils.cils_babai_search_serial(&z_B);
@@ -253,7 +254,8 @@ void plot_res() {
                 reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, &d_s, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                printf("diff=%d, res=%.5f, ber=%.5f, ", reT.num_iter, res, ber);
+                printf("diff=%d, res=%.5f, ber=%.5f, ",
+                       reT.num_iter > (N_4096 / block_size) ? (N_4096 / block_size) : reT.num_iter, res, ber);
             }
             cout << endl;
         }

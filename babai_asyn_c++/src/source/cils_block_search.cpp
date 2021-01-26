@@ -80,7 +80,7 @@ namespace cils {
 
         auto z_x = z_B->data();
         index upper = pow(2, qam) - 1, s = 1, n_dx_q_0, n_dx_q_1;
-        index result[ds] = {}, z_p[n] = {}, diff = 0, num_iter = 0, flag = 0, row_n;
+        index result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n;
 
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1)
@@ -95,15 +95,10 @@ namespace cils {
                             result[i] = ils_search_obils_omp(n - (i + 1) * dx, n - i * dx, z_x) == dx;
 //                        else
 //                            ils_search_omp(n_dx_q_0, n_dx_q_1, sum, z_x);
-                        if (!flag) {
-                            diff += result[i];
+                        diff += result[i];
+                        if (mode != 0 && !flag) {
+                            flag = diff >= ds - stop;
                         }
-//                        if (i != 0 && result[i])
-//                            result[i - 1] = 1;
-                    }
-                    if (mode != 0 && !flag && i == ds - 1) {
-                        num_iter = j;
-                        flag = diff >= ds - stop;
                     }
                 }
             }
@@ -115,9 +110,10 @@ namespace cils {
         returnType<scalar, index> reT;
         if (mode == 0)
             reT = {z_B, run_time2, diff};
-        else
+        else {
             reT = {z_B, run_time2, num_iter};
-        cout << "diff:" << diff << ", ";
+            cout << "diff:" << diff << ", ";
+        }
         return reT;
     }
 }
