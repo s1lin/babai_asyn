@@ -21,7 +21,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_babai_search_omp(const index n_proc, const index nswp,
-                                                  vector<index> *z_B, bool is_constrained) {
+                                                  vector<index> *z_B) {
 
         index num_iter = 0, s = n_proc, x_min = 0, ni, nj, diff, upper = pow(2, qam) - 1;
         bool flag = false, check = false;
@@ -74,7 +74,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_babai_search_serial(vector<index> *z_B, bool is_constrained) {
+    cils<scalar, index, n>::cils_babai_search_serial(vector<index> *z_B) {
         scalar sum = 0, upper = pow(2, qam) - 1;
         scalar start = omp_get_wtime();
 

@@ -194,11 +194,11 @@ namespace cils {
         //variables
         scalar sum, newprsd, gamma, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0, count = 0;
-        index row_k = k + n_dx_q_0, row_kk = n * row_k - ((row_k * (row_k + 1)) / 2);
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, iter = 0, count = 0, diff = 0;
+        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2);
 
         scalar p[dx] = {}, c[dx];
-        index z[dx], d[dx] = {}, x[dx];
+        index z[dx], d[dx] = {};
 
 #pragma omp simd
         for (index col = 0; col < dx; col++) {
@@ -207,7 +207,7 @@ namespace cils {
 
         //Initial squared search radius
         scalar R_kk = R_A->x[row_kk + row_k];
-        c[k] = y_B[row_k] / R_kk;
+        c[k] = (y_A->x[row_k] - y_B[row_k - n_dx_q_0]) / R_kk;
         z[k] = round(c[k]);
         gamma = R_kk * (c[k] - z[k]);
 
@@ -215,7 +215,7 @@ namespace cils {
         d[k] = c[k] > z[k] ? 1 : -1;
 
         //ILS search process
-        for (count = 0; count < program_def::max_search; count++) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             newprsd = p[k] + gamma * gamma;
             if (newprsd < beta) {
                 if (k != 0) {
@@ -229,21 +229,20 @@ namespace cils {
                     }
                     R_kk = R_A->x[row_kk + row_k];
                     p[k] = newprsd;
-                    c[k] = (y_B[row_k] - sum) / R_kk;
+                    c[k] = ((y_A->x[row_k] - y_B[row_k - n_dx_q_0]) - sum) / R_kk;
                     z[k] = round(c[k]);
                     gamma = R_kk * (c[k] - z[k]);
                     d[k] = c[k] > z[k] ? 1 : -1;
 
                 } else {
                     beta = newprsd;
-//#pragma omp critical
-//                    {
+                    diff = 0;
                     for (index l = 0; l < dx; l++) {
-                        x[l] = z[l];
+                        diff += z_x[l + n_dx_q_0] == z[l];
+                        z_x[l + n_dx_q_0] = z[l];
                     }
-//                    }
                     iter++;
-                    if (iter > program_def::search_iter) break;
+                    if (iter > program_def::search_iter || diff == dx) break;
 
                     z[0] += d[0];
                     gamma = R_A->x[0] * (c[0] - z[0]);
@@ -261,38 +260,36 @@ namespace cils {
                 }
             }
         }
-//        if(count == program_def::max_search) {
-//#pragma omp critical
-//            {
-        for (index l = 0; l < dx; l++) {
-            z_x[l + n_dx_q_0] = x[l];
-        }
-//            }
-//        }
         return beta;
     }
 
     template<typename scalar, typename index, index n>
-    inline scalar cils<scalar, index, n>::ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                                               const scalar *y_B, index *z_x) {
+    inline scalar cils<scalar, index, n>::ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1, index *z_x) {
 
         // Variables
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0;
+        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0, diff = 0;
         index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2);
 
-        scalar p[dx] = {}, c[dx];
+        scalar p[dx] = {}, c[dx], y_B[dx] = {}, R_kk = R_A->x[row_kk + row_k];
         index z[dx], d[dx] = {}, l[dx], u[dx];
 
 #pragma omp simd
-        for (index col = 0; col < dx; col++) {
-            z[col] = z_x[col + n_dx_q_0];
+        for (index row = 0; row < dx; row++) {
+            y_B[row] = y_A->x[row + n_dx_q_0];
+            z[row] = z_x[row + n_dx_q_0];
+        }
+
+#pragma omp simd collapse(2)
+        for (index col = n_dx_q_1; col < n; col++) {
+            for (index row = 0; row < dx; row++) {
+                y_B[row] -= R_A->x[((n_dx_q_0 + row) * (2 * n - n_dx_q_0 - row - 1)) / 2 + col] * z_x[col];
+            }
         }
 
         //Initial squared search radius
-        scalar R_kk = R_A->x[row_kk + row_k];
-        c[k] = (y_A->x[row_k] - y_B[row_k - n_dx_q_0]) / R_kk;
+        c[k] = y_B[k] / R_kk;
         z[k] = round(c[k]);
         if (z[k] <= 0) {
             z[k] = u[k] = 0; //The lower bound is reached
@@ -320,13 +317,15 @@ namespace cils {
                         row_k--;
                         sum = 0;
                         row_kk -= (n - row_k - 1);
+
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
                             sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
                         }
+
                         R_kk = R_A->x[row_kk + row_k];
                         p[k] = newprsd;
-                        c[k] = (y_A->x[row_k] - y_B[row_k - n_dx_q_0] - sum) / R_kk;
+                        c[k] = (y_B[k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         if (z[k] <= 0) {
                             z[k] = u[k] = 0;
@@ -344,12 +343,14 @@ namespace cils {
 
                     } else {
                         beta = newprsd;
+                        diff = 0;
 #pragma omp simd
                         for (index h = 0; h < dx; h++) {
+                            diff += z_x[h + n_dx_q_0] == z[h];
                             z_x[h + n_dx_q_0] = z[h];
                         }
                         iter++;
-                        if (iter > program_def::search_iter) break;
+                        if (iter > program_def::search_iter || diff == dx) break;
                     }
                 } else {
                     dflag = 0;
@@ -382,13 +383,7 @@ namespace cils {
                 }
             }
         }
-//        if (count == program_def::max_search && iter == 0) {
-//#pragma omp simd
-//            for (index h = 0; h < dx; h++) {
-//                z_x[h + n_dx_q_0] = z[h];
-//            }
-//        }
-        return beta;
+        return diff;
     }
 
 }

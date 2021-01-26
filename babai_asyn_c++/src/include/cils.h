@@ -495,8 +495,7 @@ namespace cils {
          * @param z_x
          * @return
          */
-        inline scalar ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                           const scalar *sum, index *z_x);
+        inline scalar ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1, index *z_x);
 
 
     public:
@@ -602,7 +601,7 @@ namespace cils {
         * @return
         */
         returnType<scalar, index>
-        cils_babai_search_serial(vector<index> *z_B, bool is_constrained);
+        cils_babai_search_serial(vector<index> *z_B);
 
         /**
          * Constrained version of Parallel Babai solver
@@ -612,7 +611,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B, bool is_constrained);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
 
         /**
          * Unconstrained serial version of Block Babai solver
@@ -621,8 +620,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(const vector<index> *d, vector<index> *z_B,
-                                 bool is_constrained);
+        cils_block_search_serial(const vector<index> *d, vector<index> *z_B);
 
 
         /**
@@ -636,8 +634,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp(const index n_proc, const index nswp, const index stop, const index init,
-                              const vector<index> *d, vector<index> *z_B, const bool is_constrained);
+        cils_block_search_omp(const index n_proc, const index nswp, const vector<index> *d, vector<index> *z_B);
 
 
         /**
