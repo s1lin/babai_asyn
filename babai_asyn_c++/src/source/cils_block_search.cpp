@@ -79,11 +79,11 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        index upper = pow(2, qam) - 1, s = 1;
-        index result[ds] = {}, z_p[n] = {}, diff = 0, num_iter = 0, flag = 0;
+        index upper = pow(2, qam) - 1, s = 1, n_dx_q_0, n_dx_q_1;
+        index result[ds] = {}, z_p[n] = {}, diff = 0, num_iter = 0, flag = 0, row_n;
 
         scalar run_time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc)
+#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1)
         {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic, 1) nowait
@@ -98,6 +98,8 @@ namespace cils {
                         if (!flag) {
                             diff += result[i];
                         }
+//                        if (i != 0 && result[i])
+//                            result[i - 1] = 1;
                     }
                     if (mode != 0 && !flag && i == ds - 1) {
                         num_iter = j;

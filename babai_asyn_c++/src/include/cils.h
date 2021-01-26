@@ -369,7 +369,7 @@ namespace cils {
             printf("\nPrinting R...\n");
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
-                    printf("%.3f ", R->x[j * n + i]);
+                    printf("%-1.3f ", R->x[j * n + i]);
                 }
                 printf("\n");
             }

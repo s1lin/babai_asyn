@@ -264,7 +264,8 @@ namespace cils {
     }
 
     template<typename scalar, typename index, index n>
-    inline scalar cils<scalar, index, n>::ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1, index *z_x) {
+    inline scalar cils<scalar, index, n>::ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                                               index *z_x) {
 
         // Variables
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
@@ -382,6 +383,40 @@ namespace cils {
                 }
             }
         }
+//        for (index h = 0; h < dx; h++) {
+//            diff += z_x[h + n_dx_q_0] == x[h];
+//            z_x[h + n_dx_q_0] = x[h];
+//        }
+//        for (index h = dx - 1; h >= 0; h--) {
+//            index col = h + n_dx_q_0;
+//            if (z_x[col] != x[h]) {
+//                for (index row = 0; row < n_dx_q_0; row++) {
+//                    R_kk = R->x[col * n + row];
+//                    temp[row] = temp[row] - R_kk * (z_x[col] - x[h]);
+//                }
+//                diff++;
+//            }
+//            z_x[col] = x[h];
+//        }
+//        }
+//            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//                row_n += n - row;
+//                temp2[row] = 0;
+//                for (index col = n_dx_q_1; col < n; col++) {
+//                    temp2[row] += R_A->x[row_n + col] * z_x[col];
+//                }
+//            }
+
+//            for (index h = 0; h < n; h++) {
+//                cout << temp[h] << " ";
+//            }
+//            cout << endl;
+//            for (index h = 0; h < n; h++) {
+//                cout << temp2[h] << " ";
+//            }
+//            cout << endl;
+//        }
+
         return diff;
     }
 
