@@ -93,9 +93,10 @@ namespace cils {
         {
             sum = new scalar[dx]();
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 1) nowait
+#pragma omp for schedule(static, 2) nowait
                 for (index i = 0; i < ds; i++) {
-                    if (flag) continue;
+                    if (flag || i > iter) continue;
+                    iter++;
                     n_dx_q_0 = n - (i + 1) * dx;
                     n_dx_q_1 = n - i * dx;
 //                    row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
@@ -122,7 +123,9 @@ namespace cils {
                             sum[l - n_dx_q_0] = 0;
                         }
                         result[i] = row_n == dx;
-                        diff += result[i];
+                        if (!flag)
+#pragma omp atomic
+                            diff += result[i];
                     }
                     if (mode != 0 && !flag && i == ds - 1) {
                         num_iter = j;
@@ -140,7 +143,7 @@ namespace cils {
             reT = {z_B, run_time2, diff};
         else
             reT = {z_B, run_time2, num_iter};
-
+        cout << "diff:" << diff <<", ";
         return reT;
     }
 }

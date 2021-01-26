@@ -258,7 +258,7 @@ void plot_res() {
                                                  &d_s, &z_B, is_constrained);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                printf("diff=%d, res=%.5f, ber=%.5f, ", N_10 - reT.num_iter, res, ber);
+                printf("diff=%d, res=%.5f, ber=%.5f, ", reT.num_iter, res, ber);
             }
             cout << endl;
         }
