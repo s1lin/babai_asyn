@@ -79,9 +79,8 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        index n_dx_q_0, n_dx_q_1, row_n, iter = 2 * n_proc, upper = pow(2, qam) - 1;
+        index upper = pow(2, qam) - 1, s = 1;
         index result[ds] = {}, z_p[n] = {}, diff = 0, num_iter = 0, flag = 0;
-
 
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc)

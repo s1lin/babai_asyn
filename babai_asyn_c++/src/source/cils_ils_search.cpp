@@ -270,22 +270,21 @@ namespace cils {
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
         index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0, diff = 0;
-        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2);
+        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2), row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 
         scalar p[dx] = {}, c[dx], y_B[dx] = {}, R_kk = R_A->x[row_kk + row_k];
         index z[dx], d[dx] = {}, l[dx], u[dx];
 
-#pragma omp simd
-        for (index row = 0; row < dx; row++) {
-            y_B[row] = y_A->x[row + n_dx_q_0];
-            z[row] = z_x[row + n_dx_q_0];
-        }
-
-#pragma omp simd collapse(2)
-        for (index col = n_dx_q_1; col < n; col++) {
-            for (index row = 0; row < dx; row++) {
-                y_B[row] -= R_A->x[((n_dx_q_0 + row) * (2 * n - n_dx_q_0 - row - 1)) / 2 + col] * z_x[col];
+        //The block operation
+        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+            sum = 0;
+            row_n += n - row;
+#pragma omp simd reduction(+ : sum)
+            for (index col = n_dx_q_1; col < n; col++) {
+                sum += R_A->x[row_n + col] * z_x[col];
             }
+            y_B[row - n_dx_q_0] = y_A->x[row] - sum;
+            z[row - n_dx_q_0] = z_x[row];
         }
 
         //Initial squared search radius
