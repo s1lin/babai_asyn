@@ -265,31 +265,25 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline scalar cils<scalar, index, n>::ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                                               index *z_x) {
+                                                               scalar *y_B, index *z_x) {
 
         // Variables
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
         index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0, diff = 0;
-        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2), row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+        index row_k = k + n_dx_q_0, row_kk = row_k * (n - (row_k + 1) / 2);
 
-        scalar p[dx] = {}, c[dx], y_B[dx] = {}, R_kk = R_A->x[row_kk + row_k];
+        scalar p[dx] = {}, c[dx], R_kk = R_A->x[row_kk + row_k];
         index z[dx], d[dx] = {}, l[dx], u[dx];
 
-        //The block operation
-        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-            sum = 0;
-            row_n += n - row;
-#pragma omp simd reduction(+ : sum)
-            for (index col = n_dx_q_1; col < n; col++) {
-                sum += R_A->x[row_n + col] * z_x[col];
-            }
-            y_B[row - n_dx_q_0] = y_A->x[row] - sum;
-            z[row - n_dx_q_0] = z_x[row];
+
+#pragma omp simd
+        for (index col = 0; col < dx; col++) {
+            z[col] = z_x[col + n_dx_q_0];
         }
 
         //Initial squared search radius
-        c[k] = y_B[k] / R_kk;
+        c[k] = (y_A->x[row_k] - y_B[row_k]) / R_kk;
         z[k] = round(c[k]);
         if (z[k] <= 0) {
             z[k] = u[k] = 0; //The lower bound is reached
@@ -325,7 +319,7 @@ namespace cils {
 
                         R_kk = R_A->x[row_kk + row_k];
                         p[k] = newprsd;
-                        c[k] = (y_B[k] - sum) / R_kk;
+                        c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         if (z[k] <= 0) {
                             z[k] = u[k] = 0;
@@ -344,13 +338,24 @@ namespace cils {
                     } else {
                         beta = newprsd;
                         diff = 0;
+                        iter++;
 #pragma omp simd
                         for (index h = 0; h < dx; h++) {
-                            diff += z_x[h + n_dx_q_0] == z[h];
-                            z_x[h + n_dx_q_0] = z[h];
+                            index col = h + n_dx_q_0;
+                            diff += z_x[col] == z[h];
+//                            if (z_x[col] != z[h]) {
+//                                for (index row = 0; row < n_dx_q_0; row++) {
+//                                    R_kk = R_A->x[(n * row) + col - (row * (row + 1)) / 2];
+////#pragma omp atomic
+//                                    y_B[row] -= R_kk * (z_x[col] - z[h]); //store the difference
+//                                }
+//                            }
+                            z_x[col] = z[h];
                         }
-                        iter++;
-                        if (iter > program_def::search_iter || diff == dx) break;
+
+                        if (iter > program_def::search_iter || diff == dx) {
+                            break;
+                        }
                     }
                 } else {
                     dflag = 0;
@@ -383,41 +388,73 @@ namespace cils {
                 }
             }
         }
-//        for (index h = 0; h < dx; h++) {
-//            diff += z_x[h + n_dx_q_0] == x[h];
-//            z_x[h + n_dx_q_0] = x[h];
-//        }
-//        for (index h = dx - 1; h >= 0; h--) {
-//            index col = h + n_dx_q_0;
-//            if (z_x[col] != x[h]) {
-//                for (index row = 0; row < n_dx_q_0; row++) {
-//                    R_kk = R->x[col * n + row];
-//                    temp[row] = temp[row] - R_kk * (z_x[col] - x[h]);
-//                }
-//                diff++;
+        return diff;
+//        scalar temp3[n] = {};
+//        scalar temp4[n] = {};
+//        scalar temp2[n] = {};
+//        auto lock = new omp_lock_t[dx]();
+//        index row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+//        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//            row_n += n - row;
+//            temp3[row] = 0;
+//            for (index col = n_dx_q_1; col < n; col++) {
+//                temp3[row] += R_A->x[row_n + col] * z_x[col];
 //            }
-//            z_x[col] = x[h];
 //        }
-//        }
+//        if (omp_get_thread_num() == 0) {
+//            cout << endl;
+//            cout << diff << " " << n_dx_q_0 << " " << n_dx_q_1 << endl;
+//            row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 //            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //                row_n += n - row;
-//                temp2[row] = 0;
+//                temp4[row] = 0;
 //                for (index col = n_dx_q_1; col < n; col++) {
-//                    temp2[row] += R_A->x[row_n + col] * z_x[col];
+//                    temp4[row] += R_A->x[row_n + col] * z_x[col];
+////                        if (row == 0)
+////                            cout << temp3[row] << "+=" << R_A->x[row_n + col] << "*" << z_x[col] << endl;
 //                }
 //            }
-
+//
+//            for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
+//                printf("%.3f ", y_B[h]);
+//            }
+//            cout << endl;
+//            for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
+//                printf("%.3f ", temp4[h]);
+//            }
+//            cout << endl;cout << endl;
+//        }
+//        if (diff != dx) {
+//            for (index h = dx - 1; h >= 0; h--) {
+//                index col = h + n_dx_q_0;
+//                if (z_x[col] != x[h]) {
+//#pragma omp critical
+//                    {
+//                        for (index row = 0; row < n_dx_q_0; row++) {
+//                            R_kk = R->x[col * n + row];
+//
+////                            omp_unset_lock(&lock[row]);
+//
+//                            y_B[row] = y_B[row] - R_kk * (z_x[col] - x[h]);
+////                            omp_set_lock(&lock[row]);
+//                        }
+//                    }
+//                    z_x[col] = x[h];
+//                }
+//            }
+//        }
+//        if (omp_get_thread_num() == 0) {
 //            for (index h = 0; h < n; h++) {
-//                cout << temp[h] << " ";
+//                cout << y_B[h] << " ";
 //            }
 //            cout << endl;
 //            for (index h = 0; h < n; h++) {
-//                cout << temp2[h] << " ";
+//                cout << temp3[h] << " ";
 //            }
 //            cout << endl;
 //        }
 
-        return diff;
+
     }
 
 }

@@ -73,10 +73,8 @@ classdef sils_class
             index = 1;
             for i=1:sils.n
                 for j=i:sils.n
-                    if sils.R(i,j)~=0
-                        R_A(index) = sils.R(i,j);
-                        index = index + 1;
-                    end
+                    R_A(index) = sils.R(i,j);
+                    index = index + 1;                    
                 end
             end
           

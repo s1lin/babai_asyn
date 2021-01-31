@@ -42,27 +42,27 @@ def plot_residual(n, SNRs, f):
                     ber.append(float(line_str[index + 2].split("=")[1]))
                     # print(float(line_str[index + 2].split("=")[1]))
                     index = index + 3
-                # if SNRs[0] == 35:
-                if init + 1 == 0:
-                    axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                               marker=marker[m], label='num_thread = ' + str(num_thread))
+                if SNRs[0] == 35:
+                    if init + 1 == 0:
+                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
+                                                   marker=marker[m], label='num_thread = ' + str(num_thread))
 
+                    else:
+                        axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
+                                                   marker=marker[m])
+
+                    axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m], marker=marker[m])
+                    axes[2, init + 1].plot(range(0, 10), np.array(diff)[0:10], color=color[m], marker=marker[m])
                 else:
-                    axes[0, init + 1].semilogy(range(0, 10), np.array(res)[0:10], color=color[m],
-                                               marker=marker[m])
+                    if init + 1 == 0:
+                        axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m],
+                                               label='num_thread = ' + str(num_thread))
+                    else:
+                        axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m])
 
-                axes[1, init + 1].plot(range(0, 10), np.array(ber)[0:10], color=color[m], marker=marker[m])
-                axes[2, init + 1].plot(range(0, 10), np.array(diff)[0:10], color=color[m], marker=marker[m])
-                # else:
-                #     if init + 1 == 0:
-                #         axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m],
-                #                                label='num_thread = ' + str(num_thread))
-                #     else:
-                #         axes[0, init + 1].plot(range(0, 99), np.array(res)[0:99], color=color[m])
-                #
-                #     axes[1, init + 1].plot(range(1, 99), np.array(ber)[1:99], color=color[m])
-                #     axes[2, init + 1].plot(range(0, 99), np.array(diff)[0:99], color=color[m])
-                #     axes[1, init + 1].set_ylim(0.4, 0.6)
+                    axes[1, init + 1].plot(range(1, 99), np.array(ber)[1:99], color=color[m])
+                    axes[2, init + 1].plot(range(0, 99), np.array(diff)[0:99], color=color[m])
+                    axes[1, init + 1].set_ylim(0.2, 0.6)
 
                 k = k + 1
             # axes[2, init + 1].set_ylim(-99, 4200)

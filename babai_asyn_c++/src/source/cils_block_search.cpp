@@ -79,32 +79,59 @@ namespace cils {
         }
 
         auto z_x = z_B->data();
-        index upper = pow(2, qam) - 1, s = 1, n_dx_q_0, n_dx_q_1;
-        index result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n;
+        index upper = pow(2, qam) - 1, n_dx_q_0, n_dx_q_1;
+        index result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp;
+        scalar y_B[n] = {}, sum = 0;
+        scalar run_time3;
+
 
         scalar run_time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1)
+#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp)
         {
+//#pragma omp for schedule(dynamic, 1) nowait
+//            for (index i = 0; i < ds; i++) {
+//                n_dx_q_0 = n - (i + 1) * dx;
+//                n_dx_q_1 = n - i * dx;
+//                row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+//                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//                    row_n += n - row;
+//                    for (index col = n_dx_q_1; col < n; col++) {
+//                        y_B[row] += R_A->x[row_n + col] * z_x[col];
+//                    }
+//                    temp = round((y_A->x[row] - y_B[row]) / R_A->x[row + row_n]);
+//                    z_x[row] = !is_constrained ? temp : temp < 0 ? 0 : temp > upper ? upper : temp;
+//
+//                }
+//            }
+
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 1) nowait
+#pragma omp for schedule(static, 1) nowait
                 for (index i = 0; i < ds; i++) {
                     if (flag) continue;
+                    n_dx_q_0 = n - (i + 1) * dx;
+                    n_dx_q_1 = n - i * dx;
+                    row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
                     //The block operation
-                    if (result[i] == 0) {
+                    if (result[i] == 0 && !flag) {
+                        for (index row = n_dx_q_0; row < n_dx_q_1 && !flag; row++) {
+                            row_n += n - row;
+                            y_B[row] = 0;
+                            for (index col = n_dx_q_1; col < n; col++) {
+                                y_B[row] += R_A->x[row_n + col] * z_x[col];
+                            }
+                        }
                         if (is_constrained && !flag)
-                            result[i] = ils_search_obils_omp(n - (i + 1) * dx, n - i * dx, z_x) == dx;
-//                        else
-//                            ils_search_omp(n_dx_q_0, n_dx_q_1, sum, z_x);
-                        if (mode != 0 && !flag) {
+                            result[i] = ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) == dx;
+                        if (!flag) {
                             diff += result[i];
                             num_iter = j;
-                            flag = diff >= ds - stop;
+//                            if (mode != 0)
+//                                flag = diff >= ds - stop;
                         }
                     }
                 }
             }
         }
-
         scalar run_time2 = omp_get_wtime() - run_time;
 #pragma parallel omp cancellation point
 #pragma omp flush

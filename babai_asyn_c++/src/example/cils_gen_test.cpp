@@ -167,6 +167,8 @@ void test_ils_search() {
                res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar bab_tim_constrained = reT.run_time;
 
+//        if(res < 100) continue;
+
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
         reT = cils.cils_block_search_serial(&d_s, &z_B);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);

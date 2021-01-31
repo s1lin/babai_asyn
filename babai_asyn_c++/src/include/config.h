@@ -18,18 +18,18 @@ namespace cils {
 
         index k = 3;
         index SNR = 35;
-        index max_iter = 30;
+        index max_iter = 1;
         index search_iter = 3;
-        index stop = 4;
+        index stop = 10;
         index schedule = 1;
         index chunk_size = 1;
         index block_size = 16;
         index is_constrained = true;
         index is_read = false;
         index mode = 3; //test mode 3: c++ gen
-        index num_trials = 10; //nswp
+        index num_trials = 6; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 500;
         index min_proc = 2;
 
         index max_proc = omp_get_max_threads();
