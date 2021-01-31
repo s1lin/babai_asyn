@@ -88,20 +88,20 @@ namespace cils {
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp)
         {
-#pragma omp for schedule(static, 1) nowait
-            for (index i = 0; i < ds; i++) {
-                n_dx_q_0 = n - (i + 1) * dx;
-                n_dx_q_1 = n - i * dx;
-                row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
-                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                    row_n += n - row;
-                    for (index col = n_dx_q_1; col < n; col++) {
-                        y_B[row] += R_A->x[row_n + col] * z_x[col];
-                    }
-                    temp = round((y_A->x[row] - y_B[row]) / R_A->x[row + row_n]);
-                    z_x[row] = !is_constrained ? temp : temp < 0 ? 0 : temp > upper ? upper : temp;
-                }
-            }
+//#pragma omp for schedule(static, 1) nowait
+//            for (index i = 0; i < ds; i++) {
+//                n_dx_q_0 = n - (i + 1) * dx;
+//                n_dx_q_1 = n - i * dx;
+//                row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+//                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//                    row_n += n - row;
+//                    for (index col = n_dx_q_1; col < n; col++) {
+//                        y_B[row] += R_A->x[row_n + col] * z_x[col];
+//                    }
+//                    temp = round((y_A->x[row] - y_B[row]) / R_A->x[row + row_n]);
+//                    z_x[row] = !is_constrained ? temp : temp < 0 ? 0 : temp > upper ? upper : temp;
+//                }
+//            }
 
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(static, 1) nowait
