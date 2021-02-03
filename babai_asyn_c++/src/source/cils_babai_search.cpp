@@ -62,7 +62,6 @@ namespace cils {
                     flag = diff > stop;
                 }
             }
-
         }
         scalar run_time = omp_get_wtime() - start;
 #pragma parallel omp cancellation point

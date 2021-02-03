@@ -367,20 +367,22 @@ namespace cils {
             }
 
             printf("\nPrinting R...\n");
+//            cout << setw(10);
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
-                    printf("%-1.3f ", R->x[j * n + i]);
+                    cout << setw(11) << R->x[j * n + i] << " ";
+//                    printf("%-1.3f ", R->x[j * n + i]);
                 }
                 printf("\n");
             }
 
-            printf("\nPrinting R_A...\n");
-            for (i = 0; i < n; i++) {
-                for (j = i; j < n; j++) {
-                    printf("%.3f ", R_A->x[(n * i) + j - ((i * (i + 1)) / 2)]);
-                }
-                printf("\n");
-            }
+//            printf("\nPrinting R_A...\n");
+//            for (i = 0; i < n; i++) {
+//                for (j = i; j < n; j++) {
+//                    printf("%.3f ", R_A->x[(n * i) + j - ((i * (i + 1)) / 2)]);
+//                }
+//                printf("\n");
+//            }
         }
         if (qr_eval == 1) {
             for (i = 0; i < n; i++) {
@@ -392,15 +394,15 @@ namespace cils {
                     c[j * n + i] = sum;
                 }
             }
-            if (eval == 1) {
-                printf("\nQ*R (Init A matrix) : \n");
-                for (i = 0; i < n; i++) {
-                    for (j = 0; j < n; j++) {
-                        printf("%.3f ", c[j * n + i]);
-                    }
-                    printf("\n");
-                }
-            }
+//            if (eval == 1) {
+//                printf("\nQ*R (Init A matrix) : \n");
+//                for (i = 0; i < n; i++) {
+//                    for (j = 0; j < n; j++) {
+//                        printf("%.3f ", c[j * n + i]);
+//                    }
+//                    printf("\n");
+//                }
+//            }
 
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
@@ -495,8 +497,8 @@ namespace cils {
          * @param z_x
          * @return
          */
-        inline scalar ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                           scalar *y_B, index *z_x);
+        inline bool ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                         const index i, const index ds, scalar *y_B, index *z_x);
 
 
     public:

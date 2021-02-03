@@ -135,9 +135,9 @@ namespace cils {
             //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
             std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
 
-#ifdef _OPENMP
-#pragma omp for
-#endif
+//#ifdef _OPENMP
+//#pragma omp for
+//#endif
             for (index i = 0; i < n / 2; i++) {
                 for (index j = 0; j < n / 2; j++) {
                     A->x[j + i * n] = A_norm_dis(gen);
