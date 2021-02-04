@@ -500,6 +500,9 @@ namespace cils {
         inline bool ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
                                          const index i, const index ds, scalar *y_B, index *z_x);
 
+        inline bool ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
+                                         const index i, const index ds, scalar *y_B, index *z_x);
+
 
     public:
         cils(index qam, index snr) {
@@ -515,7 +518,7 @@ namespace cils {
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
-            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * log2(n)) / (6 * pow(10, ((scalar) snr / 10.0))));
+            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * 2 * log2(n)) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
         }
