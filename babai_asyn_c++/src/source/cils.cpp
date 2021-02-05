@@ -1,6 +1,5 @@
 #include <cstring>
 #include <algorithm>
-//#include <lapack.h>
 
 #include "../include/cils.h"
 
@@ -16,6 +15,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::read_nc(string filename) {
+        #ifdef _NETCDF
         cout << filename;
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
@@ -55,7 +55,7 @@ namespace cils {
                 }
             }
         }
-
+        #endif
     }
 
     template<typename scalar, typename index, index n>
