@@ -416,7 +416,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline bool cils<scalar, index, n>::ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                                             const index i, const index ds, scalar *y_B, index *z_x) {
+                                                              const scalar *y_B, index *z_x) {
 
         // Variables
         index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0, diff = 0;
@@ -477,6 +477,7 @@ namespace cils {
                         R_kk = R_A->x[row_kk + row_k];
                         p[k] = newprsd;
                         sum = 0;
+#pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
                             sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
                         }

@@ -176,7 +176,7 @@ void test_ils_search() {
         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
                block_size, res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar ils_tim_constrained = reT.run_time;
-
+        cout.flush();
 
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
 //            qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);

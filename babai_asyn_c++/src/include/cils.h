@@ -30,7 +30,9 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
+#ifdef _NETCDF
 #include <netcdf.h>
+#endif
 #include <bitset>
 #include <math.h>
 #include "config.h"
@@ -501,7 +503,7 @@ namespace cils {
                                          const index i, const index ds, scalar *y_B, index *z_x);
 
         inline bool ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                         const index i, const index ds, scalar *y_B, index *z_x);
+                                          const scalar *y_B, index *z_x);
 
 
     public:
