@@ -71,7 +71,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_block_search_omp(const index n_proc, const index nswp,
+    cils<scalar, index, n>::cils_block_search_omp(const index n_proc, const index nswp, const index init,
                                                   const vector<index> *d_s, vector<index> *z_B) {
         index ds = d_s->size(), dx = d_s->at(ds - 1);
         if (ds == 1 || ds == n) {
@@ -79,12 +79,29 @@ namespace cils {
         }
         bool check = false;
         auto z_x = z_B->data();
-        index upper = pow(2, qam) - 1, n_dx_q_0, n_dx_q_1, z_p[n];
-        index result[ds] = {}, diff = {}, num_iter = 0, flag = 0, row_n, temp;
-        scalar R_S[n * ds] = {}, sum = 0;
+        index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = {}, num_iter = 0, flag = 0, row_n, temp;
+        scalar R_S[n * ds] = {}, sum = 0, y_B[n] = {};
         scalar run_time3;
-//        vector<scalar> y_B(n, 0);
-        scalar y_B[n] = {};
+
+        if (init != 0) {
+            for (index i = 0; i < ds; i++) {
+                n_dx_q_0 = n - (i + 1) * dx;
+                n_dx_q_1 = n - i * dx;
+                row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                    row_n += n - row;
+                    y_B[row] = 0;
+                    for (index col = 0; col < i; col++) {
+                        temp = i - col - 1;
+                        sum = 0; //Put values backwards
+                        for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
+                            sum += R_A->x[l + row_n] * z_x[l];
+                        }
+                        R_S[row * ds + temp] = sum;
+                    }
+                }
+            }
+        }
 
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp)
@@ -163,8 +180,7 @@ namespace cils {
             reT = {z_B, run_time3, num_iter};
             cout << "diff:" << diff << ", " << (int) (run_time2 / run_time3) << ", ";
         }
-        return
-                reT;
+        return reT;
     }
 }
 

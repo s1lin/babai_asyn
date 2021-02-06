@@ -642,7 +642,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp(const index n_proc, const index nswp, const vector<index> *d, vector<index> *z_B);
+        cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d, vector<index> *z_B);
 
 
         /**

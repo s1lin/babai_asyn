@@ -60,7 +60,7 @@ void plot_run() {
             cils.init_y();
             cils.cils_qr_decomposition_omp(0, 1, max_proc);
             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
-            cils.cils_block_search_omp(max_proc, num_trials, &d_s, &z_B);
+            cils.cils_block_search_omp(max_proc, num_trials, 0, &d_s, &z_B);
             continue;
         }
 
@@ -92,7 +92,7 @@ void plot_run() {
                     omp_err[init + 1][l] += qr_reT_omp.num_iter;
                 }
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, init, &d_s, &z_B);
                 omp_res[init + 1][l] += cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 omp_ber[init + 1][l] += cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                 omp_tim[init + 1][l] += reT.run_time;
@@ -143,7 +143,7 @@ void test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
     cils::cils <scalar, index, n> cils(k, SNR);
-    index init = 0;
+    index init = -1;
     cils::returnType <scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
     for (index i = 0; i < max_iter; i++) {
 
@@ -194,7 +194,7 @@ void test_ils_search() {
 //                   (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
 
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &d_s, &z_B);
+            reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, init, &d_s, &z_B);
             res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
             printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "
@@ -253,7 +253,7 @@ void plot_res() {
             std::cout.flush();
             for (index nswp = 1; nswp < max_iter; nswp++) {
                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, &d_s, &z_B);
+                reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, init, &d_s, &z_B);
                 res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                 ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
                 printf("diff=%d, res=%.5f, ber=%.5f, ",

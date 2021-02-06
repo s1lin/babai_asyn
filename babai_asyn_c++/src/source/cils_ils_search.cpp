@@ -287,23 +287,23 @@ namespace cils {
         }
 
 //        for (index row = 0; row < dx; row++) {
-            //Initial squared search radius
-            c[k] = (y_A->x[row_k] - y_B[k] - sum) / R_kk;
-            z[k] = round(c[k]);
-            if (z[k] <= 0) {
-                z[k] = u[k] = 0; //The lower bound is reached
-                l[k] = d[k] = 1;
-            } else if (z[k] >= upper) {
-                z[k] = upper; //The upper bound is reached
-                u[k] = 1;
-                l[k] = 0;
-                d[k] = -1;
-            } else {
-                l[k] = u[k] = 0;
-                //  Determine enumeration direction at level block_size
-                d[k] = c[k] > z[k] ? 1 : -1;
-            }
-            gamma = R_kk * (c[k] - z[k]);
+        //Initial squared search radius
+        c[k] = (y_A->x[row_k] - y_B[k] - sum) / R_kk;
+        z[k] = round(c[k]);
+        if (z[k] <= 0) {
+            z[k] = u[k] = 0; //The lower bound is reached
+            l[k] = d[k] = 1;
+        } else if (z[k] >= upper) {
+            z[k] = upper; //The upper bound is reached
+            u[k] = 1;
+            l[k] = 0;
+            d[k] = -1;
+        } else {
+            l[k] = u[k] = 0;
+            //  Determine enumeration direction at level block_size
+            d[k] = c[k] > z[k] ? 1 : -1;
+        }
+        gamma = R_kk * (c[k] - z[k]);
 //            newprsd = p[k] + gamma * gamma;
 //            if (k != 0) {
 //                k--;
@@ -419,8 +419,8 @@ namespace cils {
                                                               const scalar *y_B, index *z_x) {
 
         // Variables
-        index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, count = 0, diff = 0;
-        index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2), row_n, temp;
+        index dx = program_def::block_size, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, diff = 0;
+        index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2), row_n, temp, col, row, count;
 
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
@@ -428,42 +428,42 @@ namespace cils {
         index z[dx], d[dx] = {}, l[dx] = {}, u[dx] = {};
 
 #pragma omp simd
-        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+        for (row = n_dx_q_0; row < n_dx_q_1; row++) {
             z[row - n_dx_q_0] = z_x[row];
         }
 
-//        for (index row = 0; row < dx; row++) {
-        //Initial squared search radius
-        c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
-        z[k] = round(c[k]);
-        if (z[k] <= 0) {
-            z[k] = u[k] = 0; //The lower bound is reached
-            l[k] = d[k] = 1;
-        } else if (z[k] >= upper) {
-            z[k] = upper; //The upper bound is reached
-            u[k] = 1;
-            l[k] = 0;
-            d[k] = -1;
-        } else {
-            l[k] = u[k] = 0;
-            //  Determine enumeration direction at level block_size
-            d[k] = c[k] > z[k] ? 1 : -1;
-        }
-        gamma = R_kk * (c[k] - z[k]);
+//        for (row = 0; row < dx; row++) {
+            //Initial squared search radius
+            c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
+            z[k] = round(c[k]);
+            if (z[k] <= 0) {
+                z[k] = u[k] = 0; //The lower bound is reached
+                l[k] = d[k] = 1;
+            } else if (z[k] >= upper) {
+                z[k] = upper; //The upper bound is reached
+                u[k] = 1;
+                l[k] = 0;
+                d[k] = -1;
+            } else {
+                l[k] = u[k] = 0;
+                //  Determine enumeration direction at level block_size
+                d[k] = c[k] > z[k] ? 1 : -1;
+            }
+            gamma = R_kk * (c[k] - z[k]);
 //            newprsd = p[k] + gamma * gamma;
 //            if (k != 0) {
 //                k--;
 //                row_k--;
 //                row_kk -= (n - row_k - 1);
 //                sum = 0;
-//                for (index col = k + 1; col < dx; col++) {
+//#pragma omp simd reduction(+ : sum)
+//                for (col = k + 1; col < dx; col++) {
 //                    sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
 //                }
 //                R_kk = R_A->x[row_kk + row_k];
 //                p[k] = newprsd;
 //            }
 //        }
-
 
         //ILS search process
         for (count = 0; count < program_def::max_search || iter == 0; count++) {
@@ -478,7 +478,7 @@ namespace cils {
                         p[k] = newprsd;
                         sum = 0;
 #pragma omp simd reduction(+ : sum)
-                        for (index col = k + 1; col < dx; col++) {
+                        for (col = k + 1; col < dx; col++) {
                             sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
                         }
                         c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
@@ -507,7 +507,7 @@ namespace cils {
                             z_x[h + n_dx_q_0] = z[h];
                         }
 
-                        if (iter > program_def::search_iter || diff == dx) {
+                        if (diff == dx ||iter > program_def::search_iter) {
                             break;
                         }
                     }
