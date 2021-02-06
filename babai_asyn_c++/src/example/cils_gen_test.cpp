@@ -143,7 +143,7 @@ void test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
     cils::cils <scalar, index, n> cils(k, SNR);
-    index init = -1;
+    index init = 0;
     cils::returnType <scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
     for (index i = 0; i < max_iter; i++) {
 
