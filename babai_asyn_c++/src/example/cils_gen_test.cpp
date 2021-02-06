@@ -180,6 +180,8 @@ void test_ils_search() {
 
         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
 //            qr_reT_omp = cils.cils_qr_decomposition_omp(0, 1, n_proc > max_proc ? max_proc : n_proc);
+//            cils.init_y();
+//            cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
 //            init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
 //            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
 //            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);

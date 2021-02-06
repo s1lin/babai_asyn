@@ -135,33 +135,31 @@ namespace cils {
                         result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
 
                         if (result[i]) {
-//#pragma omp atomic
+#pragma omp atomic
                             diff += result[i];
+                            flag = diff >= ds - stop;
+
+                            if(!flag) {
 #pragma omp simd
-                            for (index row = 0; row < ds - i - 1; row++) {
-                                for (index h = 0; h < dx; h++) {
-                                    temp = row * dx + h;
-                                    R_S[temp * ds + i] = 0;
-                                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-                                    for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
+                                for (index row = 0; row < ds - i - 1; row++) {
+                                    for (index h = 0; h < dx; h++) {
+                                        temp = row * dx + h;
+                                        R_S[temp * ds + i] = 0;
+                                        row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+                                        for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
 //                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
-                                        R_S[temp * ds + i] += R_A->x[row_n + col] * z_x[col];
+                                            R_S[temp * ds + i] += R_A->x[row_n + col] * z_x[col];
+                                        }
                                     }
                                 }
                             }
-
                         }
-                        check = i == ds - 1;
                     }
                 }
-                if (check) {
-                    num_iter = j;
-                    if (mode != 0) {
-                        flag = diff >= ds - stop;
-                        if(flag) break;
-                    }
+                num_iter = j;
+                if (mode != 0) {
+                    if(flag) break;
                 }
-
             }
 
 #pragma omp single
