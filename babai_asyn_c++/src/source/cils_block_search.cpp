@@ -107,7 +107,7 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp)
         {
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(static, 1) nowait
+#pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 0; i < ds; i++) {
                     if (!flag && !result[i]) {
                         n_dx_q_0 = n - (i + 1) * dx;
@@ -131,13 +131,16 @@ namespace cils {
 //                                y_B[row] += R_S[row * ds + temp];
 //                            }
 //                        }
-#pragma omp simd
+
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                             row_n += n - row;
-                            y_B[row] = 0;
+                            sum = 0;
+//                            y_B[row] = 0;
+#pragma omp simd reduction(+ : sum)
                             for (index col = n_dx_q_1; col < n; col++) {
-                                y_B[row] += R_A->x[row_n + col] * z_x[col];
+                                sum += R_A->x[row_n + col] * z_x[col];
                             }
+                            y_B[row] = sum;
                         }
 
                         result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
