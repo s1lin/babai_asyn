@@ -23,11 +23,11 @@ namespace cils {
         index stop = 5;
         index schedule = 1;
         index chunk_size = 1;
-        index block_size = 32;
+        index block_size = 16;
         index is_constrained = true;
         index is_read = false;
         index mode = 3; //test mode 3: c++ gen
-        index num_trials = 10; //nswp
+        index num_trials = 30; //nswp
         index is_local = 1;
         index max_search = 10000;
         index min_proc = 2;

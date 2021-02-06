@@ -79,7 +79,7 @@ namespace cils {
         }
         bool check = false;
         auto z_x = z_B->data();
-        index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = {}, num_iter = 0, flag = 0, row_n, temp;
+        index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp;
         scalar R_S[n * ds] = {}, sum = 0, y_B[n] = {};
         scalar run_time3;
 
@@ -135,7 +135,7 @@ namespace cils {
                         result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
 
                         if (result[i]) {
-#pragma omp atomic
+//#pragma omp atomic
                             diff += result[i];
 #pragma omp simd
                             for (index row = 0; row < ds - i - 1; row++) {
@@ -158,7 +158,7 @@ namespace cils {
                     num_iter = j;
                     if (mode != 0) {
                         flag = diff >= ds - stop;
-                        break;
+                        if(flag) break;
                     }
                 }
 
@@ -168,7 +168,7 @@ namespace cils {
             {
                 run_time3 = omp_get_wtime() - run_time;
             };
-#pragma omp flush
+//#pragma omp flush
         }
         scalar run_time2 = omp_get_wtime() - run_time;
 #pragma parallel omp cancellation point
