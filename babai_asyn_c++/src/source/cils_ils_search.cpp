@@ -416,7 +416,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline bool cils<scalar, index, n>::ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                                              const scalar *y_B, index *z_x) {
+                                                              scalar *y_B, index *z_x) {
 
         // Variables
         index dx = program_def::block_size, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, diff = 0;
@@ -424,17 +424,19 @@ namespace cils {
 
         scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
 
-        scalar p[dx] = {}, c[dx], R_kk = R_A->x[row_kk + row_k];
+        scalar p[dx] = {}, c[dx], R_kk = R_A->x[row_kk + row_k], y_b[dx] = {};
         index z[dx], d[dx] = {}, l[dx] = {}, u[dx] = {};
 
 #pragma omp simd
         for (row = n_dx_q_0; row < n_dx_q_1; row++) {
             z[row - n_dx_q_0] = z_x[row];
+            y_b[row - n_dx_q_0] = y_A->x[row] - y_B[row];
+            y_B[row] = 0;
         }
 
 //        for (row = 0; row < dx; row++) {
             //Initial squared search radius
-            c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
+            c[k] = (y_b[k] - sum) / R_kk;
             z[k] = round(c[k]);
             if (z[k] <= 0) {
                 z[k] = u[k] = 0; //The lower bound is reached
@@ -481,7 +483,7 @@ namespace cils {
                         for (col = k + 1; col < dx; col++) {
                             sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
                         }
-                        c[k] = (y_A->x[row_k] - y_B[row_k] - sum) / R_kk;
+                        c[k] = (y_b[k] - sum) / R_kk;
                         z[k] = round(c[k]);
                         if (z[k] <= 0) {
                             z[k] = u[k] = 0;
