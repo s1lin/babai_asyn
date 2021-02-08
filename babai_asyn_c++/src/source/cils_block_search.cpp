@@ -115,7 +115,7 @@ namespace cils {
                         n_dx_q_1 = n - i * dx;
 
 //                        row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
-#pragma omp simd collapse(2)
+#pragma omp simd //collapse(2)
                         for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //#pragma omp atomic
 //                            row_n += n - row;
@@ -150,12 +150,13 @@ namespace cils {
                         flag = diff >= ds - stop;
                         if (!result[i]) {
                             if (!flag) {
+#pragma omp simd collapse(2) reduction(+ : sum)
                                 for (index row = 0; row < ds - i - 1; row++) {
                                     for (index h = 0; h < dx; h++) {
                                         temp = row * dx + h;
                                         sum = 0;
                                         row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-#pragma omp simd reduction(+ : sum)
+
                                         for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
 //                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
                                             sum += R_A->x[row_n + col] * z_x[col];
