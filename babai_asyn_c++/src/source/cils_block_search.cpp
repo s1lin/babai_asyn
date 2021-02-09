@@ -80,7 +80,7 @@ namespace cils {
         bool check = false;
         auto z_x = z_B->data();
         index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp;
-        index front = n_proc, end = 1;
+        index front = 3 * n_proc, end = 1;
         scalar R_S[n * ds] = {}, sum = 0, y_B[n] = {};
         scalar run_time3;
 
@@ -132,25 +132,25 @@ namespace cils {
                 for (index i = 1; i < ds; i++) {
                     if (!result[i] && !flag) {//front >= i &&
 
-                        front++;
+//                        front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
 
                         row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
-//#pragma omp simd collapse(2)
+//#pragma omp simd// collapse(2)
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-////#pragma omp atomic
-////                            row_n += n - row;
+//#pragma omp atomic
+//                            row_n += n - row;
 //                            for (index col = 0; col < i; col++) {
-////                                temp = i - col - 1;
-////                                if (!result[temp]) {
-////                                    sum = 0; //Put values backwards
-////#pragma omp simd reduction(+ : sum)
-////                                    for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
-////                                        sum += R_A->x[l + row_n] * z_x[l];
-////                                    }
-////                                    R_S[row * ds + temp] = sum;
-////                                }
+//                                temp = i - col - 1;
+//                                if (!result[temp]) {
+//                                    sum = 0; //Put values backwards
+//#pragma omp simd reduction(+ : sum)
+//                                    for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
+//                                        sum += R_A->x[l + row_n] * z_x[l];
+//                                    }
+//                                    R_S[row * ds + temp] = sum;
+//                                }
 //                                y_B[row] += R_S[row * ds + col];
 //                            }
 //                        }
@@ -216,9 +216,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
+            reT = {z_B, run_time2, num_iter};
             cout << diff << ", " << end << "," << (int) (run_time2 / run_time3) << ", ";
         }
         return reT;
