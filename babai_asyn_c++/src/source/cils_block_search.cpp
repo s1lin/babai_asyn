@@ -105,7 +105,7 @@ namespace cils {
 
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic, 2) nowait
+#pragma omp for schedule(static, 2) nowait
                 for (index i = 1; i < ds; i++) {
                     if (!result[i] && !flag) {//front >= i &&
 
