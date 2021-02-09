@@ -217,10 +217,10 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
-            cout << diff << ", " << end << "," << (int) (run_time2 / run_time3) << ", ";
+            reT = {z_B, run_time2, num_iter};
+            cout << diff << ", " << end << ", " << (int) (run_time2 / run_time3) << ", ";
         }
         return reT;
     }
