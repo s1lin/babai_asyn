@@ -431,7 +431,7 @@ namespace cils {
         for (row = n_dx_q_0; row < n_dx_q_1; row++) {
             z[row - n_dx_q_0] = z_x[row];
             y_b[row - n_dx_q_0] = y_A->x[row] - y_B[row];
-            y_B[row] = 0;
+//            y_B[row] = 0;
         }
 
 //        for (row = 0; row < dx; row++) {
