@@ -195,7 +195,7 @@ namespace cils {
             reT = {z_B, run_time3, diff};
         else {
             reT = {z_B, run_time3, num_iter};
-            cout<<"n_proc:" << n_proc<< "," << diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
+            cout<<"n_proc:" << n_proc<< "," << "init:" << init<< "," <<diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
         }
         return reT;
     }
