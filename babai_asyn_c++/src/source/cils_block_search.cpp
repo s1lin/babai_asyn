@@ -80,7 +80,7 @@ namespace cils {
         bool check = false;
         auto z_x = z_B->data();
         index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp;
-        index front = 3 * n_proc, end = 1;
+        index front = 2 * n_proc, end = 1;
         scalar R_S[n * ds] = {}, sum = 0, y_B[n] = {};
         scalar run_time3;
 
@@ -126,13 +126,13 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp, check)
         {
 
-#pragma omp barrier
+//#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(static, 1) nowait
+#pragma omp for schedule(static, 2) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (!result[i] && !flag) {//front >= i &&
+                    if (front >= i && !result[i] && !flag) {//front >= i &&
 
-//                        front++;
+                        front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
 
@@ -167,9 +167,10 @@ namespace cils {
                         }
 
                         result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
+
 #pragma omp atomic
                         diff += result[i];
-                        flag = (end + diff) >= ds - stop;
+
 //                        if (!result[i]) {
 //                            if (!flag) {
 //#pragma omp simd collapse(2) reduction(+ : sum)
@@ -190,12 +191,12 @@ namespace cils {
 //                            }
 //                        }
 
-                        if (check) {
+                        if ( check) {
 #pragma omp atomic
                             end++;
                             result[i] = 1;
                         }
-//                        }
+                        flag = (end + diff) >= ds - stop;
                     }
                 }
                 num_iter = j;
