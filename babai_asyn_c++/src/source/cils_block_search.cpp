@@ -112,7 +112,7 @@ namespace cils {
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
-                        check = result[end - 1] && i == end;
+                        check = i == end;
                         row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 //#pragma omp simd// collapse(2)
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -195,7 +195,7 @@ namespace cils {
             reT = {z_B, run_time3, diff};
         else {
             reT = {z_B, run_time3, num_iter};
-            cout << diff << ", " << end << ", Ratio:" << (int) (run_time2 / run_time3) << ", ";
+            cout<<"n_proc:" << n_proc<< "," << diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
         }
         return reT;
     }
