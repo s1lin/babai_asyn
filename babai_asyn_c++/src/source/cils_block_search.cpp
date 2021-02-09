@@ -112,7 +112,7 @@ namespace cils {
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
-                        check = i == end;
+                        check = i == end && result[end - 1];
                         row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 //#pragma omp simd// collapse(2)
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -154,6 +154,8 @@ namespace cils {
 #pragma omp atomic
                             end++;
                             result[i] = 1;
+                        } else{
+                            end = result[i] ? i : end;
                         }
                         flag = (end + diff) >= ds - stop;
 //                        if (result[i]) {
@@ -192,9 +194,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
+            reT = {z_B, run_time2, num_iter};
             cout<<"n_proc:" << n_proc<< "," << "init:" << init<< "," <<diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
         }
         return reT;
