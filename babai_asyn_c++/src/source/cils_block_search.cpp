@@ -80,7 +80,7 @@ namespace cils {
         bool check = false;
         auto z_x = z_B->data();
         index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp;
-        index front = 4 * n_proc, end = 1;
+        index front = chunk_size * n_proc, end = 1;
         scalar R_S[n * ds] = {}, sum = 0, y_B[n] = {};
         scalar run_time3;
 
@@ -165,7 +165,7 @@ namespace cils {
                                 result[i] = 1;
                             }
 
-                            flag = (end + diff) >= ds - 2;
+                            flag = (end + diff) >= ds - stop;
 
                             if (!result[i] || check) {
 #pragma omp simd collapse(2) reduction(+ : sum)
@@ -206,9 +206,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
+            reT = {z_B, run_time2, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << ",";
         }
