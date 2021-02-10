@@ -32,7 +32,7 @@ namespace cils {
         index is_constrained = true;
         index is_read = false;
         index mode = 3; //test mode 3: c++ gen
-        index num_trials = 10; //nswp
+        index num_trials = 19; //nswp
         index is_local = 1;
         index max_search = 1000;
         index min_proc = 2;
