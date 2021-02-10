@@ -15,14 +15,19 @@ namespace cils {
     typedef int index;
     typedef double scalar;
     namespace program_def {
-
+        /**
+         *   omp_sched_static = 0x1,
+         *   omp_sched_dynamic = 0x2,
+         *   omp_sched_guided = 0x3,
+         *   omp_sched_auto = 0x4,
+         */
         index k = 3;
         index SNR = 35;
         index max_iter = 40;
-        index search_iter = 100;
-        index stop = 5;
-        index schedule = 1;
-        index chunk_size = 1;
+        index search_iter = 10;
+        index stop = 10;
+        index schedule = 2;
+        index chunk_size = 4;
         index block_size = 16;
         index is_constrained = true;
         index is_read = false;

@@ -98,16 +98,16 @@ namespace cils {
                 R_S[temp * ds] = sum;
             }
         }
-
+        omp_set_schedule((omp_sched_t) schedule, chunk_size);
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp, check)
         {
 
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(static, 2) nowait
+#pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (end <= i && !result[i] && !flag) {//front >= i &&
+                    if (end <= i && !result[i] && !flag) {// front >= i
 
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
@@ -153,8 +153,8 @@ namespace cils {
 #pragma omp atomic
                             end++;
                             result[i] = 1;
-                        } else{
-//                            end = result[i] ? i : end;
+                        } else {
+//                            end = result[i] ? i - 1 : end;
                         }
                         flag = (end + diff) >= ds - stop;
 //                        if (result[i]) {
@@ -193,10 +193,11 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
-            cout<<"n_proc:" << n_proc<< "," << "init:" << init<< "," <<diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
+            reT = {z_B, run_time2, num_iter};
+            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
+                 << (int) (run_time2 / run_time3) << ",";
         }
         return reT;
     }
