@@ -108,7 +108,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (!result[i] && !flag) {// front >= iend <= i &&
+                    if (end <= i &&!result[i] && !flag) {// front >= i
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
