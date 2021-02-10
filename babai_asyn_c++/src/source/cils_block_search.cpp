@@ -108,7 +108,6 @@ namespace cils {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
                     if (end <= i && !result[i] && !flag) {// front >= i
-
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
@@ -154,9 +153,9 @@ namespace cils {
                             end++;
                             result[i] = 1;
                         } else {
-//                            end = result[i] ? i - 1 : end;
+                            end = result[i] ? i - 1 : end;
                         }
-                        flag = (end + diff) >= ds - stop;
+                        flag = (end) >= ds - stop;
 //                        if (result[i]) {
 //                            for (index row = 0; row < ds - i - 1; row++) {
 //                                for (index h = 0; h < dx; h++) {

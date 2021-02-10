@@ -26,7 +26,7 @@ namespace cils {
         index max_iter = 40;
         index search_iter = 10;
         index stop = 10;
-        index schedule = 2;
+        index schedule = 1;
         index chunk_size = 4;
         index block_size = 16;
         index is_constrained = true;
