@@ -108,20 +108,20 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (front >= i && end <= i) {
-                        front++;
-                        if (!result[i] && !flag) {// front >= iend <= i
+//                    if (front >= i && end <= i) {
+//                        front++;
+                    if (!result[i] && !flag) {// front >= iend <= i
 
-                            n_dx_q_0 = n - (i + 1) * dx;
-                            n_dx_q_1 = n - i * dx;
-                            check = i == end && result[end - 1];
+                        n_dx_q_0 = n - (i + 1) * dx;
+                        n_dx_q_1 = n - i * dx;
+                        check = i == end && result[end - 1];
 //                        row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 #pragma omp simd collapse(2)
-                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //#pragma omp atomic
 //                            row_n += n - row;
 //                            y_B[row] = 0;
-                                for (index col = 0; col < i; col++) {
+                            for (index col = 0; col < i; col++) {
 //                                temp = i - col - 1;
 //                                if (result[temp]) {
 //
@@ -133,11 +133,11 @@ namespace cils {
 //                                    R_S[row * ds + temp] = sum;
 //                                    y_B[row] += R_S[row * ds + temp];
 //                                } else{
-                                    y_B[row] += R_S[row * ds + col];
+                                y_B[row] += R_S[row * ds + col];
 //                                }
 
-                                }
                             }
+                        }
 
 
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
@@ -150,41 +150,41 @@ namespace cils {
 //                            y_B[row] = sum;
 //                        }
 
-                            result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
+                        result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);
 
-                            if (result[i]) {
+                        if (result[i]) {
 #pragma omp atomic
-                                diff++;
+                            diff++;
 //                                end = result[i - 1] ? max(i, end) : end;
-                                check = false;
-                            }
+                            check = false;
+                        }
 
-                            if (check) {
+                        if (check) {
 #pragma omp atomic
-                                end++;
-                                result[i] = 1;
-                            }
+                            end++;
+                            result[i] = 1;
+                        }
 
-                            flag = (end + diff) >= ds - stop;
+                        flag = (end + diff) >= ds - stop;
 
-                            if (!result[i] || check) {
+                        if (!result[i] || check) {
 #pragma omp simd collapse(2) reduction(+ : sum)
-                                for (index row = 0; row < ds - i - 1; row++) {
-                                    for (index h = 0; h < dx; h++) {
-                                        temp = row * dx + h;
-                                        sum = 0;
-                                        row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+                            for (index row = 0; row < ds - i - 1; row++) {
+                                for (index h = 0; h < dx; h++) {
+                                    temp = row * dx + h;
+                                    sum = 0;
+                                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
 
-                                        for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
+                                    for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
 //                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
-                                            sum += R_A->x[row_n + col] * z_x[col];
-                                        }
-//                                    y_B[row] = y_B[row] - R_S[temp * ds + i] + sum;
-                                        R_S[temp * ds + i] = sum;
+                                        sum += R_A->x[row_n + col] * z_x[col];
                                     }
+//                                    y_B[row] = y_B[row] - R_S[temp * ds + i] + sum;
+                                    R_S[temp * ds + i] = sum;
                                 }
                             }
                         }
+//                        }
                     }
 
                 }
