@@ -107,7 +107,7 @@ namespace cils {
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(static, 2) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (!result[i] && !flag) {//front >= i &&
+                    if (end <= i && !result[i] && !flag) {//front >= i &&
 
                         front++;
                         n_dx_q_0 = n - (i + 1) * dx;
@@ -149,13 +149,12 @@ namespace cils {
 #pragma omp atomic
                         diff += result[i];
 
-
                         if (check) {
 #pragma omp atomic
                             end++;
                             result[i] = 1;
                         } else{
-                            end = result[i] ? i : end;
+//                            end = result[i] ? i : end;
                         }
                         flag = (end + diff) >= ds - stop;
 //                        if (result[i]) {
@@ -194,9 +193,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff};
+            reT = {z_B, run_time3, diff};
         else {
-            reT = {z_B, run_time2, num_iter};
+            reT = {z_B, run_time3, num_iter};
             cout<<"n_proc:" << n_proc<< "," << "init:" << init<< "," <<diff << "," << end << ",Ratio:" << (int) (run_time2 / run_time3) << ",";
         }
         return reT;
