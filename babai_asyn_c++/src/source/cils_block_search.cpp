@@ -140,7 +140,7 @@ namespace cils {
 //                                }
                             }
                         }
-
+                        test = i > 10 ? test : 0;
 
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //                            row_n += n - row;
@@ -155,13 +155,13 @@ namespace cils {
 //                        if (i == 21)
 //                            cout << test / 16 << ", ";
 
-                        result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x);// || test/16 >= i;
+                        result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x) || test/16 >= i;
 
                         if (result[i]) {
 #pragma omp atomic
                             diff++;
-//                            end = result[i - 1] ? max(i, end) : end;
-//                            check = false;
+                            end = result[i - 1] ? max(i, end) : end;
+                            check = false;
                         }
 
                         if (check) {
@@ -211,9 +211,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff};
+            reT = {z_B, run_time3, diff};
         else {
-            reT = {z_B, run_time2, num_iter};
+            reT = {z_B, run_time3, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << ",";
         }
