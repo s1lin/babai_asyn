@@ -160,7 +160,7 @@ namespace cils {
                         if (result[i]) {
 #pragma omp atomic
                             diff++;
-                            end = result[i - 1] ? max(i, end) : end;
+//                            end = result[i - 1] ? max(i, end) : end;
                             check = false;
                         }
 
