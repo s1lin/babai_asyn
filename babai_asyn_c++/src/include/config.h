@@ -23,10 +23,10 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 40;
+        index max_iter = 4;
         index search_iter = 10;
         index stop = 10;
-        index schedule = 3;
+        index schedule = 2;
         index chunk_size = 1;
         index block_size = 16;
         index is_constrained = true;
