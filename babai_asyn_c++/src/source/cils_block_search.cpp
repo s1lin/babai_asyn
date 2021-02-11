@@ -140,7 +140,7 @@ namespace cils {
 //                                }
                             }
                         }
-                        test = i > 10 ? test : 0;
+                        test = i > 6 ? test / 16 : 0;
 
 //                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //                            row_n += n - row;
@@ -155,22 +155,21 @@ namespace cils {
 //                        if (i == 21)
 //                            cout << test / 16 << ", ";
 
-                        result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x) || test/16 >= i;
+                        result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, y_B, z_x) || test >= i;
 
-                        if (result[i]) {
-#pragma omp atomic
-                            diff++;
-//                            end = result[i - 1] ? max(i, end) : end;
-                            check = false;
-                        }
-
-                        if (check) {
+                        if (check) { //!result[i] &&
 #pragma omp atomic
                             end++;
                             result[i] = 1;
                         }
 
-                        flag = (end + diff) >= ds - stop;
+                        if (result[i]) {
+#pragma omp atomic
+                            diff++;
+//                            end = test >= i - 3  && result[i - 1] ? max(i, end) : end;
+                        }
+
+                        flag = (diff) >= ds - stop;
 
 //                        if (!result[i] || check) {
 //#pragma omp simd collapse(2) reduction(+ : sum)
