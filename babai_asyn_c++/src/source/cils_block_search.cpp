@@ -127,11 +127,11 @@ namespace cils {
                                     sum2 = 0;
 #pragma omp simd reduction(+ : sum2)
                                     for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
-                                        sum2 += R_A->x[l + row_n] * z_x[l];
+                                        sum += R_A->x[l + row_n] * z_x[l];
                                     }
-                                    R_S[row * ds + temp] = sum2;
+//                                    R_S[row * ds + temp] = sum2;
 //                                }
-                                sum += R_S[row * ds + temp];
+//                                sum += R_S[row * ds + temp];
                                 test += result[temp];
                             }
                             y_B[row] = sum;
