@@ -37,6 +37,7 @@
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
+#include "mpi.h"
 
 using namespace std;
 
@@ -83,6 +84,7 @@ namespace cils {
             this->qam = qam;
             this->snr = snr;
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
+            this->tolerance = sqrt(m) * this->sigma;
             this->upper = pow(2, qam) - 1;
             helper::eye<scalar, index>(n, P.data());
             helper::eye<scalar, index>(n, Z.data());
@@ -99,7 +101,7 @@ namespace cils {
             this->v_q.fill(0);//.resize(n, 0);
 
             this->l.fill(0);//.resize(n, 0);
-            this->u.fill(0);//.resize(n, 0);
+            this->u.fill(this->upper);//.resize(n, 0);
         }
 
         ~cils() {
@@ -111,7 +113,7 @@ namespace cils {
         /**
          * Initialize the problem either reading from files (.csv or .nc) or generating the problem
          */
-        void init();
+        void init(index rank);
 
         /**
          *

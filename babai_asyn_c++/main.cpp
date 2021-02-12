@@ -40,13 +40,13 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(comm, &size);
 
     if (rank == 0) {
-        printf("====================[ Run | cils | Release ]==================================\n");
+        printf("\n====================[ Run | cils | Release ]==================================\n");
         t = omp_get_wtime();
 
     }
     program_def::init_program_def(argc, argv);
-    plot_run<scalar, int, M, N>(size, rank);
-    //block_optimal_test<scalar, int, M, N>(size, rank);
+//    plot_run<scalar, int, M, N>(size, rank);
+    block_optimal_test<scalar, int, M, N>(size, rank);
 
     if (rank == 0) {
         t = omp_get_wtime() - t;

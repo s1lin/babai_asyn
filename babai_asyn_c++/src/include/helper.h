@@ -271,6 +271,157 @@ namespace helper {
         }
     }
 
+    template<typename scalar, typename index>
+    void mtimes_col(index m, index n, const vector<scalar> &Q, const vector<scalar> &R, vector<scalar> &A_t) {
+        for (index j = 0; j < n; j++) {
+            for (index k = 0; k < m; k++) {
+                for (index i = 0; i < m; i++) {
+                    A_t[j * m + i] += Q[k * m + i] * R[j * n + k];
+                }
+            }
+        }
+    }
+
+    template<typename scalar, typename index>
+    void inv(const index K, const index N, const vector<scalar> &x, vector<scalar> &y) {
+        vector<scalar> b_x;
+        vector<index> ipiv, p;
+        if ((K == 0) || (N == 0)) {
+            int b_n;
+            y.resize(K * N);
+            b_n = K * N;
+            for (index i = 0; i < b_n; i++) {
+                y[i] = x[i];
+            }
+        } else {
+            index b_i, b_n, i, i1, j, k, ldap1, n, u1, yk;
+            n = K;
+            y.resize(K * N);
+            b_n = K * N;
+            for (i = 0; i < b_n; i++) {
+                y[i] = 0.0;
+            }
+            b_x.resize(K * N);
+            b_n = K * N;
+            for (i = 0; i < b_n; i++) {
+                b_x[i] = x[i];
+            }
+            b_n = K;
+            ipiv.resize(1 * K);
+            ipiv[0] = 1;
+            yk = 1;
+            for (k = 2; k <= b_n; k++) {
+                yk++;
+                ipiv[k - 1] = yk;
+            }
+            ldap1 = K;
+            b_n = K - 1;
+            u1 = K;
+            if (b_n < u1) {
+                u1 = b_n;
+            }
+            for (j = 0; j < u1; j++) {
+                scalar smax;
+                index jj;
+                index jp1j;
+                index mmj_tmp = n - j;
+                yk = j * (n + 1);
+                jj = j * (ldap1 + 1);
+                jp1j = yk + 2;
+                if (mmj_tmp < 1) {
+                    b_n = -1;
+                } else {
+                    b_n = 0;
+                    if (mmj_tmp > 1) {
+                        smax = std::abs(b_x[jj]);
+                        for (k = 2; k <= mmj_tmp; k++) {
+                            double s;
+                            s = std::abs(b_x[(yk + k) - 1]);
+                            if (s > smax) {
+                                b_n = k - 1;
+                                smax = s;
+                            }
+                        }
+                    }
+                }
+                if (b_x[jj + b_n] != 0.0) {
+                    if (b_n != 0) {
+                        b_n += j;
+                        ipiv[j] = b_n + 1;
+                        for (k = 0; k < n; k++) {
+                            smax = b_x[j + k * n];
+                            b_x[j + k * n] = b_x[b_n + k * n];
+                            b_x[b_n + k * n] = smax;
+                        }
+                    }
+                    i = jj + mmj_tmp;
+                    for (b_i = jp1j; b_i <= i; b_i++) {
+                        b_x[b_i - 1] = b_x[b_i - 1] / b_x[jj];
+                    }
+                }
+                b_n = yk + n;
+                yk = jj + ldap1;
+                for (jp1j = 0; jp1j <= mmj_tmp - 2; jp1j++) {
+                    smax = b_x[b_n + jp1j * n];
+                    if (b_x[b_n + jp1j * n] != 0.0) {
+                        i = yk + 2;
+                        i1 = mmj_tmp + yk;
+                        for (b_i = i; b_i <= i1; b_i++) {
+                            b_x[b_i - 1] = b_x[b_i - 1] + b_x[((jj + b_i) - yk) - 1] * -smax;
+                        }
+                    }
+                    yk += n;
+                }
+            }
+            b_n = K;
+            p.resize(1 * K);
+            p[0] = 1;
+            yk = 1;
+            for (k = 2; k <= b_n; k++) {
+                yk++;
+                p[k - 1] = yk;
+            }
+            i = K;
+            for (k = 0; k < i; k++) {
+                i1 = ipiv[k];
+                if (i1 > k + 1) {
+                    b_n = p[i1 - 1];
+                    p[i1 - 1] = p[k];
+                    p[k] = b_n;
+                }
+            }
+            for (k = 0; k < n; k++) {
+                i = p[k];
+                y[k + K * (i - 1)] = 1.0;
+                for (j = k + 1; j <= n; j++) {
+                    if (y[(j + K * (i - 1)) - 1] != 0.0) {
+                        i1 = j + 1;
+                        for (b_i = i1; b_i <= n; b_i++) {
+                            y[(b_i + K * (i - 1)) - 1] =
+                                    y[(b_i + K * (i - 1)) - 1] -
+                                    y[(j + K * (i - 1)) - 1] *
+                                    b_x[(b_i + K * (j - 1)) - 1];
+                        }
+                    }
+                }
+            }
+            for (j = 0; j < n; j++) {
+                b_n = n * j - 1;
+                for (k = n; k >= 1; k--) {
+                    yk = n * (k - 1) - 1;
+                    i = k + b_n;
+                    if (y[i] != 0.0) {
+                        y[i] = y[i] / b_x[k + yk];
+                        for (b_i = 0; b_i <= k - 2; b_i++) {
+                            i1 = (b_i + b_n) + 1;
+                            y[i1] = y[i1] - y[i] * b_x[(b_i + yk) + 1];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Matrix-vector multiplication: Ax=y, where A is m-by-n matrix
      * @tparam scalar : real number type
@@ -663,5 +814,26 @@ namespace helper {
             t = jj + 1;
         }
         b.resize(t);
+    }
+
+    /**
+     * Return the result of ||y-A*x||.
+     * @tparam scalar : real number type
+     * @tparam index : integer type
+     * @param m : integer scalar, size of the matrix
+     * @param n : integer scalar, size of the matrix
+     * @param A : matrix, m-by-n in pointer
+     * @param x : vector, n-by-1 in pointer
+     * @param y : vector, m-by-1 in pointer, storing result.
+     * @return residual : l2 norm
+     */
+    template<typename scalar, typename index>
+    inline scalar find_residual(const index m, const index n, const scalar *A, const scalar *x, const scalar *y) {
+        vector<scalar> Ax(m, 0);
+        mtimes_Axy(m, n, A, x, Ax.data());
+        for (index i = 0; i < m; i++) {
+            Ax[i] = y[i] - Ax[i];
+        }
+        return norm(m, Ax.data());
     }
 }

@@ -6,81 +6,102 @@ using namespace cils::program_def;
 namespace cils {
 
     template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init() {
-
+    void cils<scalar, index, m, n>::init(index rank) {
         //Create MATLAB data array factory
-        matlab::data::ArrayFactory factory;
+        scalar *size = (double *) malloc(1 * sizeof(double)), *p;
 
-        // Call the MATLAB movsum function
-        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
-        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
-        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
-        matlabPtr->setVariable(u"k", std::move(k_M));
-        matlabPtr->setVariable(u"n", std::move(m_M));
-        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+        if (rank == 0) {
 
-        // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, y, x_t] = gen(k, n, SNR);");
-//        matlabPtr->eval(u" A = magic(n);");
+            matlab::data::ArrayFactory factory;
 
-        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
-        matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
-        matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
+            // Call the MATLAB movsum function
+            matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(this->qam);
+            matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
+            matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
+            matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(snr);
+            matlab::data::TypedArray<scalar> MIT = factory.createScalar<scalar>(search_iter);
+            matlabPtr->setVariable(u"k", std::move(k_M));
+            matlabPtr->setVariable(u"m", std::move(m_M));
+            matlabPtr->setVariable(u"n", std::move(n_M));
+            matlabPtr->setVariable(u"SNR", std::move(SNR));
+            matlabPtr->setVariable(u"max_iter", std::move(MIT));
+
+            // Call the MATLAB movsum function
+            matlabPtr->eval(
+                    u" [A, x_t, v, y, sigma, res, permutation, size_perm] = gen_problem(k, m, n, SNR, max_iter);");
+
+            matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+            matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
+            matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
+            matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"res");
+            matlab::data::TypedArray<scalar> const per = matlabPtr->getVariable(u"permutation");
+            matlab::data::TypedArray<scalar> const szp = matlabPtr->getVariable(u"size_perm");
+
+
+            index i = 0;
+            for (auto r : A_A) {
+                A[i] = r;
+                ++i;
+            }
+            i = 0;
+            for (auto r : y_M) {
+                y_a[i] = r;
+                ++i;
+            }
+            i = 0;
+            for (auto r : x_M) {
+                x_t[i] = r;
+                ++i;
+            }
+            i = 0;
+            for (auto r : res) {
+                this->init_res = r;
+                ++i;
+            }
+            i = 0;
+            for (auto r : res) {
+                this->init_res = r;
+                ++i;
+            }
+
+            i = 0;
+            for (auto r : szp) {
+                size[0] = r;
+                ++i;
+            }
+            p = (scalar *) malloc(n * size[0] * sizeof(scalar));
+            i = 0;
+            for (auto r : per) {
+                p[i] = r;
+                ++i;
+            }
+        }
+
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast(&size[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (rank != 0)
+            p = (scalar *) malloc(n * size[0] * sizeof(scalar));
+
+        MPI_Bcast(&p[0], (int) size[0] * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
 
         index i = 0;
-        for (auto r : A_A) {
-            A[i] = r;
-            ++i;
+        index k1 = 0;
+        permutation.resize((int) size[0] + 1);
+        permutation[k1] = vector<scalar>(N);
+        permutation[k1].assign(N, 0);
+        for (index iter = 0; iter < (int) size[0] * N; iter++) {
+            permutation[k1][i] = p[iter];
+            i = i + 1;
+            if (i == N) {
+                i = 0;
+                k1++;
+                permutation[k1] = vector<scalar>(N);
+                permutation[k1].assign(N, 0);
+            }
         }
         i = 0;
-        for (auto r : y_M) {
-            y_a[i] = r;
-            ++i;
-        }
-        i = 0;
-        for (auto r : x_M) {
-            x_t[i] = r;
-            ++i;
-        }
-
-//        helper::qr(A, Q, R_Q);
-
-//        std::random_device rd;
-//        std::mt19937 gen(rd());
-//        //mean:0, std:sqrt(1/2). same as matlab.
-//        std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, sigma);
-//        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-//        std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
-//
-//        for (index i = 0; i < n / 2; i++) {
-//            for (index j = 0; j < n / 2; j++) {
-//                A[i + j * n] = 2 * A_norm_dis(gen);
-//                A[i + n / 2 + j * n] = -2 * A_norm_dis(gen);
-//                A[i + n / 2 + (j + n / 2) * n] = A[i + j * n];
-//                A[i + (j + n / 2) * n] = -A[i + n / 2 + j * n];
-//            }
-//            x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-//            v_a[i] = v_norm_dis(gen);
-//            x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-//            v_a[i + n / 2] = v_norm_dis(gen);
-//        }
-//
-//        scalar sum = 0;
-//
-//        //init y_a
-//        helper::mtimes(A, x_t, y_a);
-//        for (index i = 0; i < n; i++) {
-//            y_a[i] += v_a[i];
-//        }
-////        for (index i = 0; i < n; i++) {
-////            y_a[i] = 0;
-////        }
-//        if (n <= 16)
-//            display_vector<scalar, index>(y_a);
-//
-//        //Set Z to Eye:
-//
-//        helper::eye(n, Z);
     }
 
     template<typename scalar, typename index, index m, index n>
@@ -90,25 +111,20 @@ namespace cils {
         matlab::data::ArrayFactory factory;
 
         // Call the MATLAB movsum function
+        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(this->qam);
         matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
         matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
         matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(snr);
+        matlab::data::TypedArray<scalar> MIT = factory.createScalar<scalar>(search_iter);
+        matlabPtr->setVariable(u"k", std::move(k_M));
         matlabPtr->setVariable(u"m", std::move(m_M));
         matlabPtr->setVariable(u"n", std::move(n_M));
         matlabPtr->setVariable(u"snr", std::move(SNR));
-        /*
-        matlabPtr->setVariable(u"K", std::move(m_M));
-        matlabPtr->setVariable(u"N", std::move(n_M));
-
+        matlabPtr->setVariable(u"search_iter", std::move(MIT));
         // Call the MATLAB movsum function
         matlabPtr->eval(
-                u" [s_bar_cur, s_bar1, s_bar2, y, H, HH, Piv] = "
-                "simulations_SIC(K, N, 100, 'random', 1, false);");
-        */
-
-        matlabPtr->eval(
                 u" [s_bar4, y, H, HH, Piv, s_bar1, s, tolerance] = "
-                "simulations_Block_Optimal(snr, m, n, 3000, 3000, 10000, 'random', 1, true);");
+                "simulations_Block_Optimal(k, snr, m, n, 1, search_iter, true);");
 
         /*
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");

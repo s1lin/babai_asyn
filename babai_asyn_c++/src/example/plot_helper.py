@@ -12,7 +12,7 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (20, 8)
     fig, axes = plt.subplots(2, 4, constrained_layout=True)
-
+    print(min_proc, max_proc)
     color = ['r', 'g', 'b', 'm']
     marker = ['o', '+', 'x', '*']
 
@@ -52,7 +52,7 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
             for l in range(2, l_max):
                 omp_res.append(res[x][l][j])
                 omp_ber.append(ber[x][l][j])
-
+                #print(proc[l - 2])
                 if spu[x][l][j] > proc[l - 2]:
                     tmp = proc[l - 2] - random.uniform(0, 1)
                     omp_spu.append(tmp * max_iter)

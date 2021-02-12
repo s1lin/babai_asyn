@@ -8,8 +8,8 @@
 #include <climits>
 #include "helper.h"
 
-const static int M = 20;
-const static int N = 30;
+const static int M = 4;
+const static int N = 6;
 
 using namespace std;
 
@@ -22,17 +22,17 @@ namespace cils::program_def {
      *   omp_sched_guided = 0x3,
      *   omp_sched_auto = 0x4,
      */
-    index k = 3;
+    index qam = 3;
     index SNR = 35;
     index max_iter = 100;
-    index search_iter = 3000;
+    index search_iter = (int) 1000;
     index stop = 3;
     index schedule = 2;
     index chunk_size = 1;
     index block_size = 32;
     index spilt_size = 2;
     index offset = 2;
-    index is_constrained = false;
+    index is_constrained = true;
     index is_nc = false;
     index is_matlab = false; //Means LLL reduction
     index is_qr = false;
@@ -40,12 +40,14 @@ namespace cils::program_def {
     index num_trials = 10; //nswp
     index is_local = 1;
     index max_search = 400000;//INT_MAX;
-    index min_proc = 3;
+    index min_proc = 2;
     index plot_itr = 1;
     scalar coeff = 17.5;
-    index max_proc = 12;
+    index max_proc = 10;
     index max_thre = 400000;//maximum search allowed for serial ils.
     auto q = static_cast<index>(std::ceil((scalar) N / (scalar) M));
+    index verbose = false;
+    index chunk = 1;
 
     /*   Parameters for block size 64
      *   index k = 3;
@@ -75,7 +77,7 @@ namespace cils::program_def {
     std::vector<index> d_s(N / block_size + spilt_size - 1, block_size);
     std::vector<index> indicator(2 * q, 0);
 //        std::vector<index> d_s(N / block_size, block_size);
-    vector<vector<scalar>> permutation(search_iter);
+    vector<vector<scalar>> permutation(search_iter + 3);
 
     void init_program_def(int argc, char *argv[]) {
         if (argc != 1) {
@@ -88,18 +90,27 @@ namespace cils::program_def {
                "3. Chaotic stop minimum: %d, chatoic number of iteratios(nswp): %d;\n"
                "4. ILS-Max of integer search iterations:%d;\n"
                "5. qr: %d, constrained: %d, matlab for qr/LLL: %d.\n",
-               (int) pow(k, 4), SNR, max_iter, block_size,
+               (int) pow(4, qam), SNR, max_iter, block_size,
                search_iter, stop, num_trials, max_search,
                is_local, is_constrained, is_matlab);
-        permutation[0] = vector<scalar>(N);
-        for (index k1 = 0; k1 < N; k1++) {
-            permutation[0][k1] = k1 + 1;
-        }
-        for (index k1 = 1; k1 < search_iter; k1++) {
-            permutation[k1] = vector<scalar>(N);
-            permutation[k1].assign(N, 0);
-            helper::randperm(N, permutation[k1].data());
-        }
+//        permutation[0] = vector<scalar>(N);
+//        for (index k1 = 0; k1 < N; k1++) {
+//            permutation[0][k1] = k1 + 1;
+//        }
+//        vector<scalar> p_6 = {1, 3, 4, 5, 6, 2};
+//        permutation[1] = p_6;
+//        for (index k1 = 0; k1 < N; k1++) {
+//            cout<<permutation[1][k1]<<" ";
+//        }
+//        for (index k1 = 0; k1 < N; k1++) {
+//            permutation[0][k1] = k1 + 1;
+//        }
+//
+//        for (index k1 = 0; k1 <= search_iter; k1++) {
+//            permutation[k1] = vector<scalar>(N);
+//            permutation[k1].assign(N, 0);
+////            helper::randperm(N, permutation[k1].data());
+//        }
         for (int i = 0; i < spilt_size; i++) {
             d_s[i] = block_size / spilt_size;
         }
@@ -146,7 +157,7 @@ namespace cils::program_def {
                 z_B->at(i) = x_R[i];
         } else if (init_value == 1) {
             for (index i = 0; i < n; i++)
-                z_B->at(i) = round(std::pow(2, k) / 2);
+                z_B->at(i) = round(std::pow(2, qam) / 2);
         }
 
     }

@@ -57,14 +57,14 @@ prsd = zeros(n,1);
 % Store some quantities for efficiently calculating c
 % S(k,n) = y(k),
 % S(k,j-1) = y(k) - R(k,j:n)*z(j:n) = S(k,j) - R(k,j)*z(j), j=k+1:n
-S = zeros(n,n);
-S(:,n) = y;
+%S = zeros(n,n);
+%S(:,n) = y;
 
 % path(k): record information for updating S(k,k:path(k)-1) 
-path = n*ones(n,1); 
+%path = n*ones(n,1); 
 
 % The level at which search starts to move up to a higher level
-ulevel = 0;  
+%ulevel = 0;  
 
 % Initial search radius
 beta = Inf; 
@@ -76,7 +76,7 @@ beta = Inf;
 k = n;
 
 % Find the initial integer in [l(n), u(n)] 
-c(k) = S(k,k) / R(k,k);
+c(k) = y(k) / R(k,k);
 [z(k),d(k),lflag(k),uflag(k)] = init(c(k),l(k),u(k));
 gamma = R(k,k) * (c(k) - z(k));
 
@@ -101,8 +101,7 @@ while 1
 %                            break;  % Note path(1:j-1) >= path(j)
 %                        end
 %                    end
-%                end
-               
+%                end               
                % Update S
                k = k - 1;
 %                for j = path(k):-1:k+1

@@ -25,9 +25,10 @@ namespace cils {
         array<scalar, n * 2> b_P_t;
         array<scalar, m> y_1, y_2;
         scalar s_est = 0.0, res, s_temp, max_res;
-        index ij[2], ji[2], i1, i2, b_j, i, bound = 1, t = 0;//pow(2, qam) - 1, t = 0;
+        index ij[2], ji[2], i1, i2, b_j, i, t = 0;//pow(2, qam) - 1, t = 0;
 
         x.resize(n, 0);
+        H.fill(0);
         helper::eye<scalar, index>(n, P.data());
         for (i = 0; i < m; i++) {
             y_2[i] = y_a[i];
@@ -50,11 +51,11 @@ namespace cils {
                     s_temp += d * y_2[i2];
                     res += d * d;
                 }
-                s_temp = 2.0 * std::floor(s_temp / res / 2.0) + 1.0;
-                if (s_temp < -bound) {
-                    s_temp = -bound;
-                } else if (s_temp > bound) {
-                    s_temp = bound;
+                s_temp = round(s_temp / res);//2.0 * std::floor(s_temp / res / 2.0) + 1.0;
+                if (s_temp < 0) {
+                    s_temp = 0;
+                } else if (s_temp > upper) {
+                    s_temp = upper;
                 }
 
                 for (i2 = 0; i2 < m; i2++) {
@@ -117,14 +118,13 @@ namespace cils {
         array<scalar, 2 * n> b_P_t;
         array<scalar, m> b_y_q;
         index ij[2], ji[2], t = -1, i1, i2, i, j;
-        scalar c_i, x_est = 0, b_i, b_m, loop_ub, bound = 1, max_res;
+        scalar c_i, x_est = 0, b_i, b_m, loop_ub, max_res;
         scalar time = omp_get_wtime();
         //QR:
-        cils_reduction<scalar, index> reduction(m, n, 0, 0);
+        cils_reduction<scalar, index> reduction(m, n, 0, upper, 0, 0);
         reduction.cils_qr_serial(A.data(), y_a.data());
-//        helper::display_vector<scalar, index>(m, reduction.y_q.data(), "y_q");
-        
         x.resize(n, 0);
+        H.fill(0);
         helper::eye<scalar, index>(n, P.data());
         for (i = 0; i < m * n; i++) {
             H[i] = A[i];
@@ -137,11 +137,12 @@ namespace cils {
             for (i = 0; i <= i1; i++) {
                 scalar res, x_temp;
                 c_i = m + i + 1;
-                x_temp = 2.0 * std::floor(reduction.y_q[m - 1] / reduction.R_Q[(m + m * (c_i - 1)) - 1] / 2.0) + 1.0;
-                if (x_temp < -bound) {
-                    x_temp = -bound;
-                } else if (x_temp > bound) {
-                    x_temp = bound;
+                x_temp = round(reduction.y_q[m - 1] / reduction.R_Q[(m + m * (c_i - 1)) - 1]);
+                //2.0 * std::floor(reduction.y_q[m - 1] / reduction.R_Q[(m + m * (c_i - 1)) - 1] / 2.0) + 1.0;
+                if (x_temp < 0) {
+                    x_temp = 0;
+                } else if (x_temp > upper) {
+                    x_temp = upper;
                 }
 
                 for (i2 = 0; i2 < m; i2++) {
@@ -217,11 +218,11 @@ namespace cils {
                 }
                 x_est = (reduction.y_q[c_i - 1] - x_est) / reduction.R_Q[(c_i + m * (c_i - 1)) - 1];
             }
-            x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
-            if (x_est < -bound) {
-                x_est = -bound;
-            } else if (x_est > bound) {
-                x_est = bound;
+            x_est = round(x_est); //2.0 * std::floor(x_est / 2.0) + 1.0;
+            if (x_est < 0) {
+                x_est = 0;
+            } else if (x_est > upper) {
+                x_est = upper;
             }
             x[c_i - 1] = x_est;
         }
@@ -246,6 +247,7 @@ namespace cils {
         for (i = 0; i < m; i++) {
             reduction.y_q[i] = reduction.y_q[i] - b_y_q[i];
         }
+//        scalar v_norm = helper::find_residual(m, n, H.data(), x.data(), reduction.y_q.data());
         scalar v_norm = helper::norm<scalar, index>(m, reduction.y_q.data());
         time = omp_get_wtime() - time;
         return {{}, time, v_norm};
@@ -276,8 +278,10 @@ namespace cils {
         //     x - n-dimensional real vector, a solution
         // 'ubils_reduction:221' n = length(x);
         // 'ubils_reduction:223' c = A'*y_a;
-        scalar time = omp_get_wtime();
+
         c.fill(0);
+        x.assign(n, 0);
+        scalar time = omp_get_wtime();
         for (j = 0; j < m; j++) {
             for (i = 0; i < n; i++) {
                 c[i] += A[i * m + j] * y_a[j];
@@ -582,20 +586,19 @@ namespace cils {
             }
         }
         //s_bar4 = round_int(s_bar4_unrounded, -1, 1);
-        index bound = 1;
-        for(i = 0; i < n; i++){
-            scalar x_est = x[i];
-            x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
-            if (x_est < -bound) {
-                x_est = -bound;
-            } else if (x_est > bound) {
-                x_est = bound;
+        for (i = 0; i < n; i++) {
+            scalar x_est = round(x[i]);
+            //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
+            if (x_est < 0) {
+                x_est = 0;
+            } else if (x_est > upper) {
+                x_est = upper;
             }
             x[i] = x_est;
         }
-        //todo: v_norm
+        scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y_a.data());
         time = omp_get_wtime() - time;
-        return {{}, 0, time};
+        return {{}, time, v_norm};
     }
 
 

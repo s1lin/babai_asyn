@@ -95,10 +95,19 @@ void block_optimal_test(int size, int rank) {
 
     scalar v_norm;
     cils::returnType<scalar, index> reT3;
-    cils::cils<scalar, index, m, n> cils(k, 35);
+    cils::cils<scalar, index, m, n> cils(qam, 35);
     //auto a = (double *)malloc(N * sizeof(double));
+    cils.qam = qam;
+    cils.upper = pow(2, qam) - 1;
+    cils.u.fill(cils.upper);
+    cout.flush();
+    cils.init(rank);
+
     if (rank == 0) {
-        cils.init_ud();
+//        cils.init_ud();
+        scalar r = helper::find_residual<scalar, index>(m, n, cils.A.data(), cils.x_t.data(), cils.y_a.data());
+        printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
+
         time_t t0 = time(nullptr);
         struct tm *lt = localtime(&t0);
         char time_str[20];
@@ -111,14 +120,14 @@ void block_optimal_test(int size, int rank) {
         cils::returnType<scalar, index> reT, reT2;
         //STEP 1: init point by QRP
         reT = cils.cils_qrp_serial(x_q);
-        helper::display_vector<scalar, index>(n, x_q.data(), "x");
-        v_norm_qr[0] = reT.info;
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
-        index diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-        printf("error_bits: %d, v_norm: %8.4f, time: %8.4f\n", diff, v_norm, reT.run_time);
+        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
+                                                                     cils.y_a.data());
+        scalar ber = 0; //helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_q");
+        printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
 
 
-        x_tmp.assign(n, 0);
         for (index i = 0; i < n; i++) {
             x_ser[i] = x_q[i];
             x_omp[i] = x_q[i];
@@ -127,46 +136,43 @@ void block_optimal_test(int size, int rank) {
 
 
         //STEP 2: Block SCP:
+        x_tmp.assign(n, 0);
         reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr[0]);
-        v_norm = reT2.info;
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_ser.data(), x_tmp.data());
+        v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(), cils.y_a.data());
 
         //Result Validation:
-//        helper::display_vector<scalar, index>(n, x_ser.data(), "x_z");
-//        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-//        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
-        diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
-               diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+        helper::display_vector<scalar, index>(n, x_ser.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
+        printf("SER: ber: %8.5f, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
+               ber, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
 
         //STEP 2: OMP-Block SCP:
         x_tmp.assign(n, 0);
-        reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr[0]);
-        v_norm = reT2.info;
+        reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr[0], 5);
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
+        v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(), cils.y_a.data());
 
         //Result Validation:
-//        helper::display_vector<scalar, index>(n, x_omp.data(), "x_z");
-//        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-//        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
-        diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
-               diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+        helper::display_vector<scalar, index>(n, x_omp.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
+        printf("OMP: ber: %8.5f, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
+               ber, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
 
     }
 
     //STEP 2: MPI-Block SCP:
     MPI_Bcast(&x_mpi[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Bcast(&v_norm_qr[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Bcast(&cils.y_a[0], m, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Bcast(&cils.H[0], m * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
-
+    reT3 = {{0, 0, 0}, 0, 0};
     reT3 = cils.cils_scp_block_optimal_mpi(x_mpi, v_norm_qr, size, rank);
-    MPI_Barrier(MPI_COMM_WORLD);
 
     if (rank == 0) {
 //        v_norm = reT3.info;
@@ -174,14 +180,14 @@ void block_optimal_test(int size, int rank) {
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_mpi.data(), x_tmp.data());
 
         //Result Validation:
-//        helper::display_vector<scalar, index>(n, x_mpi.data(), "x_z");
-//        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-//        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
-        index diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f, rank:%d\n",
-               diff, reT3.x[0], reT3.x[1], reT3.x[2], v_norm, reT3.run_time, rank);
+        helper::display_vector<scalar, index>(n, x_mpi.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        scalar ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
+        printf("MPI: ber: %8.5f, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f, rank:%d\n",
+               ber, reT3.x[0], reT3.x[1], reT3.x[2], v_norm, reT3.run_time, rank);
     }
-
+    //MPI_Barrier(MPI_COMM_WORLD);
 }
 
 template<typename scalar, typename index, index m, index n>
@@ -205,27 +211,32 @@ long plot_run(int size, int rank) {
         cils::returnType<scalar, index> reT;
         auto *v_norm_qr = (double *) calloc(1, sizeof(double));
 
-        scalar r, t, b, iter, ser_time, t2, r2, b2, iter2;
+        scalar r, t, b, iter, ser_time, t2, r2, b2, iter2, b_ser;
 
         index l = 2; //count for qam.
 
         vector<scalar> z_omp(n, 0), z_ser(n, 0), z_ini(n, 0), z_tmp(n, 0);
-        cils::cils<scalar, index, m, n> cils(k, SNR);
-        
+        cils::cils<scalar, index, m, n> cils(qam, SNR);
+
         for (index i = 1; i <= max_iter; i++) {
             l = 2;
-            for (k = 3; k >= 1; k -= 2) {
+//            for (index k = 1; k <= 3; k += 2) {
+            for (index k = 3; k >= 1; k -= 2) {
                 count = k == 1 ? 0 : 1;
                 run_time = omp_get_wtime();
                 cils.qam = k;
-                printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
-                cils.init_ud();
+                cils.upper = pow(2, k) - 1;
+                cils.u.fill(cils.upper);
+                cils.init();
+                r = helper::find_residual<scalar, index>(m, n, cils.A.data(), cils.x_t.data(), cils.y_a.data());
+                printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
+
 
                 /**
                  * -1: QRP, 0: SIC, 1:GRAD
                  */
                 for (index init = -1; init <= 1; init++) {
-                    printf("[ TRIAL PHASE]++++++++++++++++++++++++++++++++++++++\n");
+                    printf("[ TRIAL PHASE]\n");
                     /*
                      * INIT POINT
                      */
@@ -238,14 +249,20 @@ long plot_run(int size, int rank) {
                         cout << "Method: SIC, ";
                     } else {
                         reT = cils.cils_grad_proj(z_ini, search_iter);
+                        for (i = 0; i < m * n; i++) {
+                            cils.H[i] = cils.A[i];
+                        }
                         cout << "Method: GRD, ";
                     }
-                    r = reT.info;
-                    v_norm_qr[0] = r;
                     //Grad_proj, P = eye(n);
+                    v_norm_qr[0] = reT.info;
                     helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ini.data(), z_tmp.data());
-                    b = (scalar) helper::length_nonzeros<scalar, index, n>(z_ini.data(), cils.x_t.data()) /
-                        (scalar) n;
+//                    if (k == 3) {
+//                        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+//                        helper::display_vector<scalar, index>(n, z_tmp.data(), "x_i");
+//                    }
+                    b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), k);
+                    r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
                     t = reT.run_time;
                     res[init + 1][0][count] += r;
                     ber[init + 1][0][count] += b;
@@ -261,11 +278,14 @@ long plot_run(int size, int rank) {
                      */
                     z_ser.assign(z_ini.begin(), z_ini.end());
                     reT = cils.cils_scp_block_optimal_serial(z_ser, v_norm_qr[0]);
-                    r = reT.info;
                     z_tmp.assign(n, 0);
                     helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ser.data(), z_tmp.data());
-                    b = (scalar) helper::length_nonzeros<scalar, index, n>(z_ser.data(), cils.x_t.data()) /
-                        (scalar) n;
+//                    if (k == 3) {
+//                        helper::display_vector<scalar, index>(n, z_tmp.data(), "x_s");
+//                    }
+                    b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), cils.qam);
+                    r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
+                    b_ser = b;
                     ser_time = reT.run_time;
                     res[init + 1][1][count] += r;
                     ber[init + 1][1][count] += b;
@@ -282,32 +302,35 @@ long plot_run(int size, int rank) {
                      */
                     l = 2;
                     scalar prev_t = INFINITY;
+
                     for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
                         index _ll = 0;
                         t = r = b = 0;
                         t2 = r2 = b2 = INFINITY;
+                        cils::program_def::chunk = 1;
                         while (true) {
                             z_omp.assign(z_ini.begin(), z_ini.end());
                             reT = cils.cils_scp_block_optimal_omp(z_omp, v_norm_qr[0], n_proc);
-                            r = reT.info;
                             z_tmp.assign(n, 0);
                             helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_omp.data(), z_tmp.data());
                             t = reT.run_time;
-                            b = (scalar) helper::length_nonzeros<scalar, index, n>(z_omp.data(), cils.x_t.data()) /
-                                (scalar) n;
+                            b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), k);
+                            r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(),
+                                                                     cils.y_a.data());
 
                             t2 = min(t, t2);
                             r2 = min(r, r2);
                             b2 = min(b, b2);
                             _ll++;
 
-                            if (prev_t > t) break;
+                            if (prev_t > t && b - b_ser < 0.1) break;
                             if (_ll == 100) {
                                 r = r2;
                                 b = b2;
                                 t = t2;
                                 break; //
                             }
+                            cils::program_def::chunk = _ll;
                         }
 
                         res[init + 1][l][count] += r;
@@ -360,7 +383,7 @@ long plot_run(int size, int rank) {
                 PyObject *pTim = PyArray_SimpleNewFromData(3, di4, NPY_DOUBLE, tim);
                 PyObject *pSpu = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, spu);
                 PyObject *pPrc = PyArray_SimpleNewFromData(1, dpc, NPY_DOUBLE, proc_nums);
-                
+
                 if (pRes == nullptr) printf("[ ERROR] pRes has a problem.\n");
                 if (pBer == nullptr) printf("[ ERROR] pBer has a problem.\n");
                 if (pTim == nullptr) printf("[ ERROR] pTim has a problem.\n");
@@ -384,7 +407,7 @@ long plot_run(int size, int rank) {
                         if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", SNR)) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", k)) != 0) {
+                        if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", qam)) != 0) {
                             return false;
                         }
                         if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", l)) != 0) {
@@ -434,7 +457,7 @@ long plot_run(int size, int rank) {
                 }
             }
         }
-        
+
         printf("End of current TASK.\n");
         printf("-------------------------------------------\n");
     }
