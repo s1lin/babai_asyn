@@ -185,9 +185,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time3, diff};
+            reT = {z_B, run_time2, diff};
         else {
-            reT = {z_B, run_time3, num_iter};
+            reT = {z_B, run_time2, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << ",";
         }

@@ -6,8 +6,8 @@
 #include <cmath>
 #include <iostream>
 
-#define N_4096 (1024)
-#define N_10 (1024)
+#define N_4096 (2048)
+#define N_10 (2048)
 
 using namespace std;
 
@@ -23,7 +23,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 4;
+        index max_iter = 10;
         index search_iter = 10;
         index stop = 10;
         index schedule = 2;
