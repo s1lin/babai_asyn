@@ -211,7 +211,7 @@ def plot_runtime(n, SNRs, f):
             k = k + 3
 
     title = 'Residual Convergence and Bit Error Rate for ' + str(SNRs[0]) + '-SNR and ' \
-            + str(pow(4, f[0])) + '-QAM with different number of threads and block size 16'
+            '4, 64-QAM with different number of threads and block size 16'
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
     plt.savefig('./' + str(n) + '_run_plot_' + str(SNRs[0]))
     plt.close()
@@ -353,7 +353,7 @@ def plot_qrtime(n, SNRs, f):
 
 
 def plot_res(n):
-    SNRs = [35]
+    SNRs = [15]
     f = [1, 3]
     # file = open(str(n) + '_' + str(f) + '_res.out', 'r')
     # plot_residual(n, SNRs, f)

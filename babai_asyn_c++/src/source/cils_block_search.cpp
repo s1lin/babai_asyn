@@ -163,7 +163,9 @@ namespace cils {
 //                            }
 //                        }
                         diff += result[i];
-                        flag = (diff + end) >= ds - stop;
+                        if (mode != 0) {
+                            flag = (diff + end) >= ds - stop;
+                        }
                     }
 
                 }
@@ -185,7 +187,7 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff};
+            reT = {z_B, run_time2, diff + end};
         else {
             reT = {z_B, run_time2, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
