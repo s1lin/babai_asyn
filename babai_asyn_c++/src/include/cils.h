@@ -30,9 +30,7 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
-#ifdef _NETCDF
 #include <netcdf.h>
-#endif
 #include <bitset>
 #include <math.h>
 #include "config.h"

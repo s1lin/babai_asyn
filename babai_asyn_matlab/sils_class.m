@@ -26,7 +26,7 @@ classdef sils_class
             sils.SNR = SNR;            
             sils.z = ones(sils.n, 1);
             sils.x0_R = zeros(sils.n, 1);
-            sils.sigma = sqrt(((4^k-1)*sils.n)/(6*10^(SNR/10)));            
+            sils.sigma = sqrt(((4^k-1)*m*2)/(6*10^(SNR/10)));            
             
             %Initialize A:
             Ar = normrnd(0, sqrt(1/2), sils.n/2, sils.n/2);

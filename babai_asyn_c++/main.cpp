@@ -73,16 +73,16 @@ void run_test(int argc, char *argv[]) {
 
     switch (program_def::mode) {
         case 0:
-            plot_res<scalar, int, N_10>();
+            plot_res<scalar, int, N>();
             break;
         case 1:
-            plot_run<scalar, int, N_10>();
+            plot_run<scalar, int, N>();
             break;
         case 2:
 //            ils_block_search<scalar, int, N_4096>();
             break;
         default:
-            test_ils_search<scalar, int, N_4096>();
+            test_ils_search<scalar, int, N>();
             break;
     }
 }

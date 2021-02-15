@@ -81,23 +81,23 @@ namespace cils {
         auto z_x = z_B->data();
         index n_dx_q_0, n_dx_q_1, result[ds] = {}, diff = 0, num_iter = 0, flag = 0, row_n, temp, test;
         index front = chunk_size * n_proc, end = 1;
-        scalar R_S[n * ds] = {}, sum = 0, sum2 = 0, y_B[n] = {};
+        scalar sum = 0, sum2 = 0, y_B[n] = {}; //;R_S[n * ds] = {},
         scalar run_time3;
 
         ils_search_obils_omp2(n - dx, n, y_B, z_x);
         result[0] = 1;
-        for (index row = 0; row < ds - 1; row++) {
-            for (index h = 0; h < dx; h++) {
-                temp = row * dx + h;
-                sum = 0;
-                row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-                for (index col = n - dx; col < n; col++) {
-                    sum += R_A->x[row_n + col] * z_x[col];
-                }
-                R_S[temp * ds] = sum;
-            }
-            y_B[row] = sum;
-        }
+//        for (index row = 0; row < ds - 1; row++) {
+//            for (index h = 0; h < dx; h++) {
+//                temp = row * dx + h;
+//                sum = 0;
+//                row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+//                for (index col = n - dx; col < n; col++) {
+//                    sum += R_A->x[row_n + col] * z_x[col];
+//                }
+//                R_S[temp * ds] = sum;
+//            }
+//            y_B[row] = sum;
+//        }
 
         omp_set_schedule((omp_sched_t) schedule, chunk_size);
         scalar run_time = omp_get_wtime();
@@ -109,7 +109,7 @@ namespace cils {
                 for (index i = 1; i < ds; i++) {
 //                    if (front >= i && end <= i) {
 //                        front++;
-                    if ((!result[i] && end <= i) && !flag) {// front >= i
+                    if ((!result[i]) && !flag) {// front >= i && end <= i
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
                         check = i == end;
@@ -163,7 +163,7 @@ namespace cils {
 //                            }
 //                        }
                         diff += result[i];
-                        flag = (diff) >= ds - stop;
+                        flag = (diff + end) >= ds - stop;
                     }
 
                 }
@@ -190,6 +190,7 @@ namespace cils {
             reT = {z_B, run_time2, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << ",";
+            cout.flush();
         }
         return reT;
     }

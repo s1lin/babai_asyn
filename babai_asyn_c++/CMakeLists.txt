@@ -89,7 +89,7 @@ find_package(OpenMP REQUIRED)
 #find_package(LAPACK REQUIRED)
 #find_package(OpenCL REQUIRED)
 #find_package(MPI REQUIRED)
-#find_package(netCDF REQUIRED)
+find_package(netCDF REQUIRED)
 set(CMAKE_CXX_STANDARD 11)
 
 #if (MPI_FOUND)
@@ -116,10 +116,10 @@ if (OpenMP_CXX_FOUND)
     message("-- OpenMP_CXX_FOUND")
 endif ()
 
-#if (netCDF_FOUND)
-#    target_link_libraries(cils ${netCDF_LIBRARIES})
-#    message("-- netCDF_FOUND")
-#endif ()
+if (netCDF_FOUND)
+    target_link_libraries(cils ${netCDF_LIBRARIES})
+    message("-- netCDF_FOUND")
+endif ()
 
 #
 #if (OpenCL_FOUND)

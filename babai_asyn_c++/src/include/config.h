@@ -6,8 +6,7 @@
 #include <cmath>
 #include <iostream>
 
-#define N_4096 (2048)
-#define N_10 (2048)
+#define N (2048)
 
 using namespace std;
 
@@ -23,26 +22,26 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 10;
-        index search_iter = 10;
-        index stop = 10;
+        index max_iter = 50;
+        index search_iter = 20;
+        index stop = 20;
         index schedule = 2;
         index chunk_size = 1;
         index block_size = 16;
         index is_constrained = true;
         index is_read = false;
-        index mode = 3; //test mode 3: c++ gen
+        index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 1000;
+        index max_search = 7000;
         index min_proc = 2;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 300000;//maximum search allowed for serial ils.
 
-        string suffix = "" + to_string(N_4096);
+        string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";
-        std::vector<index> d_s(N_4096 / block_size, block_size);
+        std::vector<index> d_s(N / block_size, block_size);
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
