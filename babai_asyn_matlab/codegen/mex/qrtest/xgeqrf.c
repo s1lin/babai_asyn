@@ -11,34 +11,34 @@
 
 /* Include files */
 #include "xgeqrf.h"
-#include "lapacke.h"
-#include "qrtest.h"
 #include "qrtest_data.h"
 #include "rt_nonfinite.h"
+#include "lapacke.h"
+#include <stddef.h>
 
 /* Variable Definitions */
 static emlrtRSInfo h_emlrtRSI = { 27,  /* lineNo */
   "xgeqrf",                            /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\eml\\+coder\\+internal\\+lapack\\xgeqrf.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgeqrf.m"/* pathName */
 };
 
-static emlrtRSInfo m_emlrtRSI = { 91,  /* lineNo */
+static emlrtRSInfo i_emlrtRSI = { 91,  /* lineNo */
   "ceval_xgeqrf",                      /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\eml\\+coder\\+internal\\+lapack\\xgeqrf.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgeqrf.m"/* pathName */
 };
 
 /* Function Definitions */
 void xgeqrf(const emlrtStack *sp, real_T A[4194304], real_T tau[2048])
 {
-  ptrdiff_t info_t;
-  int32_T info;
-  boolean_T p;
   static const char_T fname[14] = { 'L', 'A', 'P', 'A', 'C', 'K', 'E', '_', 'd',
     'g', 'e', 'q', 'r', 'f' };
 
-  int32_T i;
-  emlrtStack st;
+  ptrdiff_t info_t;
   emlrtStack b_st;
+  emlrtStack st;
+  int32_T i;
+  int32_T info;
+  boolean_T p;
   st.prev = sp;
   st.tls = sp->tls;
   st.site = &h_emlrtRSI;
@@ -46,7 +46,7 @@ void xgeqrf(const emlrtStack *sp, real_T A[4194304], real_T tau[2048])
   b_st.tls = st.tls;
   info_t = LAPACKE_dgeqrf(102, (ptrdiff_t)2048, (ptrdiff_t)2048, &A[0],
     (ptrdiff_t)2048, &tau[0]);
-  b_st.site = &m_emlrtRSI;
+  b_st.site = &i_emlrtRSI;
   info = (int32_T)info_t;
   if (info != 0) {
     p = true;

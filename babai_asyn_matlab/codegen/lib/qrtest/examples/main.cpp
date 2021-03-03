@@ -1,12 +1,13 @@
 //
-// Academic License - for use in teaching, academic research, and meeting
-// course requirements at degree granting institutions only.  Not for
-// government, commercial, or other organizational use.
-// File: main.cpp
+//  Academic License - for use in teaching, academic research, and meeting
+//  course requirements at degree granting institutions only.  Not for
+//  government, commercial, or other organizational use.
 //
-// MATLAB Coder version            : 4.3
-// C/C++ source code generated on  : 22-Feb-2021 17:29:08
+//  main.cpp
 //
+//  Code generation for function 'main'
+//
+
 
 //***********************************************************************
 // This automatically generated example C++ main file shows how to call
@@ -33,7 +34,7 @@
 //
 //***********************************************************************
 
-// Include Files
+// Include files
 #include "main.h"
 #include "qrtest.h"
 #include "qrtest_terminate.h"
@@ -45,19 +46,11 @@ static double argInit_real_T();
 static void main_qrtest();
 
 // Function Definitions
-
-//
-// Arguments    : double result[4194304]
-// Return Type  : void
-//
 static void argInit_2048x2048_real_T(double result[4194304])
 {
-  int idx0;
-  int idx1;
-
   // Loop over the array to initialize each element.
-  for (idx0 = 0; idx0 < 2048; idx0++) {
-    for (idx1 = 0; idx1 < 2048; idx1++) {
+  for (int idx0 = 0; idx0 < 2048; idx0++) {
+    for (int idx1 = 0; idx1 < 2048; idx1++) {
       // Set the value of the array element.
       // Change this value to the value that the application requires.
       result[idx0 + (idx1 << 11)] = argInit_real_T();
@@ -65,24 +58,16 @@ static void argInit_2048x2048_real_T(double result[4194304])
   }
 }
 
-//
-// Arguments    : void
-// Return Type  : double
-//
 static double argInit_real_T()
 {
   return 0.0;
 }
 
-//
-// Arguments    : void
-// Return Type  : void
-//
 static void main_qrtest()
 {
-  static double dv[4194304];
   static double Q[4194304];
   static double R[4194304];
+  static double dv[4194304];
 
   // Initialize function 'qrtest' input arguments.
   // Initialize function input argument 'A'.
@@ -91,11 +76,6 @@ static void main_qrtest()
   qrtest(dv, Q, R);
 }
 
-//
-// Arguments    : int argc
-//                const char * const argv[]
-// Return Type  : int
-//
 int main(int, const char * const [])
 {
   // The initialize function is being called automatically from your entry-point function. So, a call to initialize is not included here. 
@@ -109,8 +89,4 @@ int main(int, const char * const [])
   return 0;
 }
 
-//
-// File trailer for main.cpp
-//
-// [EOF]
-//
+// End of code generation (main.cpp)

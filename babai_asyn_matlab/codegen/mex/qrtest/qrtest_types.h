@@ -5,7 +5,7 @@
  *
  * qrtest_types.h
  *
- * Code generation for function 'qrtest_types'
+ * Code generation for function 'qrtest'
  *
  */
 
@@ -13,6 +13,7 @@
 
 /* Include files */
 #include "rtwtypes.h"
+#include "emlrt.h"
 
 /* Type Definitions */
 #ifndef typedef_qrtestStackData

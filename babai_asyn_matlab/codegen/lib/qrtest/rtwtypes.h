@@ -2,10 +2,11 @@
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
- * File: rtwtypes.h
  *
- * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-Feb-2021 17:29:08
+ * rtwtypes.h
+ *
+ * Code generation for function 'qrtest'
+ *
  */
 
 #ifndef RTWTYPES_H
@@ -36,11 +37,8 @@
 # endif
 #endif
 
+/* Include files */
 #include "tmwtypes.h"
 #endif
 
-/*
- * File trailer for rtwtypes.h
- *
- * [EOF]
- */
+/* End of code generation (rtwtypes.h) */

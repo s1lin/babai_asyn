@@ -27,7 +27,7 @@ namespace cils {
 
         index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1, upper = pow(2, qam) - 1;
         index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, diff = 0;
-        index row_kk = n * end_1 + end_1, dflag = 1, iter = 0;
+        index row_kk = n * end_1 + end_1, dflag = 1, count = 0, iter = 0;
         vector<scalar> p(dx, 0), c(dx, 0);
         vector<index> z(dx, 0), d(dx, 0), l(dx, 0), u(dx, 0);
 
@@ -51,8 +51,8 @@ namespace cils {
 
         gamma = R_kk * (c[k] - z[k]);
         //ILS search process
-        while (true) {
-            iter++;
+//        while(1) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -61,7 +61,7 @@ namespace cils {
                         row_k--;
                         sum = 0;
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R->x[n * (col + n_dx_q_0) + row_k] * z[col];
+                            sum += R->x[(col + n_dx_q_0) + n * row_k] * z[col];
                         }
                         R_kk = R->x[n * row_k + row_k];
                         p[k] = newprsd;
@@ -87,9 +87,13 @@ namespace cils {
                     } else {
                         beta = newprsd;
                         diff = 0;
+                        iter++;
                         for (index h = 0; h < dx; h++) {
                             diff += z_x->at(h + n_dx_q_0) == z[h];
                             z_x->at(h + n_dx_q_0) = z[h];
+                        }
+                        if (iter > program_def::search_iter) {
+                            break;
                         }
                     }
                 } else {
@@ -122,6 +126,7 @@ namespace cils {
                 }
             }
         }
+        cout << count << "," << search_iter <<";";
         return diff;
     }
 
@@ -434,41 +439,27 @@ namespace cils {
             y_B[row] = 0;
         }
 
-//        for (row = 0; row < dx; row++) {
-            //Initial squared search radius
-            c[k] = (y_b[k] - sum) / R_kk;
-            z[k] = round(c[k]);
-            if (z[k] <= 0) {
-                z[k] = u[k] = 0; //The lower bound is reached
-                l[k] = d[k] = 1;
-            } else if (z[k] >= upper) {
-                z[k] = upper; //The upper bound is reached
-                u[k] = 1;
-                l[k] = 0;
-                d[k] = -1;
-            } else {
-                l[k] = u[k] = 0;
-                //  Determine enumeration direction at level block_size
-                d[k] = c[k] > z[k] ? 1 : -1;
-            }
-            gamma = R_kk * (c[k] - z[k]);
-//            newprsd = p[k] + gamma * gamma;
-//            if (k != 0) {
-//                k--;
-//                row_k--;
-//                row_kk -= (n - row_k - 1);
-//                sum = 0;
-//#pragma omp simd reduction(+ : sum)
-//                for (col = k + 1; col < dx; col++) {
-//                    sum += R_A->x[row_kk + col + n_dx_q_0] * z[col];
-//                }
-//                R_kk = R_A->x[row_kk + row_k];
-//                p[k] = newprsd;
-//            }
-//        }
+        //Initial squared search radius
+        c[k] = (y_b[k] - sum) / R_kk;
+        z[k] = round(c[k]);
+        if (z[k] <= 0) {
+            z[k] = u[k] = 0; //The lower bound is reached
+            l[k] = d[k] = 1;
+        } else if (z[k] >= upper) {
+            z[k] = upper; //The upper bound is reached
+            u[k] = 1;
+            l[k] = 0;
+            d[k] = -1;
+        } else {
+            l[k] = u[k] = 0;
+            //  Determine enumeration direction at level block_size
+            d[k] = c[k] > z[k] ? 1 : -1;
+        }
+        gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        for (count = 0; count < program_def::max_thre || iter == 0; count++) {
+//        while(1) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -509,7 +500,7 @@ namespace cils {
                             z_x[h + n_dx_q_0] = z[h];
                         }
 
-                        if (diff == dx ||iter > program_def::search_iter) {
+                        if (diff == dx || iter > program_def::search_iter) {
                             break;
                         }
                     }

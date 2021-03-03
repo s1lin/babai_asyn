@@ -12,7 +12,6 @@
 /* Include files */
 #include "qrtest_initialize.h"
 #include "_coder_qrtest_mex.h"
-#include "qrtest.h"
 #include "qrtest_data.h"
 #include "rt_nonfinite.h"
 

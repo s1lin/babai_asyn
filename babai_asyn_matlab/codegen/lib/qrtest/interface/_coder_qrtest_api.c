@@ -2,13 +2,14 @@
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
- * File: _coder_qrtest_api.c
  *
- * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-Feb-2021 17:29:08
+ * _coder_qrtest_api.c
+ *
+ * Code generation for function 'qrtest'
+ *
  */
 
-/* Include Files */
+/* Include files */
 #include "_coder_qrtest_api.h"
 #include "_coder_qrtest_mex.h"
 
@@ -16,7 +17,7 @@
 emlrtCTX emlrtRootTLSGlobal = NULL;
 emlrtContext emlrtContextGlobal = { true,/* bFirstTime */
   false,                               /* bInitialized */
-  131483U,                             /* fVersionInfo */
+  131595U,                             /* fVersionInfo */
   NULL,                                /* fErrorFunction */
   "qrtest",                            /* fFunctionName */
   NULL,                                /* fRTCallStack */
@@ -35,13 +36,6 @@ static real_T (*emlrt_marshallIn(const emlrtStack *sp, const mxArray *A, const
 static const mxArray *emlrt_marshallOut(const real_T u[4194304]);
 
 /* Function Definitions */
-
-/*
- * Arguments    : const emlrtStack *sp
- *                const mxArray *u
- *                const emlrtMsgIdentifier *parentId
- * Return Type  : real_T (*)[4194304]
- */
 static real_T (*b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u, const
   emlrtMsgIdentifier *parentId))[4194304]
 {
@@ -50,79 +44,57 @@ static real_T (*b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u, const
   emlrtDestroyArray(&u);
   return y;
 }
-/*
- * Arguments    : const emlrtStack *sp
- *                const mxArray *src
- *                const emlrtMsgIdentifier *msgId
- * Return Type  : real_T (*)[4194304]
- */
   static real_T (*c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
   const emlrtMsgIdentifier *msgId))[4194304]
 {
-  real_T (*ret)[4194304];
   static const int32_T dims[2] = { 2048, 2048 };
 
+  real_T (*ret)[4194304];
   emlrtCheckBuiltInR2012b(sp, msgId, src, "double", false, 2U, dims);
   ret = (real_T (*)[4194304])emlrtMxGetData(src);
   emlrtDestroyArray(&src);
   return ret;
 }
 
-/*
- * Arguments    : const emlrtStack *sp
- *                const mxArray *A
- *                const char_T *identifier
- * Return Type  : real_T (*)[4194304]
- */
 static real_T (*emlrt_marshallIn(const emlrtStack *sp, const mxArray *A, const
   char_T *identifier))[4194304]
 {
-  real_T (*y)[4194304];
   emlrtMsgIdentifier thisId;
-  thisId.fIdentifier = (const char *)identifier;
+  real_T (*y)[4194304];
+  thisId.fIdentifier = (const char_T *)identifier;
   thisId.fParent = NULL;
   thisId.bParentIsCell = false;
   y = b_emlrt_marshallIn(sp, emlrtAlias(A), &thisId);
   emlrtDestroyArray(&A);
   return y;
 }
-/*
- * Arguments    : const real_T u[4194304]
- * Return Type  : const mxArray *
- */
   static const mxArray *emlrt_marshallOut(const real_T u[4194304])
 {
-  const mxArray *y;
-  const mxArray *m;
   static const int32_T iv[2] = { 0, 0 };
 
   static const int32_T iv1[2] = { 2048, 2048 };
 
+  const mxArray *m;
+  const mxArray *y;
   y = NULL;
-  m = emlrtCreateNumericArray(2, iv, mxDOUBLE_CLASS, mxREAL);
+  m = emlrtCreateNumericArray(2, &iv[0], mxDOUBLE_CLASS, mxREAL);
   emlrtMxSetData((mxArray *)m, (void *)&u[0]);
-  emlrtSetDimensions((mxArray *)m, *(int32_T (*)[2])&iv1[0], 2);
+  emlrtSetDimensions((mxArray *)m, iv1, 2);
   emlrtAssign(&y, m);
   return y;
 }
 
-/*
- * Arguments    : const mxArray * const prhs[1]
- *                int32_T nlhs
- *                const mxArray *plhs[2]
- * Return Type  : void
- */
 void qrtest_api(const mxArray * const prhs[1], int32_T nlhs, const mxArray *
                 plhs[2])
 {
-  real_T (*Q)[4194304];
-  real_T (*R)[4194304];
-  real_T (*A)[4194304];
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
     NULL                               /* prev */
   };
 
+  real_T (*A)[4194304];
+  real_T (*Q)[4194304];
+  real_T (*R)[4194304];
   st.tls = emlrtRootTLSGlobal;
   Q = (real_T (*)[4194304])mxMalloc(sizeof(real_T [4194304]));
   R = (real_T (*)[4194304])mxMalloc(sizeof(real_T [4194304]));
@@ -140,10 +112,6 @@ void qrtest_api(const mxArray * const prhs[1], int32_T nlhs, const mxArray *
   }
 }
 
-/*
- * Arguments    : void
- * Return Type  : void
- */
 void qrtest_atexit(void)
 {
   emlrtStack st = { NULL,              /* site */
@@ -161,10 +129,6 @@ void qrtest_atexit(void)
   emlrtExitTimeCleanup(&emlrtContextGlobal);
 }
 
-/*
- * Arguments    : void
- * Return Type  : void
- */
 void qrtest_initialize(void)
 {
   emlrtStack st = { NULL,              /* site */
@@ -179,10 +143,6 @@ void qrtest_initialize(void)
   emlrtFirstTimeR2012b(emlrtRootTLSGlobal);
 }
 
-/*
- * Arguments    : void
- * Return Type  : void
- */
 void qrtest_terminate(void)
 {
   emlrtStack st = { NULL,              /* site */
@@ -195,8 +155,4 @@ void qrtest_terminate(void)
   emlrtDestroyRootTLS(&emlrtRootTLSGlobal);
 }
 
-/*
- * File trailer for _coder_qrtest_api.c
- *
- * [EOF]
- */
+/* End of code generation (_coder_qrtest_api.c) */

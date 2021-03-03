@@ -12,26 +12,48 @@
 /* Include files */
 #include "_coder_qrtest_mex.h"
 #include "_coder_qrtest_api.h"
-#include "qrtest.h"
 #include "qrtest_data.h"
 #include "qrtest_initialize.h"
 #include "qrtest_terminate.h"
-
-/* Function Declarations */
-MEXFUNCTION_LINKAGE void qrtest_mexFunction(qrtestStackData *SD, int32_T nlhs,
-  mxArray *plhs[2], int32_T nrhs, const mxArray *prhs[1]);
+#include "qrtest_types.h"
+#include "rt_nonfinite.h"
 
 /* Function Definitions */
+void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
+                 *prhs[])
+{
+  qrtestStackData *qrtestStackDataGlobal = NULL;
+  qrtestStackDataGlobal = (qrtestStackData *)emlrtMxCalloc(1, (size_t)1U *
+    sizeof(qrtestStackData));
+  mexAtExit(&qrtest_atexit);
+
+  /* Module initialization. */
+  qrtest_initialize();
+
+  /* Dispatch the entry-point. */
+  qrtest_mexFunction(qrtestStackDataGlobal, nlhs, plhs, nrhs, prhs);
+
+  /* Module termination. */
+  qrtest_terminate();
+  emlrtMxFree(qrtestStackDataGlobal);
+}
+
+emlrtCTX mexFunctionCreateRootTLS(void)
+{
+  emlrtCreateRootTLS(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1);
+  return emlrtRootTLSGlobal;
+}
+
 void qrtest_mexFunction(qrtestStackData *SD, int32_T nlhs, mxArray *plhs[2],
   int32_T nrhs, const mxArray *prhs[1])
 {
-  const mxArray *outputs[2];
-  int32_T b_nlhs;
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
     NULL                               /* prev */
   };
 
+  const mxArray *outputs[2];
+  int32_T b_nlhs;
   st.tls = emlrtRootTLSGlobal;
 
   /* Check for proper number of arguments. */
@@ -56,31 +78,6 @@ void qrtest_mexFunction(qrtestStackData *SD, int32_T nlhs, mxArray *plhs[2],
   }
 
   emlrtReturnArrays(b_nlhs, plhs, outputs);
-}
-
-void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
-                 *prhs[])
-{
-  qrtestStackData *qrtestStackDataGlobal = NULL;
-  qrtestStackDataGlobal = (qrtestStackData *)emlrtMxCalloc(1, (size_t)1U *
-    sizeof(qrtestStackData));
-  mexAtExit(qrtest_atexit);
-
-  /* Module initialization. */
-  qrtest_initialize();
-
-  /* Dispatch the entry-point. */
-  qrtest_mexFunction(qrtestStackDataGlobal, nlhs, plhs, nrhs, prhs);
-
-  /* Module termination. */
-  qrtest_terminate();
-  emlrtMxFree(qrtestStackDataGlobal);
-}
-
-emlrtCTX mexFunctionCreateRootTLS(void)
-{
-  emlrtCreateRootTLS(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1);
-  return emlrtRootTLSGlobal;
 }
 
 /* End of code generation (_coder_qrtest_mex.c) */

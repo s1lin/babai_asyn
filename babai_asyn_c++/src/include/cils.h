@@ -34,6 +34,7 @@
 #include <bitset>
 #include <math.h>
 #include "config.h"
+#include <Eigen/Dense>
 
 using namespace std;
 
@@ -51,6 +52,7 @@ namespace cils {
         scalar *x;
         index size;
     };
+
 
     /**
      * Return scalar pointer array along with the size.
@@ -389,9 +391,10 @@ namespace cils {
                 for (j = 0; j < n; j++) {
                     sum = 0;
                     for (k = 0; k < n; k++) {
-                        sum = sum + Q->x[k * n + i] * R->x[j * n + k];
+//                        sum = sum + Q->x[k * n + i] * R->x[j * n + k]; //IF not use PYTHON!!!!
+                        sum = sum + Q->x[i * n + k] * R->x[k * n + j];
                     }
-                    c[j * n + i] = sum;
+                    c[i * n + j] = sum;
                 }
             }
 //            if (eval == 1) {
@@ -409,7 +412,7 @@ namespace cils {
                     error += fabs(c[j * n + i] - A->x[j * n + i]);
                 }
             }
-//            printf(", Error: %e\n", error);
+            printf(", Error: %e\n", error);
         }
 
         delete[] c;
@@ -432,7 +435,6 @@ namespace cils {
         scalar init_res, sigma;
         vector<index> x_R, x_t;
         scalarType<scalar, index> *R_A, *y_A, *A, *R, *Q, *v_A;
-
     private:
         /**
          * read the problem from files
@@ -518,7 +520,7 @@ namespace cils {
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
-            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * 2 * log2(n)) / (6 * pow(10, ((scalar) snr / 10.0))));
+            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n / 2) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
         }

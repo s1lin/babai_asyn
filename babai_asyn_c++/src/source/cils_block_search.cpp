@@ -53,7 +53,7 @@ namespace cils {
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 scalar sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
-                    sum += R->x[col * n + row] * z_B->at(col);
+                    sum += R->x[col + row  * n] * z_B->at(col);
                 }
                 y_b[row] = y_A->x[row] - sum;
             }
@@ -103,13 +103,13 @@ namespace cils {
         scalar run_time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_0, n_dx_q_1, row_n, sum, temp, sum2, check, test)
         {
-#pragma omp barrier
+//#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic, 1) nowait
                 for (index i = 1; i < ds; i++) {
 //                    if (front >= i && end <= i) {
 //                        front++;
-                    if ((!result[i]) && !flag) {// front >= i && end <= i
+                    if ((!result[i]&& end <= i) && !flag) {// front >= i
                         n_dx_q_0 = n - (i + 1) * dx;
                         n_dx_q_1 = n - i * dx;
                         check = i == end;
@@ -123,8 +123,8 @@ namespace cils {
                             for (index col = 0; col < i; col++) {
                                 temp = i - col - 1; //Put values backwards
 //                                if (!result[temp]) {
-                                    sum2 = 0;
-#pragma omp simd reduction(+ : sum2)
+//                                    sum2 = 0;
+#pragma omp simd reduction(+ : sum)
                                     for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
                                         sum += R_A->x[l + row_n] * z_x[l];
                                     }
@@ -187,9 +187,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff + end};
+            reT = {z_B, run_time3, diff + end};
         else {
-            reT = {z_B, run_time2, num_iter};
+            reT = {z_B, run_time3, num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << ",";
             cout.flush();

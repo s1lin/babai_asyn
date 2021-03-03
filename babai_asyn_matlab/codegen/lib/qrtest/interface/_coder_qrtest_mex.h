@@ -2,33 +2,37 @@
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
- * File: _coder_qrtest_mex.h
  *
- * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-Feb-2021 17:29:08
+ * _coder_qrtest_mex.h
+ *
+ * Code generation for function 'qrtest'
+ *
  */
 
 #ifndef _CODER_QRTEST_MEX_H
 #define _CODER_QRTEST_MEX_H
 
-/* Include Files */
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include "tmwtypes.h"
-#include "mex.h"
+/* Include files */
 #include "emlrt.h"
-#include "_coder_qrtest_api.h"
+#include "mex.h"
+#include "tmwtypes.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs,
-  const mxArray *prhs[]);
-extern emlrtCTX mexFunctionCreateRootTLS(void);
+extern "C" {
 
 #endif
 
-/*
- * File trailer for _coder_qrtest_mex.h
- *
- * [EOF]
- */
+  /* Function Declarations */
+  MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T
+    nrhs, const mxArray *prhs[]);
+  emlrtCTX mexFunctionCreateRootTLS(void);
+  void qrtest_mexFunction(int32_T nlhs, mxArray *plhs[2], int32_T nrhs, const
+    mxArray *prhs[1]);
+
+#ifdef __cplusplus
+
+}
+#endif
+#endif
+
+/* End of code generation (_coder_qrtest_mex.h) */

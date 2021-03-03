@@ -2,17 +2,20 @@
 //  Academic License - for use in teaching, academic research, and meeting
 //  course requirements at degree granting institutions only.  Not for
 //  government, commercial, or other organizational use.
-//  File: rtGetInf.cpp
 //
-//  MATLAB Coder version            : 4.3
-//  C/C++ source code generated on  : 22-Feb-2021 17:29:08
+//  rtGetInf.cpp
+//
+//  Code generation for function 'qrtest'
+//
 
 
 //
 //  Abstract:
 //        MATLAB for code generation function to initialize non-finite, Inf and MinusInf
 
+// Include files
 #include "rtGetInf.h"
+#include "rt_nonfinite.h"
 
 // Function: rtGetInf ==================================================================
 //  Abstract:
@@ -50,8 +53,4 @@ real32_T rtGetMinusInfF(void)
   return rtMinusInfF;
 }
 
-//
-//  File trailer for rtGetInf.cpp
-//
-//  [EOF]
-
+// End of code generation (rtGetInf.cpp)

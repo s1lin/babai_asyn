@@ -2,16 +2,18 @@
 //  Academic License - for use in teaching, academic research, and meeting
 //  course requirements at degree granting institutions only.  Not for
 //  government, commercial, or other organizational use.
-//  File: rtGetInf.h
 //
-//  MATLAB Coder version            : 4.3
-//  C/C++ source code generated on  : 22-Feb-2021 17:29:08
+//  rtGetInf.h
+//
+//  Code generation for function 'qrtest'
+//
 
 
 #ifndef RTGETINF_H
 #define RTGETINF_H
+
+// Include files
 #include "rtwtypes.h"
-#include "rt_nonfinite.h"
 #ifdef __cplusplus
 
 extern "C" {
@@ -29,8 +31,4 @@ extern "C" {
 #endif
 #endif
 
-//
-//  File trailer for rtGetInf.h
-//
-//  [EOF]
-
+// End of code generation (rtGetInf.h)

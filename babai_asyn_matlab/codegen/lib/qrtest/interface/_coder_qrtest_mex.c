@@ -2,39 +2,55 @@
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
- * File: _coder_qrtest_mex.c
  *
- * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-Feb-2021 17:29:08
+ * _coder_qrtest_mex.c
+ *
+ * Code generation for function 'qrtest'
+ *
  */
 
-/* Include Files */
+/* Include files */
 #include "_coder_qrtest_mex.h"
 #include "_coder_qrtest_api.h"
 
-/* Function Declarations */
-MEXFUNCTION_LINKAGE void qrtest_mexFunction(int32_T nlhs, mxArray *plhs[2],
-  int32_T nrhs, const mxArray *prhs[1]);
-
 /* Function Definitions */
+void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
+                 *prhs[])
+{
+  mexAtExit(&qrtest_atexit);
 
-/*
- * Arguments    : int32_T nlhs
- *                mxArray *plhs[2]
- *                int32_T nrhs
- *                const mxArray *prhs[1]
- * Return Type  : void
- */
+  /* Module initialization. */
+  qrtest_initialize();
+  try {
+    emlrtShouldCleanupOnError(emlrtRootTLSGlobal, false);
+
+    /* Dispatch the entry-point. */
+    qrtest_mexFunction(nlhs, plhs, nrhs, prhs);
+
+    /* Module termination. */
+    qrtest_terminate();
+  } catch (...) {
+    emlrtCleanupOnException(emlrtRootTLSGlobal);
+    throw;
+  }
+}
+
+emlrtCTX mexFunctionCreateRootTLS(void)
+{
+  emlrtCreateRootTLS(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1);
+  return emlrtRootTLSGlobal;
+}
+
 void qrtest_mexFunction(int32_T nlhs, mxArray *plhs[2], int32_T nrhs, const
   mxArray *prhs[1])
 {
-  const mxArray *outputs[2];
-  int32_T b_nlhs;
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
     NULL                               /* prev */
   };
 
+  const mxArray *outputs[2];
+  int32_T b_nlhs;
   st.tls = emlrtRootTLSGlobal;
 
   /* Check for proper number of arguments. */
@@ -61,40 +77,4 @@ void qrtest_mexFunction(int32_T nlhs, mxArray *plhs[2], int32_T nrhs, const
   emlrtReturnArrays(b_nlhs, plhs, outputs);
 }
 
-/*
- * Arguments    : int32_T nlhs
- *                mxArray *plhs[]
- *                int32_T nrhs
- *                const mxArray *prhs[]
- * Return Type  : void
- */
-void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
-                 *prhs[])
-{
-  mexAtExit(qrtest_atexit);
-
-  /* Module initialization. */
-  qrtest_initialize();
-
-  /* Dispatch the entry-point. */
-  qrtest_mexFunction(nlhs, plhs, nrhs, prhs);
-
-  /* Module termination. */
-  qrtest_terminate();
-}
-
-/*
- * Arguments    : void
- * Return Type  : emlrtCTX
- */
-emlrtCTX mexFunctionCreateRootTLS(void)
-{
-  emlrtCreateRootTLS(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1);
-  return emlrtRootTLSGlobal;
-}
-
-/*
- * File trailer for _coder_qrtest_mex.c
- *
- * [EOF]
- */
+/* End of code generation (_coder_qrtest_mex.c) */

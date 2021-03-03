@@ -83,7 +83,7 @@ namespace cils {
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
-                sum += R->x[col * n + k] * z_B->at(col);
+                sum += R->x[col + k * n] * z_B->at(col);
             }
             result = round((y_A->x[k] - sum) / R->x[k * n + k]);
             z_B->at(k) = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;

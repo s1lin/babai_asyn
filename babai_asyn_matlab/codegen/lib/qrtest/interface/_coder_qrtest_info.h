@@ -2,25 +2,31 @@
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
- * File: _coder_qrtest_info.h
  *
- * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-Feb-2021 17:29:08
+ * _coder_qrtest_info.h
+ *
+ * Code generation for function 'qrtest'
+ *
  */
 
 #ifndef _CODER_QRTEST_INFO_H
 #define _CODER_QRTEST_INFO_H
 
-/* Include Files */
+/* Include files */
 #include "mex.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-MEXFUNCTION_LINKAGE mxArray *emlrtMexFcnProperties(void);
+extern "C" {
 
 #endif
 
-/*
- * File trailer for _coder_qrtest_info.h
- *
- * [EOF]
- */
+  /* Function Declarations */
+  MEXFUNCTION_LINKAGE mxArray *emlrtMexFcnProperties(void);
+
+#ifdef __cplusplus
+
+}
+#endif
+#endif
+
+/* End of code generation (_coder_qrtest_info.h) */

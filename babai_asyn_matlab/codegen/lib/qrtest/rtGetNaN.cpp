@@ -2,17 +2,20 @@
 //  Academic License - for use in teaching, academic research, and meeting
 //  course requirements at degree granting institutions only.  Not for
 //  government, commercial, or other organizational use.
-//  File: rtGetNaN.cpp
 //
-//  MATLAB Coder version            : 4.3
-//  C/C++ source code generated on  : 22-Feb-2021 17:29:08
+//  rtGetNaN.cpp
+//
+//  Code generation for function 'qrtest'
+//
 
 
 //
 //  Abstract:
 //        MATLAB for code generation function to initialize non-finite, NaN
 
+// Include files
 #include "rtGetNaN.h"
+#include "rt_nonfinite.h"
 
 // Function: rtGetNaN ======================================================================
 //  Abstract:
@@ -34,8 +37,4 @@ real32_T rtGetNaNF(void)
   return rtNaNF;
 }
 
-//
-//  File trailer for rtGetNaN.cpp
-//
-//  [EOF]
-
+// End of code generation (rtGetNaN.cpp)

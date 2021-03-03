@@ -1,52 +1,50 @@
-# CompilerName=msvc160
+# CompilerName=gcc
 # Mode=optim
 ninja_required_version = 1.3
 
 # Basic folders
 root = .
-builddir = $root\build\win64
-matlabdir = C:\Program Files\MATLAB\R2019b
-startdir = C:\babai_asyn_matlab
+builddir = $root/build/glnxa64
+matlabdir = /usr/local/MATLAB/R2020b
+startdir = /home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab
 
 # Toolchain information
-cc = cl
-cxx = cl
-linker = link
-linkerxx = link
+cc = /usr/bin/gcc
+cxx = g++
+linker = /usr/bin/gcc
+linkerxx = g++
 
-cflags =  /c /Zp8 /GR /W3 /EHs /nologo /MD /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0   /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE /O2 /Oy- /DNDEBUG /fp:strict /I "$root" /I "$startdir" /I "$startdir\codegen\lib\qrtest" /I "$root\interface" /I "$matlabdir\extern\include" /I "$matlabdir\simulink\include" /I "$matlabdir\rtw\c\src" /I "$matlabdir\rtw\c\src\ext_mode\common" /I "$matlabdir\rtw\c\ert" /I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=qrtest_mex -DHAVESTDIO -DUSE_RTMODEL  
+cflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=qrtest_mex -c 
 
-cxxflags =   /c /Zp8 /GR /W3 /EHs /nologo /MD /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0   /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE /O2 /Oy- /DNDEBUG /fp:strict /I "$root" /I "$startdir" /I "$startdir\codegen\lib\qrtest" /I "$root\interface" /I "$matlabdir\extern\include" /I "$matlabdir\simulink\include" /I "$matlabdir\rtw\c\src" /I "$matlabdir\rtw\c\src\ext_mode\common" /I "$matlabdir\rtw\c\ert" /I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=qrtest_mex -DHAVESTDIO -DUSE_RTMODEL  
+cxxflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -std=c++11 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c++11 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=qrtest_mex -c 
 
-ldflags =  /nologo /manifest   /DLL /LIBPATH:"$matlabdir\extern\lib\win64\microsoft" libmx.lib libmex.lib libmat.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  /out:"qrtest_mex.mexw64" /LIBPATH:"$matlabdir\extern\lib\win64\microsoft" libmwlapack.lib libmwblas.lib libemlrt.lib libcovrt.lib libut.lib libmwmathutil.lib  "$startdir\codegen\lib\qrtest\qrtest.lib" /export:mexFunction /export:mexfilerequiredapiversion /export:emlrtMexFcnProperties /export:qrtest_initialize /export:qrtest_terminate /export:qrtest_atexit /export:qrtest
+ldflags =  -pthread -Wl,--no-undefined -Wl,-rpath-link,$matlabdir/bin/glnxa64 -shared  -L"$matlabdir/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++  -o qrtest_mex.mexa64 -L"$matlabdir/bin/glnxa64" -lmwlapack -lmwblas -lemlrt -lcovrt -lut -lmwmathutil  -Wl,--version-script,qrtest_mex.map
 
 # Build Rules
 rule cc
-    command = $cc $cflags $in /Fo$out
+    command = $cc $cflags $in -o $out
 
 rule cxx
-    command = $cxx $cxxflags $in /Fo$out
+    command = $cxx $cxxflags $in -o $out
 
 rule link
-    command = $linker @$out.rsp $ldflags
-    rspfile = $out.rsp
-    rspfile_content = $in
+    command = $linker $in $ldflags
 
 rule linkxx
     command = $linkerxx $in $ldflags
 
 # Build
-build $builddir\rt_nonfinite.obj : cc $root\rt_nonfinite.c
-build $builddir\qrtest_data.obj : cc $root\qrtest_data.c
-build $builddir\qrtest_initialize.obj : cc $root\qrtest_initialize.c
-build $builddir\qrtest_terminate.obj : cc $root\qrtest_terminate.c
-build $builddir\qrtest.obj : cc $root\qrtest.c
-build $builddir\xgeqrf.obj : cc $root\xgeqrf.c
-build $builddir\xorgqr.obj : cc $root\xorgqr.c
-build $builddir\_coder_qrtest_api.obj : cc $root\interface\_coder_qrtest_api.c
-build $builddir\_coder_qrtest_mex.obj : cc $root\interface\_coder_qrtest_mex.c
-build $builddir\_coder_qrtest_info.obj : cc $root\interface\_coder_qrtest_info.c
-build $builddir\c_mexapi_version.obj : cc $matlabdir\extern\version\c_mexapi_version.c
+build $builddir/qrtest_data.o : cc $root/qrtest_data.c
+build $builddir/rt_nonfinite.o : cc $root/rt_nonfinite.c
+build $builddir/qrtest_initialize.o : cc $root/qrtest_initialize.c
+build $builddir/qrtest_terminate.o : cc $root/qrtest_terminate.c
+build $builddir/qrtest.o : cc $root/qrtest.c
+build $builddir/_coder_qrtest_api.o : cc $root/interface/_coder_qrtest_api.c
+build $builddir/_coder_qrtest_mex.o : cc $root/interface/_coder_qrtest_mex.c
+build $builddir/xgeqrf.o : cc $root/xgeqrf.c
+build $builddir/xorgqr.o : cc $root/xorgqr.c
+build $builddir/_coder_qrtest_info.o : cc $root/interface/_coder_qrtest_info.c
+build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
 
 # Link
-build $root\qrtest_mex.mexw64 : link $builddir\rt_nonfinite.obj $builddir\qrtest_data.obj $builddir\qrtest_initialize.obj $builddir\qrtest_terminate.obj $builddir\qrtest.obj $builddir\xgeqrf.obj $builddir\xorgqr.obj $builddir\_coder_qrtest_api.obj $builddir\_coder_qrtest_mex.obj $builddir\_coder_qrtest_info.obj $builddir\c_mexapi_version.obj 
+build $root/qrtest_mex.mexa64 : link $builddir/qrtest_data.o $builddir/rt_nonfinite.o $builddir/qrtest_initialize.o $builddir/qrtest_terminate.o $builddir/qrtest.o $builddir/_coder_qrtest_api.o $builddir/_coder_qrtest_mex.o $builddir/xgeqrf.o $builddir/xorgqr.o $builddir/_coder_qrtest_info.o $builddir/c_mexapi_version.o 

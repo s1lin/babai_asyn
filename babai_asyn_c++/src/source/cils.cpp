@@ -48,7 +48,7 @@ namespace cils {
 
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                if(j >= i) {
+                if (j >= i) {
                     index row = (n * i) - ((i * (i + 1)) / 2);
                     R->x[j * n + i] = R_A->x[row + j];
                 }
@@ -115,6 +115,8 @@ namespace cils {
             this->A->x = new scalar[n * n]();
             this->A->size = n * n;
 
+//            this->EA = new scalar[n][n];
+
             this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->v_A->x = new scalar[n]();
             this->v_A->size = n;
@@ -152,33 +154,39 @@ namespace cils {
         }
 
         scalar end_time = omp_get_wtime() - start;
-        if(mode != 3)
+        if (mode != 3)
             printf("Finish Init, time: %.5f seconds\n", end_time);
     }
 
     template<typename scalar, typename index, index n>
-    void cils<scalar, index, n>::init_y(){
+    void cils<scalar, index, n>::init_y() {
         this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
         this->y_A->x = new scalar[n]();
 
-        index counter = 0;
-        for (index i = 0; i < n; i++) {
-            for (index j = i; j < n; j++) {
-                R_A->x[counter] = R->x[j * n + i];
-                counter++;
-            }
-        }
-
-        scalar rx =0, qv = 0;
+//        index counter = 0;
+//        for (index i = 0; i < n; i++) {
+//            for (index j = i; j < n; j++) {
+//                R_A->x[counter] = R->x[i * n + j];
+////                cout << R->x[i * n + j] << " ";
+//                counter++;
+//            }
+////            cout << endl;
+//        }
+//        cout << endl;
+        scalar rx = 0, qv = 0;
+        index ri, rai;
         for (index i = 0; i < n; i++) {
             rx = qv = 0;
             for (index j = 0; j < n; j++) {
                 if (i <= j) { //For some reason the QR stored in Transpose way?
-                    this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[j * n + i];
-                    rx += this->R->x[j * n + i] * this->x_t[j];
+                    ri = i * n + j;
+                    rai = ri - (i * (i + 1)) / 2;
+                    this->R_A->x[rai] = this->R->x[ri];
+                    rx += this->R->x[ri] * this->x_t[j];
                 }
-                qv += this->Q->x[i * n + j] * this->v_A->x[j]; //Transpose Q
+                qv += this->Q->x[j * n + i] * this->v_A->x[j]; //Transpose Q
             }
+//            cout << endl;
             this->y_A->x[i] = rx + qv;
         }
     }

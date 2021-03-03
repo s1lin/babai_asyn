@@ -5,7 +5,7 @@
  *
  * _coder_qrtest_info.h
  *
- * Code generation for function '_coder_qrtest_info'
+ * Code generation for function 'qrtest'
  *
  */
 

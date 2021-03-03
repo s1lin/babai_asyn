@@ -5,8 +5,10 @@
 #include "../source/cils_babai_search.cpp"
 #include "../source/cils_reduction.cpp"
 
-
-using namespace cils::program_def;
+#include <boost/python.hpp>
+#include <boost/python/exception_translator.hpp>
+//#include <boost/python/numpy.hpp>
+#include <numpy/arrayobject.h>
 
 template<typename scalar, typename index, index n>
 void plot_run() {
@@ -145,23 +147,144 @@ void plot_run() {
 }
 
 template<typename scalar, typename index, index n>
-void test_ils_search() {
+long test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
     cils::cils<scalar, index, n> cils(k, SNR);
-    index init = -1;
+    index init = 0;
+    scalar error = 0;
     cils::returnType<scalar, index> reT, qr_reT = {nullptr, 0, 0}, qr_reT_omp = {nullptr, 0, 0};
     for (index i = 0; i < max_iter; i++) {
 
         cils.init(is_read);
 
         if (!is_read) {
-            qr_reT = cils.cils_qr_decomposition_serial(0, 1);
+            scalar time = omp_get_wtime();
+//            CPyInstance hInstance;
+//
+//
+//            CPyObject pName = PyUnicode_FromString("pyemb3");
+//            CPyObject pModule = PyImport_Import(pName);
+//            if (pModule) {
+//                CPyObject pFunc = PyObject_GetAttrString(pModule, "qr");
+//                if (pFunc && PyCallable_Check(pFunc)) {
+//                    import_array1(-1);
+//                    int l = 10;
+//                    double *h_slopes, *h_result;
+//                    h_slopes = (double *)malloc(l * sizeof(double));
+//                    h_result = (double *)malloc(l * sizeof(double));
+//                    npy_intp dim[] = {l};
+//                    for (int ii = 0; ii < l; ii++) h_slopes[ii] = ii;
+//                    npy_double data_slopes[l];
+//                    PyObject *pVec = PyArray_SimpleNewFromData( 1, dim, NPY_DOUBLE, h_slopes );
+//                    if (pVec == NULL) printf("Cannot fill pVec.\n");
+//
+//                    CPyObject pValue = PyObject_CallObject(pFunc, pVec);
+//
+//                    printf("C: getInteger() = %ld\n", PyLong_AsLong(pValue));
+//                } else {
+//                    printf("ERROR: function getInteger()\n");
+//                }
+//
+//            } else {
+//                printf("ERROR: Module not imported\n");
+//            }
+            PyObject * pName, *pModule, *pDict, *pFunc;
+            PyObject * pArgs, *pValue, *pVec;
+
+            Py_Initialize();
+
+// this macro is defined by NumPy and must be included
+            import_array();
+
+//            int nLenslet = 10;
+//            double h_slopes[nLenslet][nLenslet];
+//            for (int ii = 0; ii < nLenslet; ii++){
+//                h_slopes[ii][ii] = ii;
+//            }
+            npy_intp dim[1] = {cils.A->size};
+            pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, cils.A->x);
+            if (pVec == NULL) printf("There is a problem.\n");
+
+// load the python file
+            PyObject * pval;
+            PyObject * sys_path = PySys_GetObject("path");
+            PyList_Append(sys_path,
+                          PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+            pName = PyUnicode_FromString("py_qr");
+            pModule = PyImport_Import(pName);
+
+            if (pModule != NULL) {
+                pFunc = PyObject_GetAttrString(pModule, "qr");
+                if (pFunc && PyCallable_Check(pFunc)) {
+                    pArgs = PyTuple_New(2);
+                    if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
+                        return false;
+                    }
+                    if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
+                        return false;
+                    }
+                    pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
+                    if (pValue != NULL) {
+                        PyObject *q, *r;
+                        PyArg_ParseTuple(pValue, "O|O", &q, &r);
+////                        PyArg_ParseTuple(pValue, "1", &r);
+//                        printf("C: q = %ld\n", PyArray_NDIM(q));
+//                        printf("C: r = %ld\n", PyArray_NDIM(r));
+//                    }
+//                }
+//                pFunc = PyObject_GetAttrString(pModule, "get_R");
+//                if (pFunc && PyCallable_Check(pFunc)) {
+//                    pValue = PyObject_CallObject(pFunc, nullptr);
+//                    if (pValue != NULL) {
+//                        auto *np_ret = reinterpret_cast<PyArrayObject *>(pValue);
+////                        if (PyArray_NDIM(np_ret) != n - 1){
+////
+////                        }
+////                        printf("C: qr = %ld\n", PyLong_AsLong(pValue));
+////                        printf("C: qr = %ld\n", PyArray_NDIM(np_ret));
+//                        cils.R->x = reinterpret_cast<scalar *>(PyArray_DATA(r));
+                        cils.Q->x = reinterpret_cast<scalar *>(PyArray_DATA(q));
+                        cils.R->x = reinterpret_cast<scalar *>(PyArray_DATA(r));
+//                        cout << "Printing output array" << r1 << r2 << endl;
+//                        for (int ii = 0; ii < n; ii++) {
+//                            for (int jj = 0; jj < n; jj++) {
+//                                cout << cils.R->x[jj + ii * n] << ' ';
+//                                cout << cils.Q->x[jj + ii * n] << ' ';
+//                            }
+//                            cout << endl;
+//                        }
+
+                    } else {
+                        PyErr_Print();
+                    }
+                } else {
+                    if (PyErr_Occurred())
+                        PyErr_Print();
+                    fprintf(stderr, "Cannot find function qr\n");
+                }
+            } else {
+                PyErr_Print();
+                fprintf(stderr, "Failed to load file\n");
+            }
+
+            time = omp_get_wtime() - time;
+            cout << time;
+            cout.flush();
+
+//            time = omp_get_wtime();
+//            qr_reT = cils.cils_qr_decomposition_omp(0, 0, max_proc);
+//            time = omp_get_wtime() - time;
+//            cout << time;
+//            cout.flush();
+
             cils.init_y();
+//            error = cils::qr_validation<scalar, index, n>(cils.A, cils.Q, cils.R, cils.R_A, 0, 1);
             cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
             cils.cils_back_solve(&cils.x_R);
         }
-        printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, qr_reT.num_iter);
+        printf("init_res: %.5f, sigma: %.5f, qr_error: %d\n", cils.init_res, cils.sigma, error);
+        cout.flush();
 
         vector<index> z_B(n, 0);
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
@@ -179,7 +302,7 @@ void test_ils_search() {
         reT = cils.cils_block_search_serial(&d_s, &z_B);
         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
         ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
+        printf("\nMethod: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
                block_size, res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar ils_tim_constrained = reT.run_time;
         cout.flush();

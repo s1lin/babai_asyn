@@ -11,6 +11,7 @@
 
 /* Include files */
 #include "qrtest.h"
+#include "qrtest_types.h"
 #include "rt_nonfinite.h"
 #include "xgeqrf.h"
 #include "xorgqr.h"
@@ -19,57 +20,57 @@
 /* Variable Definitions */
 static emlrtRSInfo emlrtRSI = { 4,     /* lineNo */
   "qrtest",                            /* fcnName */
-  "C:\\babai_asyn_matlab\\qrtest.m"    /* pathName */
+  "/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrtest.m"/* pathName */
 };
 
 static emlrtRSInfo b_emlrtRSI = { 25,  /* lineNo */
   "qr",                                /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/qr.m"/* pathName */
 };
 
 static emlrtRSInfo c_emlrtRSI = { 37,  /* lineNo */
   "eml_qr",                            /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
 static emlrtRSInfo d_emlrtRSI = { 121, /* lineNo */
   "qr_full",                           /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
 static emlrtRSInfo e_emlrtRSI = { 124, /* lineNo */
   "qr_full",                           /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
 static emlrtRSInfo f_emlrtRSI = { 127, /* lineNo */
   "qr_full",                           /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
 static emlrtRSInfo g_emlrtRSI = { 136, /* lineNo */
   "qr_full",                           /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
-static emlrtRSInfo q_emlrtRSI = { 202, /* lineNo */
+static emlrtRSInfo j_emlrtRSI = { 189, /* lineNo */
   "unpackQR",                          /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2019b\\toolbox\\eml\\lib\\matlab\\matfun\\private\\eml_qr.m"/* pathName */
+  "/usr/local/MATLAB/R2020b/toolbox/eml/lib/matlab/matfun/private/eml_qr.m"/* pathName */
 };
 
 /* Function Definitions */
 void qrtest(qrtestStackData *SD, const emlrtStack *sp, const real_T A[4194304],
             real_T Q[4194304], real_T R[4194304])
 {
-  real_T tau[2048];
-  int32_T j;
-  int32_T i;
-  int32_T R_tmp;
-  emlrtStack st;
   emlrtStack b_st;
   emlrtStack c_st;
   emlrtStack d_st;
   emlrtStack e_st;
+  emlrtStack st;
+  real_T tau[2048];
+  int32_T R_tmp;
+  int32_T i;
+  int32_T j;
   st.prev = sp;
   st.tls = sp->tls;
   b_st.prev = &st;
@@ -96,15 +97,15 @@ void qrtest(qrtestStackData *SD, const emlrtStack *sp, const real_T A[4194304],
       R[R_tmp] = SD->f0.A[R_tmp];
     }
 
-    i = j + 2;
+    R_tmp = j + 2;
     d_st.site = &f_emlrtRSI;
-    if (i <= 2048) {
-      memset(&R[(j * 2048 + i) + -1], 0, (2049 - i) * sizeof(real_T));
+    if (R_tmp <= 2048) {
+      memset(&R[(j * 2048 + R_tmp) + -1], 0, (2049 - R_tmp) * sizeof(real_T));
     }
   }
 
   d_st.site = &g_emlrtRSI;
-  e_st.site = &q_emlrtRSI;
+  e_st.site = &j_emlrtRSI;
   xorgqr(&e_st, 2048, 2048, 2048, SD->f0.A, 1, tau, 1);
   for (j = 0; j < 2048; j++) {
     memcpy(&Q[j * 2048], &SD->f0.A[j * 2048], 2048U * sizeof(real_T));

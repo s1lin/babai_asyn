@@ -1,28 +1,21 @@
 //
-// Academic License - for use in teaching, academic research, and meeting
-// course requirements at degree granting institutions only.  Not for
-// government, commercial, or other organizational use.
-// File: qrtest_data.h
+//  Academic License - for use in teaching, academic research, and meeting
+//  course requirements at degree granting institutions only.  Not for
+//  government, commercial, or other organizational use.
 //
-// MATLAB Coder version            : 4.3
-// C/C++ source code generated on  : 22-Feb-2021 17:29:08
+//  qrtest_data.h
 //
+//  Code generation for function 'qrtest_data'
+//
+
+
 #ifndef QRTEST_DATA_H
 #define QRTEST_DATA_H
 
-// Include Files
+// Include files
+#include "rtwtypes.h"
 #include <cstddef>
 #include <cstdlib>
-#include "rtwtypes.h"
-#include "qrtest_types.h"
-
-// Variable Declarations
-extern boolean_T isInitialized_qrtest;
-
 #endif
 
-//
-// File trailer for qrtest_data.h
-//
-// [EOF]
-//
+// End of code generation (qrtest_data.h)
