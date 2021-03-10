@@ -30,7 +30,7 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
-#include <netcdf.h>
+//#include <netcdf.h>
 #include <bitset>
 #include <math.h>
 #include "config.h"
@@ -391,21 +391,22 @@ namespace cils {
                 for (j = 0; j < n; j++) {
                     sum = 0;
                     for (k = 0; k < n; k++) {
-//                        sum = sum + Q->x[k * n + i] * R->x[j * n + k]; //IF not use PYTHON!!!!
-                        sum = sum + Q->x[i * n + k] * R->x[k * n + j];
+                        sum = sum + Q->x[k * n + i] * R->x[j * n + k]; //IF not use PYTHON!!!!
+//                        sum = sum + Q->x[i * n + k] * R->x[k * n + j];
                     }
-                    c[i * n + j] = sum;
+//                    c[i * n + j] = sum;
+                    c[j * n + i] = sum;
                 }
             }
-//            if (eval == 1) {
-//                printf("\nQ*R (Init A matrix) : \n");
-//                for (i = 0; i < n; i++) {
-//                    for (j = 0; j < n; j++) {
-//                        printf("%.3f ", c[j * n + i]);
-//                    }
-//                    printf("\n");
-//                }
-//            }
+            if (eval == 1) {
+                printf("\nQ*R (Init A matrix) : \n");
+                for (i = 0; i < n; i++) {
+                    for (j = 0; j < n; j++) {
+                        printf("%.3f ", c[j * n + i]);
+                    }
+                    printf("\n");
+                }
+            }
 
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
@@ -503,7 +504,8 @@ namespace cils {
                                          const index i, const index ds, scalar *y_B, index *z_x);
 
         inline bool ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                          scalar *y_B, index *z_x);
+                                          const index i, const index ds, const bool check,
+                                          scalar *R_S, scalar *y_B, index *z_x);
 
 
     public:
@@ -520,7 +522,7 @@ namespace cils {
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
-            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n / 2) / (6 * pow(10, ((scalar) snr / 10.0))));
+            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
         }
@@ -580,6 +582,16 @@ namespace cils {
         returnType<scalar, index>
         cils_qr_decomposition_omp(const index eval, const index qr_eval, const index n_proc);
 
+        /**
+         *
+         * @param eval
+         * @param qr_eval
+         * @return
+         */
+        returnType<scalar, index>
+        cils_qr_decomposition_py(const index eval, const index qr_eval);
+
+        long cils_qr_decomposition_py_helper();
         /**
          *
          * @param n_proc

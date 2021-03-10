@@ -51,8 +51,9 @@ namespace cils {
 
         gamma = R_kk * (c[k] - z[k]);
         //ILS search process
-//        while(1) {
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        while (1) {
+//            count++;
+//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -61,7 +62,8 @@ namespace cils {
                         row_k--;
                         sum = 0;
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R->x[(col + n_dx_q_0) + n * row_k] * z[col];
+//                            sum += R->x[(col + n_dx_q_0) + n * row_k] * z[col];
+                            sum += R->x[n * (col + n_dx_q_0) + row_k] * z[col];
                         }
                         R_kk = R->x[n * row_k + row_k];
                         p[k] = newprsd;
@@ -126,7 +128,9 @@ namespace cils {
                 }
             }
         }
-        cout << count << "," << search_iter <<";";
+        if (mode == 3) {
+            cout << count << "," << iter << ";";
+        }
         return diff;
     }
 
@@ -421,13 +425,14 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline bool cils<scalar, index, n>::ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                                              scalar *y_B, index *z_x) {
+                                                              const index i, const index ds, const bool check,
+                                                              scalar *R_S, scalar *y_B, index *z_x) {
 
         // Variables
         index dx = program_def::block_size, k = dx - 1, upper = pow(2, qam) - 1, iter = 0, dflag = 1, diff = 0;
         index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2), row_n, temp, col, row, count;
 
-        scalar sum = 0, newprsd, gamma = 0, beta = INFINITY;
+        scalar sum = 0, newprsd, gamma = 0, beta = INFINITY, sum2 = 0;
 
         scalar p[dx] = {}, c[dx], R_kk = R_A->x[row_kk + row_k], y_b[dx] = {};
         index z[dx], d[dx] = {}, l[dx] = {}, u[dx] = {};
@@ -458,8 +463,8 @@ namespace cils {
         gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-        for (count = 0; count < program_def::max_thre || iter == 0; count++) {
-//        while(1) {
+//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        while (1) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -494,13 +499,29 @@ namespace cils {
                         beta = newprsd;
                         diff = 0;
                         iter++;
-#pragma omp simd
+
                         for (index h = 0; h < dx; h++) {
-                            diff += z_x[h + n_dx_q_0] == z[h];
+//                            diff += z_x[h + n_dx_q_0] == z[h];
+                            if (z_x[h + n_dx_q_0] != z[h]){
+                                temp = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                                for (index row = 0; row < ds - i - 1; row++) {
+                                    for (index h = 0; h < dx; h++) {
+                                        temp = row * dx + h;
+                                        sum2 = 0;
+                                        row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+#pragma omp simd reduction(+ : sum2)
+                                        for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
+                    //                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
+                                             sum2 += R_A->x[row_n + col] * z_x[col];
+                                        }
+                                        R_S[temp * ds + i] = sum2;
+                                    }
+                                }
+                            }
                             z_x[h + n_dx_q_0] = z[h];
                         }
-
-                        if (diff == dx || iter > program_def::search_iter) {
+                        R_S[temp * ds + i] = 0;
+                        if (iter > program_def::search_iter) {// ||(!check) ||
                             break;
                         }
                     }
@@ -551,7 +572,7 @@ namespace cils {
 //
 //        }
 
-        return diff == dx;
+        return 0;//diff == dx;
     }
 
 }

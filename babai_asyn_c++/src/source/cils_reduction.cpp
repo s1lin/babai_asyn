@@ -1,6 +1,10 @@
-#include <cmath>
 #include <cstring>
-#include "../include/cils.h"
+
+//#include <boost/python.hpp>
+//#include <boost/python/exception_translator.hpp>
+//#include <boost/python/numpy.hpp>
+#include <Python.h>
+
 
 namespace cils {
     template<typename scalar, typename index, index n>
@@ -55,8 +59,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_qr_decomposition_omp(const index eval, const index qr_eval,
-                                                      const index n_proc) {
+    cils<scalar, index, n>::cils_qr_decomposition_omp(const index eval, const index qr_eval, const index n_proc) {
 
         scalar error, time, sum = 0;
 
@@ -139,4 +142,66 @@ namespace cils {
         return {nullptr, time, (index) error};
     }
 
+    template<typename scalar, typename index, index n>
+    returnType <scalar, index>
+    cils<scalar, index, n>::cils_qr_decomposition_py(const index eval, const index qr_eval) {
+
+        scalar error, time = omp_get_wtime();
+//        cils_qr_decomposition_py_helper();
+        time = omp_get_wtime() - time;
+
+        if (eval || qr_eval) {
+            error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
+        }
+
+        return {nullptr, time, (index) error};
+    }
+
+//    template<typename scalar, typename index, index n>
+//    long cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
+//        PyObject * pName, *pModule, *pFunc;
+//        PyObject * pArgs, *pValue, *pVec;
+//        Py_Initialize();
+//        import_array();
+//        npy_intp dim[1] = {A->size};
+//
+//        pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A->x);
+//        if (pVec == NULL) printf("There is a problem.\n");
+//
+//        PyObject * sys_path = PySys_GetObject("path");
+//        PyList_Append(sys_path,
+//                      PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//        pName = PyUnicode_FromString("py_qr");
+//        pModule = PyImport_Import(pName);
+//
+//        if (pModule != NULL) {
+//            pFunc = PyObject_GetAttrString(pModule, "qr");
+//            if (pFunc && PyCallable_Check(pFunc)) {
+//                pArgs = PyTuple_New(2);
+//                if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
+//                    return false;
+//                }
+//                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
+//                    return false;
+//                }
+//                pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
+//                if (pValue != NULL) {
+//                    PyObject * q, *r;
+//                    PyArg_ParseTuple(pValue, "O|O", &q, &r);
+//                    Q->x = reinterpret_cast<scalar *>(PyArray_DATA(q));
+//                    R->x = reinterpret_cast<scalar *>(PyArray_DATA(r));
+//                } else {
+//                    PyErr_Print();
+//                }
+//            } else {
+//                if (PyErr_Occurred())
+//                    PyErr_Print();
+//                fprintf(stderr, "Cannot find function qr\n");
+//            }
+//        } else {
+//            PyErr_Print();
+//            fprintf(stderr, "Failed to load file\n");
+//        }
+//        return 0;
+//    }
 }

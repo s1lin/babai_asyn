@@ -15,6 +15,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::read_nc(string filename) {
+#ifdef netcdf
         cout << filename;
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
@@ -54,7 +55,7 @@ namespace cils {
                 }
             }
         }
-
+#endif
     }
 
     template<typename scalar, typename index, index n>
@@ -175,18 +176,30 @@ namespace cils {
 //        cout << endl;
         scalar rx = 0, qv = 0;
         index ri, rai;
+//        for (index i = 0; i < n; i++) {
+//            rx = qv = 0;
+//            for (index j = 0; j < n; j++) {
+//                if (i <= j) { //For some reason the QR stored in Transpose way?
+//                    ri = i * n + j;
+//                    rai = ri - (i * (i + 1)) / 2;
+//                    this->R_A->x[rai] = this->R->x[ri];
+//                    rx += this->R->x[ri] * this->x_t[j];
+//                }
+//                qv += this->Q->x[j * n + i] * this->v_A->x[j]; //Transpose Q
+//            }
+////            cout << endl;
+//            this->y_A->x[i] = rx + qv;
+//        }
+//Not use python:
         for (index i = 0; i < n; i++) {
             rx = qv = 0;
             for (index j = 0; j < n; j++) {
                 if (i <= j) { //For some reason the QR stored in Transpose way?
-                    ri = i * n + j;
-                    rai = ri - (i * (i + 1)) / 2;
-                    this->R_A->x[rai] = this->R->x[ri];
-                    rx += this->R->x[ri] * this->x_t[j];
+                    this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[j * n + i];
+                    rx += this->R->x[j * n + i] * this->x_t[j];
                 }
-                qv += this->Q->x[j * n + i] * this->v_A->x[j]; //Transpose Q
+                qv += this->Q->x[i * n + j] * this->v_A->x[j]; //Transpose Q
             }
-//            cout << endl;
             this->y_A->x[i] = rx + qv;
         }
     }

@@ -16,5 +16,6 @@ def qr(A, n):
 #     # A = eng.randn(256)
 #
 #
-# if __name__ == "__main__":
-#     test_matlab()
+if __name__ == "__main__":
+    print(np.get_include())
+
