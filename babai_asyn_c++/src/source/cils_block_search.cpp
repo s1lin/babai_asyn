@@ -22,9 +22,10 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_block_search_serial(const vector<index> *d, vector<index> *z_B) {
-
+        cout << endl;
         index ds = d->size(), dx = d->at(ds - 1), n_dx_q_0, n_dx_q_1;
         vector<scalar> y_b(n, 0);
+        vector<scalar> time(ds, 0);
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
@@ -58,14 +59,21 @@ namespace cils {
                 }
                 y_b[row] = y_A->x[row] - sum;
             }
-
+            time[i] = omp_get_wtime();
             if (is_constrained)
                 ils_search_obils(n_dx_q_0, n_dx_q_1, &y_b, z_B);
             else
                 ils_search(n_dx_q_0, n_dx_q_1, &y_b, z_B);
+            time[i] = omp_get_wtime() - time[i];
+            printf("%.5f,", time[i]);
+            cout.flush();
         }
 
         scalar run_time = omp_get_wtime() - start;
+
+//        for (index i = 0; i < ds; i++) {
+//            printf("%.5f,", time[i]);
+//        }
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
@@ -81,38 +89,41 @@ namespace cils {
         bool check = false;
         auto z_x = z_B->data();
         index result[ds] = {}, diff = 0, num_iter = 0, flag = 0, temp, test, row_n;
-        index front = chunk_size * n_proc, end = 0;
+        index front = chunk_size * n_proc, end = 1;
         scalar sum = 0, sum2 = 0, y_B[n] = {}, R_S[n * ds] = {};
         scalar run_time3;
         //n_dx_q_0, n_dx_q_1, row_n
         scalar run_time = omp_get_wtime();
-        ils_search_obils_omp2(n - dx, n, 0, ds,1, R_S, y_B, z_x);
+        ils_search_obils_omp2(n - dx, n, 0, ds, 1, R_S, y_B, z_x);
         result[0] = 1;
         scalar run_time4 = omp_get_wtime() - run_time;
-//        for (index row = 0; row < ds - 1; row++) {
-//            for (index h = 0; h < dx; h++) {
-//                temp = row * dx + h;
-//                sum = 0;
-//                row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-//                for (index col = n - dx; col < n; col++) {
-//                    sum += R_A->x[row_n + col] * z_x[col];
-//                }
-//                R_S[temp * ds] = sum;
-//            }
-//            y_B[row] = sum;
-//        }
+
 
         omp_set_schedule((omp_sched_t) schedule, chunk_size);
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, temp, sum2, check, test, row_n)
         {
-#pragma omp barrier
+#pragma omp for
+            for (index row = 0; row < ds - 1; row++) {
+                for (index h = 0; h < dx; h++) {
+                    temp = row * dx + h;
+                    sum = 0;
+                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+                    for (index col = n - dx; col < n; col++) {
+                        sum += R_A->x[row_n + col] * z_x[col];
+                    }
+                    R_S[temp * ds] = sum;
+                    y_B[row] += sum;
+                }
+            }
+
+//#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
-#pragma omp for schedule(runtime) nowait
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < ds; i++) {
 //                    if (front >= i && end <= i) {
 //                        front++;
-                    if ((!result[i]) && !flag) {// front >= i && end <= i
+                    if (!result[i] && !flag) {// front >= i && end <= i
                         index n_dx_q_0 = n - (i + 1) * dx;
                         index n_dx_q_1 = n - i * dx;
                         check = i == end;
@@ -120,27 +131,29 @@ namespace cils {
                         row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 //#pragma omp simd collapse(2)
                         test = 0;
-                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+//                        if(j != 0) {
+                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //#pragma omp atomic
-                            row_n += n - row;
-                            sum = 0;
-                            for (index col = 0; col < i; col++) {
-                                temp = i - col - 1; //Put values backwards
-//                                if (!result[temp]) {
-                                sum2 = 0;
+                                row_n += n - row;
+                                sum = 0;
+                                for (index col = 0; col < i; col++) {
+                                    temp = i - col - 1; //Put values backwards
+//                                    if (!result[temp]) {
+                                    sum2 = 0;
 #pragma omp simd reduction(+ : sum2)
-                                for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
-                                    sum2 += R_A->x[l + row_n] * z_x[l];
-                                }
-                                R_S[row * ds + temp] = sum2;
-//                                }
-                                sum += sum2;
-                                test += result[temp];
-                            }
-                            y_B[row] = sum;
-                        }
+                                    for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
+                                        sum2 += R_A->x[l + row_n] * z_x[l];
+                                    }
+//                                    R_S[row * ds + temp] = sum2;
 
-                        test = test / block_size;
+                                    sum += sum2;
+//                                    sum += R_S[row * ds + temp];
+                                    test += result[temp];
+                                }
+                                y_B[row] = sum;
+                            }
+                            test = test / block_size;
+//                        }
                         check = check || test >= i;
 
                         result[i] = ils_search_obils_omp2(n_dx_q_0, n_dx_q_1, i, ds, check, R_S, y_B, z_x);
@@ -149,15 +162,13 @@ namespace cils {
                             end = i + 1;
                             result[i] = 1;
                         }
-
 //                        if (result[i]) {
-//#pragma omp simd collapse(2) reduction(+ : sum)
 //                            for (index row = 0; row < ds - i - 1; row++) {
 //                                for (index h = 0; h < dx; h++) {
 //                                    temp = row * dx + h;
 //                                    sum = 0;
 //                                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-//
+//#pragma omp simd reduction(+ : sum)
 //                                    for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
 ////                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
 //                                        sum += R_A->x[row_n + col] * z_x[col];
@@ -166,9 +177,10 @@ namespace cils {
 //                                }
 //                            }
 //                        }
+
                         diff += result[i];
                         if (mode != 0) {
-                            flag = ((diff + end) >= ds - 2) && j > 0;
+                            flag = ((diff + end) >= ds) && j > 0;
                         }
                     }
 

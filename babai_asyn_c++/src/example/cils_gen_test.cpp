@@ -65,7 +65,7 @@ void plot_run() {
                 }
 
                 cils.init(is_read);
-                qr_reT = cils.cils_qr_decomposition_serial(0, 1);
+                qr_reT = cils.cils_qr_decomposition_omp(0, 1, max_proc);
                 ser_qrd += qr_reT.run_time;
                 cils.init_y();
                 cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
@@ -154,7 +154,7 @@ long test_ils_search() {
         cils.init(is_read);
 
         if (!is_read) {
-            qr_reT = cils.cils_qr_decomposition_serial(0, 1);
+            qr_reT = cils.cils_qr_decomposition_omp(0, 1, max_proc);
             cils.init_y();
             cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
             cils.cils_back_solve(&cils.x_R);

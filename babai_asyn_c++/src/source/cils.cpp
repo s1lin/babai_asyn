@@ -142,8 +142,8 @@ namespace cils {
 //#endif
             for (index i = 0; i < n / 2; i++) {
                 for (index j = 0; j < n / 2; j++) {
-                    A->x[j + i * n] = A_norm_dis(gen);
-                    A->x[j + n / 2 + i * n] = A_norm_dis(gen);
+                    A->x[j + i * n] = 2 * A_norm_dis(gen);
+                    A->x[j + n / 2 + i * n] = -2 * A_norm_dis(gen);
                     A->x[j + n / 2 + (i + n / 2) * n] = A->x[j + i * n];
                     A->x[j + (i + n / 2) * n] = -A->x[j + n / 2 + i * n];
                 }
@@ -167,11 +167,11 @@ namespace cils {
 //        index counter = 0;
 //        for (index i = 0; i < n; i++) {
 //            for (index j = i; j < n; j++) {
-//                R_A->x[counter] = R->x[i * n + j];
-////                cout << R->x[i * n + j] << " ";
+////                R_A->x[counter] = R->x[j * n + i];
+//                cout << R->x[j * n + i] << " ";
 //                counter++;
 //            }
-////            cout << endl;
+//            cout << endl;
 //        }
 //        cout << endl;
         scalar rx = 0, qv = 0;

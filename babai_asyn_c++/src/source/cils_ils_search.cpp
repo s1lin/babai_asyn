@@ -51,9 +51,9 @@ namespace cils {
 
         gamma = R_kk * (c[k] - z[k]);
         //ILS search process
-        while (1) {
+//        while (1) {
 //            count++;
-//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -463,8 +463,8 @@ namespace cils {
         gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
-        while (1) {
+        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+//        while (1) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -501,27 +501,25 @@ namespace cils {
                         iter++;
 
                         for (index h = 0; h < dx; h++) {
-//                            diff += z_x[h + n_dx_q_0] == z[h];
-                            if (z_x[h + n_dx_q_0] != z[h]){
-                                temp = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
-                                for (index row = 0; row < ds - i - 1; row++) {
-                                    for (index h = 0; h < dx; h++) {
-                                        temp = row * dx + h;
-                                        sum2 = 0;
-                                        row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-#pragma omp simd reduction(+ : sum2)
-                                        for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
-                    //                                  R_S[temp * ds + i] += R->x[temp + n * col] * z_x[col];
-                                             sum2 += R_A->x[row_n + col] * z_x[col];
-                                        }
-                                        R_S[temp * ds + i] = sum2;
-                                    }
-                                }
-                            }
+                            diff += z_x[h + n_dx_q_0] == z[h];
+//                            if (z_x[h + n_dx_q_0] != z[h]){
+//                                for (row = 0; row < ds - i - 1; row++) {
+//                                    for (index ll = 0; ll < dx; ll++) {
+//                                        temp = row * dx + ll;
+//                                        sum2 = 0;
+//                                        row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+//#pragma omp simd reduction(+ : sum2)
+//                                        for (col = n_dx_q_0; col < n_dx_q_1; col++) {
+//                                             sum2 += R_A->x[row_n + col] * z_x[col];
+//                                        }
+//                                        R_S[temp * ds + i] = sum2;
+//                                    }
+//                                }
+//                            }
                             z_x[h + n_dx_q_0] = z[h];
                         }
-                        R_S[temp * ds + i] = 0;
-                        if (iter > program_def::search_iter) {// ||(!check) ||
+//                        R_S[temp * ds + i] = 0;
+                        if (diff == dx || iter > program_def::search_iter) {// || || !check||(!check)
                             break;
                         }
                     }
@@ -572,7 +570,7 @@ namespace cils {
 //
 //        }
 
-        return 0;//diff == dx;
+        return diff == dx;
     }
 
 }
