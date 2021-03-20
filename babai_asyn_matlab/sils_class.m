@@ -1,7 +1,7 @@
 classdef sils_class
 
     properties
-        A, Q, R, R_LLL, x0, x0_R, x0_R_LLL, y, y_LLL, n, k, SNR, z, init_res, init_res_LLL, sigma;
+        A, Q, R, P, x0, x0_R, x0_R_LLL, y, y_LLL, n, k, SNR, z, init_res, init_res_LLL, sigma;
     end
 
     methods(Static)
@@ -26,7 +26,7 @@ classdef sils_class
             sils.SNR = SNR;            
             sils.z = ones(sils.n, 1);
             sils.x0_R = zeros(sils.n, 1);
-            sils.sigma = sqrt(((4^k-1)*m*2)/(6*10^(SNR/10)));            
+            sils.sigma = sqrt(((4^k-1)*2^m)/(6*10^(SNR/10)));            
             
             %Initialize A:
             Ar = normrnd(0, sqrt(1/2), sils.n/2, sils.n/2);
@@ -48,13 +48,18 @@ classdef sils_class
             vi = normrnd(0, sils.sigma, sils.n/2, 1);
             v = [vr; vi];
             sqrt(var(v))
+            
             %Get Upper triangular matrix
-            [sils.Q, sils.R] = qr(sils.A);
+            %[sils.Q, sils.R] = qr(sils.A);
+            sils.y_LLL = sils.A * sils.x0 + v;
+            [sils.R, sils.P, sils.y] = sils_reduction(sils.A, sils.y_LLL);
             
              %Right-hand side y:
-            sils.y = sils.R * sils.x0 + sils.Q' * v;
+            %sils.y = sils.R * sils.x0 + sils.Q' * v;
+            %sils.P = 1;
+            sils.init_res = norm(sils.y_LLL - sils.A * sils.x0);
             
-            sils.init_res = norm(sils.y - sils.R * sils.x0)
+            %sils.init_res = norm(sils.y - sils.R * (sils.P * sils.x0));
             
             disp([sils.init_res]);
         end
@@ -117,7 +122,7 @@ classdef sils_class
             else
                 [z_B, ~, ~] = find_real_x0(sils);
             end
-
+  
             tStart = tic;
             for j = sils.n:-1:1
                 z_B(j) = (sils.y(j) - sils.R(j, j + 1:sils.n) * z_B(j + 1:sils.n)) / sils.R(j, j);
@@ -155,7 +160,9 @@ classdef sils_class
                     x = round(yb / Rb);
                     return
                 else
-                    x = sils_search(Rb, yb, 1);
+                    tic
+                    x = obils_search(Rb, yb, 0, u);
+                    toc
                     return
                 end
 
@@ -176,7 +183,9 @@ classdef sils_class
                     if q == 1 %Babai
                         xx2 = round(yb2 / Rb(1, 1));
                     else
-                        xx2 = sils_search(Rb(1:q, 1:q), yb2, 1);
+                        tic
+                        xx2 = obils_search(Rb(1:q, 1:q), yb2, 0, u);
+                        toc
                     end
                     x = [xx2; xx1];
                 end
