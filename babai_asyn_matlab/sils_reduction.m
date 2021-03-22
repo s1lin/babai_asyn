@@ -48,9 +48,10 @@ k = 2;
 while k <= n
     
     k1 = k-1;
-    zeta = round(R(k1,k) / R(k1,k1));  
-    alpha = R(k1,k) - zeta * R(k1,k1);  
-
+    
+    zeta = round(R(k1,k) / R(k1,k1));
+    alpha = R(k1,k) - zeta * R(k1,k1);
+    
     if R(k1,k1)^2 > (1 + 1.e-0) * (alpha^2 + R(k,k)^2)   
         if zeta ~= 0
             % Perform a size reduction on R(k-1,k)
@@ -72,12 +73,19 @@ while k <= n
         R(1:k,[k1,k]) = R(1:k,[k,k1]);
         Z(:,[k1,k]) = Z(:,[k,k1]);
         
+        G = zeros(2,2);
         % Bring R back to an upper triangular matrix by a Givens rotation
         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
         R([k1,k],k:n) = G * R([k1,k],k:n);   
         
+        y_t = zeros(2,1);
+        
+        y_t(1) = y(k1);
+        y_t(2) = y(k);
         % Apply the Givens rotation to y
-        y([k1,k]) = G * y([k1,k]);
+        y_t = G * y_t;
+        y(k1) = y_t(1);
+        y(k) = y_t(2);
         
         if k > 2
             k = k - 1;

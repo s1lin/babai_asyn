@@ -51,9 +51,9 @@ namespace cils {
 
         gamma = R_kk * (c[k] - z[k]);
         //ILS search process
-//        while (1) {
-//            count++;
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        while (1) {
+            count++;
+//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -463,8 +463,8 @@ namespace cils {
         gamma = R_kk * (c[k] - z[k]);
 
         //ILS search process
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
-//        while (1) {
+//        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        while (1) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -519,7 +519,7 @@ namespace cils {
                             z_x[h + n_dx_q_0] = z[h];
                         }
 //                        R_S[temp * ds + i] = 0;
-                        if (diff == dx || iter > program_def::search_iter) {// || || !check||(!check)
+                        if (diff == dx || iter > program_def::search_iter || !check) {// || ||(!check)
                             break;
                         }
                     }

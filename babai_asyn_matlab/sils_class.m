@@ -74,25 +74,33 @@ classdef sils_class
         function sils = write_to_nc(sils)
             [x_R, res, ~] = sils_seach_round(sils);
             disp([res]);
+            [r, t] = size(sils.A);
             R_A = zeros(sils.n * (sils.n + 1)/2,1);
+            A_A = zeros(r * t,1);
             index = 1;
             for i=1:sils.n
-                for j=i:sils.n
+                for j=i:sils.n                    
                     R_A(index) = sils.R(i,j);
-                    index = index + 1;                    
-                end
+                    index = index + 1;
+                end               
             end
-          
+            A_A = sils.A';
+            A_A = A_A(:);
+            size(A_A)
             filename = append('../data/new', int2str(sils.n), '_', int2str(sils.SNR), '_',int2str(sils.k),'.nc');
             delete(filename);
             nccreate(filename, 'R_A', 'Dimensions', {'y',index});
+            nccreate(filename, 'A_A', 'Dimensions', {'z',r * t});
             nccreate(filename, 'x_t', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'y', 'Dimensions', {'x',sils.n});
+            nccreate(filename, 'y_LLL', 'Dimensions', {'x',sils.n});
             nccreate(filename, 'x_R', 'Dimensions', {'x',sils.n});
             ncwrite(filename,'R_A',R_A);
+            ncwrite(filename,'A_A',A_A);
             ncwrite(filename,'x_t',sils.x0);
             ncwrite(filename,'x_R',x_R);
             ncwrite(filename,'y',sils.y);
+            ncwrite(filename,'y_LLL',sils.y_LLL);
         end
 
         function sils = write_to_files(sils)

@@ -30,11 +30,12 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
-//#include <netcdf.h>
+#include <netcdf.h>
 #include <bitset>
 #include <math.h>
 #include "config.h"
-#include <Eigen/Dense>
+#include "MatlabDataArray.hpp"
+#include "MatlabEngine.hpp"
 
 using namespace std;
 
@@ -435,7 +436,7 @@ namespace cils {
         index qam, snr;
         scalar init_res, sigma;
         vector<index> x_R, x_t;
-        scalarType<scalar, index> *R_A, *y_A, *A, *R, *Q, *v_A;
+        scalarType<scalar, index> *R_A, *y_A, *y_L, *A, *R, *Q, *v_A, *Z;
     private:
         /**
          * read the problem from files
@@ -507,14 +508,22 @@ namespace cils {
                                           const index i, const index ds, const bool check,
                                           scalar *R_S, scalar *y_B, index *z_x);
 
+        void value_input_helper(matlab::data::TypedArray<scalar> const x, scalarType<scalar, index> *arr);
+
+        void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<index> *arr);
+
 
     public:
         cils(index qam, index snr) {
             this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->y_L = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->Z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
             this->y_A->x = new scalar[n]();
+            this->y_L->x = new scalar[n]();
+            this->Z->x = new scalar[n]();
 
             this->x_R = vector<index>(n, 0);
             this->x_t = vector<index>(n, 0);
@@ -525,6 +534,7 @@ namespace cils {
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
+            this->Z->size = n;
         }
 
         ~cils() {
@@ -537,10 +547,12 @@ namespace cils {
                 delete[] R->x;
                 delete[] v_A->x;
                 delete[] Q->x;
+                delete[] Z->x;
                 free(A);
                 free(R);
                 free(v_A);
                 free(Q);
+                free(Z);
             }
         }
 
@@ -554,6 +566,8 @@ namespace cils {
          * Only invoke is function when it is not reading from files and after completed qr!
          */
         void init_y();
+
+        void init_R_A_reduction();
 
         /**
          * Serial version of QR-factorization using modified Gram-Schmidt algorithm
@@ -592,6 +606,11 @@ namespace cils {
         cils_qr_decomposition_py(const index eval, const index qr_eval);
 
         long cils_qr_decomposition_py_helper();
+
+        returnType<scalar, index>
+        cils_qr_decomposition_reduction();
+
+        long cils_qr_decomposition_reduction_helper();
         /**
          *
          * @param n_proc

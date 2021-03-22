@@ -36,7 +36,7 @@ end
 n_dim = min(m-1,n);
 
 for k = 1 : n_dim
-    % Find the column with minimum 2-norm in B(k:m,k:n)
+    % Find the column with minimum 2-norm in B(k:m,k:n)   
     [~, i] = min(colNormB(1,k:n) - colNormB(2,k:n));
     q = i + k - 1;
     
@@ -46,11 +46,11 @@ for k = 1 : n_dim
         colNormB(:,[k,q]) = colNormB(:,[q,k]);
         B(:,[k,q]) = B(:,[q,k]);
     end
-
+    
     % Compute and apply the Householder transformation  I-tau*v*v'
     if norm(B(k+1:m,k)) > 0 % A Householder transformation is needed
 	    v = B(k:m,k);
-        rho = norm(v);     
+        rho = norm(v);
 	    if v(1) >= 0
             rho = -rho;
         end
@@ -60,7 +60,7 @@ for k = 1 : n_dim
         if m < n
            B(k+1:m,k) = 0;
         end
-        B(k:m,k+1:n) = B(k:m,k+1:n) - tao * v * (v' * B(k:m,k+1:n));    
+        B(k:m,k+1:n) = B(k:m,k+1:n) - tao * v * (v' * B(k:m,k+1:n));      
         % Update y by the Householder transformation
         y(k:m) = y(k:m,:) - tao * v * (v' * y(k:m));
     end

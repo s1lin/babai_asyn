@@ -1,9 +1,10 @@
 #include <cstring>
 
-//#include <boost/python.hpp>
-//#include <boost/python/exception_translator.hpp>
-//#include <boost/python/numpy.hpp>
+#include <boost/python.hpp>
+#include <boost/python/exception_translator.hpp>
+#include <boost/python/numpy.hpp>
 #include <Python.h>
+#include <numpy/arrayobject.h>
 
 
 namespace cils {
@@ -147,7 +148,7 @@ namespace cils {
     cils<scalar, index, n>::cils_qr_decomposition_py(const index eval, const index qr_eval) {
 
         scalar error, time = omp_get_wtime();
-//        cils_qr_decomposition_py_helper();
+        cils_qr_decomposition_py_helper();
         time = omp_get_wtime() - time;
 
         if (eval || qr_eval) {
@@ -157,51 +158,116 @@ namespace cils {
         return {nullptr, time, (index) error};
     }
 
-//    template<typename scalar, typename index, index n>
-//    long cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
-//        PyObject * pName, *pModule, *pFunc;
-//        PyObject * pArgs, *pValue, *pVec;
-//        Py_Initialize();
-//        import_array();
-//        npy_intp dim[1] = {A->size};
-//
-//        pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A->x);
-//        if (pVec == NULL) printf("There is a problem.\n");
-//
-//        PyObject * sys_path = PySys_GetObject("path");
-//        PyList_Append(sys_path,
-//                      PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
-//        pName = PyUnicode_FromString("py_qr");
-//        pModule = PyImport_Import(pName);
-//
-//        if (pModule != NULL) {
-//            pFunc = PyObject_GetAttrString(pModule, "qr");
-//            if (pFunc && PyCallable_Check(pFunc)) {
-//                pArgs = PyTuple_New(2);
-//                if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
-//                    return false;
-//                }
-//                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
-//                    return false;
-//                }
-//                pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
-//                if (pValue != NULL) {
-//                    PyObject * q, *r;
-//                    PyArg_ParseTuple(pValue, "O|O", &q, &r);
-//                    Q->x = reinterpret_cast<scalar *>(PyArray_DATA(q));
-//                    R->x = reinterpret_cast<scalar *>(PyArray_DATA(r));
-//                } else {
-//                    PyErr_Print();
-//                }
-//            } else {
-//                if (PyErr_Occurred())
-//                    PyErr_Print();
-//                fprintf(stderr, "Cannot find function qr\n");
-//            }
-//        } else {
-//            PyErr_Print();
-//            fprintf(stderr, "Failed to load file\n");
-//        }
-//        return 0;
-//    }
+    template<typename scalar, typename index, index n>
+    long cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
+        PyObject * pName, *pModule, *pFunc;
+        PyObject * pArgs, *pValue, *pVec;
+        Py_Initialize();
+        import_array();
+        npy_intp dim[1] = {A->size};
+
+        pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A->x);
+        if (pVec == NULL) printf("There is a problem.\n");
+
+        PyObject * sys_path = PySys_GetObject("path");
+        PyList_Append(sys_path,
+                      PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+        pName = PyUnicode_FromString("py_qr");
+        pModule = PyImport_Import(pName);
+
+        if (pModule != NULL) {
+            pFunc = PyObject_GetAttrString(pModule, "qr");
+            if (pFunc && PyCallable_Check(pFunc)) {
+                pArgs = PyTuple_New(2);
+                if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
+                    return false;
+                }
+                pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
+                if (pValue != NULL) {
+                    PyArrayObject *q, *r;
+                    PyArg_ParseTuple(pValue, "O|O", &q, &r);
+                    Q->x = reinterpret_cast<scalar *>(PyArray_DATA(q));
+                    R->x = reinterpret_cast<scalar *>(PyArray_DATA(r));
+                } else {
+                    PyErr_Print();
+                }
+            } else {
+                if (PyErr_Occurred())
+                    PyErr_Print();
+                fprintf(stderr, "Cannot find function qr\n");
+            }
+        } else {
+            PyErr_Print();
+            fprintf(stderr, "Failed to load file\n");
+        }
+        return 0;
+    }
+
+    template<typename scalar, typename index, index n>
+    returnType <scalar, index>
+    cils<scalar, index, n>::cils_qr_decomposition_reduction() {
+        scalar error, time = omp_get_wtime();
+        cils_qr_decomposition_reduction_helper();
+        time = omp_get_wtime() - time;
+
+        return {nullptr, time, (index) error};
+    }
+
+    template<typename scalar, typename index, index n>
+    long cils<scalar, index, n>::cils_qr_decomposition_reduction_helper() {
+        // Start MATLAB engine synchronously
+        using namespace matlab::engine;
+
+        // Start MATLAB engine synchronously
+        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
+
+        //Create MATLAB data array factory
+        matlab::data::ArrayFactory factory;
+
+        // Create variables
+
+        // Call the MATLAB movsum function
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t] = sils_driver_mex(3, 4, 35);");
+
+        // Get the result
+        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+        matlab::data::TypedArray<scalar> const R_N = matlabPtr->getVariable(u"R");
+        matlab::data::TypedArray<scalar> const Z_N = matlabPtr->getVariable(u"Z");
+        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y");
+        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y_LLL");
+        matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
+        matlab::data::ArrayDimensions dim = A_A.getDimensions();
+
+        cout << dim[0] << " " << dim[1] << endl;
+        // Display the result
+        value_input_helper(A_A, A);
+        value_input_helper(R_N, R);
+        value_input_helper(Z_N, Z);
+        value_input_helper(y_N, y_A);
+        value_input_helper(y_R, y_L);
+        value_input_helper(x_T, &x_t);
+
+        return 0;
+    }
+
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x, scalarType<scalar, index> *arr) {
+        index i = 0;
+        for (auto r : x) {
+            arr->x[i] = r;
+            ++i;
+        }
+    }
+
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x, vector<index> *arr) {
+        index i = 0;
+        for (auto r : x) {
+            arr->at(i) = r;
+            ++i;
+        }
+    }
 }

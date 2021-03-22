@@ -15,7 +15,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::read_nc(string filename) {
-#ifdef netcdf
+
         cout << filename;
         index ncid, varid, retval;
         if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) ERR(retval);
@@ -55,7 +55,6 @@ namespace cils {
                 }
             }
         }
-#endif
     }
 
     template<typename scalar, typename index, index n>
@@ -162,7 +161,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_y() {
         this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
-        this->y_A->x = new scalar[n]();
+//        this->y_A->x = new scalar[n]();
 
 //        index counter = 0;
 //        for (index i = 0; i < n; i++) {
@@ -204,5 +203,16 @@ namespace cils {
         }
     }
 
+
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init_R_A_reduction() {
+        for (index i = 0; i < n; i++) {
+            for (index j = i; j < n; j++) {
+                this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[j * n + i];
+//                cout<<this->R->x[j * n + i]<<" ";
+            }
+//            cout<<endl;
+        }
+    }
 
 }
