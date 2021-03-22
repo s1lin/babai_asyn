@@ -228,18 +228,25 @@ namespace cils {
         matlab::data::ArrayFactory factory;
 
         // Create variables
+        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
+        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>( log2(n));
+        matlabPtr->setVariable(u"k", std::move(k_M));
+        matlabPtr->setVariable(u"m", std::move(m_M));
+        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res] = sils_driver_mex(3, 9, 35);");
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver_mex(k, m, SNR);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
         matlab::data::TypedArray<scalar> const R_N = matlabPtr->getVariable(u"R");
         matlab::data::TypedArray<scalar> const Z_N = matlabPtr->getVariable(u"Z");
-        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y");//Original
-        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y_LLL");//Reduced
+        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y");//Reduced
+        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y_LLL");//Original
         matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
         matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"init_res");
+        matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"babai_norm");
         matlab::data::ArrayDimensions dim = A_A.getDimensions();
 
 //        cout << dim[0] << " " << dim[1] << endl;
@@ -254,6 +261,12 @@ namespace cils {
         for (auto r : res) {
             init_res = r;
         }
+        scalar b;
+        for (auto r : b_n) {
+            b = r;
+        }
+        if (b != 0)
+            cout <<" The Babai Res from Matlab is :" << b << endl;
 
         return init_res;
     }

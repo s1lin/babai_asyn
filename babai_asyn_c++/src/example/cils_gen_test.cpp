@@ -176,7 +176,8 @@ long test_ils_search() {
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar bab_tim_constrained = reT.run_time;
-
+//        cils::display_vector<scalar, index>(&z_B);
+//        cils::display_vector<scalar, index>(&cils.x_t);
 
 
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);

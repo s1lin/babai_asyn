@@ -36,6 +36,7 @@
 #include "config.h"
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
+#include <numeric>
 
 using namespace std;
 
@@ -98,6 +99,7 @@ namespace cils {
         vector<index> x_P(n, 0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
+
                 if(Z->x[j * n + i] != 0){
                     x_P[i] = x->at(j);
                     break;
@@ -217,7 +219,7 @@ namespace cils {
         for (index i = 0; i < x->size(); i++) {
             cout << x->at(i) << " ";
         }
-        cout << endl;
+        cout << accumulate(x->begin(), x->end(), 0) << endl;
     }
 
     /**

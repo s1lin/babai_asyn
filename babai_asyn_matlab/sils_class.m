@@ -18,6 +18,18 @@ classdef sils_class
     end
     methods
         
+        function sils = sils_init_from_driver(A, R, Z, y, y_LLL, x_t, init_res)
+            sils.A = A;
+            sils.R = R;
+            sils.P = Z;
+            sils.y = y;
+            sils.y_LLL = y_LLL;
+            sils.x0 = x_t;
+            sils.y = y;
+            sils.init_res = norm(sils.y_LLL - sils.A * sils.x0);
+            disp([sils.init_res - init_res]);
+        end
+        
         %Constructor
         function sils = sils_class(k, m, SNR)
             %Initialize Variables
@@ -143,7 +155,7 @@ classdef sils_class
                 end
             end
             tEnd = toc(tStart);
-            res = norm(sils.y - sils.R * z_B);
+            res = norm(sils.y - sils.R * z_B)
         end
 
         %Search - round the real solution.
