@@ -109,13 +109,29 @@ namespace cils {
             else read_nc(filename);
 
             this->init_res = find_residual<scalar, index, n>(R_A, y_A, &x_t);
-        } else {
+        } else if (is_matlab) {
 
             this->A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->A->x = new scalar[n * n]();
             this->A->size = n * n;
 
-//            this->EA = new scalar[n][n];
+            this->R = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->R->x = new scalar[n * n]();
+            this->R->size = n * n;
+
+            this->Z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->Z->x = new scalar[n * n]();
+            this->Z->size = n * n;
+
+            this->y_L = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->y_L->x = new scalar[n]();
+            this->y_L->size = n;
+
+        } else {
+
+            this->A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+            this->A->x = new scalar[n * n]();
+            this->A->size = n * n;
 
             this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->v_A->x = new scalar[n]();
@@ -136,9 +152,6 @@ namespace cils {
             //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
             std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
 
-//#ifdef _OPENMP
-//#pragma omp for
-//#endif
             for (index i = 0; i < n / 2; i++) {
                 for (index j = 0; j < n / 2; j++) {
                     A->x[j + i * n] = 2 * A_norm_dis(gen);
@@ -208,10 +221,10 @@ namespace cils {
     void cils<scalar, index, n>::init_R_A_reduction() {
         for (index i = 0; i < n; i++) {
             for (index j = i; j < n; j++) {
-                this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[j * n + i];
-//                cout<<this->R->x[j * n + i]<<" ";
+                this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[i * n + j];
+                //cout << this->R->x[j * n + i] << " ";
             }
-//            cout<<endl;
+            //cout << endl;
         }
     }
 

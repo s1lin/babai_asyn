@@ -55,7 +55,7 @@ namespace cils {
                 scalar sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
 //                    sum += R->x[col + row  * n] * z_B->at(col);
-                    sum += R->x[col * n + row] * z_B->at(col);
+                    sum += R->x[col + row * n] * z_B->at(col);
                 }
                 y_b[row] = y_A->x[row] - sum;
             }
@@ -203,9 +203,9 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, diff + end};
+            reT = {z_B, run_time2, (scalar) diff + end};
         else {
-            reT = {z_B, run_time2, num_iter};
+            reT = {z_B, run_time2, (scalar) num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (int) (run_time2 / run_time3) << "," << run_time4 << ",";
             cout.flush();

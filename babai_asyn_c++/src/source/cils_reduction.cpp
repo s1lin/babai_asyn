@@ -140,7 +140,7 @@ namespace cils {
         delete[] lock;
         delete[] A_t;
 
-        return {nullptr, time, (index) error};
+        return {nullptr, time, error};
     }
 
     template<typename scalar, typename index, index n>
@@ -209,15 +209,15 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_qr_decomposition_reduction() {
-        scalar error, time = omp_get_wtime();
-        cils_qr_decomposition_reduction_helper();
+        scalar time = omp_get_wtime();
+        scalar true_res = cils_qr_decomposition_reduction_helper();
         time = omp_get_wtime() - time;
 
-        return {nullptr, time, (index) error};
+        return {nullptr, time, true_res};
     }
 
     template<typename scalar, typename index, index n>
-    long cils<scalar, index, n>::cils_qr_decomposition_reduction_helper() {
+    scalar cils<scalar, index, n>::cils_qr_decomposition_reduction_helper() {
         // Start MATLAB engine synchronously
         using namespace matlab::engine;
 
@@ -230,31 +230,37 @@ namespace cils {
         // Create variables
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t] = sils_driver_mex(3, 4, 35);");
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res] = sils_driver_mex(3, 9, 35);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
         matlab::data::TypedArray<scalar> const R_N = matlabPtr->getVariable(u"R");
         matlab::data::TypedArray<scalar> const Z_N = matlabPtr->getVariable(u"Z");
-        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y");
-        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y_LLL");
+        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y");//Original
+        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y_LLL");//Reduced
         matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
+        matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"init_res");
         matlab::data::ArrayDimensions dim = A_A.getDimensions();
 
-        cout << dim[0] << " " << dim[1] << endl;
+//        cout << dim[0] << " " << dim[1] << endl;
         // Display the result
         value_input_helper(A_A, A);
         value_input_helper(R_N, R);
         value_input_helper(Z_N, Z);
-        value_input_helper(y_N, y_A);
-        value_input_helper(y_R, y_L);
+        value_input_helper(y_N, y_L);//Original
+        value_input_helper(y_R, y_A);//Reduced
         value_input_helper(x_T, &x_t);
 
-        return 0;
+        for (auto r : res) {
+            init_res = r;
+        }
+
+        return init_res;
     }
 
     template<typename scalar, typename index, index n>
-    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x, scalarType<scalar, index> *arr) {
+    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x,
+                                                    scalarType <scalar, index> *arr) {
         index i = 0;
         for (auto r : x) {
             arr->x[i] = r;
@@ -263,7 +269,8 @@ namespace cils {
     }
 
     template<typename scalar, typename index, index n>
-    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x, vector<index> *arr) {
+    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x,
+                                                    vector<index> *arr) {
         index i = 0;
         for (auto r : x) {
             arr->at(i) = r;

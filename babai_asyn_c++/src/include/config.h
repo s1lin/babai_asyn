@@ -7,7 +7,7 @@
 #include <iostream>
 #include <climits>
 
-const static int N = 16;
+const static int N = 512;
 
 using namespace std;
 
@@ -28,9 +28,10 @@ namespace cils {
         index stop = 0;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 4;
+        index block_size = 32;
         index is_constrained = true;
         index is_read = false;
+        index is_matlab = true;
         index mode = 3; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
@@ -56,11 +57,12 @@ namespace cils {
                 block_size = stoi(argv[8]);
                 is_constrained = stoi(argv[9]);
                 is_read = stoi(argv[10]);
-                mode = stoi(argv[11]);
-                num_trials = stoi(argv[12]);
-                is_local = stoi(argv[13]);
-                max_search = stoi(argv[14]);
-                min_proc = stoi(argv[15]);
+                is_matlab = stoi(argv[11]);
+                mode = stoi(argv[12]);
+                num_trials = stoi(argv[13]);
+                is_local = stoi(argv[14]);
+                max_search = stoi(argv[15]);
+                min_proc = stoi(argv[16]);
             }
             printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d\n",

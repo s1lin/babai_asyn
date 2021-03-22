@@ -12,7 +12,7 @@ function [R,Z,y] = sils_reduction(B,y)
 % Outputs:
 %    R - n-by-n LLL-reduced upper triangular matrix
 %    Z - n-by-n unimodular matrix, i.e., an integer matrix with
-%    |det(Z)|=1pro
+%    |det(Z)|=1
 %    y - m-vector transformed from the input y by Q', i.e., y := Q'*y
 %
 

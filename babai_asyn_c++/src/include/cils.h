@@ -64,7 +64,7 @@ namespace cils {
     struct returnType {
         vector<index> *x;
         scalar run_time;
-        index num_iter;
+        scalar num_iter; //true_res, error
     };
 
     /**
@@ -78,19 +78,38 @@ namespace cils {
      * @return residual
      */
     template<typename scalar, typename index, index n>
-    inline scalar find_residual(const scalarType<scalar, index> *R,
+    inline scalar find_residual(const scalarType<scalar, index> *A,
                                 const scalarType<scalar, index> *y,
                                 const vector<index> *x) {
         scalar res = 0, sum = 0;
         for (index i = 0; i < n; i++) {
             sum = 0;
-            for (index j = i; j < n; j++) {
-                sum += x->at(j) * R->x[(n * i) + j - ((i * (i + 1)) / 2)];
+            for (index j = 0; j < n; j++) {
+                sum += x->at(j) * A->x[i * n + j];
             }
             res += (y->x[i] - sum) * (y->x[i] - sum);
         }
         return std::sqrt(res);
     }
+
+    template<typename scalar, typename index, index n>
+    inline void vector_permutation(const scalarType<scalar, index> *Z,
+                                   vector<index> *x) {
+        vector<index> x_P(n, 0);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                if(Z->x[j * n + i] != 0){
+                    x_P[i] = x->at(j);
+                    break;
+                }
+            }
+        }
+
+        for(index i = 0; i < n; i++){
+            x->at(i) = x_P[i];
+        }
+    }
+
 
     /**
      *
@@ -517,13 +536,9 @@ namespace cils {
         cils(index qam, index snr) {
             this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-            this->y_L = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-            this->v_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-            this->Z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+
             this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
             this->y_A->x = new scalar[n]();
-            this->y_L->x = new scalar[n]();
-            this->Z->x = new scalar[n]();
 
             this->x_R = vector<index>(n, 0);
             this->x_t = vector<index>(n, 0);
@@ -532,9 +547,10 @@ namespace cils {
             this->qam = qam;
             this->snr = snr;
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
+
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
-            this->Z->size = n;
+
         }
 
         ~cils() {
@@ -543,16 +559,26 @@ namespace cils {
             free(R_A);
             free(y_A);
             if (!program_def::is_read) {
-                delete[] A->x;
-                delete[] R->x;
-                delete[] v_A->x;
-                delete[] Q->x;
-                delete[] Z->x;
-                free(A);
-                free(R);
-                free(v_A);
-                free(Q);
-                free(Z);
+                if(program_def::is_matlab){
+                    delete[] A->x;
+                    delete[] R->x;
+                    delete[] Z->x;
+
+                    free(A);
+                    free(R);
+                    free(Z);
+                }else {
+                    delete[] A->x;
+                    delete[] R->x;
+                    delete[] v_A->x;
+                    delete[] Q->x;
+                    delete[] Z->x;
+                    free(A);
+                    free(R);
+                    free(v_A);
+                    free(Q);
+                    free(Z);
+                }
             }
         }
 
@@ -610,7 +636,7 @@ namespace cils {
         returnType<scalar, index>
         cils_qr_decomposition_reduction();
 
-        long cils_qr_decomposition_reduction_helper();
+        scalar cils_qr_decomposition_reduction_helper();
         /**
          *
          * @param n_proc

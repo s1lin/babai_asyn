@@ -157,10 +157,10 @@ long test_ils_search() {
 //            qr_reT = cils.cils_qr_decomposition_omp(0, 1, max_proc);
 //            qr_reT = cils.cils_qr_decomposition_py(0, 1);
 //            cils.init_y();
-            cils.cils_qr_decomposition_reduction();
+            qr_reT = cils.cils_qr_decomposition_reduction();
             cils.init_R_A_reduction();
 
-            cils.init_res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, &cils.x_t);
+            cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &cils.x_t);
             cils.cils_back_solve(&cils.x_R);
         }
         printf("init_res: %.5f, sigma: %.5f, qr_error: %.1f\n", cils.init_res, cils.sigma, error);
@@ -170,19 +170,23 @@ long test_ils_search() {
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
 
         reT = cils.cils_babai_search_serial(&z_B);
-        auto res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
-        auto ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
+        cils::vector_permutation<scalar, index, n>(cils.Z, &z_B);
+        auto res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
+        auto ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
+        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar bab_tim_constrained = reT.run_time;
 
-//        if(res < 100) continue;
+
 
         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
         reT = cils.cils_block_search_serial(&d_s, &z_B);
-        res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+        cils::vector_permutation<scalar, index, n>(cils.Z, reT.x);
+        res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, reT.x);
         ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-        printf("\nMethod: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f Total Time: %.5fs\n",
+
+
+        printf("\nMethod: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                block_size, res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar ils_tim_constrained = reT.run_time;
         cout.flush();
@@ -206,11 +210,15 @@ long test_ils_search() {
 
             init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
             reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, init, &d_s, &z_B);
-            res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
+            cils::vector_permutation<scalar, index, n>(cils.Z, reT.x);
+            res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, reT.x);
             ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-            printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %d, "
+//            cout<<endl;
+//            cils::display_vector<scalar, index>(&z_B);
+//            cils::display_vector<scalar, index>(&cils.x_t);
+            printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %.1f, "
                    "Solve Time: %.5fs, Solve SpeedUp: %.3f, "
-                   "QR Error: %d, QR Time: %.5fs, QR SpeedUp: %.3f, "
+                   "QR Error: %.5f, QR Time: %.5fs, QR SpeedUp: %.3f, "
                    "Total Time: %.5fs, Total SpeedUp: %.3f\n",
                    n_proc, res, ber, reT.num_iter, reT.run_time, (ils_tim_constrained / reT.run_time),
                    qr_reT_omp.num_iter, qr_reT_omp.run_time, qr_reT.run_time / qr_reT_omp.run_time,
@@ -269,7 +277,7 @@ void plot_res() {
                         reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, init, &d_s, &z_B);
                         res = cils::find_residual<scalar, index, n>(cils.R_A, cils.y_A, reT.x);
                         ber = cils::find_bit_error_rate<scalar, index, n>(reT.x, &cils.x_t, k);
-                        printf("diff=%d, res=%.5f, ber=%.5f, ",
+                        printf("diff=%.1f, res=%.5f, ber=%.5f, ",
                                reT.num_iter > (N / block_size) ? (N / block_size) : reT.num_iter, res, ber);
                     }
                     cout << endl;

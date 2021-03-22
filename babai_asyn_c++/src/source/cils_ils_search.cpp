@@ -63,7 +63,7 @@ namespace cils {
                         sum = 0;
                         for (index col = k + 1; col < dx; col++) {
 //                            sum += R->x[(col + n_dx_q_0) + n * row_k] * z[col];
-                            sum += R->x[n * (col + n_dx_q_0) + row_k] * z[col];
+                            sum += R->x[(col + n_dx_q_0) + n * row_k] * z[col];
                         }
                         R_kk = R->x[n * row_k + row_k];
                         p[k] = newprsd;
