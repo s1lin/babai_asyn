@@ -133,6 +133,7 @@ long plot_run() {
                 printf("++++++++++++++++++++++++++++++++++++++\n");
             }
             count++;
+            max_iter++;
         }
         printf("End of current TASK.\n");
         printf("-------------------------------------------\n");
