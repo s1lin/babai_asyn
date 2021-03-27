@@ -65,15 +65,18 @@ namespace cils {
             else
                 ils_search(n_dx_q_0, n_dx_q_1, &y_b, z_B);
             time[i] = omp_get_wtime() - time[i];
-            printf("%.5f,", time[i]);
-            cout.flush();
         }
 
         scalar run_time = omp_get_wtime() - start;
 
-//        for (index i = 0; i < ds; i++) {
-//            printf("%.5f,", time[i]);
-//        }
+        for (index i = 0; i < ds; i++) {
+            printf("%.5f,", time[i]);
+        }
+
+        //Matlab Partial Reduction needs to do the permutation
+        if(is_matlab)
+            vector_permutation<scalar, index, n>(Z, z_B);
+
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
@@ -103,19 +106,19 @@ namespace cils {
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, temp, sum2, check, test, row_n)
         {
-#pragma omp for
-            for (index row = 0; row < ds - 1; row++) {
-                for (index h = 0; h < dx; h++) {
-                    temp = row * dx + h;
-                    sum = 0;
-                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-                    for (index col = n - dx; col < n; col++) {
-                        sum += R_A->x[row_n + col] * z_x[col];
-                    }
-                    R_S[temp * ds] = sum;
-                    y_B[row] += sum;
-                }
-            }
+//#pragma omp for
+//            for (index row = 0; row < ds - 1; row++) {
+//                for (index h = 0; h < dx; h++) {
+//                    temp = row * dx + h;
+//                    sum = 0;
+//                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
+//                    for (index col = n - dx; col < n; col++) {
+//                        sum += R_A->x[row_n + col] * z_x[col];
+//                    }
+//                    R_S[temp * ds] = sum;
+//                    y_B[row] += sum;
+//                }
+//            }
 
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
@@ -180,7 +183,7 @@ namespace cils {
 
                         diff += result[i];
                         if (mode != 0) {
-                            flag = ((diff + end) >= ds) && j > 0;
+                            flag = ((diff + end) >= ds - stop) && j > 0;
                         }
                     }
 
@@ -200,6 +203,9 @@ namespace cils {
         }
         scalar run_time2 = omp_get_wtime() - run_time;
 #pragma parallel omp cancellation point
+        //Matlab Partial Reduction needs to do the permutation
+        if(is_matlab)
+            vector_permutation<scalar, index, n>(Z, z_B);
 
         returnType<scalar, index> reT;
         if (mode == 0)

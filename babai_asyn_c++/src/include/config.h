@@ -7,7 +7,7 @@
 #include <iostream>
 #include <climits>
 
-const static int N = 512;
+const static int N = 1024;
 
 using namespace std;
 
@@ -23,20 +23,20 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 5;
+        index max_iter = 2;
         index search_iter = 10;
-        index stop = 0;
+        index stop = 2;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 16;
+        index block_size = 32;
         index is_constrained = true;
         index is_read = false;
         index is_matlab = true; //Means LLL reduction
-        index mode = 3; //test mode 3: c++ gen
-        index num_trials = 10; //nswp
+        index mode = 1; //test mode 3: c++ gen
+        index num_trials = 100; //nswp
         index is_local = 1;
-        index max_search = 1000;//INT_MAX;
-        index min_proc = 3;
+        index max_search = 8000000;//INT_MAX;
+        index min_proc = 4;
 
         index max_proc = omp_get_max_threads();
         index max_thre = 2000000;//maximum search allowed for serial ils.

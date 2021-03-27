@@ -67,6 +67,9 @@ namespace cils {
 #pragma parallel omp cancellation point
 #pragma omp flush
         delete[] z_p;
+        //Matlab Partial Reduction needs to do the permutation
+        if(is_matlab)
+            vector_permutation<scalar, index, n>(Z, z_B);
         returnType<scalar, index> reT = {z_B, run_time, num_iter};
         return reT;
     }
@@ -91,6 +94,9 @@ namespace cils {
             sum = 0;
         }
         scalar run_time = omp_get_wtime() - start;
+        //Matlab Partial Reduction needs to do the permutation
+        if(is_matlab)
+            vector_permutation<scalar, index, n>(Z, z_B);
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }
@@ -118,6 +124,10 @@ namespace cils {
         }
 
         scalar run_time = omp_get_wtime() - start;
+        //Matlab Partial Reduction needs to do the permutation
+        if(is_matlab)
+            vector_permutation<scalar, index, n>(Z, z_B);
+
         returnType<scalar, index> reT = {z_B, run_time, 0};
         return reT;
     }

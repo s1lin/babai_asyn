@@ -519,7 +519,7 @@ namespace cils {
                             z_x[h + n_dx_q_0] = z[h];
                         }
 //                        R_S[temp * ds + i] = 0;
-                        if (diff == dx || iter > program_def::search_iter || !check) {// || ||(!check) || !check
+                        if (diff == dx || iter > program_def::search_iter|| !check) {// || ||(!check)
                             break;
                         }
                     }
