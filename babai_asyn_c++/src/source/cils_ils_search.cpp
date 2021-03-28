@@ -128,9 +128,9 @@ namespace cils {
                 }
             }
         }
-        if (mode == 3) {
+//        if (mode == 3) {
             cout << count << "," << iter << ";";
-        }
+//        }
         return diff;
     }
 

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <climits>
 
-const static int N = 1024;
+const static int N = 512;
 
 using namespace std;
 
@@ -23,7 +23,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 2;
+        index max_iter = 200;
         index search_iter = 10;
         index stop = 2;
         index schedule = 2;
@@ -35,7 +35,7 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 100; //nswp
         index is_local = 1;
-        index max_search = 8000000;//INT_MAX;
+        index max_search = 4000000;//INT_MAX;
         index min_proc = 4;
 
         index max_proc = omp_get_max_threads();

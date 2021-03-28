@@ -8,7 +8,7 @@
 template<typename scalar, typename index, index n>
 long plot_run() {
 
-    for (SNR = 15; SNR <= 35; SNR += 30) {
+    for (SNR = 35; SNR <= 35; SNR += 30) {
         scalar res[3][50][2] = {}, ber[3][50][2] = {}, tim[3][50][2] = {};
         scalar itr[3][50][2] = {}, qrd[3][50][2] = {}, err[3][50][2] = {};
         index count = 0, l = 2;
