@@ -32,7 +32,7 @@ namespace cils {
         index is_constrained = true;
         index is_read = false;
         index is_matlab = true; //Means LLL reduction
-        index is_qr = false;
+        index is_qr = true;
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
