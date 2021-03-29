@@ -28,11 +28,11 @@ namespace cils {
         index stop = 2;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 32;
+        index block_size = 16;
         index is_constrained = true;
         index is_read = false;
         index is_matlab = true; //Means LLL reduction
-        index is_qr = true;
+        index is_qr = false;
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
