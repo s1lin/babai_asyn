@@ -70,7 +70,7 @@ namespace cils {
         //Matlab Partial Reduction needs to do the permutation
         if(is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B);
-        returnType<scalar, index> reT = {z_B, run_time, num_iter};
+        returnType<scalar, index> reT = {{}, run_time, num_iter};
         return reT;
     }
 
@@ -97,7 +97,7 @@ namespace cils {
         //Matlab Partial Reduction needs to do the permutation
         if(is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B);
-        returnType<scalar, index> reT = {z_B, run_time, 0};
+        returnType<scalar, index> reT = {{}, run_time, 0};
         return reT;
     }
 
@@ -128,7 +128,7 @@ namespace cils {
         if(is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B);
 
-        returnType<scalar, index> reT = {z_B, run_time, 0};
+        returnType<scalar, index> reT = {{}, run_time, 0};
         return reT;
     }
 }

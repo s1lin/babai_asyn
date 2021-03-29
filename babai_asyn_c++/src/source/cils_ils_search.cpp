@@ -53,7 +53,7 @@ namespace cils {
         //ILS search process
 //        while (1) {
 //            count++;
-        for (count = 0; count < program_def::max_search || iter == 0; count++) {
+        for (count = 0; count < program_def::max_thre || iter == 0; count++) {
             if (dflag) {
                 newprsd = p[k] + gamma * gamma;
                 if (newprsd < beta) {
@@ -128,9 +128,9 @@ namespace cils {
                 }
             }
         }
-//        if (mode == 3) {
+        if (mode == 3) {
             cout << count << "," << iter << ";";
-//        }
+        }
         return diff;
     }
 
@@ -519,7 +519,7 @@ namespace cils {
                             z_x[h + n_dx_q_0] = z[h];
                         }
 //                        R_S[temp * ds + i] = 0;
-                        if (diff == dx || iter > program_def::search_iter|| !check) {// || ||(!check)
+                        if (diff == dx || iter > program_def::search_iter) {// || ||(!check)
                             break;
                         }
                     }

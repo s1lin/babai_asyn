@@ -1,4 +1,4 @@
-function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR)
+function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR, is_qr)
     rng('shuffle')
     %Initialize Variables
     n = 2^m; %The real size       
@@ -27,9 +27,15 @@ function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR)
         v = [vr; vi];
 
         %Get Upper triangular matrix
-        %[Q, R] = qr(A);
         y_LLL = A * x_t + v;
-        [R, Z, y] = sils_reduction(A, y_LLL);
+        if is_qr == 1
+            [Q, R] = qr(A);
+            y = Q' * y_LLL;
+            Z = eye(n, n);
+        else            
+            [R, Z, y] = sils_reduction(A, y_LLL);
+        end
+        
         init_res = norm(y_LLL - A * x_t);
         if all(Z(:) >= 0) && all(Z(:) <= 1)
             break

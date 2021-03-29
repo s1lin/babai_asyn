@@ -63,7 +63,7 @@ namespace cils {
      */
     template<typename scalar, typename index>
     struct returnType {
-        vector<index> *x;
+        vector<scalar> x;
         scalar run_time;
         scalar num_iter; //true_res, error
     };

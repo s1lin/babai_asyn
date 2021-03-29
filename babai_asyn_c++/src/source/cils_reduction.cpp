@@ -1,11 +1,7 @@
 #include <cstring>
 
-#include <boost/python.hpp>
-#include <boost/python/exception_translator.hpp>
-#include <boost/python/numpy.hpp>
 #include <Python.h>
 #include <numpy/arrayobject.h>
-
 
 namespace cils {
     template<typename scalar, typename index, index n>
@@ -55,7 +51,7 @@ namespace cils {
         }
 
         delete[] A_t;
-        return {nullptr, time, (index) error};
+        return {{}, time, (index) error};
     }
 
     template<typename scalar, typename index, index n>
@@ -140,7 +136,7 @@ namespace cils {
         delete[] lock;
         delete[] A_t;
 
-        return {nullptr, time, error};
+        return {{}, time, error};
     }
 
     template<typename scalar, typename index, index n>
@@ -155,15 +151,17 @@ namespace cils {
             error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
         }
 
-        return {nullptr, time, (index) error};
+        return {{}, time, (index) error};
     }
 
     template<typename scalar, typename index, index n>
-    long cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
+    long int cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
         PyObject * pName, *pModule, *pFunc;
         PyObject * pArgs, *pValue, *pVec;
         Py_Initialize();
-        import_array();
+        if (_import_array() < 0)
+            PyErr_Print();
+
         npy_intp dim[1] = {A->size};
 
         pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A->x);
@@ -213,7 +211,7 @@ namespace cils {
         scalar true_res = cils_qr_decomposition_reduction_helper();
         time = omp_get_wtime() - time;
 
-        return {nullptr, time, true_res};
+        return {{}, time, true_res};
     }
 
     template<typename scalar, typename index, index n>
@@ -230,13 +228,15 @@ namespace cils {
         // Create variables
         matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
         matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
-        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>( log2(n));
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(log2(n));
+        matlab::data::TypedArray<scalar> qr_M = factory.createScalar<scalar>(program_def::is_qr);
         matlabPtr->setVariable(u"k", std::move(k_M));
         matlabPtr->setVariable(u"m", std::move(m_M));
         matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+        matlabPtr->setVariable(u"qr", std::move(qr_M));
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver_mex(k, m, SNR);");
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver_mex(k, m, SNR, qr);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");

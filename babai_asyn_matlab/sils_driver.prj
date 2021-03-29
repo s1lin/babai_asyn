@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="1739201968" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab" name="sils_driver" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="3898488746" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab" name="sils_driver" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -185,7 +185,7 @@
       <param.CodeFormattingTool>option.CodeFormattingTool.Auto</param.CodeFormattingTool>
       <param.ClangFormatFile />
       <param.DataTypeReplacement />
-      <param.EnableCustomReplacementTypes />
+      <param.EnableCustomReplacementTypes>false</param.EnableCustomReplacementTypes>
       <param.ReplacementTypes.double />
       <param.ReplacementTypes.single />
       <param.ReplacementTypes.uint8 />
@@ -198,7 +198,7 @@
       <param.ReplacementTypes.int64 />
       <param.ReplacementTypes.char />
       <param.ReplacementTypes.logical />
-      <param.ReplacementTypes.ImportCustomTypes />
+      <param.ReplacementTypes.ImportCustomTypes>false</param.ReplacementTypes.ImportCustomTypes>
       <param.ReplacementTypes.HeaderFiles />
       <param.CppInterfaceStyle>option.CppInterfaceStyle.Functions</param.CppInterfaceStyle>
       <param.CppInterfaceClassName />
@@ -241,9 +241,9 @@
       <param.CustomSource />
       <param.CustomLibrary />
       <param.PostCodeGenCommand />
-      <param.TargetLangStandard />
-      <param.CodeReplacementLibrary />
-      <param.DeprecatedCRLFlag />
+      <param.TargetLangStandard>Auto</param.TargetLangStandard>
+      <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
+      <param.DeprecatedCRLFlag>false</param.DeprecatedCRLFlag>
       <param.SameHardware>true</param.SameHardware>
       <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
       <param.BuildConfiguration />
@@ -869,6 +869,7 @@
     <param.objective>option.objective.c</param.objective>
     <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
+      <item>sils_driver(1, 8, 35, 0)</item>
       <item>sils_driver(1, 8, 35)</item>
       <item>sils(1, 8, 35)</item>
     </param.TestSnippets>
@@ -889,7 +890,7 @@
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
     <param.EnableScreener>true</param.EnableScreener>
-    <param.AnnotationChecksum>122242744</param.AnnotationChecksum>
+    <param.AnnotationChecksum>540307227</param.AnnotationChecksum>
     <var.LegacyTarget />
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
@@ -898,12 +899,12 @@
     <param.unifiedParamStorage />
     <var.gc.lastOutputRoot>codegen/mex/sils_driver</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>1739201968</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>3898488746</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen/mex/sils_driver</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>2389264793</var.cfi.preBuildChecksum>
-    <var.lastCfiTestSnippet>sils_driver(1, 8, 35)</var.lastCfiTestSnippet>
+    <var.cfi.preBuildChecksum>2378564638</var.cfi.preBuildChecksum>
+    <var.lastCfiTestSnippet>sils_driver(1, 8, 35, 0)</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1888990383&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;710392390&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
     <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
@@ -1124,7 +1125,7 @@
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}/sils_driver.m">
-        <Marker>1616392243666</Marker>
+        <Marker>1616974117054</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>
@@ -1136,6 +1137,7 @@
           <Input Name="k" typeId="0" />
           <Input Name="m" typeId="0" />
           <Input Name="SNR" typeId="0" />
+          <Input Name="is_qr" typeId="0" />
           <idpTable>
             <type typeId="0">
               <Class>double</Class>
@@ -1174,7 +1176,7 @@
       <vista>false</vista>
       <linux>true</linux>
       <solaris>false</solaris>
-      <osver>5.8.0-45-generic</osver>
+      <osver>5.8.0-48-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>glnxa64</arch>

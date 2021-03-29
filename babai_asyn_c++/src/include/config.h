@@ -23,7 +23,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 200;
+        index max_iter = 100;
         index search_iter = 10;
         index stop = 2;
         index schedule = 2;
@@ -32,14 +32,15 @@ namespace cils {
         index is_constrained = true;
         index is_read = false;
         index is_matlab = true; //Means LLL reduction
+        index is_qr = true;
         index mode = 1; //test mode 3: c++ gen
-        index num_trials = 100; //nswp
+        index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 4000000;//INT_MAX;
-        index min_proc = 4;
+        index max_search = 1000;//INT_MAX;
+        index min_proc = 3;
 
         index max_proc = omp_get_max_threads();
-        index max_thre = 2000000;//maximum search allowed for serial ils.
+        index max_thre = 8000000;//maximum search allowed for serial ils.
 
         string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";

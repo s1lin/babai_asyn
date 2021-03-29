@@ -4,7 +4,8 @@ import numpy as np
 from textwrap import wrap
 
 
-def plot_runtime(n, SNR, k, l_max, block_size, max_iter, res, ber, tim, itr, ser_tim):
+def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim):
+    print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (20, 8)
     fig, axes2 = plt.subplots(2, 5, constrained_layout=True)
     color = ['r', 'g', 'b', 'y']
@@ -42,26 +43,24 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, res, ber, tim, itr, ser
 
             omp_itr = []
 
-            for l in range(2, l_max):
+            for l in range(2, l_max - 1):
                 omp_res.append(res[x][l][j])
                 omp_ber.append(ber[x][l][j])
                 omp_itr.append(itr[x][l][j])
                 omp_stm.append(tim[x][l][j])
-
+            print(omp_stm)
             omp_spu = block_stm / omp_stm
 
-
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
-            itr_label = ['NT-4', 'NT-8', 'NT-12', 'NT-16', 'NT-20']
-            res_label = ['Babai', 'B-seq', 'NT-4', 'NT-8', 'NT-12', 'NT-16', 'NT-20']
-            spu_label = ['NT-4', 'NT-8', 'NT-12', 'NT-16', 'NT-20']
+            itr_label = ['NT-3', 'NT-6', 'NT-9', 'NT-12', 'NT-15']
+            res_label = ['Babai', 'B-seq', 'NT-3', 'NT-6', 'NT-9', 'NT-12', 'NT-15']
+            spu_label = ['NT-3', 'NT-6', 'NT-9', 'NT-12', 'NT-15']
 
-            axes2[j, 0].plot(itr_label, omp_itr[0:len(itr_label)]/max_iter, color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 1].plot(res_label, omp_res[0:len(res_label)]/max_iter, color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 2].plot(res_label, omp_ber[0:len(res_label)]/max_iter, color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 3].plot(res_label, omp_stm[0:len(res_label)]/max_iter, color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 4].plot(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x],
-                             label=labels[x])
+            axes2[j, 0].plot(itr_label, omp_itr[0:len(itr_label)], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 1].plot(res_label, omp_res[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 2].plot(res_label, omp_ber[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 3].plot(res_label, omp_stm[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 4].plot(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x], label=labels[x])
 
             axes2[j, 0].legend(loc="lower right")
             axes2[j, 1].legend(loc="center left")
@@ -71,14 +70,19 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, res, ber, tim, itr, ser
 
     title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) \
             + '-SNR and 4, 64-QAM with different number of threads and block size ' + str(block_size)
+    if is_qr == 0:
+        title += 'with LLL reduction'
+
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
 
-    plt.savefig('./' + str(n) + '_report_plot_' + str(SNR) + '_' + str(block_size))
+    plt.savefig('./' + str(n) + '_report_plot_' + str(SNR) + '_' + str(block_size) + '_' + str(is_qr))
     plt.close()
+    print("\n----------END PLOT RUNTIME--------------\n")
+    plot_first_block(n, SNR, k, block_size, ser_tim, is_qr)
 
-    plot_first_block(n, SNR, k, block_size, ser_tim)
 
-def plot_first_block(n, SNR, k, block_size, ser_tim):
+def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr):
+    print("\n----------PLOT BLOCK TIME--------------\n")
     plt2.rcParams["figure.figsize"] = (10, 8)
     fig, axes2 = plt2.subplots(2, 1, constrained_layout=True)
     color = ['r', 'g', 'b', 'y']
@@ -91,20 +95,24 @@ def plot_first_block(n, SNR, k, block_size, ser_tim):
         # init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
         qam = 4 if j == 0 else 64
         axes2[j].set_title(str(qam) + '-QAM', fontsize=13)
-        axes2[j].set_ylabel('Total. Time', fontsize=13)
+        axes2[j].set_ylabel('Percentage', fontsize=13)
 
         for x in range(0, 3):
             tim = []
             for l in range(0, d_s):
                 tim.append(ser_tim[x][l][j])
+
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
 
             print(tim)
             axes2[j].plot(range(0, d_s), tim, color=color[x], marker=marker[x], label=labels[x])
             axes2[j].legend(loc="upper right")
 
-    title = 'ILS Solving Time Per block for' + str(SNR) \
-            + '-SNR and 4, 64-QAM with different number of threads and block size ' + str(block_size)
-    fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
-    plt2.savefig('./' + str(n) + '_block_time_' + str(SNR) + '_' + str(block_size))
+    title = 'ILS Sequential Solving Time Per block for ' + str(SNR) \
+            + '-SNR and 4, 64-QAM and problem size ' + str(n) + ', block size ' + str(block_size)
+    if is_qr == 0:
+        title += 'with LLL reduction'
+    fig.suptitle("\n".join(wrap(title, 85)), fontsize=15)
+    plt2.savefig('./' + str(n) + '_block_time_' + str(SNR) + '_' + str(block_size) + '_' + str(is_qr))
     plt2.close()
+    print("\n----------END PLOT BLOCK TIME--------------\n")

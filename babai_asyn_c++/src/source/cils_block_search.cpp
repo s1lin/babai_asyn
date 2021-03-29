@@ -30,7 +30,7 @@ namespace cils {
         if (ds == 1) {
             if (d->at(0) == 1) {
                 z_B->at(0) = round(y_A->x[0] / R->x[0]);
-                return {z_B, 0, 0};
+                return {{}, 0, 0};
             } else {
                 for (index i = 0; i < n; i++) {
                     y_b[i] = y_A->x[i];
@@ -39,7 +39,7 @@ namespace cils {
                     ils_search_obils(0, n, &y_b, z_B);
                 else
                     ils_search(0, n, &y_b, z_B);
-                return {z_B, 0, 0};
+                return {{}, 0, 0};
             }
         } else if (ds == n) {
             //Find the Babai point
@@ -77,7 +77,7 @@ namespace cils {
         if(is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B);
 
-        returnType<scalar, index> reT = {z_B, run_time, 0};
+        returnType<scalar, index> reT = {time, run_time, 0};
         return reT;
     }
 
@@ -135,27 +135,27 @@ namespace cils {
 //#pragma omp simd collapse(2)
                         test = 0;
 //                        if(j != 0) {
-                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
 //#pragma omp atomic
-                                row_n += n - row;
-                                sum = 0;
-                                for (index col = 0; col < i; col++) {
-                                    temp = i - col - 1; //Put values backwards
+                            row_n += n - row;
+                            sum = 0;
+                            for (index col = 0; col < i; col++) {
+                                temp = i - col - 1; //Put values backwards
 //                                    if (!result[temp]) {
-                                    sum2 = 0;
+                                sum2 = 0;
 #pragma omp simd reduction(+ : sum2)
-                                    for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
-                                        sum2 += R_A->x[l + row_n] * z_x[l];
-                                    }
+                                for (index l = n_dx_q_1 + dx * col; l < n - dx * temp; l++) {
+                                    sum2 += R_A->x[l + row_n] * z_x[l];
+                                }
 //                                    R_S[row * ds + temp] = sum2;
 
-                                    sum += sum2;
+                                sum += sum2;
 //                                    sum += R_S[row * ds + temp];
-                                    test += result[temp];
-                                }
-                                y_B[row] = sum;
+                                test += result[temp];
                             }
-                            test = test / block_size;
+                            y_B[row] = sum;
+                        }
+                        test = test / block_size;
 //                        }
                         check = check || test >= i;
 
@@ -209,11 +209,11 @@ namespace cils {
 
         returnType<scalar, index> reT;
         if (mode == 0)
-            reT = {z_B, run_time2, (scalar) diff + end};
+            reT = {{}, run_time2, (scalar) diff + end};
         else {
-            reT = {z_B, run_time2, (scalar) num_iter};
+            reT = {{}, run_time2, (scalar) num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
-                 << (int) (run_time2 / run_time3) << "," << run_time4 << ",";
+                 << (index) (run_time2 / run_time3) << "," << run_time4 << ",";
             cout.flush();
         }
         return reT;
