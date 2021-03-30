@@ -86,9 +86,10 @@ long plot_run() {
                     ber[init + 1][1][count] += cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                     tim[init + 1][1][count] += reT.run_time;
 
-                    scalar block_ils_time = std::accumulate(reT.x.begin(), reT.x.end(), 0.0);
+                    scalar block_ils_time = std::accumulate(reT.x.begin(), reT.x.begin() + d_s.size(), 0.0);
                     for (index ser_tim_itr = 0; ser_tim_itr < d_s.size(); ser_tim_itr++){
-                        ser_tim[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / (max_iter - 1);
+                        ser_tim[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
+                        ser_tim[init + 1][ser_tim_itr + d_s.size()][count] +=reT.x[ser_tim_itr + d_s.size()] / max_iter;
                     }
 
                     l = 2;
@@ -107,7 +108,7 @@ long plot_run() {
                 printf("%d-Time: %.5fs, ", i, run_time);
                 cout.flush();
             }
-            max_iter--;
+//            max_iter--;
             for (index init = -1; init <= 1; init++) {
                 for (index ll = 0; ll < l; ll++) {
                     res[init + 1][ll][count] = res[init + 1][ll][count] / max_iter;
@@ -147,7 +148,7 @@ long plot_run() {
                 printf("++++++++++++++++++++++++++++++++++++++\n");
             }
             count++;
-            max_iter++;
+//            max_iter++;
         }
         printf("End of current TASK.\n");
         printf("-------------------------------------------\n");

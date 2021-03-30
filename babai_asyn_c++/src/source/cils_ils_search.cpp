@@ -128,10 +128,10 @@ namespace cils {
                 }
             }
         }
-        if (mode == 3) {
+        if (mode == 1) {
             cout << count << "," << iter << ";";
         }
-        return diff;
+        return count;
     }
 
     template<typename scalar, typename index, index n>

@@ -25,7 +25,7 @@ namespace cils {
         cout << endl;
         index ds = d->size(), dx = d->at(ds - 1), n_dx_q_0, n_dx_q_1;
         vector<scalar> y_b(n, 0);
-        vector<scalar> time(ds, 0);
+        vector<scalar> time(2 * ds, 0);
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
@@ -45,12 +45,23 @@ namespace cils {
             //Find the Babai point
             return cils_babai_search_serial(z_B);
         }
+
+        vector<index> r_d = d_s;
+        std::random_shuffle(r_d.begin(), r_d.end());
+        for(index i = 0; i < ds; i++){
+            cout << r_d[i] << " ";
+        }
+        cout << endl;
+
         scalar start = omp_get_wtime();
-
         for (index i = 0; i < ds; i++) {
-            n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
-            n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
-
+//            n_dx_q_0 = i == 0 ? n - dx : n - d->at(ds - 1 - i);
+//            n_dx_q_1 = i == 0 ? n : n - d->at(ds - i);
+            n_dx_q_1 = r_d[i];
+            n_dx_q_0 = r_d[i] - block_size;
+            cout << n_dx_q_1 / block_size - 1 << ", ";
+            index time_index = n_dx_q_1 / block_size - 1;
+            time[time_index] = omp_get_wtime();
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 scalar sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
@@ -59,12 +70,12 @@ namespace cils {
                 }
                 y_b[row] = y_A->x[row] - sum;
             }
-            time[i] = omp_get_wtime();
+
             if (is_constrained)
-                ils_search_obils(n_dx_q_0, n_dx_q_1, &y_b, z_B);
+                time[time_index + ds] = ils_search_obils(n_dx_q_0, n_dx_q_1, &y_b, z_B);
             else
                 ils_search(n_dx_q_0, n_dx_q_1, &y_b, z_B);
-            time[i] = omp_get_wtime() - time[i];
+            time[time_index] = omp_get_wtime() - time[time_index];
         }
 
         scalar run_time = omp_get_wtime() - start;
@@ -97,8 +108,8 @@ namespace cils {
         scalar run_time3;
         //n_dx_q_0, n_dx_q_1, row_n
         scalar run_time = omp_get_wtime();
-        ils_search_obils_omp2(n - dx, n, 0, ds, 1, R_S, y_B, z_x);
-        result[0] = 1;
+        //ils_search_obils_omp2(n - dx, n, 0, ds, 1, R_S, y_B, z_x);
+        //result[0] = 1;
         scalar run_time4 = omp_get_wtime() - run_time;
 
 
@@ -123,7 +134,7 @@ namespace cils {
 //#pragma omp barrier
             for (index j = 0; j < nswp && !flag; j++) {
 #pragma omp for schedule(dynamic) nowait
-                for (index i = 1; i < ds; i++) {
+                for (index i = 0; i < ds; i++) {
 //                    if (front >= i && end <= i) {
 //                        front++;
                     if (!result[i] && !flag) {// front >= i && end <= i

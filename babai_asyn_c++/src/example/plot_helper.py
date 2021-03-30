@@ -71,7 +71,7 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
     title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) \
             + '-SNR and 4, 64-QAM with different number of threads and block size ' + str(block_size)
     if is_qr == 0:
-        title += 'with LLL reduction'
+        title += ' with LLL reduction'
 
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
 
@@ -84,7 +84,7 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
 def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr):
     print("\n----------PLOT BLOCK TIME--------------\n")
     plt2.rcParams["figure.figsize"] = (10, 8)
-    fig, axes2 = plt2.subplots(2, 1, constrained_layout=True)
+    fig, axes2 = plt2.subplots(2, 2, constrained_layout=True)
     color = ['r', 'g', 'b', 'y']
     marker = ['o', '+', 'x', '.']
     d_s = int(n / block_size)
@@ -94,24 +94,33 @@ def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr):
         # SNR = int(lines[k].split(":")[1].split("\n")[0])
         # init_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\n")[0])
         qam = 4 if j == 0 else 64
-        axes2[j].set_title(str(qam) + '-QAM', fontsize=13)
-        axes2[j].set_ylabel('Percentage', fontsize=13)
+        axes2[j, 0].set_title(str(qam) + '-QAM', fontsize=13)
+        axes2[j, 1].set_title(str(qam) + '-QAM', fontsize=13)
+        axes2[j, 0].set_ylabel('Percentage', fontsize=13)
+        axes2[j, 1].set_ylabel('Num of Iteration', fontsize=13)
+        axes2[j, 1].set_xlabel('The i-th block', fontsize=13)
 
-        for x in range(0, 3):
+        for x in range(0, 3): #only the $x_{init} = 0
             tim = []
+            itr = []
             for l in range(0, d_s):
-                tim.append(ser_tim[x][l][j])
+                tim.append(ser_tim[1][l][j])
+                itr.append(ser_tim[x][l + d_s][j])
 
-            labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
+            labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']#range(0, d_s)#
 
             print(tim)
-            axes2[j].plot(range(0, d_s), tim, color=color[x], marker=marker[x], label=labels[x])
-            axes2[j].legend(loc="upper right")
+
+            #explode = (0, 0.1, 0, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
+            axes2[j, 0].pie(tim, labels=range(0, d_s), autopct='%1.1f%%', shadow=True, startangle=90)
+            axes2[j, 1].semilogy\
+                (range(0, d_s), itr, color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 1].legend(loc="upper right")
 
     title = 'ILS Sequential Solving Time Per block for ' + str(SNR) \
             + '-SNR and 4, 64-QAM and problem size ' + str(n) + ', block size ' + str(block_size)
     if is_qr == 0:
-        title += 'with LLL reduction'
+        title += ' with LLL reduction'
     fig.suptitle("\n".join(wrap(title, 85)), fontsize=15)
     plt2.savefig('./' + str(n) + '_block_time_' + str(SNR) + '_' + str(block_size) + '_' + str(is_qr))
     plt2.close()

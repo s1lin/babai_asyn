@@ -91,6 +91,7 @@ void run_test(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 //    load_test();
 //    qr_test<double, int, 4096>();
+    printf("--------------------\n start \n");
     double t = omp_get_wtime();
     run_test(argc, argv);
     printf("\n--------------------\n TOTAL TIME: \n %.5f,", omp_get_wtime() - t);
