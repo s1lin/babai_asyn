@@ -12,9 +12,10 @@ const static int N = 512;
 using namespace std;
 
 namespace cils {
-    typedef int index;
-    typedef double scalar;
+
     namespace program_def {
+        typedef int index;
+        typedef double scalar;
         /**
          *   omp_sched_static = 0x1,
          *   omp_sched_dynamic = 0x2,
@@ -23,12 +24,13 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 2;
-        index search_iter = 10;
+        index max_iter = 100;
+        index search_iter = 100;
         index stop = 2;
         index schedule = 2;
         index chunk_size = 1;
         index block_size = 32;
+        index spilt_size = 2;
         index is_constrained = true;
         index is_read = false;
         index is_matlab = true; //Means LLL reduction
@@ -36,15 +38,16 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 1000000;//INT_MAX;
-        index min_proc = 3;
+        index max_search = 10000;//INT_MAX;
+        index min_proc = 2;
 
-        index max_proc = omp_get_max_threads();
-        index max_thre = 80000000;//maximum search allowed for serial ils.
+        index max_proc = min(omp_get_max_threads(), N / block_size);
+        index max_thre = 10000;//maximum search allowed for serial ils.
 
         string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";
-        std::vector<index> d_s(N / block_size, block_size);
+        std::vector<index> d_s(N / block_size + 1, block_size);
+//        std::vector<index> d_s(N / block_size, block_size);
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
@@ -70,9 +73,16 @@ namespace cils {
                    k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
             suffix += "_" + to_string(SNR) + "_" + to_string(k);
             prefix = is_local ? "../../" : "";
+            d_s[0] = 16;
+            d_s[1] = 16;
+//            d_s[2] = 16;
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }
+            for (index i = 0; i <d_s.size(); i++) {
+                cout<<d_s[i]<<", ";
+            }
+            cout<<"\n";
         }
 
         template<typename scalar, typename index, index n>

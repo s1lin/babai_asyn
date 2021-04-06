@@ -112,6 +112,24 @@ namespace cils {
         }
     }
 
+    template<typename scalar, typename index, index n>
+    inline void vector_reverse_permutation(const scalarType<scalar, index> *Z,
+                                           vector<index> *x) {
+        vector<index> x_P(n, 0);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                if(Z->x[i * n + j] != 0){
+                    x_P[i] = x->at(j);
+                    break;
+                }
+            }
+        }
+
+        for(index i = 0; i < n; i++){
+            x->at(i) = x_P[i];
+        }
+    }
+
 
     /**
      *
@@ -669,6 +687,15 @@ namespace cils {
         */
         returnType<scalar, index>
         cils_babai_search_serial(vector<index> *z_B);
+
+        /**
+        * Serial Babai solver
+        * @param z_B
+        * @param is_constrained
+        * @return
+        */
+        returnType<scalar, index>
+        cils_block_search_serial_CPUTEST(const vector<index> *d, vector<index> *z_B);
 
         /**
          * Constrained version of Parallel Babai solver

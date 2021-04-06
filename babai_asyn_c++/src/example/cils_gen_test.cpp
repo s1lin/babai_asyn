@@ -10,9 +10,10 @@ long plot_run() {
 
     for (SNR = 35; SNR <= 35; SNR += 30) {
         index d_s_size = d_s.size();
-        scalar res[3][100][2] = {}, ber[3][100][2] = {}, tim[3][100][2] = {};
-        scalar itr[3][100][2] = {}, qrd[3][100][2] = {}, err[3][100][2] = {};
-        scalar ser_tim[3][100][2] = {};
+        scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[3][200][2] = {};
+        scalar itr[3][200][2] = {}, qrd[3][200][2] = {}, err[3][200][2] = {};
+        scalar ser_tim[3][200][2] = {};
+
         index count = 0, l = 2; //count for qam.
         for (k = 1; k <= 3; k += 2) {
             printf("plot_res-------------------------------------------\n");
@@ -32,7 +33,8 @@ long plot_run() {
                         std::cout << "Block, size: " << block_size << std::endl;
                         std::cout << "Init, value: " << init << std::endl;
                         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-                               res[init + 1][0][count] / max_iter, ber[init + 1][0][count] / max_iter, tim[init + 1][0][count],
+                               res[init + 1][0][count] / max_iter, ber[init + 1][0][count] / max_iter,
+                               tim[init + 1][0][count],
                                ser_qrd / max_iter,
                                (ser_qrd + tim[init + 1][0][count]) / max_iter);
                         printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
@@ -82,16 +84,26 @@ long plot_run() {
 
                     init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                     reT = cils.cils_block_search_serial(&d_s, &z_B);
-                    res[init + 1][1][count] += cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
+                    scalar res_block = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
+                    res[init + 1][1][count] += res_block;
                     ber[init + 1][1][count] += cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                     tim[init + 1][1][count] += reT.run_time;
+                    cils::vector_reverse_permutation<scalar, index, n>(cils.Z, &z_B);
+                    reT = cils.cils_block_search_serial_CPUTEST(&d_s, &z_B);
+                    cout << "\nDIFF: " << cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B) - res_block
+                         << endl;
+
 
                     scalar block_ils_time = std::accumulate(reT.x.begin(), reT.x.begin() + d_s.size(), 0.0);
-                    for (index ser_tim_itr = 0; ser_tim_itr < d_s.size(); ser_tim_itr++){
-                        ser_tim[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
-                        ser_tim[init + 1][ser_tim_itr + d_s.size()][count] +=reT.x[ser_tim_itr + d_s.size()] / max_iter;
-                    }
+                    scalar block_ils_iter = std::accumulate(reT.x.begin() + d_s.size(), reT.x.end(), 0.0);
 
+                    for (index ser_tim_itr = 0; ser_tim_itr < d_s.size(); ser_tim_itr++) {
+                        cout << reT.x[ser_tim_itr] << ", ";
+                        ser_tim[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
+                        ser_tim[init + 1][ser_tim_itr + d_s.size()][count] +=
+                                reT.x[ser_tim_itr + d_s.size()] / block_ils_iter / max_iter;
+                    }
+                    cout << endl;
                     l = 2;
                     for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
                         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
@@ -153,25 +165,42 @@ long plot_run() {
         printf("End of current TASK.\n");
         printf("-------------------------------------------\n");
 
-        PyObject * pName, *pModule, *pFunc;
-        PyObject * pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer;
+        PyObject *pName, *pModule, *pFunc;
+        PyObject *pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer, *pD_s, *pPrc;
         Py_Initialize();
         if (_import_array() < 0)
             PyErr_Print();
-        npy_intp dim[3] = {3, 100, 2};
+        npy_intp dim[3] = {3, 200, 2};
+        npy_intp dsd[1] = {static_cast<npy_intp>(d_s.size())};
+
+        scalar d_s_A[d_s.size()];
+        for (index h = 0; h < d_s.size(); h++) {
+            d_s_A[h] = d_s[h];
+        }
+        scalar proc_nums[l - 2] = {};
+        index ll = 0;
+        for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
+            proc_nums[ll] = n_proc > max_proc ? max_proc : n_proc;
+            ll++;
+        }
+        npy_intp dpc[1] = {ll};
 
         pRes = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, res);
         pBer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber);
         pTim = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, tim);
         pItr = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, itr);
         pSer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ser_tim);
+        pD_s = PyArray_SimpleNewFromData(1, dsd, NPY_DOUBLE, d_s_A);
+        pPrc = PyArray_SimpleNewFromData(1, dpc, NPY_DOUBLE, proc_nums);
         if (pRes == nullptr) printf("pRes has a problem.\n");
         if (pBer == nullptr) printf("pBer has a problem.\n");
         if (pTim == nullptr) printf("pTim has a problem.\n");
         if (pItr == nullptr) printf("pItr has a problem.\n");
-        if (pSer == nullptr) printf("pItr has a problem.\n");
+        if (pSer == nullptr) printf("pSer has a problem.\n");
+        if (pD_s == nullptr) printf("pD_s has a problem.\n");
+        if (pPrc == nullptr) printf("pPrc has a problem.\n");
 
-        PyObject * sys_path = PySys_GetObject("path");
+        PyObject *sys_path = PySys_GetObject("path");
         PyList_Append(sys_path,
                       PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
         pName = PyUnicode_FromString("plot_helper");
@@ -180,7 +209,7 @@ long plot_run() {
         if (pModule != nullptr) {
             pFunc = PyObject_GetAttrString(pModule, "plot_runtime");
             if (pFunc && PyCallable_Check(pFunc)) {
-                pArgs = PyTuple_New(12);
+                pArgs = PyTuple_New(14);
                 if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                     return false;
                 }
@@ -217,6 +246,12 @@ long plot_run() {
                 if (PyTuple_SetItem(pArgs, 11, pSer) != 0) {
                     return false;
                 }
+                if (PyTuple_SetItem(pArgs, 12, pD_s) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 13, pPrc) != 0) {
+                    return false;
+                }
 
                 pValue = PyObject_CallObject(pFunc, pArgs);
 
@@ -239,7 +274,7 @@ long test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
 
     cils::cils<scalar, index, n> cils(k, SNR);
-    index init = 0;
+    index init = -1;
     scalar error = 0;
     cils::returnType<scalar, index> reT, qr_reT = {{}, 0, 0}, qr_reT_omp = {{}, 0, 0};
     for (index i = 0; i < max_iter; i++) {
@@ -261,7 +296,7 @@ long test_ils_search() {
         cout.flush();
 
         vector<index> z_B(n, 0);
-        init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
+        init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
 
         reT = cils.cils_babai_search_serial(&z_B);
 //        cils::vector_permutation<scalar, index, n>(cils.Z, &z_B);
@@ -274,12 +309,10 @@ long test_ils_search() {
 //        cils::display_vector<scalar, index>(&cils.x_t);
 
 
-        init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
+        init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
         reT = cils.cils_block_search_serial(&d_s, &z_B);
-//        cils::vector_permutation<scalar, index, n>(cils.Z, reT.x);
         res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
         ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
-
 
         printf("\nMethod: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                block_size, res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
@@ -303,9 +336,8 @@ long test_ils_search() {
 //                   reT.run_time + qr_reT_omp.run_time,
 //                   (bab_tim_constrained + qr_reT.run_time) / (qr_reT_omp.run_time + reT.run_time));
 
-            init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
+            init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
             reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, init, &d_s, &z_B);
-//            cils::vector_permutation<scalar, index, n>(cils.Z, reT.x);
             res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
             ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 //            cout<<endl;
