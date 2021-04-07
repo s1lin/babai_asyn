@@ -105,12 +105,13 @@ long plot_run() {
                     }
                     cout << endl;
                     l = 2;
-                    for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
+                    for (index n_proc = min_proc; n_proc <= max_proc ; n_proc += min_proc) {//+ 2 * min_proc
                         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
-                        reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc,
-                                                         num_trials, init, &d_s, &z_B);
-                        reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc,
-                                                         num_trials, init, &d_s, &z_B);
+                        cils.cils_block_search_omp(n_proc, num_trials, init, &d_s, &z_B);
+
+                        init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
+                        reT = cils.cils_block_search_omp(n_proc, num_trials, init, &d_s, &z_B);
+
                         res[init + 1][l][count] += cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
                         ber[init + 1][l][count] += cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                         tim[init + 1][l][count] += reT.run_time;
@@ -145,10 +146,10 @@ long plot_run() {
                        block_size, res[init + 1][1][count], ber[init + 1][1][count], tim[init + 1][1][count],
                        ser_qrd / max_iter, (ser_qrd + tim[init + 1][1][count]));
                 l = 2;
-                for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
+                for (index n_proc = min_proc; n_proc <= max_proc ; n_proc += min_proc) {
                     printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
                            "Speed up: %.3f, QR Error: %.3f, QR Time: %.5fs, QR SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
-                           n_proc > max_proc ? max_proc : n_proc, res[init + 1][l][count],
+                           n_proc, res[init + 1][l][count],
                            ber[init + 1][l][count], itr[init + 1][l][count],
                            tim[init + 1][l][count], tim[init + 1][l][count],
                            tim[init + 1][1][count] / tim[init + 1][l][count],
@@ -181,8 +182,8 @@ long plot_run() {
         }
         scalar proc_nums[l - 2] = {};
         index ll = 0;
-        for (index n_proc = min_proc; n_proc <= max_proc + 2 * min_proc; n_proc += min_proc) {
-            proc_nums[ll] = n_proc > max_proc ? max_proc : n_proc;
+        for (index n_proc = min_proc; n_proc <= max_proc ; n_proc += min_proc) {
+            proc_nums[ll] = n_proc;
             ll++;
         }
         npy_intp dpc[1] = {ll};

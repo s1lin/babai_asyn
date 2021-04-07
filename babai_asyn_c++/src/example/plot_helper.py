@@ -54,9 +54,9 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             proc_num = proc_num.astype(int)
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
             itr_label = ['NT-' + str(proc) for proc in proc_num]
-            itr_label[len(itr_label) - 1] = itr_label[len(itr_label) - 1] + '-3'
-            itr_label[len(itr_label) - 2] = itr_label[len(itr_label) - 2] + '-2'
-            itr_label[len(itr_label) - 3] = itr_label[len(itr_label) - 3] + '-1'
+            # itr_label[len(itr_label) - 1] = itr_label[len(itr_label) - 1] + '-3'
+            # itr_label[len(itr_label) - 2] = itr_label[len(itr_label) - 2] + '-2'
+            # itr_label[len(itr_label) - 3] = itr_label[len(itr_label) - 3] + '-1'
             print(itr_label)
             res_label = ['Babai', 'B-seq'] + itr_label
             print(res_label)
@@ -65,8 +65,8 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             axes2[j, 0].plot(itr_label, omp_itr[0:len(itr_label)], color=color[x], marker=marker[x], label=labels[x])
             axes2[j, 1].plot(res_label, omp_res[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
             axes2[j, 2].plot(res_label, omp_ber[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 3].plot(res_label, omp_stm[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
-            axes2[j, 4].plot(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 3].semilogy(res_label, omp_stm[0:len(res_label)], color=color[x], marker=marker[x], label=labels[x])
+            axes2[j, 4].semilogy(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x], label=labels[x])
             axes2[j, 0].set_xticklabels(itr_label, rotation=45)
             axes2[j, 1].set_xticklabels(res_label, rotation=45)
             axes2[j, 2].set_xticklabels(res_label, rotation=45)
