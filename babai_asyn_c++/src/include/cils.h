@@ -668,7 +668,7 @@ namespace cils {
         cils_babai_search_cuda(const index nswp, vector<index> *z_B);
 
         /**
-         *
+         * Usage Caution: If LLL reduction is applied, please do permutation after getting the result.
          * @param n_proc
          * @param nswp
          * @param update

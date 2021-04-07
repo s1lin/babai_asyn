@@ -212,7 +212,7 @@ namespace cils {
 //                            }
 //                            y_B[row] = y_A->x[row] - sum;
 //                        }
-                    if (first) {// front >= i && end <= i!
+                    if (first && i != 0) {// front >= i && end <= i!
                         n_dx_q_2 = d->at(i);
                         n_dx_q_0 = i == ds - 1 ? 0 : d->at(i + 1);
 
@@ -240,10 +240,6 @@ namespace cils {
                             y_B[row] = y_A->x[row] - sum;
                         }
                         ils.obils_omp(n_dx_q_0, n_dx_q_1, i, i == 0, R_A, y_B, z_x);
-                        if(omp_get_thread_num() == 0) {
-                            end = 1;
-                            result[0] = 1;
-                        }
                     }
                     else if (!result[i] && !flag){// && end <= i
                         n_dx_q_2 = d->at(i);

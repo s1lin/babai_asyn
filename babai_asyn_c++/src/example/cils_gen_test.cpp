@@ -109,6 +109,8 @@ long plot_run() {
                         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                         reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc,
                                                          num_trials, init, &d_s, &z_B);
+                        reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc,
+                                                         num_trials, init, &d_s, &z_B);
                         res[init + 1][l][count] += cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
                         ber[init + 1][l][count] += cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                         tim[init + 1][l][count] += reT.run_time;

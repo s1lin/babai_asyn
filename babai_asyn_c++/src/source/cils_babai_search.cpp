@@ -108,28 +108,24 @@ namespace cils {
         vector<scalar> z_B_tmp(n, 0);
 
         scalar start = omp_get_wtime();
-        index result = round(y_A->x[n - 1] / R->x[n * n - 1]);
-        z_B->at(n - 1) = result < 0 ? 0 : result > upper ? upper : result;
+
+        z_B_tmp[n - 1] = y_A->x[n - 1] / R_A->x[((n - 1) * n) / 2 + n - 1];
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
-                sum += R->x[col + k * n] * z_B->at(col);
+                sum += R_A->x[k * n - (k * (n - i)) / 2 + col] * z_B->at(col);
             }
-            result = round((y_A->x[k] - sum) / R->x[k * n + k]);
-            z_B->at(k) = !is_constrained ? result : result < 0 ? 0 : result > upper ? upper : result;
+            z_B_tmp[k] = (y_A->x[n - 1 - i] - sum) / R_A->x[k * n - (k * (n - i)) / 2 + n - 1 - i];
             sum = 0;
         }
 
-//        for (index i = 0; i < n; i++) {
-//            z_B->at(i) = round(z_B_tmp[i]) < 0 ? 0 : round(z_B_tmp[i]) > upper ? upper : round(z_B_tmp[i]);
-//        }
+        for (index i = 0; i < n; i++) {
+            z_B->at(i) = round(z_B_tmp[i]) < 0 ? 0 : round(z_B_tmp[i]) > upper ? upper : round(z_B_tmp[i]);
+        }
 
         scalar run_time = omp_get_wtime() - start;
-        //Matlab Partial Reduction needs to do the permutation
-//        if(is_matlab)
-//            vector_permutation<scalar, index, n>(Z, z_B);
-
         returnType<scalar, index> reT = {{}, run_time, 0};
         return reT;
     }
+
 }
