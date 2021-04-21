@@ -36,6 +36,7 @@ function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR,
             [R, Z, y] = sils_reduction(A, y_LLL);
         end
         
+        R(n-31:n, n-31:n)
         init_res = norm(y_LLL - A * x_t);
         if all(Z(:) >= 0) && all(Z(:) <= 1)
             break

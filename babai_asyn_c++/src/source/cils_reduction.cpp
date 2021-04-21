@@ -283,7 +283,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x,
-                                                    vector<index> *arr) {
+                                                    vector<scalar> *arr) {
         index i = 0;
         for (auto r : x) {
             arr->at(i) = r;
