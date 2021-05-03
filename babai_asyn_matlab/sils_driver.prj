@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="3898488746" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab" name="sils_driver" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="3006196200" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab" name="sils_driver" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -185,7 +185,7 @@
       <param.CodeFormattingTool>option.CodeFormattingTool.Auto</param.CodeFormattingTool>
       <param.ClangFormatFile />
       <param.DataTypeReplacement />
-      <param.EnableCustomReplacementTypes>false</param.EnableCustomReplacementTypes>
+      <param.EnableCustomReplacementTypes />
       <param.ReplacementTypes.double />
       <param.ReplacementTypes.single />
       <param.ReplacementTypes.uint8 />
@@ -198,7 +198,7 @@
       <param.ReplacementTypes.int64 />
       <param.ReplacementTypes.char />
       <param.ReplacementTypes.logical />
-      <param.ReplacementTypes.ImportCustomTypes>false</param.ReplacementTypes.ImportCustomTypes>
+      <param.ReplacementTypes.ImportCustomTypes />
       <param.ReplacementTypes.HeaderFiles />
       <param.CppInterfaceStyle>option.CppInterfaceStyle.Functions</param.CppInterfaceStyle>
       <param.CppInterfaceClassName />
@@ -241,9 +241,9 @@
       <param.CustomSource />
       <param.CustomLibrary />
       <param.PostCodeGenCommand />
-      <param.TargetLangStandard>Auto</param.TargetLangStandard>
-      <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
-      <param.DeprecatedCRLFlag>false</param.DeprecatedCRLFlag>
+      <param.TargetLangStandard />
+      <param.CodeReplacementLibrary />
+      <param.DeprecatedCRLFlag />
       <param.SameHardware>true</param.SameHardware>
       <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
       <param.BuildConfiguration />
@@ -899,12 +899,12 @@
     <param.unifiedParamStorage />
     <var.gc.lastOutputRoot>codegen/mex/sils_driver</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3898488746</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>3006196200</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen/mex/sils_driver</var.cfi.lastOutputRoot>
     <var.cfi.preBuildChecksum>2378564638</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>sils_driver(1, 8, 35, 0)</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;710392390&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;2938642517&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
     <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrmcp.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_driver.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
@@ -938,7 +938,7 @@
     <param.gpu.EnableCUSOLVER>false</param.gpu.EnableCUSOLVER>
     <param.gpu.EnableCUFFT>false</param.gpu.EnableCUFFT>
     <var.checkIssuesGpu>false</var.checkIssuesGpu>
-    <var.hasGpu>false</var.hasGpu>
+    <var.hasGpu>true</var.hasGpu>
     <var.isDeepLearningForMatlabCoderEnabled>true</var.isDeepLearningForMatlabCoderEnabled>
     <param.deeplearning.EnableDeepLearning>false</param.deeplearning.EnableDeepLearning>
     <param.deeplearning.TargetLib>option.deeplearning.targetlibrary.none</param.deeplearning.TargetLib>
@@ -1176,7 +1176,7 @@
       <vista>false</vista>
       <linux>true</linux>
       <solaris>false</solaris>
-      <osver>5.8.0-48-generic</osver>
+      <osver>5.8.0-50-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>glnxa64</arch>

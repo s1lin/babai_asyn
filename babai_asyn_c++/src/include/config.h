@@ -24,7 +24,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 500;
+        index max_iter = 1000;
         index search_iter = 100;
         index stop = 2;
         index schedule = 2;
@@ -38,11 +38,11 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 10000;//INT_MAX;
-        index min_proc = 2;
+        index max_search = 50000;//INT_MAX;
+        index min_proc = 3;
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
-        index max_thre = 10000;//maximum search allowed for serial ils.
+        index max_thre = 50000;//maximum search allowed for serial ils.
 
         string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";
@@ -75,12 +75,11 @@ namespace cils {
             prefix = is_local ? "../../" : "";
             d_s[0] = 16;
             d_s[1] = 16;
-//            d_s[2] = 16;
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }
-            for (index i = 0; i <d_s.size(); i++) {
-                cout<<d_s[i]<<", ";
+            for (index d_ : d_s) {
+                cout<<d_<<", ";
             }
             cout<<"\n";
         }
@@ -95,13 +94,13 @@ namespace cils {
         }
 
         template<typename scalar, typename index, index n>
-        void init_guess(index init_value, vector<index> *z_B, vector<index> *x_R) {
+        void init_guess(index init_value, vector<scalar> *z_B, vector<scalar> *x_R) {
             z_B->assign(n, 0);
             if (init_value == -1) {
-                for (index i = 0; i < n; i++)
-                    z_B->at(i) = x_R->at(i);
+//                for (index i = 0; i < n; i++)
+//                    z_B->at(i) = x_R->at(i);
             } else if (init_value == 1)
-                z_B->assign(n, std::pow(2, k) / 2);
+                z_B->assign(n, round(std::pow(2, k) / 2));
         }
     }
 

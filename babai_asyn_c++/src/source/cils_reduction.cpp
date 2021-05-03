@@ -156,8 +156,8 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     long int cils<scalar, index, n>::cils_qr_decomposition_py_helper() {
-        PyObject * pName, *pModule, *pFunc;
-        PyObject * pArgs, *pValue, *pVec;
+        PyObject *pName, *pModule, *pFunc;
+        PyObject *pArgs, *pValue, *pVec;
         Py_Initialize();
         if (_import_array() < 0)
             PyErr_Print();
@@ -167,7 +167,7 @@ namespace cils {
         pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A->x);
         if (pVec == NULL) printf("There is a problem.\n");
 
-        PyObject * sys_path = PySys_GetObject("path");
+        PyObject *sys_path = PySys_GetObject("path");
         PyList_Append(sys_path,
                       PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
         pName = PyUnicode_FromString("py_qr");
@@ -236,7 +236,7 @@ namespace cils {
         matlabPtr->setVariable(u"qr", std::move(qr_M));
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver_mex(k, m, SNR, qr);");
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, m, SNR, qr);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
@@ -246,7 +246,7 @@ namespace cils {
         matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y_LLL");//Original
         matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
         matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"init_res");
-        matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"babai_norm");
+        matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"info");
         matlab::data::ArrayDimensions dim = A_A.getDimensions();
 
 //        cout << dim[0] << " " << dim[1] << endl;
@@ -261,13 +261,15 @@ namespace cils {
         for (auto r : res) {
             init_res = r;
         }
-        scalar b;
+        scalar info[3];
+        index _i = 0;
         for (auto r : b_n) {
-            b = r;
+            info[_i] = r;
+            _i++;
         }
-        if (b != 0)
-            cout <<" The Babai Res from Matlab is :" << b << endl;
-
+        printf("----------------------\n"
+               "MATLAB RESULT: QR/LLL Time: %.5f, Babai Time: %.5f, Babai Res: %.5f.\n"
+               "----------------------\n", info[0], info[1], info[2]);
         return init_res;
     }
 
@@ -291,3 +293,5 @@ namespace cils {
         }
     }
 }
+
+

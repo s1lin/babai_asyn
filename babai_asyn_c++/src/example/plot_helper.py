@@ -8,8 +8,8 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (20, 8)
     fig, axes = plt.subplots(2, 5, constrained_layout=True)
-    color = ['r', 'g', 'b', 'y']
-    marker = ['o', '+', 'x', '.']
+    color = ['r', 'g', 'b', 'r']
+    marker = ['o', '+', 'x', 'o']
 
     for j in range(0, 2):
 
@@ -26,7 +26,19 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
         axes[j, 3].set_ylabel('Avg. Solve Time (s)', fontsize=13)
         axes[j, 4].set_ylabel('Solver Speed Up x times', fontsize=13)
 
-        for x in range(0, 3):
+        for x in range(0, 4):
+            if x == 3:
+                block_stm = tim[x][1][j]
+                omp_stm = [0, block_stm]
+                itr_label = ['NT-' + str(proc) for proc in proc_num]
+                res_label = ['Babai', 'B-seq'] + itr_label
+                for l in range(2, l_max):
+                    omp_stm.append(tim[x][l][j])
+                print(omp_stm)
+                omp_spu = block_stm / omp_stm
+                axes[j, 3].semilogy(res_label[1:len(res_label)], omp_stm[1:len(res_label)], color=color[x], marker=marker[x], linestyle='--')
+                # axes[j, 4].plot(itr_label, omp_spu[2:len(itr_label) + 2], color=color[x], marker=marker[x], linestyle='--')
+                break
 
             babai_res = res[x][0][j]
             babai_ber = ber[x][0][j]
@@ -56,19 +68,19 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             spu_label = itr_label
 
             if j == 0:
-                axes[j, 0].plot(itr_label, omp_itr[0:len(itr_label)], color=color[x], marker=marker[x], label=labels[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]), color=color[x], marker=marker[x], label=labels[x])
             else:
-                axes[j, 0].plot(itr_label, omp_itr[0:len(itr_label)], color=color[x], marker=marker[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]), color=color[x], marker=marker[x])
 
-            axes[j, 1].plot(res_label, omp_res[0:len(res_label)], color=color[x], marker=marker[x])
-            axes[j, 2].plot(res_label, omp_ber[0:len(res_label)], color=color[x], marker=marker[x])
-            axes[j, 3].plot(spu_label, omp_stm[2:len(res_label)], color=color[x], marker=marker[x])
+            axes[j, 1].plot(res_label, np.array(omp_res[0:len(res_label)]), color=color[x], marker=marker[x])
+            axes[j, 2].plot(res_label, np.array(omp_ber[0:len(res_label)]), color=color[x], marker=marker[x])
+            axes[j, 3].semilogy(res_label, omp_stm[0:len(res_label)], color=color[x], marker=marker[x])
             axes[j, 4].plot(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x])
             
             axes[j, 0].set_xticklabels(itr_label, rotation=45)
             axes[j, 1].set_xticklabels(res_label, rotation=45)
             axes[j, 2].set_xticklabels(res_label, rotation=45)
-            axes[j, 3].set_xticklabels(spu_label, rotation=45)
+            axes[j, 3].set_xticklabels(res_label, rotation=45)
             axes[j, 4].set_xticklabels(spu_label, rotation=45)
 
     title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) \
@@ -79,7 +91,13 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
     fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=3)
 
-    plt.savefig('./' + str(n) + '_report_plot_' + str(SNR) + '_' + str(block_size) + '_' + str(is_qr))
+    # from matplotlib import ticker
+    # formatter = ticker.ScalarFormatter(useMathText=True)
+    # formatter.set_scientific(True)
+    # formatter.set_powerlimits((-1,1))
+    # axes[:, 3].yaxis.set_major_formatter(formatter)
+
+    plt.savefig(f'./{n}_report_plot_{SNR}_{block_size}_{is_qr}_{max_iter}')
     plt.close()
 
     print("\n----------END PLOT RUNTIME--------------\n")

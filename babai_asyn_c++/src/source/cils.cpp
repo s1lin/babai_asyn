@@ -24,7 +24,7 @@ namespace cils {
         if ((retval = nc_inq_varid(ncid, "x_t", &varid))) ERR(retval);
 
         /* Read the data. */
-        if ((retval = nc_get_var_int(ncid, varid, &x_t.data()[0]))) ERR(retval);
+        if ((retval = nc_get_var_double(ncid, varid, &x_t.data()[0]))) ERR(retval);
 
         /* Get the varid of the data variable, based on its name. */
         if ((retval = nc_inq_varid(ncid, "y", &varid))) ERR(retval);
@@ -36,7 +36,7 @@ namespace cils {
         if ((retval = nc_inq_varid(ncid, "x_R", &varid))) ERR(retval);
 
         /* Read the data. */
-        if ((retval = nc_get_var_int(ncid, varid, &x_R.data()[0]))) ERR(retval);
+        if ((retval = nc_get_var_double(ncid, varid, &x_R.data()[0]))) ERR(retval);
 
         /* Get the varid of the data variable, based on its name. */
         if ((retval = nc_inq_varid(ncid, "R_A", &varid))) ERR(retval);

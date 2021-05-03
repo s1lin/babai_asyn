@@ -81,7 +81,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     inline scalar find_residual(const scalarType<scalar, index> *A,
                                 const scalarType<scalar, index> *y,
-                                const vector<index> *x) {
+                                const vector<scalar> *x) {
         scalar res = 0, sum = 0;
         for (index i = 0; i < n; i++) {
             sum = 0;
@@ -94,38 +94,108 @@ namespace cils {
     }
 
     template<typename scalar, typename index, index n>
+    inline vector<scalar> find_residual_by_block(const scalarType<scalar, index> *A,
+                                                 const scalarType<scalar, index> *y,
+                                                 const vector<index> *d, vector<scalar> *x) {
+        index ds = d->size();
+        vector<scalar> y_b(n, 0), res(ds, 0);
+        for (index i = 0; i < ds; i++) {
+            index n_dx_q_1 = d->at(i);
+            index n_dx_q_0 = i == ds - 1 ? 0 : d->at(i + 1);
+
+            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                scalar sum = 0;
+                for (index col = n_dx_q_1; col < n; col++) {
+                    sum += A->x[col + row * n] * x->at(row);
+                }
+                y_b[row] = y->x[row] - sum;
+            }
+
+            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                scalar sum = 0;
+                for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
+                    sum += A->x[col + row * n] * x->at(row);
+                }
+                res[i] += (y_b[row] - sum) * (y_b[row] - sum);
+            }
+
+            res[i] = std::sqrt(res[i]);
+        }
+        return res;
+    }
+
+    template<typename scalar, typename index, index n>
+    inline vector<scalar> find_bit_error_rate_by_block(const vector<scalar> *x_b, const vector<scalar> *x_t,
+                                                       const vector<index> *d, const index k) {
+        index ds = d->size();
+        vector<scalar> ber(ds, 0);
+        for (index i = 0; i < ds; i++) {
+            index error = 0;
+            index n_dx_q_1 = d->at(i);
+            index n_dx_q_0 = i == ds - 1 ? 0 : d->at(i + 1);
+            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                std::string binary_x_b, binary_x_t;
+                switch (k) {
+                    case 1:
+                        binary_x_b = std::bitset<1>((index) x_b->at(row)).to_string(); //to binary
+                        binary_x_t = std::bitset<1>((index) x_t->at(row)).to_string();
+                        break;
+                    case 2:
+                        binary_x_b = std::bitset<2>((index) x_b->at(row)).to_string(); //to binary
+                        binary_x_t = std::bitset<2>((index) x_t->at(row)).to_string();
+                        break;
+                    default:
+                        binary_x_b = std::bitset<3>((index) x_b->at(row)).to_string(); //to binary
+                        binary_x_t = std::bitset<3>((index) x_t->at(row)).to_string();
+                        break;
+                }
+//                cout << binary_x_b << "-" << binary_x_t << " ";
+                for (index j = 0; j < k; j++) {
+                    if (binary_x_b[j] != binary_x_t[j])
+                        error++;
+                }
+            }
+//            cout << error << ", \n";
+            ber[i] = (scalar) error / ((n_dx_q_1 - n_dx_q_0) * k);
+        }
+
+        return ber;
+    }
+
+
+    template<typename scalar, typename index, index n>
     inline void vector_permutation(const scalarType<scalar, index> *Z,
-                                   vector<index> *x) {
-        vector<index> x_P(n, 0);
+                                   vector<scalar> *x) {
+        vector<scalar> x_P(n, 0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
 
-                if(Z->x[j * n + i] != 0){
+                if (Z->x[j * n + i] != 0) {
                     x_P[i] = x->at(j);
                     break;
                 }
             }
         }
 
-        for(index i = 0; i < n; i++){
+        for (index i = 0; i < n; i++) {
             x->at(i) = x_P[i];
         }
     }
 
     template<typename scalar, typename index, index n>
     inline void vector_reverse_permutation(const scalarType<scalar, index> *Z,
-                                           vector<index> *x) {
-        vector<index> x_P(n, 0);
+                                           vector<scalar> *x) {
+        vector<scalar> x_P(n, 0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                if(Z->x[i * n + j] != 0){
+                if (Z->x[i * n + j] != 0) {
                     x_P[i] = x->at(j);
                     break;
                 }
             }
         }
 
-        for(index i = 0; i < n; i++){
+        for (index i = 0; i < n; i++) {
             x->at(i) = x_P[i];
         }
     }
@@ -142,24 +212,24 @@ namespace cils {
      * @return
      */
     template<typename scalar, typename index, index n>
-    inline scalar find_bit_error_rate(const vector<index> *x_b,
-                                      const vector<index> *x_t,
+    inline scalar find_bit_error_rate(const vector<scalar> *x_b,
+                                      const vector<scalar> *x_t,
                                       const index k) {
         index error = 0;
         for (index i = 0; i < n; i++) {
             std::string binary_x_b, binary_x_t;
             switch (k) {
                 case 1:
-                    binary_x_b = std::bitset<1>(x_b->at(i)).to_string(); //to binary
-                    binary_x_t = std::bitset<1>(x_t->at(i)).to_string();
+                    binary_x_b = std::bitset<1>((index) x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<1>((index) x_t->at(i)).to_string();
                     break;
                 case 2:
-                    binary_x_b = std::bitset<2>(x_b->at(i)).to_string(); //to binary
-                    binary_x_t = std::bitset<2>(x_t->at(i)).to_string();
+                    binary_x_b = std::bitset<2>((index) x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<2>((index) x_t->at(i)).to_string();
                     break;
                 default:
-                    binary_x_b = std::bitset<3>(x_b->at(i)).to_string(); //to binary
-                    binary_x_t = std::bitset<3>(x_t->at(i)).to_string();
+                    binary_x_b = std::bitset<3>((index) x_b->at(i)).to_string(); //to binary
+                    binary_x_t = std::bitset<3>((index) x_t->at(i)).to_string();
                     break;
             }
 //            cout << binary_x_b << "-" << binary_x_t << " ";
@@ -233,9 +303,32 @@ namespace cils {
      * @param x
      */
     template<typename scalar, typename index>
-    inline void display_vector(const vector<index> *x) {
+    inline void display_vector(const vector<scalar> *x) {
+        scalar sum = 0;
         for (index i = 0; i < x->size(); i++) {
-            cout << x->at(i) << " ";
+            printf("%.5f, ", x->at(i));
+            sum += x->at(i);
+        }
+
+        printf("SUM = %.5f\n", sum);
+    }
+
+    /**
+     * Simple function for displaying the struct scalarType
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     */
+    template<typename scalar, typename index>
+    inline void display_vector_by_block(const vector<index> *d, const vector<scalar> *x) {
+        cout << endl;
+        index ds = d->size();
+        for (index i = 0; i < ds; i++) {
+            index n_dx_q_1 = d->at(i);
+            index n_dx_q_0 = i == ds - 1 ? 0 : d->at(i + 1);
+            for (index h = n_dx_q_0; h < n_dx_q_1; h++)
+                cout << x->at(h) << " ";
+            cout << endl;
         }
         cout << accumulate(x->begin(), x->end(), 0) << endl;
     }
@@ -472,9 +565,9 @@ namespace cils {
     class cils {
 
     public:
-        index qam, snr;
+        index qam, snr, upper, lower;
         scalar init_res, sigma;
-        vector<index> x_R, x_t;
+        vector<scalar> x_R, x_t;
         scalarType<scalar, index> *R_A, *y_A, *y_L, *A, *R, *Q, *v_A, *Z;
     private:
         /**
@@ -499,7 +592,7 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                     const scalar *y_B, index *z_x);
+                                     const scalar *y_B, scalar *z_x);
 
 
         /**
@@ -513,7 +606,7 @@ namespace cils {
          * @return
          */
         inline scalar ils_search(const index n_dx_q_0, const index n_dx_q_1,
-                                 const vector<scalar> *y_B, vector<index> *z_x);
+                                 const vector<scalar> *y_B, vector<scalar> *z_x);
 
 
         /**
@@ -527,29 +620,28 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_obils(const index n_dx_q_0, const index n_dx_q_1,
-                                       const vector<scalar> *y_B, vector<index> *z_x);
+                                       const vector<scalar> *y_B, vector<scalar> *z_x);
 
 
         /**
          * ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
          * the upper triangular box-constrained integer least squares problem
          * min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
+         * @deprecated
          * @param n_dx_q_0
          * @param n_dx_q_1
+         * @param i
+         * @param ds
          * @param y_B
          * @param z_x
          * @return
          */
         inline bool ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
-                                         const index i, const index ds, scalar *y_B, index *z_x);
-
-        inline bool ils_search_obils_omp2(const index n_dx_q_0, const index n_dx_q_1,
-                                          const index i, const index ds, const bool check,
-                                          scalar *R_S, scalar *y_B, index *z_x);
+                                         const index i, const index ds, scalar *y_B, scalar *z_x);
 
         void value_input_helper(matlab::data::TypedArray<scalar> const x, scalarType<scalar, index> *arr);
 
-        void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<index> *arr);
+        void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> *arr);
 
 
     public:
@@ -560,13 +652,14 @@ namespace cils {
             this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
             this->y_A->x = new scalar[n]();
 
-            this->x_R = vector<index>(n, 0);
-            this->x_t = vector<index>(n, 0);
+            this->x_R = vector<scalar>(n, 0);
+            this->x_t = vector<scalar>(n, 0);
 
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
+            this->upper = pow(2, qam) - 1;
 
             this->R_A->size = n * (n + 1) / 2;
             this->y_A->size = n;
@@ -579,7 +672,7 @@ namespace cils {
             free(R_A);
             free(y_A);
             if (!program_def::is_read) {
-                if(program_def::is_matlab){
+                if (program_def::is_matlab) {
                     delete[] A->x;
                     delete[] R->x;
                     delete[] Z->x;
@@ -587,7 +680,7 @@ namespace cils {
                     free(A);
                     free(R);
                     free(Z);
-                }else {
+                } else {
                     delete[] A->x;
                     delete[] R->x;
                     delete[] v_A->x;
@@ -657,6 +750,7 @@ namespace cils {
         cils_qr_decomposition_reduction();
 
         scalar cils_qr_decomposition_reduction_helper();
+
         /**
          *
          * @param n_proc
@@ -665,7 +759,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_cuda(const index nswp, vector<index> *z_B);
+        cils_babai_search_cuda(const index nswp, vector<scalar> *z_B);
 
         /**
          * Usage Caution: If LLL reduction is applied, please do permutation after getting the result.
@@ -677,7 +771,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_back_solve(vector<index> *z_B);
+        cils_back_solve(vector<scalar> *z_B);
 
         /**
         * Serial Babai solver
@@ -686,7 +780,7 @@ namespace cils {
         * @return
         */
         returnType<scalar, index>
-        cils_babai_search_serial(vector<index> *z_B);
+        cils_babai_search_serial(vector<scalar> *z_B);
 
         /**
         * Serial Babai solver
@@ -695,7 +789,7 @@ namespace cils {
         * @return
         */
         returnType<scalar, index>
-        cils_block_search_serial_CPUTEST(const vector<index> *d, vector<index> *z_B);
+        cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B);
 
         /**
          * Constrained version of Parallel Babai solver
@@ -705,7 +799,17 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp(const index n_proc, const index nswp, vector<index> *z_B);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
+
+        /**
+         * Constrained version of Parallel Babai solver
+         * @param n_proc: number of Processors/Threads
+         * @param nswp: maximum number of iterations
+         * @param z_B: estimation of the true parameter
+         * @return
+         */
+        returnType<scalar, index>
+        cils_back_solve_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
 
         /**
          * Unconstrained serial version of Block Babai solver
@@ -714,7 +818,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(const vector<index> *d, vector<index> *z_B);
+        cils_block_search_serial(const index init, const vector<index> *d, vector<scalar> *z_B);
 
 
         /**
@@ -728,8 +832,13 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d, vector<index> *z_B);
+        cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d,
+                              vector<scalar> *z_B);
 
+
+        returnType<scalar, index>
+        cils_block_search_omp_dynamic_block(const index n_proc, const index nswp, const index init,
+                                            const vector<index> *d, vector<scalar> *z_B);
 
         /**
          * Unconstrained GPU version of Block Babai solver
@@ -742,7 +851,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<index> *z_B);
+        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<scalar> *z_B);
 
 
     };

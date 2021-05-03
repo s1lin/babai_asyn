@@ -1,10 +1,11 @@
-function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR, is_qr)
+function [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver(k, m, SNR, is_qr)
     rng('shuffle')
     %Initialize Variables
     n = 2^m; %The real size       
     x_t = zeros(n, 1);
     sigma = sqrt(((4^k-1)*2^m)/(6*10^(SNR/10)));            
     Z = zeros(n, n);
+    info = zeros(3, 1);
     
     while (true) 
         %Initialize A:
@@ -28,25 +29,26 @@ function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR,
 
         %Get Upper triangular matrix
         y_LLL = A * x_t + v;
+         tStart = tic;
         if is_qr == 1
             [Q, R] = qr(A);
             y = Q' * y_LLL;
             Z = eye(n, n);
-        else            
-            [R, Z, y] = sils_reduction(A, y_LLL);
-        end
-        
-        R(n-31:n, n-31:n)
+        else           
+            [R, Z, y] = sils_reduction(A, y_LLL);            
+        end        
+        tEnd = toc(tStart);
+        info(1) = tEnd;
         init_res = norm(y_LLL - A * x_t);
         if all(Z(:) >= 0) && all(Z(:) <= 1)
             break
         end
     end
-
+    
     %%%TEST BABAI:
     upper = 2^k - 1;
     z_B = zeros(n, 1);
-    
+    tStart = tic;
     for j = n:-1:1
         z_B(j) = (y(j) - R(j, j + 1:n) * z_B(j + 1:n)) / R(j, j);
         if(round(z_B(j)) > upper)
@@ -57,7 +59,9 @@ function [A, R, Z, y, y_LLL, x_t, init_res, babai_norm] = sils_driver(k, m, SNR,
             z_B(j) = round(z_B(j));
         end
     end
+    tEnd = toc(tStart);      
+    info(2) = tEnd;    
+    info(3) = norm(y - R * z_B);
     
-    babai_norm = norm(y_LLL - A * (Z * z_B));
     A = A';
     R = R';
