@@ -24,7 +24,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 1000;
+        index max_iter = 100;
         index search_iter = 100;
         index stop = 2;
         index schedule = 2;

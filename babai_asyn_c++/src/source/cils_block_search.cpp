@@ -333,9 +333,9 @@ namespace cils {
         returnType<scalar, index> reT;
 
         if (mode == 0)
-            reT = {{run_time3}, init != -1 ? k == 3 ? run_time2 : run_time3 : run_time3 + run_time, (scalar) diff + end};
+            reT = {{run_time3}, init != -1 ? k == 3 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 + run_time, (scalar) diff + end};
         else {
-            reT = {{run_time3}, init != -1 ? k == 3 ? run_time2 : run_time3 : run_time3 + run_time, (scalar) num_iter};
+            reT = {{run_time3}, init != -1 ? k == 3 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 + run_time, (scalar) num_iter};
             cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
                  << (index) (run_time2 / run_time3) << "," << run_time << "||";
             cout.flush();

@@ -142,19 +142,19 @@ long plot_run() {
                     printf("\n %d-Time: %.5fs, \n", i, run_time);
                     cout.flush();
                 }
-                if (i == max_iter) {
-                    for (k = 3; k >= 1; k -= 2) {
-                        count = k == 1 ? 0 : 1;
-                        for (index init = -1; init <= 1; init++) {
-                            for (index ll = 0; ll < l; ll++) {
-                                res[init + 1][ll][count] = res[init + 1][ll][count] / max_iter;
-                                ber[init + 1][ll][count] = ber[init + 1][ll][count] / max_iter;
-//                    tim[init + 1][ll][count] = tim[init + 1][ll][count] / max_iter;
-                                itr[init + 1][ll][count] = itr[init + 1][ll][count] / max_iter;
-                            }
-                        }
-                    }
-                }
+//                if (i == max_iter) {
+//                    for (k = 3; k >= 1; k -= 2) {
+//                        count = k == 1 ? 0 : 1;
+//                        for (index init = -1; init <= 1; init++) {
+//                            for (index ll = 0; ll < l; ll++) {
+//                                res[init + 1][ll][count] = res[init + 1][ll][count] / max_iter;
+//                                ber[init + 1][ll][count] = ber[init + 1][ll][count] / max_iter;
+////                    tim[init + 1][ll][count] = tim[init + 1][ll][count] / max_iter;
+//                                itr[init + 1][ll][count] = itr[init + 1][ll][count] / max_iter;
+//                            }
+//                        }
+//                    }
+//                }
                 for (k = 3; k >= 1; k -= 2) {
                     count = k == 1 ? 0 : 1;
 
@@ -189,7 +189,7 @@ long plot_run() {
                     }
                 }
                 printf("\n---------------------\nITER:%d\n---------------------\n", i);
-                if (i % 50 == 0 && i != 0) {
+                if (i % 10 == 0 && i != 0) {//i % 50 == 0 &&
                     PyObject *pName, *pModule, *pFunc;
                     PyObject *pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer, *pD_s, *pPrc;
                     Py_Initialize();
