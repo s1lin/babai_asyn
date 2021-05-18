@@ -4,7 +4,7 @@ import numpy as np
 from textwrap import wrap
 
 
-def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num):
+def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num, spu):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (20, 8)
     fig, axes = plt.subplots(2, 5, constrained_layout=True)
@@ -52,14 +52,13 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             omp_stm = [babai_stm, block_stm]
 
             omp_itr = []
-
+            omp_spu = []
             for l in range(2, l_max):
                 omp_res.append(res[x][l][j])
                 omp_ber.append(ber[x][l][j])
                 omp_itr.append(itr[x][l][j])
                 omp_stm.append(tim[x][l][j])
-
-            omp_spu = block_stm / omp_stm
+                omp_spu.append(spu[x][l][j])
 
             proc_num = proc_num.astype(int)
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
@@ -68,14 +67,14 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             spu_label = itr_label
 
             if j == 0:
-                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)])  / max_iter, color=color[x], marker=marker[x], label=labels[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x], marker=marker[x], label=labels[x])
             else:
-                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)])  / max_iter, color=color[x], marker=marker[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x], marker=marker[x])
 
-            axes[j, 1].semilogy(res_label, np.array(omp_res[0:len(res_label)])  / max_iter, color=color[x], marker=marker[x])
+            axes[j, 1].semilogy(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 2].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 3].semilogy(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
-            axes[j, 4].plot(spu_label, omp_spu[2:len(spu_label) + 2], color=color[x], marker=marker[x])
+            axes[j, 4].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
             
             axes[j, 0].set_xticklabels(itr_label, rotation=45)
             axes[j, 1].set_xticklabels(res_label, rotation=45)
