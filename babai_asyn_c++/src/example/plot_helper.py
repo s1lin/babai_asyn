@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt2
 import numpy as np
 from textwrap import wrap
+import pandas as pd
 
 
-def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num, spu):
+def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num, spu, time):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (20, 8)
     fig, axes = plt.subplots(2, 5, constrained_layout=True)
@@ -75,7 +76,7 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             axes[j, 2].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 3].semilogy(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 4].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
-            
+
             axes[j, 0].set_xticklabels(itr_label, rotation=45)
             axes[j, 1].set_xticklabels(res_label, rotation=45)
             axes[j, 2].set_xticklabels(res_label, rotation=45)
@@ -101,6 +102,47 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
 
     print("\n----------END PLOT RUNTIME--------------\n")
     plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s)
+
+    print("\n----------PRINT TIMETABLE--------------\n")
+    for j in range(0, 2):
+        np_time = np.array(time).astype(float)
+        babai = np_time[0, 1:max_iter + 1, :, j]
+        block = np_time[1, 1:max_iter + 1, :, j]
+        nt_03 = np_time[2, 1:max_iter + 1, :, j]
+        nt_06 = np_time[3, 1:max_iter + 1, :, j]
+        nt_09 = np_time[4, 1:max_iter + 1, :, j]
+        nt_12 = np_time[5, 1:max_iter + 1, :, j]
+        nt_15 = np_time[6, 1:max_iter + 1, :, j]
+
+        # print(time[5])
+        babai_stats = [np.mean(babai, axis=0), np.median(babai, axis=0), np.amax(babai, axis=0), np.amin(babai, axis=0)]
+        block_stats = [np.mean(block, axis=0), np.median(block, axis=0), np.amax(block, axis=0), np.amin(block, axis=0)]
+        nt_03_stats = [np.mean(nt_03, axis=0), np.median(nt_03, axis=0), np.amax(nt_03, axis=0), np.amin(nt_03, axis=0)]
+        nt_06_stats = [np.mean(nt_06, axis=0), np.median(nt_06, axis=0), np.amax(nt_06, axis=0), np.amin(nt_06, axis=0)]
+        nt_09_stats = [np.mean(nt_09, axis=0), np.median(nt_09, axis=0), np.amax(nt_09, axis=0), np.amin(nt_09, axis=0)]
+        nt_12_stats = [np.mean(nt_12, axis=0), np.median(nt_12, axis=0), np.amax(nt_12, axis=0), np.amin(nt_12, axis=0)]
+        nt_15_stats = [np.mean(nt_15, axis=0), np.median(nt_15, axis=0), np.amax(nt_15, axis=0), np.amin(nt_15, axis=0)]
+
+        # print(babai)
+        babai_df = pd.DataFrame(babai_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        block_df = pd.DataFrame(block_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        nt_03_df = pd.DataFrame(nt_03_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        nt_06_df = pd.DataFrame(nt_06_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        nt_09_df = pd.DataFrame(nt_09_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        nt_12_df = pd.DataFrame(nt_12_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        nt_15_df = pd.DataFrame(nt_15_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+
+        print(babai_df)
+        print(block_df)
+        print(nt_03_df)
+        print(nt_06_df)
+        print(nt_09_df)
+        print(nt_12_df)
+        print(nt_15_df)
+        print("------------------1------------------------")
+
+
+    print("\n----------END TIMETABLE--------------\n")
 
 
 def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s):

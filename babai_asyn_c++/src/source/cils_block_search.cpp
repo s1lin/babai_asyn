@@ -248,7 +248,7 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
         {
             for (index j = 0; j < _nswp && !flag; j++) {
-#pragma omp for schedule(runtime) nowait
+#pragma omp for schedule(dynamic) nowait
                 for (index i = 1; i < ds; i++) {
                     if (!flag && end <= i) {//  front >= i &&!R_S_1[i]  &&
                         n_dx_q_2 = d->at(i);
@@ -332,13 +332,20 @@ namespace cils {
 
         returnType<scalar, index> reT;
 
+
+        scalar time = 0; //(run_time3 + run_time2) * 0.5;
+        if (init == -1) {
+            time = k == 1 ? run_time3 + run_time : run_time3 + run_time;
+        } else {
+            time = k == 1 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5;
+        }
         if (mode == 0)
-            reT = {{run_time3}, init != -1 ? k == 3 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 + run_time, (scalar) diff + end};
+            reT = {{run_time3}, time, (scalar) diff + end};
         else {
-            reT = {{run_time3}, init != -1 ? k == 3 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5 + run_time, (scalar) num_iter};
-            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
-                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
-            cout.flush();
+            reT = {{run_time3}, time, (scalar) num_iter};
+//            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
+//                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
+//            cout.flush();
         }
         return reT;
     }

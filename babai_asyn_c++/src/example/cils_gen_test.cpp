@@ -10,18 +10,19 @@ long plot_run() {
 
     for (SNR = 35; SNR <= 35; SNR += 30) {
         index d_s_size = d_s.size();
-        scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[4][200][2] = {};
-        scalar itr[3][200][2] = {}, qrd[3][200][2] = {}, err[3][200][2] = {};
-        scalar ser_tim[3][200][2] = {};
-        scalar r, t, b, iter, ser_qrd, run_time;
+        scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[4][200][2] = {}, spu[4][200][2] = {};
+        scalar itr[3][200][2] = {}, stm[3][200][2] = {};
+        scalar all_time[7][1000][3][2] = {}; //Method, iter, init, qam
+        scalar r, t, b, iter, ser_qrd, run_time, ser_time;
         scalar t2, r2, b2, iter2;
+
         index count = 0, l = 2; //count for qam.
 
         vector<scalar> z_B(n, 0);
 
         cils::returnType<scalar, index> reT, qr_reT, qr_reT_omp;
 //        for (k = 1; k <= 3; k += 2) {
-        for (index tt = 0; tt <= 1; tt++) {
+        for (index tt = 0; tt <= 0; tt++) {
             is_qr = tt;
             for (index i = 1; i <= max_iter; i++) {
                 ser_qrd = 0;
@@ -67,21 +68,50 @@ long plot_run() {
                     ser_qrd += qr_reT.run_time;
 
                     for (index init = -1; init <= 1; init++) {
+                        printf("++++++++++++++++++++++++++++++++++++++\n");
+                        std::cout << "Block, size: " << block_size << std::endl;
+                        std::cout << "Init, value: " << init << std::endl;
+                        /*
+                         * Babai Test
+                         */
                         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                         reT = cils.cils_babai_search_serial(&z_B);
-                        ber_babai = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
-                        res[init + 1][0][count] += cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
-                        ber[init + 1][0][count] += ber_babai;
-                        tim[init + 1][0][count] += reT.run_time;
+                        r = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
+                        b = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
+                        t = reT.run_time;
+                        res[init + 1][0][count] += r;
+                        ber[init + 1][0][count] += b;
+                        tim[init + 1][0][count] += t;
+                        all_time[0][i][init + 1][count] = t;
 
+                        printf("Method: BAB_SER, AVG RES: %.5f, AVG BER: %.5f, AVG TIME: %.5fs, "
+                               "RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs\n",
+                               res[init + 1][0][count] / i, ber[init + 1][0][count] / i, tim[init + 1][0][count] / i,
+                               r, b, t);
+
+                        /*
+                         * Serial Block Babai Test
+                         */
                         init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                         reT = cils.cils_block_search_serial(init, &d_s, &z_B);
-                        scalar res_block = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
-                        res[init + 1][1][count] += res_block;
-                        ber[init + 1][1][count] += cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
-                        tim[init + 1][1][count] += reT.run_time;
+                        r = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
+                        b = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
+                        ser_time = reT.run_time;
+                        res[init + 1][1][count] += r;
+                        ber[init + 1][1][count] += b;
+                        tim[init + 1][1][count] += ser_time;
+                        all_time[1][i][init + 1][count] = ser_time;
+
                         if (init == -1) tim[3][1][count] += reT.x[0];
 
+                        printf("Method: ILS_SER, AVG RES: %.5f, AVG BER: %.5f, AVG TIME: %.5fs, "
+                               "RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs\n",
+                               res[init + 1][1][count] / i, ber[init + 1][1][count] / i, tim[init + 1][1][count] / i,
+                               r, b, ser_time);
+
+                        /*
+                         * BLOCK CPU TEST:
+                         */
                         cils::vector_reverse_permutation<scalar, index, n>(cils.Z, &z_B);
                         reT = cils.cils_block_search_serial_CPUTEST(&d_s, &z_B);
 
@@ -89,15 +119,15 @@ long plot_run() {
                         scalar block_ils_iter = std::accumulate(reT.x.begin() + d_s.size(), reT.x.end(), 0.0);
 
                         for (index ser_tim_itr = 0; ser_tim_itr < d_s.size(); ser_tim_itr++) {
-//                        cout << reT.x[ser_tim_itr] << ", ";
-                            ser_tim[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
-                            ser_tim[init + 1][ser_tim_itr + d_s.size()][count] +=
-                                    reT.x[ser_tim_itr + d_s.size()] / block_ils_iter / max_iter;
+                            stm[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
+                            stm[init + 1][ser_tim_itr + d_s.size()][count] += reT.x[ser_tim_itr + d_s.size()] / block_ils_iter / max_iter;
                         }
 
+                        /*
+                         * Parallel Block Babai Test
+                         */
                         l = 2;
                         scalar prev_t = INFINITY;
-
                         for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
 #pragma omp parallel default(none) num_threads(n_proc)
                             {}
@@ -109,9 +139,10 @@ long plot_run() {
                                 init_guess<scalar, index, n>(init, &z_B, &cils.x_R);
                                 reT = cils.cils_block_search_omp(n_proc, num_trials, init, &d_s, &z_B);
                                 iter = reT.num_iter;
-                                t = reT.run_time;
+
                                 r = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
                                 b = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
+                                t = reT.run_time;
 
                                 t2 = min(t, t2);
                                 r2 = min(r, r2);
@@ -132,71 +163,79 @@ long plot_run() {
                             res[init + 1][l][count] += r;
                             ber[init + 1][l][count] += b;
                             tim[init + 1][l][count] += t;
+                            all_time[l][i][init + 1][count] = t;
+
                             if (init == -1) tim[3][l][count] += reT.x[0];
                             itr[init + 1][l][count] += iter;
+                            spu[init + 1][l][count] += ser_time / t;
+                            printf("Method: ILS_OMP, N_PROC: %d, AVG RES: %.5f, AVG BER: %.5f, AVG TIME: %.5fs, "
+                                   "RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs, NUM_ITER:%.5f, SPEEDUP: %.3f,\n",
+                                   n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i, tim[init + 1][l][count] / i,
+                                   r, b, t, iter, spu[init + 1][l][count] / i);
+
+//                            printf("Method: ILS_OMP, N_PROC: %d, RES :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
+//                                   "Speed up: %.3f, SER REL TIM: %.5f, REAL Time: %.5fs, REAL SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
+//                                   n_proc, res[init + 1][l][count] / i,
+//                                   ber[init + 1][l][count] / i, itr[init + 1][l][count] / i,
+//                                   tim[init + 1][l][count] / i, tim[init + 1][l][count] / i,
+//                                   tim[init + 1][1][count] / tim[init + 1][l][count],
+//                                   tim[3][1][count] / i, tim[3][l][count] / i, tim[3][1][count] / tim[3][l][count],
+//                                   (tim[3][1][count] + tim[3][l][count]) / i,
+//                                   (ser_qrd + tim[init + 1][1][count]) / (qrd[0][l][count] + tim[init + 1][l][count])
+//                            );
                             l++;
                             prev_t = t;
                         }
+                        printf("++++++++++++++++++++++++++++++++++++++\n");
                     }
                     run_time = omp_get_wtime() - run_time;
                     printf("\n %d-Time: %.5fs, \n", i, run_time);
                     cout.flush();
                 }
-//                if (i == max_iter) {
-//                    for (k = 3; k >= 1; k -= 2) {
-//                        count = k == 1 ? 0 : 1;
-//                        for (index init = -1; init <= 1; init++) {
-//                            for (index ll = 0; ll < l; ll++) {
-//                                res[init + 1][ll][count] = res[init + 1][ll][count] / max_iter;
-//                                ber[init + 1][ll][count] = ber[init + 1][ll][count] / max_iter;
-////                    tim[init + 1][ll][count] = tim[init + 1][ll][count] / max_iter;
-//                                itr[init + 1][ll][count] = itr[init + 1][ll][count] / max_iter;
-//                            }
+
+//                for (k = 3; k >= 1; k -= 2) {
+//                    count = k == 1 ? 0 : 1;
+//
+//                    for (index init = -1; init <= 1; init++) {
+//                        printf("++++++++++++++++++++++++++++++++++++++\n");
+//                        std::cout << "Block, size: " << block_size << std::endl;
+//                        std::cout << "Init, value: " << init << std::endl;
+//
+//                        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+//                               res[init + 1][0][count] / i, ber[init + 1][0][count] / i, tim[init + 1][0][count],
+//                               ser_qrd / i,
+//                               (ser_qrd + tim[init + 1][0][count]));
+//                        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
+//                               block_size, res[init + 1][1][count] / i, ber[init + 1][1][count] / i,
+//                               tim[init + 1][1][count],
+//                               ser_qrd / i, (ser_qrd + tim[init + 1][1][count]));
+//                        l = 2;
+//                        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
+//                            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
+//                                   "Speed up: %.3f, SER REL TIM: %.5f, REAL Time: %.5fs, REAL SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
+//                                   n_proc, res[init + 1][l][count] / i,
+//                                   ber[init + 1][l][count] / i, itr[init + 1][l][count] / i,
+//                                   tim[init + 1][l][count] / i, tim[init + 1][l][count] / i,
+//                                   tim[init + 1][1][count] / tim[init + 1][l][count],
+//                                   tim[3][1][count] / i, tim[3][l][count] / i, tim[3][1][count] / tim[3][l][count],
+//                                   (tim[3][1][count] + tim[3][l][count]) / i,
+//                                   (ser_qrd + tim[init + 1][1][count]) / (qrd[0][l][count] + tim[init + 1][l][count])
+//                            );
+//                            l++;
 //                        }
+//                        printf("++++++++++++++++++++++++++++++++++++++\n");
 //                    }
 //                }
-                for (k = 3; k >= 1; k -= 2) {
-                    count = k == 1 ? 0 : 1;
-
-                    for (index init = -1; init <= 1; init++) {
-                        printf("++++++++++++++++++++++++++++++++++++++\n");
-                        std::cout << "Block, size: " << block_size << std::endl;
-                        std::cout << "Init, value: " << init << std::endl;
-
-                        printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-                               res[init + 1][0][count] / i, ber[init + 1][0][count] / i, tim[init + 1][0][count],
-                               ser_qrd / i,
-                               (ser_qrd + tim[init + 1][0][count]));
-                        printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5f, Total Time: %.5fs\n",
-                               block_size, res[init + 1][1][count] / i, ber[init + 1][1][count] / i,
-                               tim[init + 1][1][count],
-                               ser_qrd / i, (ser_qrd + tim[init + 1][1][count]));
-                        l = 2;
-                        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
-                            printf("Method: ILS_OMP, n_proc: %d, Res :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
-                                   "Speed up: %.3f, SER REL TIM: %.5f, REAL Time: %.5fs, REAL SpeedUp: %.3f, Total Time: %.5fs, Total SpeedUp: %.3f\n",
-                                   n_proc, res[init + 1][l][count] / i,
-                                   ber[init + 1][l][count] / i, itr[init + 1][l][count] / i,
-                                   tim[init + 1][l][count] / i, tim[init + 1][l][count] / i,
-                                   tim[init + 1][1][count] / tim[init + 1][l][count],
-                                   tim[3][1][count] / i, tim[3][l][count] / i, tim[3][1][count] / tim[3][l][count],
-                                   (tim[3][1][count] + tim[3][l][count]) / i,
-                                   (ser_qrd + tim[init + 1][1][count]) / (qrd[0][l][count] + tim[init + 1][l][count])
-                            );
-                            l++;
-                        }
-                        printf("++++++++++++++++++++++++++++++++++++++\n");
-                    }
-                }
                 printf("\n---------------------\nITER:%d\n---------------------\n", i);
-                if (i % 10 == 0 && i != 0) {//i % 50 == 0 &&
+                if (i % plot_itr == 0) {//i % 50 == 0 &&
                     PyObject *pName, *pModule, *pFunc;
-                    PyObject *pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer, *pD_s, *pPrc;
+                    PyObject *pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer, *pD_s, *pPrc, *pSpu, *pAtm;
                     Py_Initialize();
                     if (_import_array() < 0)
                         PyErr_Print();
                     npy_intp dim[3] = {3, 200, 2};
                     npy_intp di4[3] = {4, 200, 2};
+                    npy_intp di5[4] = {7, 1000, 3, 2};
                     npy_intp dsd[1] = {static_cast<npy_intp>(d_s.size())};
 
                     scalar d_s_A[d_s.size()];
@@ -215,9 +254,11 @@ long plot_run() {
                     pBer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber);
                     pTim = PyArray_SimpleNewFromData(3, di4, NPY_DOUBLE, tim);
                     pItr = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, itr);
-                    pSer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ser_tim);
+                    pSer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, stm);
+                    pSpu = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, spu);
                     pD_s = PyArray_SimpleNewFromData(1, dsd, NPY_DOUBLE, d_s_A);
                     pPrc = PyArray_SimpleNewFromData(1, dpc, NPY_DOUBLE, proc_nums);
+                    pAtm = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, all_time);
                     if (pRes == nullptr) printf("pRes has a problem.\n");
                     if (pBer == nullptr) printf("pBer has a problem.\n");
                     if (pTim == nullptr) printf("pTim has a problem.\n");
@@ -225,6 +266,8 @@ long plot_run() {
                     if (pSer == nullptr) printf("pSer has a problem.\n");
                     if (pD_s == nullptr) printf("pD_s has a problem.\n");
                     if (pPrc == nullptr) printf("pPrc has a problem.\n");
+                    if (pSpu == nullptr) printf("pSpu has a problem.\n");
+                    if (pAtm == nullptr) printf("pAtm has a problem.\n");
 
                     PyObject *sys_path = PySys_GetObject("path");
                     PyList_Append(sys_path,
@@ -236,7 +279,7 @@ long plot_run() {
                     if (pModule != nullptr) {
                         pFunc = PyObject_GetAttrString(pModule, "plot_runtime");
                         if (pFunc && PyCallable_Check(pFunc)) {
-                            pArgs = PyTuple_New(14);
+                            pArgs = PyTuple_New(16);
                             if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                                 return false;
                             }
@@ -277,6 +320,12 @@ long plot_run() {
                                 return false;
                             }
                             if (PyTuple_SetItem(pArgs, 13, pPrc) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 14, pSpu) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 15, pAtm) != 0) {
                                 return false;
                             }
 

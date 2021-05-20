@@ -24,7 +24,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 100;
+        index max_iter = 1000;
         index search_iter = 100;
         index stop = 2;
         index schedule = 2;
@@ -38,11 +38,12 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 50000;//INT_MAX;
+        index max_search = 40000;//INT_MAX;
         index min_proc = 3;
+        index plot_itr = 20;
 
-        index max_proc = min(omp_get_max_threads(), N / block_size);
-        index max_thre = 50000;//maximum search allowed for serial ils.
+        index max_proc = min(16, N / block_size);
+        index max_thre = 40000;//maximum search allowed for serial ils.
 
         string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";
@@ -73,8 +74,8 @@ namespace cils {
                    k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
             suffix += "_" + to_string(SNR) + "_" + to_string(k);
             prefix = is_local ? "../../" : "";
-            d_s[0] = 16;
-            d_s[1] = 16;
+            d_s[0] = block_size / 2;
+            d_s[1] = block_size / 2;
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }
