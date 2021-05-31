@@ -228,15 +228,15 @@ namespace cils {
         // Create variables
         matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
         matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
-        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(log2(n));
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
         matlab::data::TypedArray<scalar> qr_M = factory.createScalar<scalar>(program_def::is_qr);
         matlabPtr->setVariable(u"k", std::move(k_M));
-        matlabPtr->setVariable(u"m", std::move(m_M));
+        matlabPtr->setVariable(u"n", std::move(m_M));
         matlabPtr->setVariable(u"SNR", std::move(SNR_M));
         matlabPtr->setVariable(u"qr", std::move(qr_M));
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, m, SNR, qr);");
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, n, SNR, qr);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");

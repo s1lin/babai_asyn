@@ -179,7 +179,7 @@ namespace cils {
         index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {}, R_S_2[ds] = {};
         index test, row_n, check = 0, r, _nswp = nswp, end = 0;
         index n_dx_q_2, n_dx_q_1, n_dx_q_0;
-        scalar sum = 0, y_B[n] = {};
+        scalar sum = 0, y_B[n] = {}, start;
         scalar run_time = 0, run_time3 = 0;
 
         cils_ils<scalar, index, n> _ils(program_def::k);
@@ -223,7 +223,7 @@ namespace cils {
                             }
                             diff += R_S_2[i];
                             if (mode != 0) {
-                                flag = ((diff + end) >= ds - stop) && j > 0;
+                                flag = ((diff) >= ds - 1) && j > 0;
                             }
                         }
                     }
@@ -234,7 +234,7 @@ namespace cils {
                 };
             }
             flag = check = diff = 0;
-            _nswp = k == 1 ? 2 : 2;
+            _nswp = k == 1 ? 5 : 2;
         }
 
         cils_ils<scalar, index, n> ils(program_def::k);
@@ -248,7 +248,7 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
         {
             for (index j = 0; j < _nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
                     if (!flag && end <= i) {//  front >= i &&!R_S_1[i]  &&
                         n_dx_q_2 = d->at(i);
@@ -294,7 +294,7 @@ namespace cils {
 //
                         diff += R_S_1[i];
                         if (mode != 0) {
-                            flag = ((diff + end) >= ds - stop) && j > 0;
+                            flag = ((diff) >= ds - stop) && j > 0;
                         }
                     }
                     num_iter = j;
@@ -335,14 +335,14 @@ namespace cils {
 
         scalar time = 0; //(run_time3 + run_time2) * 0.5;
         if (init == -1) {
-            time = k == 1 ? run_time3 + run_time : run_time3 + run_time;
+            time = k == 1 ? run_time2 + run_time : run_time3 + run_time;
         } else {
-            time = k == 1 ? (run_time3 + run_time2) * 0.5 : (run_time3 + run_time2) * 0.5;
+            time = k == 1 ? run_time2 : run_time2;
         }
         if (mode == 0)
             reT = {{run_time3}, time, (scalar) diff + end};
         else {
-            reT = {{run_time3}, time, (scalar) num_iter};
+            reT = {{run_time3}, time, (scalar) num_iter + 1};
 //            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
 //            cout.flush();

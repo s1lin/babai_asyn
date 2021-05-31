@@ -50,7 +50,7 @@ long plot_run() {
                             ber_babai = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 
                             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
-                            cils.cils_block_search_omp(3, num_trials, 0, &d_s, &z_B);
+                            cils.cils_block_search_omp(2, num_trials, 0, &d_s, &z_B);
                             ber_thre3 = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 
                             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
@@ -128,7 +128,7 @@ long plot_run() {
                          */
                         l = 2;
                         scalar prev_t = INFINITY;
-                        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
+                        for (index n_proc = 2; n_proc <= max_proc; n_proc += min_proc) {
 #pragma omp parallel default(none) num_threads(n_proc)
                             {}
                             t = r = b = iter = 0;
@@ -244,7 +244,8 @@ long plot_run() {
                     }
                     scalar proc_nums[l - 2] = {};
                     index ll = 0;
-                    for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
+
+                    for (index n_proc = 2; n_proc <= max_proc; n_proc += min_proc) {
                         proc_nums[ll] = n_proc;
                         ll++;
                     }

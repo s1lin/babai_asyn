@@ -1,9 +1,8 @@
-function [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver(k, m, SNR, is_qr)
+function [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver(k, n, SNR, is_qr)
     rng('shuffle')
-    %Initialize Variables
-    n = 2^m; %The real size       
+    %Initialize Variables  
     x_t = zeros(n, 1);
-    sigma = sqrt(((4^k-1)*2^m)/(6*10^(SNR/10)));            
+    sigma = sqrt(((4^k-1)*n)/(6*10^(SNR/10)));            
     Z = zeros(n, n);
     info = zeros(3, 1);
     
@@ -29,7 +28,7 @@ function [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver(k, m, SNR, is_qr
 
         %Get Upper triangular matrix
         y_LLL = A * x_t + v;
-         tStart = tic;
+        tStart = tic;
         if is_qr == 1
             [Q, R] = qr(A);
             y = Q' * y_LLL;
