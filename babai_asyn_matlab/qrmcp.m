@@ -74,3 +74,4 @@ if m < n
 else
    R = triu(B(1:n,1:n));
 end
+

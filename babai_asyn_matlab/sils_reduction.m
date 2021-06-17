@@ -30,15 +30,21 @@ function [R,Z,y] = sils_reduction(B,y)
 
 [m,n] = size(B);
 
-% QR factorization with minimum-column pivoting
+% QR factorization with minimum-column pivoting Q'*B*P =R
 [R,piv,y] = qrmcp(B,y);
+%[Q, R] = qr(B);
+%B_ = B;
 
+%Q_ = Q;
+% B-Q*R
+%y = Q'*y;
 % Obtain the permutation matrix Z
+%Z = eye(n);
 Z = zeros(n,n);
 for j = 1 : n
-    Z(piv(j),j) = 1;
+  Z(piv(j),j) = 1;
 end
-
+R_ = R / Z;
 % ------------------------------------------------------------------
 % --------  Perfome the partial LLL reduction  ---------------------
 % ------------------------------------------------------------------
@@ -72,12 +78,14 @@ while k <= n
         % Permute columns k-1 and k of R and Z
         R(1:k,[k1,k]) = R(1:k,[k,k1]);
         Z(:,[k1,k]) = Z(:,[k,k1]);
-        
+        %Q(:,[k1,k]) = Q(:,[k,k1]);
+        %B(:,[k1,k]) = B(:,[k1,k]);
         G = zeros(2,2);
         % Bring R back to an upper triangular matrix by a Givens rotation
         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
-        R([k1,k],k:n) = G * R([k1,k],k:n);   
-        
+        R([k1,k],k:n) = G * R([k1,k],k:n);  
+        %Q([k1,k],k:n) = G * Q([k1,k],k:n); 
+        %B([k1,k],k:n) = G * B([k1,k],k:n); 
         y_t = zeros(2,1);
         
         y_t(1) = y(k1);
@@ -87,6 +95,7 @@ while k <= n
         y(k1) = y_t(1);
         y(k) = y_t(2);
         
+        
         if k > 2
             k = k - 1;
         end
@@ -95,3 +104,6 @@ while k <= n
         k = k + 1;
     end
 end
+
+Q1 = R_*Z/R;
+Q1*Q1'
