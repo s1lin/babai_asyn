@@ -168,13 +168,14 @@ namespace cils {
                                    vector<scalar> *x) {
         vector<scalar> x_P(n, 0);
         for (index i = 0; i < n; i++) {
+            scalar sum = 0;
             for (index j = 0; j < n; j++) {
-
-                if (Z->x[j * n + i] != 0) {
-                    x_P[i] = x->at(j);
-                    break;
-                }
+//                if (Z->x[i * n + j] != 0) {
+                sum += Z->x[i * n + j] * x->at(j);
+//                    break;
+//                }
             }
+            x_P[i] = sum;
         }
 
         for (index i = 0; i < n; i++) {
@@ -187,12 +188,14 @@ namespace cils {
                                            vector<scalar> *x) {
         vector<scalar> x_P(n, 0);
         for (index i = 0; i < n; i++) {
+            scalar sum = 0;
             for (index j = 0; j < n; j++) {
-                if (Z->x[i * n + j] != 0) {
-                    x_P[i] = x->at(j);
-                    break;
-                }
+//                if (Z->x[i * n + j] != 0) {
+                sum += Z->x[i * n + j] * x->at(j);
+//                    break;
+//                }
             }
+            x_P[i] = sum;
         }
 
         for (index i = 0; i < n; i++) {
@@ -291,8 +294,12 @@ namespace cils {
      */
     template<typename scalar, typename index>
     void display_scalarType(scalarType<scalar, index> *x) {
-        for (index i = 0; i < x->size; i++) {
-            cout << x->x[i] << endl;
+        index n = sqrt(x->size);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                cout << x->x[i * n + j] << " ";
+            }
+            cout << "\n";
         }
     }
 
@@ -546,7 +553,7 @@ namespace cils {
                     error += fabs(c[j * n + i] - A->x[j * n + i]);
                 }
             }
-            printf(", Error: %e\n", error);
+//            printf(", Error: %e\n", error);
         }
 
         delete[] c;
@@ -645,68 +652,49 @@ namespace cils {
 
 
     public:
-        cils(index qam, index snr) {
-            this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-            this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
-
-            this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
-            this->y_A->x = new scalar[n]();
-
-            this->x_R = vector<scalar>(n, 0);
-            this->x_t = vector<scalar>(n, 0);
-
-            this->init_res = INFINITY;
-            this->qam = qam;
-            this->snr = snr;
-            this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
-            this->upper = pow(2, qam) - 1;
-
-            this->R_A->size = n * (n + 1) / 2;
-            this->y_A->size = n;
-
-        }
+        cils(index qam, index snr);
 
         ~cils() {
             delete[] R_A->x;
             delete[] y_A->x;
+            delete[] y_L->x;
+            delete[] Z->x;
             free(R_A);
             free(y_A);
+            free(y_L);
+            free(Z);
             if (!program_def::is_read) {
                 if (program_def::is_matlab) {
                     delete[] A->x;
                     delete[] R->x;
-                    delete[] Z->x;
+
 
                     free(A);
                     free(R);
-                    free(Z);
                 } else {
                     delete[] A->x;
                     delete[] R->x;
                     delete[] v_A->x;
                     delete[] Q->x;
-                    delete[] Z->x;
                     free(A);
                     free(R);
                     free(v_A);
                     free(Q);
-                    free(Z);
                 }
             }
         }
 
         /**
          * Initialize the problem either reading from files (.csv or .nc) or generating the problem
-         * @param is_nc
          */
-        void init(bool is_nc);
+        void init();
 
         /**
          * Only invoke is function when it is not reading from files and after completed qr!
          */
         void init_y();
 
-        void init_R_A_reduction();
+        void init_R();
 
         /**
          * Serial version of QR-factorization using modified Gram-Schmidt algorithm
@@ -719,7 +707,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_qr_decomposition_serial(const index eval, const index qr_eval);
+        cils_qr_serial(const index eval, const index qr_eval);
 
 
         /**
@@ -733,7 +721,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_qr_decomposition_omp(const index eval, const index qr_eval, const index n_proc);
+        cils_qr_omp(const index eval, const index qr_eval, const index n_proc);
 
         /**
          *
@@ -742,14 +730,26 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_qr_decomposition_py(const index eval, const index qr_eval);
+        cils_qr_py(const index eval, const index qr_eval);
 
-        long cils_qr_decomposition_py_helper();
+        long cils_qr_py_helper();
 
         returnType<scalar, index>
-        cils_qr_decomposition_reduction();
+        cils_qr_matlab();
 
-        scalar cils_qr_decomposition_reduction_helper();
+        scalar cils_qr_matlab_helper();
+
+        /**
+         *
+         * @param n_proc
+         * @param eval
+         * @return
+         */
+        returnType<scalar, index> cils_LLL_reduction(const index n_proc, const index eval);
+
+        scalar cils_LLL_serial();
+
+        scalar cils_LLL_omp(const index n_proc);
 
         /**
          *

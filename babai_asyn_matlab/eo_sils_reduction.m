@@ -1,41 +1,36 @@
-function [R,Z,y] = eo_sils_reduction(B,y)
-%
-% [R,Z,y] = sils_reduction(B,y) reduces the general standard integer 
-% least squares problem to an upper triangular one by the LLL-QRZ 
-% factorization Q'*B*Z = [R; 0]. The orthogonal matrix Q 
-% is not produced. 
-%
-% Inputs:
-%    B - m-by-n real matrix with full column rank
-%    y - m-dimensional real vector to be transformed to Q'*y
-%
-% Outputs:
-%    R - n-by-n LLL-reduced upper triangular matrix
-%    Z - n-by-n unimodular matrix, i.e., an integer matrix with
-%    |det(Z)|=1pro
-%    y - m-vector transformed from the input y by Q', i.e., y := Q'*y
-%
+function [A, R, Z, y, y_LLL, x_t, d] = eo_sils_reduction(k, n, SNR)
 
-% Subfunction: qrmcp
+rng('shuffle')
+%Initialize Variables  
+sigma = sqrt(((4^k-1)*n)/(6*10^(SNR/10)));            
 
-% Main Reference: 
-% X. Xie, X.-W. Chang, and M. Al Borno. Partial LLL Reduction, 
-% Proceedings of IEEE GLOBECOM 2011, 5 pages.
+Ar = normrnd(0, sqrt(1/2), n/2, n/2);
+Ai = normrnd(0, sqrt(1/2), n/2, n/2);
+Abar = [Ar -Ai; Ai, Ar];
+A = 2 * Abar;
 
-% Authors: Xiao-Wen Chang, www.cs.mcgill.ca/~chang
-%          Xiaohu Xie, Tianyang Zhou 
-% Copyright (c) 2006-2016. Scientific Computing Lab, McGill University.
-% October 2006. Last revision: June 2016
+%True parameter x:
+low = -2^(k-1);
+upp = 2^(k-1) - 1;
+xr = 1 + 2 * randi([low upp], n/2, 1);
+xi = 1 + 2 * randi([low upp], n/2, 1);
+xbar = [xr; xi];
+x_t = (2^k - 1 + xbar)./2;                    
 
+%Noise vector v:
+vr = normrnd(0, sigma, n/2, 1);
+vi = normrnd(0, sigma, n/2, 1);
+v = [vr; vi];
 
-[m,n] = size(B);
+%Get Upper triangular matrix
+y_LLL = A * x_t + v;
 
 % QR factorization with minimum-column pivoting
-[Q, R] = qr(B);
+[~, R] = qr([A y_LLL]);
 
-R_ = R(:,1:n);
-y = Q'*y;
-
+y = R(:, n+1);
+R = R(:,1:n);
+R_ = R;
 % Obtain the permutation matrix Z
 Z = eye(n);
 
@@ -67,13 +62,6 @@ while f
                 % Permute columns k-1 and k of R and Z
                 R(1:i,[i1,i]) = R(1:i,[i,i1]);
                 Z(:,[i1,i]) = Z(:,[i,i1]);
-
-                % Bring R baci to an upper triangular matrix by a Givens rotation
-%                 [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
-%                 R([i1,i],i:n) = G * R([i1,i],i:n);   
-
-                % Apply the Givens rotation to y
-%                 y([i1,i]) = G * y([i1,i]);
             end
         end
     end  
@@ -102,32 +90,23 @@ while f
                 % Permute columns k-1 and k of R and Z
                 R(1:i,[i1,i]) = R(1:i,[i,i1]);
                 Z(:,[i1,i]) = Z(:,[i,i1]);
-
-                % Bring R baci to an upper triangular matrix by a Givens rotation
-%                 [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
-%                 R([i1,i],i:n) = G * R([i1,i],i:n);   
-
-                % Apply the Givens rotation to y
-%                 y([i1,i]) = G * y([i1,i]);
             end
         end
     end    
     for i = 3:2:n
         i1 = i-1;
-        if swap(i) == 1 
+        if swap(i) == 1             
+            % Bring R baci to an upper triangular matrix by a Givens rotation
             [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
             R([i1,i],i:n) = G * R([i1,i],i:n);  
+            
+            % Apply the Givens rotation to y
             y([i1,i]) = G * y([i1,i]); 
             swap(i) = 0;
         end
-%        for i = k-2:-1:1
-%             zeta = round(R(i,k)/R(i,i));  
-%             if zeta ~= 0
-%                 R(1:i,k) = R(1:i,k) - zeta * R(1:i,i);  
-%                 Z(:,k) = Z(:,k) - zeta * Z(:,i);  
-%             end
-%        end
     end
 end
 Q1 = R_*Z/R;
-det(Q1*Q1')
+% Q1
+d = det(Q1*Q1');
+

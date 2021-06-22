@@ -20,7 +20,7 @@ long plot_run() {
 
         vector<scalar> z_B(n, 0);
 
-        cils::returnType<scalar, index> reT, qr_reT, qr_reT_omp;
+        cils::returnType<scalar, index> reT, qr_reT, LLL_reT;
 //        for (k = 1; k <= 3; k += 2) {
         for (index tt = 0; tt <= 0; tt++) {
             is_qr = tt;
@@ -34,36 +34,73 @@ long plot_run() {
                     count = k == 1 ? 0 : 1;
                     run_time = omp_get_wtime();
                     cils::cils<scalar, index, n> cils(k, SNR);
-                    cils.init(is_read);
+//                    cils.init();
 
                     scalar ber_babai, ber_thre3, ber_serial;
 
                     if (!is_read) {
                         do {
-                            qr_reT = cils.cils_qr_decomposition_reduction();
-                            cils.init_R_A_reduction();
-//                        cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &cils.x_t);
+//                            qr_reT = cils.cils_qr_matlab();
+//                            qr_reT = cils.cils_PLLL_reduction_serial();
+//                            cils.init_R();
+                            cils.init();
+                            qr_reT = cils.cils_qr_serial(0, 1);
+                            //parameters: eval, n_proc:1 -> serial, >1 OMP
+//                            cils::display_scalarType<scalar, index>(cils.R);
+                            cils.init_y();
+//                            cils::display_scalarType<scalar, index>(cils.R);
+                            LLL_reT = cils.cils_LLL_reduction(1, 1);
+//                            cils::display_scalarType<scalar, index>(cils.R);
+                            cils.init_R();
+
+                            cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &cils.x_t);
+                            init_guess<scalar, index, n>(2, &z_B, &cils.x_t);
+                            cils::vector_permutation<scalar, index, n>(cils.Z, &z_B);
+                            cout<<"Z_B:";
+                            cils::display_vector<scalar, index>(&z_B);
+
+                            cout<<"x_t:";
+                            cils::display_vector<scalar, index>(&cils.x_t);
+                            scalar R_res = cils::find_residual<scalar, index, n>(cils.R, cils.y_A, &z_B);
 
                             //Validating Result is solvable
                             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
                             cils.cils_babai_search_serial(&z_B);
+                            cout<<"BAB:";
+                            cils::display_vector<scalar, index>(&z_B);
+
                             ber_babai = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 
                             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
                             cils.cils_block_search_omp(2, num_trials, 0, &d_s, &z_B);
+                            cout<<"OMP:";
+                            cils::display_vector<scalar, index>(&z_B);
                             ber_thre3 = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 
                             init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
                             cils.cils_block_search_serial(0, &d_s, &z_B);
+                            cout<<"SER:";
+                            cils::display_vector<scalar, index>(&z_B);
                             ber_serial = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
 
                             r = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
                             cout << "The SERIAL BER diff is " << ber_babai - ber_serial << " and THRD-BER is "
                                  << ber_babai - ber_thre3 << "\n";
+                            printf("[ INITIALIZATION INFO]\n"
+                                   "1.The QR Error is %.5f.\n"
+                                   "2.The determinant of LLL is %.5f.\n"
+                                   "3.Init Residual by A is %.5f.\n"
+                                   "4.Init Residual by R is %.5f.\n"
+                                   "5.ber_babai by R is %.5f.\n"
+                                   "6.ber_thre3 by R is %.5f.\n"
+                                   "7.ber_serial by R is %.5f.\n",
+                                   qr_reT.num_iter, LLL_reT.num_iter, cils.init_res, R_res, ber_babai, ber_thre3, ber_serial);
+
                         } while (ber_babai < ber_thre3 || ber_babai < ber_serial);
 
                         cils.cils_back_solve(&cils.x_R);
                     }
+
 
                     ser_qrd += qr_reT.run_time;
 
@@ -120,7 +157,8 @@ long plot_run() {
 
                         for (index ser_tim_itr = 0; ser_tim_itr < d_s.size(); ser_tim_itr++) {
                             stm[init + 1][ser_tim_itr][count] += (reT.x[ser_tim_itr] / block_ils_time) / max_iter;
-                            stm[init + 1][ser_tim_itr + d_s.size()][count] += reT.x[ser_tim_itr + d_s.size()] / block_ils_iter / max_iter;
+                            stm[init + 1][ser_tim_itr + d_s.size()][count] +=
+                                    reT.x[ser_tim_itr + d_s.size()] / block_ils_iter / max_iter;
                         }
 
                         /*
@@ -170,7 +208,8 @@ long plot_run() {
                             spu[init + 1][l][count] += ser_time / t;
                             printf("Method: ILS_OMP, N_PROC: %d, AVG RES: %.5f, AVG BER: %.5f, AVG TIME: %.5fs, "
                                    "RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs, NUM_ITER:%.5f, SPEEDUP: %.3f,\n",
-                                   n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i, tim[init + 1][l][count] / i,
+                                   n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i,
+                                   tim[init + 1][l][count] / i,
                                    r, b, t, iter, spu[init + 1][l][count] / i);
 
 //                            printf("Method: ILS_OMP, N_PROC: %d, RES :%.5f, BER: %.5f, num_iter: %.5f, Time: %.5fs, Avg Time: %.5fs, "
@@ -362,19 +401,33 @@ long test_ils_search() {
     cils::returnType<scalar, index> reT, back_reT, qr_reT = {{}, 0, 0}, qr_reT_omp = {{}, 0, 0};
 
     for (index i = 0; i < max_iter; i++) {
-        cils.init(is_read);
+        cils.init();
+        cils::display_vector<scalar, index>(&cils.x_t);
         scalar res = 0;
         if (!is_read) {
             do {
-                qr_reT = cils.cils_qr_decomposition_reduction();
-                cils.init_R_A_reduction();
+//                qr_reT = cils.cils_hqr_decomposition_serial(1, 1);
+                qr_reT = cils.cils_qr_serial(0, 1);
+                qr_reT = cils.cils_LLL_reduction(0, 1);
+//                cils.init_R();
+                cils.init_y();
+                cils::display_vector<scalar, index>(&cils.x_t);
+//                cils.init_R();
+
+
+//                cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_A, &cils.x_t);
+//                cout << "INIT_RES:" << cils.init_res <<endl;
                 cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &cils.x_t);
+                cout << "INIT_RES:" << cils.init_res <<endl;
+
                 //Validating Result is solvable
                 init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
                 cils.cils_babai_search_serial(&z_B);
                 b = cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                 init_guess<scalar, index, n>(0, &z_B, &cils.x_R);
                 cils.cils_block_search_omp(3, num_trials, 0, &d_s, &z_B);
+//                cils::display_vector<scalar, index>(&z_B);
+//                cils::display_vector<scalar, index>(&cils.x_t);
                 b = b - cils::find_bit_error_rate<scalar, index, n>(&z_B, &cils.x_t, k);
                 r = cils::find_residual<scalar, index, n>(cils.A, cils.y_L, &z_B);
                 cout << "The BER diff is " << b << " and the res is " << r << "\n";
@@ -453,9 +506,9 @@ void plot_res() {
 
             //bool read_r, bool read_ra, bool read_xy
             cils::cils<scalar, index, n> cils(k, SNR);
-            cils.init(is_read);
-            auto reT = cils.cils_qr_decomposition_reduction();
-            cils.init_R_A_reduction();
+            cils.init();
+            auto reT = cils.cils_qr_matlab();
+            cils.init_R();
             printf("init_res: %.5f, sigma: %.5f, qr time: %.5fs\n", cils.init_res, cils.sigma, reT.run_time);
 
             vector<scalar> z_B(n, 0);

@@ -101,7 +101,32 @@ namespace cils {
     }
 
     template<typename scalar, typename index, index n>
-    void cils<scalar, index, n>::init(bool is_nc) {
+    cils<scalar, index, n>::cils(index qam, index snr) {
+        this->Z = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+
+        this->R_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        this->y_A = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+        this->y_L = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
+
+        this->Z->x = new scalar[n * n + 1]();
+        this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
+        this->y_A->x = new scalar[n]();
+        this->y_L->x = new scalar[n]();
+
+        this->x_R = vector<scalar>(n, 0);
+        this->x_t = vector<scalar>(n, 0);
+
+        this->init_res = INFINITY;
+        this->qam = qam;
+        this->snr = snr;
+        this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
+        this->upper = pow(2, qam) - 1;
+
+        this->R_A->size = n * (n + 1) / 2;
+        this->y_A->size = n;
+        this->y_L->size = n;
+        this->Z->size = n * n;
+
         scalar start = omp_get_wtime();
         if (is_read) {
             string filename = prefix + "data/new" + suffix + ".nc";
@@ -144,26 +169,6 @@ namespace cils {
             this->Q = (scalarType<scalar, index> *) malloc(sizeof(scalarType<scalar, index>));
             this->Q->x = new scalar[n * n]();
             this->Q->size = n * n;
-
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            //mean:0, std:sqrt(1/2). same as matlab.
-            std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
-            //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-            std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
-
-            for (index i = 0; i < n / 2; i++) {
-                for (index j = 0; j < n / 2; j++) {
-                    A->x[j + i * n] = 2 * A_norm_dis(gen);
-                    A->x[j + n / 2 + i * n] = -2 * A_norm_dis(gen);
-                    A->x[j + n / 2 + (i + n / 2) * n] = A->x[j + i * n];
-                    A->x[j + (i + n / 2) * n] = -A->x[j + n / 2 + i * n];
-                }
-                this->x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-                this->v_A->x[i] = v_norm_dis(gen);
-                this->x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-                this->v_A->x[i + n / 2] = v_norm_dis(gen);
-            }
         }
 
         scalar end_time = omp_get_wtime() - start;
@@ -171,21 +176,41 @@ namespace cils {
             printf("Finish Init, time: %.5f seconds\n", end_time);
     }
 
+
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init() {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        //mean:0, std:sqrt(1/2). same as matlab.
+        std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, this->sigma);
+        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+        std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
+
+        for (index i = 0; i < n / 2; i++) {
+            for (index j = 0; j < n / 2; j++) {
+                A->x[j + i * n] = 2 * A_norm_dis(gen);
+                A->x[j + n / 2 + i * n] = -2 * A_norm_dis(gen);
+                A->x[j + n / 2 + (i + n / 2) * n] = A->x[j + i * n];
+                A->x[j + (i + n / 2) * n] = -A->x[j + n / 2 + i * n];
+            }
+            this->x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+            this->v_A->x[i] = v_norm_dis(gen);
+            this->x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+            this->v_A->x[i + n / 2] = v_norm_dis(gen);
+        }
+        scalar sum = 0;
+        for (index i = 0; i < n; i++) {
+            sum = 0;
+            for (index j = 0; j < n; j++) {
+                sum += this->A->x[i * n + j] * this->x_t[j];
+            }
+            y_L->x[i] = sum + v_A->x[i];
+            Z->x[i * n + i] = 1;
+        }
+    }
+
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_y() {
-        this->R_A->x = new scalar[n * (n + 1) / 2 + 1]();
-//        this->y_A->x = new scalar[n]();
-
-//        index counter = 0;
-//        for (index i = 0; i < n; i++) {
-//            for (index j = i; j < n; j++) {
-////                R_A->x[counter] = R->x[j * n + i];
-//                cout << R->x[j * n + i] << " ";
-//                counter++;
-//            }
-//            cout << endl;
-//        }
-//        cout << endl;
         scalar rx = 0, qv = 0;
         index ri, rai;
 //        for (index i = 0; i < n; i++) {
@@ -203,14 +228,37 @@ namespace cils {
 //            this->y_A->x[i] = rx + qv;
 //        }
 //Not use python:
+        scalar R_T[n * n] = {};
+//        for (index i = 0; i < n; i++) {
+//            for (index j = 0; j < n; j++) {
+////                swap(this->R->x[i * n + j], this->R->x[j * n + i]);
+//                cout << this->R->x[j * n + i] << " ";
+//            }
+//            cout << endl;
+//        }
+
+        scalar tmp;
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                R_T[i * n + j] = this->R->x[j * n + i];
+            }
+        }
+
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                this->R->x[i * n + j] = R_T[i * n + j];
+            }
+        }
+
         for (index i = 0; i < n; i++) {
             rx = qv = 0;
             for (index j = 0; j < n; j++) {
                 if (i <= j) { //For some reason the QR stored in Transpose way?
-                    this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[j * n + i];
-                    rx += this->R->x[j * n + i] * this->x_t[j];
+//                    this->R->x[i * n + j] = R_T[i * n + j];
+                    this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[i * n + j];
+                    rx += this->R->x[i * n + j] * this->x_t[j];
                 }
-                qv += this->Q->x[i * n + j] * this->v_A->x[j]; //Transpose Q
+                qv += this->Q->x[j * n + i] * this->v_A->x[j]; //Transpose Q
             }
             this->y_A->x[i] = rx + qv;
         }
@@ -218,13 +266,25 @@ namespace cils {
 
 
     template<typename scalar, typename index, index n>
-    void cils<scalar, index, n>::init_R_A_reduction() {
+    void cils<scalar, index, n>::init_R() {
+//        scalar R_T[n * n] = {};
+//        for (index i = 0; i < n; i++) {
+//            for (index j = 0; j < n; j++) {
+////                swap(this->R->x[i * n + j], this->R->x[j * n + i]);
+//                cout << this->R->x[j * n + i] << " ";
+//            }
+//            cout << endl;
+//        }
+
+//        for (index i = 0; i < n; i++) {
+//            for (index j = 0; j < n; j++) {
+//                R_T[i * n + j] = this->R->x[j * n + i];
+//            }
+//        }
         for (index i = 0; i < n; i++) {
-            for (index j = i; j < n; j++) {
+            for (index j = i; j < n; j++) //TO i
                 this->R_A->x[(n * i) + j - ((i * (i + 1)) / 2)] = this->R->x[i * n + j];
-                //cout << this->R->x[j * n + i] << " ";
-            }
-            //cout << endl;
+
         }
     }
 

@@ -91,7 +91,7 @@ namespace cils {
 
         run_time = omp_get_wtime() - run_time + start;
         //Matlab Partial Reduction needs to do the permutation
-        if (is_matlab)
+//        if (is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B);
 
         returnType<scalar, index> reT = {{run_time - start}, run_time, 0};
@@ -327,7 +327,7 @@ namespace cils {
             vector_permutation<scalar, index, n>(Z, &x_t);
         }
 
-        if (is_matlab)
+//        if (is_matlab)
             vector_permutation<scalar, index, n>(Z, z_B); //Matlab Partial Reduction needs to do the permutation
 
         returnType<scalar, index> reT;

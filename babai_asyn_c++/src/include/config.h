@@ -23,23 +23,24 @@ namespace cils {
          *   omp_sched_auto = 0x4,
          */
         index k = 3;
-        index SNR = 35;
-        index max_iter = 1000;
+        index SNR = 55;
+        index max_iter = 2;
         index search_iter = 100;
         index stop = 1;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 128;
+        index block_size = 64;
         index spilt_size = 4;
         index is_constrained = true;
         index is_read = false;
-        index is_matlab = true; //Means LLL reduction
+        index is_nc = false;
+        index is_matlab = false; //Means LLL reduction
         index is_qr = false;
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
-        index is_local = 1;
+        index is_local = 0;
         index max_search = 1000000;//INT_MAX;
-        index min_proc = 1;
+        index min_proc = 3;
         index plot_itr = 2;
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
@@ -126,9 +127,9 @@ namespace cils {
         template<typename scalar, typename index, index n>
         void init_guess(index init_value, vector<scalar> *z_B, vector<scalar> *x_R) {
             z_B->assign(n, 0);
-            if (init_value == -1) {
-//                for (index i = 0; i < n; i++)
-//                    z_B->at(i) = x_R->at(i);
+            if (init_value == 2) {
+                for (index i = 0; i < n; i++)
+                    z_B->at(i) = x_R->at(i);
             } else if (init_value == 1)
                 z_B->assign(n, round(std::pow(2, k) / 2));
         }
