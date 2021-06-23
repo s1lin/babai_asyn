@@ -6,8 +6,9 @@
 #include <cmath>
 #include <iostream>
 #include <climits>
+#include "coder_array.h"
 
-const static int N = 512;
+const static int N = 16;
 
 using namespace std;
 
@@ -23,13 +24,13 @@ namespace cils {
          *   omp_sched_auto = 0x4,
          */
         index k = 3;
-        index SNR = 55;
-        index max_iter = 2;
+        index SNR = 35;
+        index max_iter = 10;
         index search_iter = 100;
         index stop = 1;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 64;
+        index block_size = 8;
         index spilt_size = 4;
         index is_constrained = true;
         index is_read = false;
@@ -115,23 +116,20 @@ namespace cils {
             cout<<"\n";
         }
 
-        template<typename scalar, typename index, index n>
-        inline scalar diff(const vector<scalar> *x, const vector<scalar> *y) {
-            scalar diff = 0;
-            for (index i = 0; i < n; i++) {
-                diff += (y->at(i) - x->at(i));
-            }
-            return diff;
-        }
 
         template<typename scalar, typename index, index n>
-        void init_guess(index init_value, vector<scalar> *z_B, vector<scalar> *x_R) {
-            z_B->assign(n, 0);
-            if (init_value == 2) {
+        void init_guess(index init_value, coder::array<scalar, 1U> &z_B, coder::array<scalar, 1U>&x_R) {
+            if (init_value == 0){
                 for (index i = 0; i < n; i++)
-                    z_B->at(i) = x_R->at(i);
-            } else if (init_value == 1)
-                z_B->assign(n, round(std::pow(2, k) / 2));
+                    z_B[i] = 0;
+            }else if (init_value == 2) {
+                for (index i = 0; i < n; i++)
+                    z_B[i] = x_R[i];
+            } else if (init_value == 1){
+                for (index i = 0; i < n; i++)
+                    z_B[i] = round(std::pow(2, k) / 2);
+            }
+
         }
     }
 

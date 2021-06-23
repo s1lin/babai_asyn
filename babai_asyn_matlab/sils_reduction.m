@@ -105,5 +105,5 @@ while k <= n
     end
 end
 toc
-Q1 = R_*Z/R;
-Q1*Q1'
+% Q1 = R_*Z/R;
+% Q1*Q1'
