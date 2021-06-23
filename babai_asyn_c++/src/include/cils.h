@@ -37,7 +37,8 @@
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
-#include "../source/eo_sils_reduction.cpp"
+#include "coder_array.h"
+#include "coder_utils.h"
 
 using namespace std;
 
@@ -342,7 +343,6 @@ namespace cils {
         index qam, snr, upper, lower;
         scalar init_res, sigma;
 
-        scalarType<scalar, index, 2U> A_S;
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
         coder::array<double, 2U> R_R, R_Q, A, Q, Z;
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR 

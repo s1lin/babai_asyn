@@ -45,7 +45,7 @@ long plot_run() {
 //                            qr_reT = cils.cils_PLLL_reduction_serial();
 //                            cils.init_R();
                             cils.init();
-                            qr_reT = cils.cils_qr_serial(0, 1);
+                            qr_reT = cils.cils_qr_serial(1, 1);
 
 //                            cils::display_scalarType<scalar, index>(cils.R);
                             cils.init_y();
@@ -60,7 +60,7 @@ long plot_run() {
                             //parameters: eval, n_proc:1 -> serial, >1 OMP
 //                            LLL_reT = cils.cils_LLL_reduction(1, 1);
 //                            cils::display_scalarType<scalar, index>(cils.Z);
-                            cils.init_R();
+//                            cils.init_R();
 
                             cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, cils.x_t);
                             init_guess<scalar, index, n>(2, z_B, cils.x_t);

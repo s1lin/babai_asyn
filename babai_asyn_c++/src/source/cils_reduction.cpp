@@ -10,14 +10,12 @@ namespace cils {
     returnType <scalar, index>
     cils<scalar, index, n>::cils_qr_serial(const index eval, const index qr_eval) {
 
-        index i, j, k, m, counter = 0;
-        scalar error, time, sum;
-        auto A_t = new scalar[n * n]();
+        index i, j, k, m;
+        scalar error = -1, time, sum;
+        //Deep Copy
+        coder::array<scalar, 2U> A_t(A);
 
         time = omp_get_wtime();
-        for (i = 0; i < n * n; i++) {
-            A_t[i] = A[i];
-        }
 
         for (k = 0; k < n; k++) {
             //Check if Q[][i-1] (the previous column) is computed.
@@ -45,12 +43,10 @@ namespace cils {
 
         time = omp_get_wtime() - time;
 
-//        if (eval || qr_eval) {
-//            error = qr_validation<scalar, index, n>(A, Q, R, R_A, eval, qr_eval);
-////            cout << error << " ";
-//        }
+        if (eval) {
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval);
+        }
 
-        delete[] A_t;
         return {{}, time, error};
     }
 
