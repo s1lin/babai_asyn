@@ -22,34 +22,37 @@ namespace cils {
     scalar qr_validation(const coder::array<scalar, 2U> &A,
                          const coder::array<scalar, 2U> &Q,
                          const coder::array<scalar, 2U> &R,
-                         const index eval) {
+                         const index eval, const index verbose) {
         index i, j, k;
         scalar sum, error = 0;
 
         if (eval == 1) {
-            printf("\nPrinting A...\n");
-            for (i = 0; i < n; i++) {
-                for (j = 0; j < n; j++) {
-                    printf("%8.5f ", A[i * n + j]);
+            if (verbose) {
+                printf("\nPrinting A...\n");
+                for (i = 0; i < n; i++) {
+                    for (j = 0; j < n; j++) {
+                        printf("%8.5f ", A[i * n + j]);
+                    }
+                    printf("\n");
                 }
-                printf("\n");
             }
 
             coder::array<scalar, 2U> A_T;
-            A_T.set_size(n, n);
             coder::internal::blas::mtimes(Q, R, A_T);
 
-            printf("\nQ*R (Init A matrix) : \n");
-            for (i = 0; i < n; i++) {
-                for (j = 0; j < n; j++) {
-                    printf("%8.5f ", A_T[j * n + i]);
+            if (verbose) {
+                printf("\nQ*R (Init A matrix) : \n");
+                for (i = 0; i < n; i++) {
+                    for (j = 0; j < n; j++) {
+                        printf("%8.5f ", A_T[i * n + j]);
+                    }
+                    printf("\n");
                 }
-                printf("\n");
             }
 
             for (i = 0; i < n; i++) {
                 for (j = 0; j < n; j++) {
-                    error += fabs(A_T[j * n + i] - A[j * n + i]);
+                    error += fabs(A_T[i * n + j] - A[i * n + j]);
                 }
             }
         }
@@ -79,6 +82,7 @@ namespace cils {
             x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
             v_a[i + n / 2] = v_norm_dis(gen);
         }
+
         scalar sum = 0;
         for (index i = 0; i < n; i++) {
             sum = 0;
@@ -86,74 +90,32 @@ namespace cils {
                 sum += A[i * n + j] * x_t[j];
             }
             y_a[i] = sum + v_a[i];
-            Z[i * n + i] = 1;
         }
+
+        //Set Z to Eye:
+        coder::eye(n, Z);
     }
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_y() {
-        scalar rx = 0, qv = 0;
-        index ri, rai;
-//        for (index i = 0; i < n; i++) {
-//            rx = qv = 0;
-//            for (index j = 0; j < n; j++) {
-//                if (i <= j) { //For some reason the QR stored in Transpose way?
-//                    ri = i * n + j;
-//                    rai = ri - (i * (i + 1)) / 2;
-//                    R_A[rai] = R[ri];
-//                    rx += R[ri] * x_t[j];
-//                }
-//                qv += Q[j * n + i] * v_a[j]; //Transpose Q
-//            }
-////            cout << endl;
-//            y_A[i] = rx + qv;
-//        }
-//Not use python:
-        scalar R_T[n * n] = {};
-//        for (index i = 0; i < n; i++) {
-//            for (index j = 0; j < n; j++) {
-////                swap(R[i * n + j], R[j * n + i]);
-//                cout << R[j * n + i] << " ";
-//            }
-//            cout << endl;
-//        }
 
-//        scalar tmp;
-//        for (index i = 0; i < n; i++) {
-//            for (index j = 0; j < n; j++) {
-//                R_T[i * n + j] = R[j * n + i];
-//            }
-//        }
-//
-//        for (index i = 0; i < n; i++) {
-//            for (index j = 0; j < n; j++) {
-//                R[i * n + j] = R_T[i * n + j];
-//            }
-//        }
+        coder::internal::blas::mtimes(R_Q, x_t, y_r);
+        coder::internal::blas::mtimes(Q, v_a, v_q);
 
         for (index i = 0; i < n; i++) {
-            rx = qv = 0;
-            for (index j = 0; j < n; j++) {
-                if (i <= j) { //For some reason the QR stored in Transpose way?
-//                    R[i * n + j] = R_T[i * n + j];
-//                    R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R[i * n + j];
-//                    rx += R[i * n + j] * x_t[j];
-                    rx += R_Q[j * n + i] * x_t[j];
-                }
-                qv += Q[j * n + i] * v_a[j]; //Transpose Q
-            }
-            y_q[i] = rx + qv;
-            y_r[i] = rx + qv;
+            y_r[i] += v_q[i];
+            y_q[i] = y_r[i];
         }
     }
 
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_R() {
-
-        for (index i = 0; i < n; i++) {
-            for (index j = 0; j < n; j++) {
-                R_R[i * n + j] = R_Q[j * n + i];
+        if(!is_matlab) {
+            for (index i = 0; i < n; i++) {
+                for (index j = 0; j < n; j++) {
+                    R_R[i * n + j] = R_Q[j * n + i];
+                }
             }
         }
         for (index i = 0; i < n; i++) {
@@ -171,6 +133,22 @@ namespace cils {
 //            }
 //            cout << endl;
 //        }
+    }
+
+    template<typename scalar, typename index, index n>
+    inline void vector_permutation(const coder::array<scalar, 2U> &Z,
+                                   vector<scalar> *x) {
+        vector<scalar> x_t(n, 0);
+        for (index i = 0; i < n; i++) {
+            scalar sum = 0;
+            for (index j = 0; j < n; j++) {
+                sum += Z[j * n + i] * x->at(j);
+            }
+            x_t[i] = sum;
+        }
+        for (index i = 0; i < n; i++){
+            x->at(i) = x_t[i];
+        }
     }
 
 }

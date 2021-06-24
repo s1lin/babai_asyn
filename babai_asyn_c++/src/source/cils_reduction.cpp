@@ -6,17 +6,48 @@
 
 
 namespace cils {
+
+    template<typename scalar, typename index, index n>
+    void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 1U> &arr) {
+        index i = 0;
+        arr.set_size(n);
+        for (auto r : x) {
+            arr[i] = r;
+            ++i;
+        }
+    }
+
+    template<typename scalar, typename index, index n>
+    void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 2U> &arr) {
+        index i = 0;
+        arr.set_size(n, n);
+        for (auto r : x) {
+            arr[i] = r;
+            ++i;
+        }
+    }
+
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_qr_serial(const index eval, const index qr_eval) {
+    cils<scalar, index, n>::cils_qr_serial(const index eval, const index verbose) {
 
         index i, j, k, m;
         scalar error = -1, time, sum;
         //Deep Copy
         coder::array<scalar, 2U> A_t(A);
+        //Clear Variables:
+        R_Q.set_size(n, n);
+        Q.set_size(n, n);
 
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++) {
+                R_Q[i * n + j] = 0;
+                Q[i * n + j] = 0;
+            }
+        }
+
+        //start
         time = omp_get_wtime();
-
         for (k = 0; k < n; k++) {
             //Check if Q[][i-1] (the previous column) is computed.
             for (j = k; j < n; j++) {
@@ -44,7 +75,7 @@ namespace cils {
         time = omp_get_wtime() - time;
 
         if (eval) {
-            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval);
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
         }
 
         return {{}, time, error};
@@ -189,71 +220,75 @@ namespace cils {
     returnType <scalar, index>
     cils<scalar, index, n>::cils_qr_matlab() {
         scalar time = omp_get_wtime();
-//        scalar true_res = cils_qr_matlab_helper();
+        scalar true_res = cils_qr_matlab_helper();
         time = omp_get_wtime() - time;
 
 //        return {{}, time, true_res};
         return {{}, time, 0};
     }
 
-//    template<typename scalar, typename index, index n>
-//    scalar cils<scalar, index, n>::cils_qr_matlab_helper() {
-//        // Start MATLAB engine synchronously
-//        using namespace matlab::engine;
-//
-//        // Start MATLAB engine synchronously
-//        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
-//
-//        //Create MATLAB data array factory
-//        matlab::data::ArrayFactory factory;
-//
-//        // Create variables
-//        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
-//        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
-//        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
-//        matlab::data::TypedArray<scalar> qr_M = factory.createScalar<scalar>(program_def::is_qr);
-//        matlabPtr->setVariable(u"k", std::move(k_M));
-//        matlabPtr->setVariable(u"n", std::move(m_M));
-//        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
-//        matlabPtr->setVariable(u"qr", std::move(qr_M));
-//
-//        // Call the MATLAB movsum function
-//        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, n, SNR, qr);");
-//
-//        // Get the result
-//        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
-//        matlab::data::TypedArray<scalar> const R_N = matlabPtr->getVariable(u"R");
-//        matlab::data::TypedArray<scalar> const Z_N = matlabPtr->getVariable(u"Z");
-//        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y");//Reduced
-//        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y_LLL");//Original
-//        matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
-//        matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"init_res");
-//        matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"info");
-//        matlab::data::ArrayDimensions dim = A_A.getDimensions();
-//
-////        cout << dim[0] << " " << dim[1] << endl;
-//        // Display the result
-//        value_input_helper(A_A, A);
-//        value_input_helper(R_N, R);
-//        value_input_helper(Z_N, Z);
-//        value_input_helper(y_N, y_L);//Original
-//        value_input_helper(y_R, y_A);//Reduced
-//        value_input_helper(x_T, &x_t);
-//
-//        for (auto r : res) {
-//            init_res = r;
-//        }
-//        scalar info[3];
-//        index _i = 0;
-//        for (auto r : b_n) {
-//            info[_i] = r;
-//            _i++;
-//        }
-//        printf("----------------------\n"
-//               "MATLAB RESULT: QR/LLL Time: %.5f, Babai Time: %.5f, Babai Res: %.5f.\n"
-//               "----------------------\n", info[0], info[1], info[2]);
-//        return init_res;
-//    }
+    template<typename scalar, typename index, index n>
+    scalar cils<scalar, index, n>::cils_qr_matlab_helper() {
+        // Start MATLAB engine synchronously
+        using namespace matlab::engine;
+
+        // Start MATLAB engine synchronously
+        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
+
+        //Create MATLAB data array factory
+        matlab::data::ArrayFactory factory;
+
+        // Create variables
+        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
+        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
+        matlab::data::TypedArray<scalar> qr_M = factory.createScalar<scalar>(program_def::is_qr);
+        matlabPtr->setVariable(u"k", std::move(k_M));
+        matlabPtr->setVariable(u"n", std::move(m_M));
+        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+        matlabPtr->setVariable(u"qr", std::move(qr_M));
+
+        // Call the MATLAB movsum function
+        matlabPtr->eval(u" [A, R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, n, SNR, qr);");
+
+        // Get the result
+        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+        matlab::data::TypedArray<scalar> const R_N = matlabPtr->getVariable(u"R");
+        matlab::data::TypedArray<scalar> const Z_N = matlabPtr->getVariable(u"Z");
+        matlab::data::TypedArray<scalar> const y_R = matlabPtr->getVariable(u"y");//Reduced
+        matlab::data::TypedArray<scalar> const y_N = matlabPtr->getVariable(u"y_LLL");//Original
+        matlab::data::TypedArray<scalar> const x_T = matlabPtr->getVariable(u"x_t");
+        matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"init_res");
+        matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"info");
+        matlab::data::ArrayDimensions dim = A_A.getDimensions();
+
+//        cout << dim[0] << " " << dim[1] << endl;
+        // Display the result
+        value_input_helper<scalar, index, n>(A_A, A);
+        value_input_helper<scalar, index, n>(R_N, R_Q);
+        value_input_helper<scalar, index, n>(R_N, R_R);
+        value_input_helper<scalar, index, n>(Z_N, Z);
+        value_input_helper<scalar, index, n>(y_N, y_a);//Original
+        value_input_helper<scalar, index, n>(y_R, y_r);//Reduced
+        value_input_helper<scalar, index, n>(y_R, y_q);//Reduced
+        value_input_helper<scalar, index, n>(x_T, x_t);
+
+
+
+        for (auto r : res) {
+            init_res = r;
+        }
+        scalar info[3];
+        index _i = 0;
+        for (auto r : b_n) {
+            info[_i] = r;
+            _i++;
+        }
+        printf("----------------------\n"
+               "MATLAB RESULT: QR/LLL Time: %.5f, Babai Time: %.5f, Babai Res: %.5f.\n"
+               "----------------------\n", info[0], info[1], info[2]);
+        return init_res;
+    }
 
 //    template<typename scalar, typename index, index n>
 //    returnType <scalar, index>
@@ -917,15 +952,7 @@ namespace cils {
 //        return time;
 //    }
 //
-//    template<typename scalar, typename index, index n>
-//    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x,
-//                                                    scalarType <scalar, index> *arr) {
-//        index i = 0;
-//        for (auto r : x) {
-//            arr[i] = r;
-//            ++i;
-//        }
-//    }
+
 //
 //    template<typename scalar, typename index, index n>
 //    void cils<scalar, index, n>::value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> *arr) {

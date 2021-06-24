@@ -20,7 +20,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline scalar cils<scalar, index, n>::ils_search_obils(const index n_dx_q_0, const index n_dx_q_1,
-                                                           const vector<scalar> *y_B, coder::array<scalar, 1U> &z_x) {
+                                                           const vector<scalar> *y_B, vector<scalar> *z_x) {
 
         // Variables
         scalar sum, newprsd, gamma, beta = INFINITY;
@@ -91,8 +91,8 @@ namespace cils {
                         diff = 0;
                         iter++;
                         for (index h = 0; h < dx; h++) {
-                            diff += z_x[h + n_dx_q_0] == z[h];
-                            z_x[h + n_dx_q_0] = z[h];
+                            diff += z_x->at(h + n_dx_q_0) == z[h];
+                            z_x->at(h + n_dx_q_0) = z[h];
                         }
                         if (diff == dx && iter > program_def::search_iter) {
                             break;
@@ -136,7 +136,7 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     inline scalar cils<scalar, index, n>::ils_search(const index n_dx_q_0, const index n_dx_q_1,
-                                                     const vector<scalar> *y_B, coder::array<scalar, 1U> &z_x) {
+                                                     const vector<scalar> *y_B, vector<scalar> *z_x) {
 
         //variables
         scalar sum, newprsd, gamma, beta = INFINITY;
@@ -179,7 +179,7 @@ namespace cils {
                 } else {
                     beta = newprsd;
                     for (index l = 0; l < dx; l++) {
-                        z_x[l + n_dx_q_0] = z[l];
+                        z_x->at(l + n_dx_q_0) = z[l];
                     }
                     z[0] += d[0];
                     gamma = R_R[0] * (c[0] - z[0]);
@@ -456,7 +456,7 @@ namespace cils {
 
         inline bool obils_serial(const index n_dx_q_0, const index n_dx_q_1, const bool check,
                                  const coder::array<scalar, 2U> &R_R,
-                                 const vector<scalar> *y_B, coder::array<scalar, 1U> &z_x) {
+                                 const vector<scalar> *y_B, vector<scalar> *z_x) {
 
             // Variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -525,8 +525,8 @@ namespace cils {
                             diff = 0;
                             iter++;
                             for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
-                                diff += z_x[h] == z[h];
-                                z_x[h] = z[h];
+                                diff += z_x->at(h) == z[h];
+                                z_x->at(h) = z[h];
                             }
                             if (n_dx_q_1 != n) {
                                 if (diff == dx || iter > program_def::search_iter || !check) {
@@ -564,14 +564,11 @@ namespace cils {
                     }
                 }
             }
-//        if (mode == 1) {
-//            cout << count << "," << iter << ";";
-//        }
             return count;
         }
 
         inline bool obils_omp(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,
-                              const coder::array<scalar, 1U> &R_A, const scalar * y_B, scalar *z_x) {
+                              const coder::array<scalar, 1U> &R_A, const scalar *y_B, scalar *z_x) {
             index dx = n_dx_q_1 - n_dx_q_0;
             index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
             index dflag = 1, iter = 0, diff = 0, k = dx - 1;

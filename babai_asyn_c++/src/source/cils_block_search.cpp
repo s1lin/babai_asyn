@@ -21,14 +21,14 @@ using namespace std;
 namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_block_search_serial(const index init, const vector<index> *d, coder::array<scalar, 1U> &z_B) {
+    cils<scalar, index, n>::cils_block_search_serial(const index init, const vector<index> *d, vector<scalar> *z_B) {
 
         index ds = d->size(), n_dx_q_0, n_dx_q_1;
         vector<scalar> y_b(n, 0);
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
-                z_B[0] = round(y_r[0] / R_R[0]);
+                z_B->at(0) = round(y_r[0] / R_R[0]);
                 return {{}, 0, 0};
             } else {
                 for (index i = 0; i < n; i++) {
@@ -57,7 +57,7 @@ namespace cils {
                 for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                     sum = 0;
                     for (index col = n_dx_q_1; col < n; col++) {
-                        sum += R_R[col + row * n] * z_B[col];
+                        sum += R_R[col + row * n] * z_B->at(col);
                     }
                     y_b[row] = y_r[row] - sum;
                 }
@@ -79,7 +79,7 @@ namespace cils {
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
-                    sum += R_R[col + row * n] * z_B[col];
+                    sum += R_R[col + row * n] * z_B->at(col);
                 }
                 y_b[row] = y_r[row] - sum;
             }
@@ -91,8 +91,7 @@ namespace cils {
 
         run_time = omp_get_wtime() - run_time + start;
         //Matlab Partial Reduction needs to do the permutation
-//        if (is_matlab)
-//            vector_permutation<scalar, index, n>(Z, z_B);
+        vector_permutation<scalar, index, n>(Z, z_B);
 
         returnType<scalar, index> reT = {{run_time - start}, run_time, 0};
         return reT;
@@ -100,14 +99,14 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_block_search_serial_CPUTEST(const vector<index> *d, coder::array<scalar, 1U> &z_B) {
+    cils<scalar, index, n>::cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B) {
         index ds = d->size(), n_dx_q_0, n_dx_q_1;
         vector<scalar> y_b(n, 0);
         vector<scalar> time(2 * ds, 0);
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
-                z_B[0] = round(y_r[0] / R_R[0]);
+                z_B->at(0) = round(y_r[0] / R_R[0]);
                 return {{}, 0, 0};
             } else {
                 for (index i = 0; i < n; i++) {
@@ -131,7 +130,7 @@ namespace cils {
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 scalar sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
-                    sum += R_R[col + row * n] * z_B[col];
+                    sum += R_R[col + row * n] * z_B->at(col);
                 }
                 y_b[row] = y_r[row] - sum;
             }
@@ -159,8 +158,7 @@ namespace cils {
 //        }
 
         //Matlab Partial Reduction needs to do the permutation
-//        if (is_matlab)
-//            vector_permutation<scalar, index, n>(Z, z_B);
+        vector_permutation<scalar, index, n>(Z, z_B);
 
         returnType<scalar, index> reT = {time, run_time, 0};
         return reT;
@@ -169,13 +167,13 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_block_search_omp(const index n_proc, const index nswp, const index init,
-                                                  const vector<index> *d, coder::array<scalar, 1U> &z_B) {
+                                                  const vector<index> *d, vector<scalar> *z_B) {
         index ds = d->size();
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(init, d, z_B);
         }
 
-        auto z_x = z_B.data();
+        auto z_x = z_B->data();
         index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {}, R_S_2[ds] = {};
         index test, row_n, check = 0, r, _nswp = nswp, end = 0;
         index n_dx_q_2, n_dx_q_1, n_dx_q_0;
@@ -310,34 +308,14 @@ namespace cils {
         run_time2 = omp_get_wtime() - run_time2;
 #pragma parallel omp cancellation point
 
-
-//        if (mode == 3) {
-//            cout << endl;
-//
-//            cout << find_residual<scalar, index, n>(R_R, y_r, z_B) << endl;
-//            auto _r = find_residual_by_block<scalar, index, n>(R_R, y_r, d, z_B);
-//            display_vector<scalar, index>(&_r);
-//
-//            vector_reverse_permutation<scalar, index, n>(Z, &x_t);
-//            _r = find_residual_by_block<scalar, index, n>(R_R, y_r, d, &x_t);
-//            display_vector<scalar, index>(&_r);
-//
-//            auto _b = find_bit_error_rate_by_block<scalar, index, n>(z_B, &x_t, d, k);
-//            display_vector<scalar, index>(&_b);
-//            vector_permutation<scalar, index, n>(Z, &x_t);
-//        }
-
-//        if (is_matlab)
-//            vector_permutation<scalar, index, n>(Z, z_B); //Matlab Partial Reduction needs to do the permutation
-
         returnType<scalar, index> reT;
-
+        vector_permutation<scalar, index, n>(Z, z_B);
 
         scalar time = 0; //(run_time3 + run_time2) * 0.5;
         if (init == -1) {
-            time = k == 1 ? run_time2 + run_time : run_time3 + run_time;
+            time = k == 1 ? run_time3 + run_time : run_time3 + run_time;
         } else {
-            time = k == 1 ? run_time2 : run_time2;
+            time = k == 1 ? run_time2 : run_time3;
         }
         if (mode == 0)
             reT = {{run_time3}, time, (scalar) diff + end};
@@ -353,7 +331,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_block_search_omp_dynamic_block(const index n_proc, const index nswp, const index init,
-                                                                const vector<index> *d, coder::array<scalar, 1U> &z_B) {
+                                                                const vector<index> *d, vector<scalar> *z_B) {
         index ds = d->size();
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(init, d, z_B);
@@ -432,8 +410,7 @@ namespace cils {
         scalar run_time2 = omp_get_wtime() - run_time;
 #pragma parallel omp cancellation point
         //Matlab Partial Reduction needs to do the permutation
-//        if (is_matlab)
-//            vector_permutation<scalar, index, n>(Z, z_B);
+        vector_permutation<scalar, index, n>(Z, z_B);
 
         returnType<scalar, index> reT;
         if (mode == 0)

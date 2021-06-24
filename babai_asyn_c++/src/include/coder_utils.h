@@ -6,7 +6,7 @@
 #define CILS_CODER_UTILS_H
 
 #endif //CILS_CODER_UTILS_H
-#include "../include/coder_array.h"
+#include "coder_array.h"
 #include <cmath>
 #include <cstring>
 #include <time.h>
@@ -32,7 +32,8 @@ namespace coder {
                                  const ::coder::array<double, 2U> &B,
                                  ::coder::array<double, 2U> &C);
 
-            static void mtimes(const double A_C[4], const ::coder::array<double, 2U> &B,
+            static void mtimes(const double A_C[4],
+                               const ::coder::array<double, 2U> &B,
                                ::coder::array<double, 2U> &C);
 
             static void mtimes(const ::coder::array<double, 2U> &A_C,

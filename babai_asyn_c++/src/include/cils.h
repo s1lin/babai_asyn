@@ -72,7 +72,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     inline scalar find_residual(const coder::array<scalar, 2U> &A,
                                 const coder::array<scalar, 1U> &y,
-                                const coder::array<scalar, 1U> &x) {
+                                scalar *x) {
         scalar res = 0, sum = 0;
         for (index i = 0; i < n; i++) {
             sum = 0;
@@ -154,25 +154,7 @@ namespace cils {
 //    }
 
 
-//    template<typename scalar, typename index, index n>
-//    inline void vector_permutation(const scalarType <scalar, index> *Z,
-//                                   coder::array<scalar, 1U> x) {
-//        vector<scalar> x_P(n, 0);
-//        for (index i = 0; i < n; i++) {
-//            scalar sum = 0;
-//            for (index j = 0; j < n; j++) {
-////                if (Z[i * n + j] != 0) {
-//                sum += Z[i * n + j] * x[j];
-////                    break;
-////                }
-//            }
-//            x_P[i] = sum;
-//        }
-//
-//        for (index i = 0; i < n; i++) {
-//            x[i] = x_P[i];
-//        }
-//    }
+
 
 //    template<typename scalar, typename index, index n>
 //    inline void vector_reverse_permutation(const coder::array<scalar, 2U> Z,
@@ -206,7 +188,7 @@ namespace cils {
      * @return
      */
     template<typename scalar, typename index, index n>
-    inline scalar find_bit_error_rate(const coder::array<scalar, 1U> &x_b,
+    inline scalar find_bit_error_rate(const vector<scalar> *x_b,
                                       const coder::array<scalar, 1U> &x_t,
                                       const index k) {
         index error = 0;
@@ -214,15 +196,15 @@ namespace cils {
             std::string binary_x_b, binary_x_t;
             switch (k) {
                 case 1:
-                    binary_x_b = std::bitset<1>((index) x_b[i]).to_string(); //to binary
+                    binary_x_b = std::bitset<1>((index) x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<1>((index) x_t[i]).to_string();
                     break;
                 case 2:
-                    binary_x_b = std::bitset<2>((index) x_b[i]).to_string(); //to binary
+                    binary_x_b = std::bitset<2>((index) x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<2>((index) x_t[i]).to_string();
                     break;
                 default:
-                    binary_x_b = std::bitset<3>((index) x_b[i]).to_string(); //to binary
+                    binary_x_b = std::bitset<3>((index) x_b->at(i)).to_string(); //to binary
                     binary_x_t = std::bitset<3>((index) x_t[i]).to_string();
                     break;
             }
@@ -330,6 +312,15 @@ namespace cils {
         return p;
     }
 
+//    template<typename scalar>
+//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 1U> &arr);
+//
+//    template<typename scalar>
+//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 2U> &arr);
+//
+//    template<typename scalar>
+//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> *arr);
+
     /**
      * 
      * @tparam scalar 
@@ -346,7 +337,7 @@ namespace cils {
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
         coder::array<double, 2U> R_R, R_Q, A, Q, Z;
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR 
-        coder::array<double, 1U> x_r, x_t, y_a, y_r, y_q, v_a, R_A;
+        coder::array<double, 1U> x_r, x_t, y_a, y_r, y_q, v_a, v_q, R_A;
 
     private:
 
@@ -376,7 +367,7 @@ namespace cils {
          * @return
          */
         inline scalar ils_search(const index n_dx_q_0, const index n_dx_q_1,
-                                 const vector<scalar> *y_B, coder::array<scalar, 1U> &z_x);
+                                 const vector<scalar> *y_B, vector<scalar> *z_x);
 
 
         /**
@@ -390,7 +381,7 @@ namespace cils {
          * @return
          */
         inline scalar ils_search_obils(const index n_dx_q_0, const index n_dx_q_1,
-                                       const vector<scalar> *y_B, coder::array<scalar, 1U> &z_x);
+                                       const vector<scalar> *y_B, vector<scalar> *z_x);
 
 
         /**
@@ -408,10 +399,6 @@ namespace cils {
          */
         inline bool ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
                                          const index i, const index ds, scalar *y_B, scalar *z_x);
-
-        void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 1U> &arr);
-
-        void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> *arr);
 
 
     public:
@@ -440,6 +427,7 @@ namespace cils {
             this->y_r.set_size(n);
             this->y_q.set_size(n);
             this->v_a.set_size(n);
+            this->v_q.set_size(n);
         }
 
         ~cils() {}
@@ -470,7 +458,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_qr_serial(const index eval, const index qr_eval);
+        cils_qr_serial(const index eval, const index verbose);
 
 
         /**
@@ -522,7 +510,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_cuda(const index nswp, coder::array<scalar, 1U> &z_B);
+        cils_babai_search_cuda(const index nswp, vector<scalar> *z_B);
 
         /**
          * Usage Caution: If LLL reduction is applied, please do permutation after getting the result.
@@ -543,7 +531,7 @@ namespace cils {
         * @return
         */
         returnType<scalar, index>
-        cils_babai_search_serial(coder::array<scalar, 1U> &z_B);
+        cils_babai_search_serial(vector<scalar> *z_B);
 
         /**
         * Serial Babai solver
@@ -552,7 +540,7 @@ namespace cils {
         * @return
         */
         returnType<scalar, index>
-        cils_block_search_serial_CPUTEST(const vector<index> *d, coder::array<scalar, 1U> &z_B);
+        cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B);
 
         /**
          * Constrained version of Parallel Babai solver
@@ -562,7 +550,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_babai_search_omp(const index n_proc, const index nswp, coder::array<scalar, 1U> &z_B);
+        cils_babai_search_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
 
         /**
          * Constrained version of Parallel Babai solver
@@ -572,7 +560,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_back_solve_omp(const index n_proc, const index nswp, coder::array<scalar, 1U> &z_B);
+        cils_back_solve_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
 
         /**
          * Unconstrained serial version of Block Babai solver
@@ -581,7 +569,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_serial(const index init, const vector<index> *d, coder::array<scalar, 1U> &z_B);
+        cils_block_search_serial(const index init, const vector<index> *d, vector<scalar> *z_B);
 
 
         /**
@@ -596,12 +584,12 @@ namespace cils {
          */
         returnType<scalar, index>
         cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d,
-                              coder::array<scalar, 1U> &z_B);
+                              vector<scalar> *z_B);
 
 
         returnType<scalar, index>
         cils_block_search_omp_dynamic_block(const index n_proc, const index nswp, const index init,
-                                            const vector<index> *d, coder::array<scalar, 1U> &z_B);
+                                            const vector<index> *d, vector<scalar> *z_B);
 
         /**
          * Unconstrained GPU version of Block Babai solver
@@ -614,7 +602,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, coder::array<scalar, 1U> &z_B);
+        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<scalar> *z_B);
 
 
     };

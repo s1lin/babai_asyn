@@ -8,7 +8,7 @@
 #include <climits>
 #include "coder_array.h"
 
-const static int N = 16;
+const static int N = 512;
 
 using namespace std;
 
@@ -30,7 +30,7 @@ namespace cils {
         index stop = 1;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 8;
+        index block_size = 64;
         index spilt_size = 4;
         index is_constrained = true;
         index is_read = false;
@@ -76,7 +76,7 @@ namespace cils {
 
         string suffix = "" + to_string(N);
         string prefix = is_local ? "../../" : "";
-        std::vector<index> d_s(N / block_size + 3, block_size);
+        std::vector<index> d_s(N / block_size + spilt_size - 1, block_size);
 //        std::vector<index> d_s(N / block_size, block_size);
 
         void init_program_def(int argc, char *argv[]) {
@@ -118,16 +118,16 @@ namespace cils {
 
 
         template<typename scalar, typename index, index n>
-        void init_guess(index init_value, coder::array<scalar, 1U> &z_B, coder::array<scalar, 1U>&x_R) {
+        void init_guess(index init_value, vector<scalar> *z_B, scalar* x_R) {
             if (init_value == 0){
                 for (index i = 0; i < n; i++)
-                    z_B[i] = 0;
+                    z_B->at(i) = 0;
             }else if (init_value == 2) {
                 for (index i = 0; i < n; i++)
-                    z_B[i] = x_R[i];
+                    z_B->at(i) = x_R[i];
             } else if (init_value == 1){
                 for (index i = 0; i < n; i++)
-                    z_B[i] = round(std::pow(2, k) / 2);
+                    z_B->at(i) = round(std::pow(2, k) / 2);
             }
 
         }
