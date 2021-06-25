@@ -62,8 +62,7 @@ namespace cils {
                         row_k--;
                         sum = 0;
                         for (index col = k + 1; col < dx; col++) {
-//                            sum += R_R[(col + n_dx_q_0) + n * row_k] * z[col];
-                            sum += R_R[(col + n_dx_q_0) + n * row_k] * z[col];
+                            sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col];
                         }
                         R_kk = R_R[n * row_k + row_k];
                         p[k] = newprsd;
@@ -496,8 +495,7 @@ namespace cils {
                             row_k--;
                             sum = 0;
                             for (index col = k + 1; col < dx; col++) {
-//                            sum += R_R[(col + n_dx_q_0) + n * row_k] * z[col];
-                                sum += R_R[(col + n_dx_q_0) + n * row_k] * z[col + n_dx_q_0];
+                                sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col + n_dx_q_0];
                             }
                             R_kk = R_R[n * row_k + row_k];
                             p[row_k] = newprsd;

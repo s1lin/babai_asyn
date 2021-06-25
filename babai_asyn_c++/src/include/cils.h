@@ -77,7 +77,7 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             sum = 0;
             for (index j = 0; j < n; j++) {
-                sum += x[j] * A[i * n + j];
+                sum += x[j] * A[j * n + i];
             }
             res += (y[i] - sum) * (y[i] - sum);
         }
@@ -217,47 +217,6 @@ namespace cils {
         return (scalar) error / (n * k);
     }
 
-    /**
-     * Return the result of norm2(y-R*x).
-     * @tparam scalar
-     * @tparam index
-     * @tparam n
-     * @param R
-     * @param y
-     * @param x
-     * @return residual
-     */
-    template<typename scalar, typename index, index n>
-    inline scalar norm(const coder::array<scalar, 1U> &x,
-                       const coder::array<scalar, 1U> &y) {
-        scalar res = 0;
-        for (index i = 0; i < n; i++) {
-            res += (y[i] - x[i]) * (y[i] - x[i]);
-        }
-        return std::sqrt(res);
-    }
-
-
-    /**
-     * Return the result of norm2(y-R*x).
-     * @tparam scalar
-     * @tparam index
-     * @tparam n
-     * @param R
-     * @param y
-     * @param x
-     * @return residual
-     */
-    template<typename scalar, typename index, index n>
-    inline scalar diff(const coder::array<scalar, 1U> &x,
-                       const coder::array<scalar, 1U> &y) {
-        scalar d = 0;
-#pragma omp simd reduction(+ : d)
-        for (index i = 0; i < n; i++) {
-            d += (y[i] - x[i]);
-        }
-        return d;
-    }
 
     /**
      * Simple function for displaying the struct scalarType
@@ -266,11 +225,11 @@ namespace cils {
      * @param x
      */
     template<typename scalar, typename index>
-    void display_scalarType(const coder::array<scalar, 2U> &x) {
+    void display_2D(const coder::array<scalar, 2U> &x) {
         index n = x.size(0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                cout << x[i * n + j] << " ";
+                cout << x[j * n + i] << " ";
             }
             cout << "\n";
         }
@@ -286,11 +245,27 @@ namespace cils {
     inline void display_vector(const coder::array<scalar, 1U> &x) {
         scalar sum = 0;
         for (index i = 0; i < x.size(0); i++) {
-            printf("%2.5f, ", x[i]);
+            printf("%8.5f ", x[i]);
             sum += x[i];
         }
+        printf("SUM = %8.5f\n", sum);
+    }
 
-        printf("SUM = %.5f\n", sum);
+
+    /**
+     * Simple function for displaying the struct scalarType
+     * @tparam scalar
+     * @tparam index
+     * @param x
+     */
+    template<typename scalar, typename index>
+    inline void display_vector(const vector<scalar> *x) {
+        scalar sum = 0;
+        for (index i = 0; i < x->size(); i++) {
+            printf("%8.5f ", x->at(i));
+            sum += x->at(i);
+        }
+        printf("SUM = %8.5f\n", sum);
     }
 
 
@@ -496,7 +471,7 @@ namespace cils {
          * @param eval
          * @return
          */
-        returnType<scalar, index> cils_LLL_reduction(const index n_proc, const index eval);
+        returnType<scalar, index> cils_LLL_reduction(const index eval, const index verbose, const index n_proc);
 
         scalar cils_LLL_serial();
 
@@ -603,7 +578,6 @@ namespace cils {
          */
         returnType<scalar, index>
         cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<scalar> *z_B);
-
 
     };
 }

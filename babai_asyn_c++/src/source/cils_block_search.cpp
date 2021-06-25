@@ -57,7 +57,7 @@ namespace cils {
                 for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                     sum = 0;
                     for (index col = n_dx_q_1; col < n; col++) {
-                        sum += R_R[col + row * n] * z_B->at(col);
+                        sum += R_R[col * n + row] * z_B->at(col);
                     }
                     y_b[row] = y_r[row] - sum;
                 }
@@ -79,7 +79,7 @@ namespace cils {
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
-                    sum += R_R[col + row * n] * z_B->at(col);
+                    sum += R_R[col * n + row] * z_B->at(col);
                 }
                 y_b[row] = y_r[row] - sum;
             }
@@ -130,7 +130,7 @@ namespace cils {
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 scalar sum = 0;
                 for (index col = n_dx_q_1; col < n; col++) {
-                    sum += R_R[col + row * n] * z_B->at(col);
+                    sum += R_R[col * n + row] * z_B->at(col);
                 }
                 y_b[row] = y_r[row] - sum;
             }

@@ -72,10 +72,10 @@ namespace cils {
 
         for (index i = 0; i < n / 2; i++) {
             for (index j = 0; j < n / 2; j++) {
-                A[j + i * n] = 2 * A_norm_dis(gen);
-                A[j + n / 2 + i * n] = -2 * A_norm_dis(gen);
-                A[j + n / 2 + (i + n / 2) * n] = A[j + i * n];
-                A[j + (i + n / 2) * n] = -A[j + n / 2 + i * n];
+                A[i + j * n] = 2 * A_norm_dis(gen);
+                A[i + n / 2 + j * n] = -2 * A_norm_dis(gen);
+                A[i + n / 2 + (j + n / 2) * n] = A[i + j * n];
+                A[i + (j + n / 2) * n] = -A[i + n / 2 + j * n];
             }
             x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
             v_a[i] = v_norm_dis(gen);
@@ -84,13 +84,13 @@ namespace cils {
         }
 
         scalar sum = 0;
+
+        //init y_a
+        coder::internal::blas::mtimes(A, x_t, y_a);
         for (index i = 0; i < n; i++) {
-            sum = 0;
-            for (index j = 0; j < n; j++) {
-                sum += A[i * n + j] * x_t[j];
-            }
-            y_a[i] = sum + v_a[i];
+            y_a[i] += v_a[i];
         }
+        display_vector<scalar, index>(y_a);
 
         //Set Z to Eye:
         coder::eye(n, Z);
@@ -99,55 +99,71 @@ namespace cils {
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_y() {
 
-        coder::internal::blas::mtimes(R_Q, x_t, y_r);
-        coder::internal::blas::mtimes(Q, v_a, v_q);
-
         for (index i = 0; i < n; i++) {
-            y_r[i] += v_q[i];
-            y_q[i] = y_r[i];
+            scalar sum = 0;
+            for (index j = 0; j < n; j++) {
+                sum += Q[i * n + j] * y_a[j]; //Q'*y;
+            }
+            y_q[i] = sum;
+            y_r[i] = y_q[i];
         }
     }
 
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init_R() {
-        if(!is_matlab) {
+        if (!is_matlab) {
+            if (is_qr) {
+                for (index i = 0; i < n; i++) {
+                    for (index j = 0; j < n; j++) {
+                        R_R[j * n + i] = R_Q[j * n + i];
+                    }
+                }
+                for (index i = 0; i < n; i++) {
+                    for (index j = i; j < n; j++) {
+                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
+                    }
+                }
+            } else {
+                for (index i = 0; i < n; i++) {
+                    for (index j = i; j < n; j++) {
+                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_R[j * n + i];
+                    }
+                }
+            }
+        } else {
             for (index i = 0; i < n; i++) {
-                for (index j = 0; j < n; j++) {
-                    R_R[i * n + j] = R_Q[j * n + i];
+                for (index j = i; j < n; j++) {
+                    R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
                 }
             }
         }
-        for (index i = 0; i < n; i++) {
-            for (index j = 0; j < n; j++) { //TO i
-                R_Q[i * n + j] = R_R[i * n + j];
-                if (j >= i)
-                    R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[i * n + j];
+        if (n <= 16) {
+            cout << endl;
+            for (index i = 0; i < n; i++) {
+                for (index j = i; j < n; j++) {
+//                swap(R[i * n + j], R[j * n + i]);
+                    printf("%8.5f ", R_A[(n * i) + j - ((i * (i + 1)) / 2)]);
+                }
+                cout << endl;
             }
         }
-
-//        for (index i = 0; i < n; i++) {
-//            for (index j = i; j < n; j++) {
-////                swap(R[i * n + j], R[j * n + i]);
-//                cout << R_A[(n * i) + j - ((i * (i + 1)) / 2)]  << " ";
-//            }
-//            cout << endl;
-//        }
     }
 
     template<typename scalar, typename index, index n>
     inline void vector_permutation(const coder::array<scalar, 2U> &Z,
                                    vector<scalar> *x) {
-        vector<scalar> x_t(n, 0);
+        coder::array<scalar, 1U> x_c, x_z;
+        x_z.set_size(n);
+
         for (index i = 0; i < n; i++) {
-            scalar sum = 0;
-            for (index j = 0; j < n; j++) {
-                sum += Z[j * n + i] * x->at(j);
-            }
-            x_t[i] = sum;
+            x_z[i] = x->at(i);
         }
-        for (index i = 0; i < n; i++){
-            x->at(i) = x_t[i];
+
+        coder::internal::blas::mtimes(Z, x_z, x_c);
+
+        for (index i = 0; i < n; i++) {
+            x->at(i) = x_c[i];
         }
     }
 

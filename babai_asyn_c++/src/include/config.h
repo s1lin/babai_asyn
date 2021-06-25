@@ -8,6 +8,7 @@
 #include <climits>
 #include "coder_array.h"
 
+
 const static int N = 512;
 
 using namespace std;
@@ -25,7 +26,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 10;
+        index max_iter = 1;
         index search_iter = 100;
         index stop = 1;
         index schedule = 2;
@@ -33,7 +34,6 @@ namespace cils {
         index block_size = 64;
         index spilt_size = 4;
         index is_constrained = true;
-        index is_read = false;
         index is_nc = false;
         index is_matlab = false; //Means LLL reduction
         index is_qr = false;
@@ -46,7 +46,6 @@ namespace cils {
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
         index max_thre = 1000000;//maximum search allowed for serial ils.
-
 
 
    /*   Parameters for block size 64
@@ -74,8 +73,6 @@ namespace cils {
         index max_thre = 1000000;//maximum search allowed for serial ils.
     */
 
-        string suffix = "" + to_string(N);
-        string prefix = is_local ? "../../" : "";
         std::vector<index> d_s(N / block_size + spilt_size - 1, block_size);
 //        std::vector<index> d_s(N / block_size, block_size);
 
@@ -90,7 +87,6 @@ namespace cils {
                 chunk_size = stoi(argv[7]);
                 block_size = stoi(argv[8]);
                 is_constrained = stoi(argv[9]);
-                is_read = stoi(argv[10]);
                 is_matlab = stoi(argv[11]);
                 mode = stoi(argv[12]);
                 num_trials = stoi(argv[13]);
@@ -101,8 +97,7 @@ namespace cils {
             printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d\n",
                    k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
-            suffix += "_" + to_string(SNR) + "_" + to_string(k);
-            prefix = is_local ? "../../" : "";
+
             d_s[0] = block_size / 4;
             d_s[1] = block_size / 4;
             d_s[2] = block_size / 4;

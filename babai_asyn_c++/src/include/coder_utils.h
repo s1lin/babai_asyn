@@ -609,13 +609,8 @@ namespace coder {
         } // namespace lapack
         static void mrdiv(::coder::array<double, 2U> &A_C,
                           const ::coder::array<double, 2U> &B) {
-            array<double, 2U> Y;
-            array<double, 2U> b_A;
-            array<double, 2U> b_B;
-            array<double, 1U> tau;
-            array<double, 1U> vn1;
-            array<double, 1U> vn2;
-            array<double, 1U> work;
+            array<double, 2U> Y, b_A, b_B;
+            array<double, 1U> tau, vn1, vn2, work;
             array<int, 2U> jpvt;
             double smax;
             int minmana;

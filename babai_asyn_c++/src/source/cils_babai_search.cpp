@@ -92,7 +92,7 @@ namespace cils {
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
-                sum += R_R[col + k * n] * z_B->at(col);
+                sum += R_R[col * n + k] * z_B->at(col);
 //                sum += R_R[col * n + k] * z_B[col);
             }
             result = round((y_r[k] - sum) / R_R[k * n + k]);
@@ -118,7 +118,7 @@ namespace cils {
         for (index i = 1; i < n; i++) {
             index k = n - i - 1;
             for (index col = n - i; col < n; col++) {
-                sum += R_R[col + k * n] * z_B[col];
+                sum += R_R[col * n + k] * z_B[col];
             }
             z_B[k] = (y_r[k] - sum) / R_R[k * n + k];
             sum = 0;
