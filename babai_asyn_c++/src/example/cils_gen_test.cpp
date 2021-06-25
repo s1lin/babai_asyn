@@ -46,7 +46,7 @@ long plot_run() {
                             qr_reT = cils.cils_qr_serial(1, 0);
                             cils.init_y();
                             if (!is_qr) {
-                                LLL_reT = cils.cils_LLL_reduction(1, n <= 16, 1);
+                                LLL_reT = cils.cils_LLL_reduction(1, n <= 16, 2);
                             }
                         }
                         cils.init_R();

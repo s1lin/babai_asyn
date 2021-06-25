@@ -573,7 +573,7 @@ namespace coder {
     public:
         template<typename... Dims>
         void set_size(Dims... dims) {
-//            coder::detail::match_dimensions<N == sizeof...(dims)>::check();
+            coder::detail::match_dimensions<N == sizeof...(dims)>::check();
             set_size_i<0>(dims...);
             ensureCapacity(numel());
         }
