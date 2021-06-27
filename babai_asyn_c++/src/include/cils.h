@@ -307,12 +307,11 @@ namespace cils {
 
     public:
         index qam, snr, upper, lower;
-        scalar init_res, sigma;
-
+        scalar init_res, sigma, *R_A;
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
         coder::array<double, 2U> R_R, R_Q, A, Q, Z;
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR 
-        coder::array<double, 1U> x_r, x_t, y_a, y_r, y_q, v_a, v_q, R_A;
+        coder::array<double, 1U> x_r, x_t, y_a, y_r, y_q, v_a, v_q;
 
     private:
 
@@ -389,7 +388,8 @@ namespace cils {
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->upper = pow(2, qam) - 1;
 
-            this->R_A.set_size(n * (n + 1) / 2);
+            this->R_A = new scalar[n * (n + 1) / 2];
+
             this->R_R.set_size(n, n);
             this->R_Q.set_size(n, n);
             this->A.set_size(n, n);
@@ -405,7 +405,9 @@ namespace cils {
             this->v_q.set_size(n);
         }
 
-        ~cils() {}
+        ~cils() {
+            delete[] R_A;
+        }
 
         /**
          * Initialize the problem either reading from files (.csv or .nc) or generating the problem

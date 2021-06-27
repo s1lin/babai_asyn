@@ -566,7 +566,7 @@ namespace cils {
         }
 
         inline bool obils_omp(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,
-                              const coder::array<scalar, 1U> &R_A, const scalar *y_B, scalar *z_x) {
+                              const scalar *R_A, const scalar *y_B, scalar *z_x) {
             index dx = n_dx_q_1 - n_dx_q_0;
             index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
             index dflag = 1, iter = 0, diff = 0, k = dx - 1;

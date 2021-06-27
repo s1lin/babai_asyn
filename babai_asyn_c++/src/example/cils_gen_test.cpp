@@ -20,7 +20,7 @@ long plot_run() {
 
         vector<scalar> z_B(n, 0);
 
-        cils::returnType<scalar, index> reT, qr_reT, LLL_reT;
+        cils::returnType<scalar, index> reT, qr_reT, LLL_reT, LLL_reT2;
 //        for (k = 1; k <= 3; k += 2) {
         for (index tt = 0; tt <= 0; tt++) {
             is_qr = tt;
@@ -46,7 +46,16 @@ long plot_run() {
                             qr_reT = cils.cils_qr_serial(1, 0);
                             cils.init_y();
                             if (!is_qr) {
-                                LLL_reT = cils.cils_LLL_reduction(1, n <= 16, 2);
+                                LLL_reT = cils.cils_LLL_reduction(1, n <= 16, 1);
+//                                for (index ii = 0; ii < n; i++) {
+//                                    for (index j = 0; j < n; j++) {
+//                                        cils.Q[ii * n + j] = 0;
+//                                        cils.R_Q[ii * n + j] = 0;
+//                                    }
+//                                }
+                                LLL_reT2 = cils.cils_LLL_reduction(1, n <= 16, 10);
+                                printf("[ LLL INFO] ser_time: %8.5f, omp_time: %8.5f, speedup: %8.5f\n",
+                                       LLL_reT.run_time, LLL_reT2.run_time, LLL_reT.run_time / LLL_reT2.run_time);
                             }
                         }
                         cils.init_R();
@@ -79,7 +88,7 @@ long plot_run() {
 
                         init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
                         cils.cils_block_search_serial(0, &d_s, &z_B);
-                        cout<<"SER:";
+                        cout << "SER:";
                         cils::display_vector<scalar, index>(&z_B);
                         ber_serial = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
 
