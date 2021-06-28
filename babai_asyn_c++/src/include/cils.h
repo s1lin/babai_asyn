@@ -449,7 +449,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_qr_omp(const index eval, const index qr_eval, const index n_proc);
+        cils_qr_omp(const index eval, const index verbose, const index n_proc);
 
         /**
          *

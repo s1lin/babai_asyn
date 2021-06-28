@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr,
-                 ser_tim, d_s, proc_num, spu, time, lll, qrT, t_spu):
+                 ser_tim, d_s, proc_num, spu, time, lll, qrT, t_spu, qr_l):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (30, 8)
     fig, axes = plt.subplots(2, 8, constrained_layout=True)
@@ -54,12 +54,13 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
                 qrT_ser = qrT[0][j]
                 omp_LLL = [LLL_ser]
                 omp_qrT = [qrT_ser]
-                for l in range(2, l_max):
+                print("qr_l", qr_l)
+                for l in range(2, qr_l):
                     omp_LLL.append(lll[l][j])
                     omp_qrT.append(qrT[l][j])
 
-                proc_num = proc_num.astype(int)
-                itr_label = ['NT-' + str(proc) for proc in proc_num]
+                # proc_num = proc_num.astype(int)
+                itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 20, 3)]
 
                 axes[j, 5].plot(itr_label, np.array(omp_LLL[0:len(itr_label)]) / max_iter, color=color[0], marker=marker[0])
                 axes[j, 6].plot(itr_label, np.array(LLL_ser / omp_LLL[0:len(itr_label)]), color=color[0], marker=marker[0])

@@ -83,27 +83,33 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_qr_omp(const index eval, const index qr_eval, const index n_proc) {
+    cils<scalar, index, n>::cils_qr_omp(const index eval, const index verbose, const index n_proc) {
 
-        scalar error, time, sum = 0;
-
-        auto A_t = new scalar[n * n]();
+        cout << "[ In Parallel QR]\n";
+        scalar error = -1, time, sum = 0;
         auto lock = new omp_lock_t[n]();
+
+        coder::array<scalar, 2U> A_t(A);
+        //Clear Variables:
+        R_Q.set_size(n, n);
+        Q.set_size(n, n);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                R_Q[i * n + j] = 0;
+                Q[i * n + j] = 0;
+            }
+            omp_init_lock((&lock[i]));
+        }
 
         time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum)
         {
-
+            sum = 0;
 #pragma omp for schedule(static, 1)
             for (index i = 0; i < n; i++) {
-                for (index j = 0; j < n; j++) {
-                    A_t[i * n + j] = A[i * n + j];
-                }
-                omp_init_lock((&lock[i]));
                 omp_set_lock(&lock[i]);
             }
 
-            sum = 0;
             if (omp_get_thread_num() == 0) {
                 // Calculation of ||A||
                 for (index i = 0; i < n; i++) {
@@ -130,23 +136,33 @@ namespace cils {
                         for (index i = 0; i < n; i++) {
                             A_t[j * n + i] = A_t[j * n + i] - R_Q[j * n + (k - 1)] * Q[(k - 1) * n + i];
                         }
-//Only one thread calculates the norm(A)//and unsets the lock for the next column.if (j == k) {    sum = 0;    for (index i = 0; i < n; i++) {        sum = sum + A_t[k * n + i] * A_t[k * n + i];    }    R_Q[k * n + k] = sqrt(sum);    for (index i = 0; i < n; i++) {        Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];    }    omp_unset_lock(&lock[k]);}
+//Only one thread calculates the norm(A)//and unsets the lock for the next column.
+                        if (j == k) {
+                            sum = 0;
+                            for (index i = 0; i < n; i++) {
+                                sum = sum + A_t[k * n + i] * A_t[k * n + i];
+                            }
+                            R_Q[k * n + k] = sqrt(sum);
+                            for (index i = 0; i < n; i++) {
+                                Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
+                            }
+                            omp_unset_lock(&lock[k]);
+                        }
                     }
                 }
             }
         }
 
         time = omp_get_wtime() - time;
-//        if (eval || qr_eval) {
-//            error = qr_validation<scalar, index, n>(A, Q, R_R, R_A, eval, qr_eval);
-//        }
+        if (eval || verbose) {
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
+        }
         for (index i = 0; i < n; i++) {
             omp_destroy_lock(&lock[i]);
         }
 #pragma parallel omp cancellation point
 #pragma omp flush
         delete[] lock;
-        delete[] A_t;
 
         return {{}, time, error};
     }

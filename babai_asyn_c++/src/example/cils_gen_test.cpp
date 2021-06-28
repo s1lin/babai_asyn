@@ -16,7 +16,7 @@ long plot_run() {
         scalar r, t, b, iter, ser_qrd, run_time, ser_time;
         scalar t2, r2, b2, iter2;
 
-        index verbose = n <= 16, count = 0, l = 2; //count for qam.
+        index verbose = n <= 16, count = 0, l = 2, qr_l = 2; //count for qam.
 
         vector<scalar> z_B(n, 0);
 
@@ -257,10 +257,10 @@ long plot_run() {
                         }
                     }
                     if (!is_matlab && !is_qr) {
-                        l = 2;
-                        for (index n_proc = 2; n_proc <= max_proc; n_proc += min_proc) {
-                            printf("[ QR_LLL Parallel TEST:]++++++++++++++++++++++++++++++++\n");
-                            qr_reT_omp = cils.cils_qr_serial(1, 0);//cils.cils_qr_omp(1, 1, n_proc);
+                        qr_l = 2;
+                        for (index n_proc = 2; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
+                            printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
+                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
                             cils.init_y();
 
                             for (index ii = 0; ii < n; ii++) {
@@ -283,29 +283,29 @@ long plot_run() {
                             }
                             qrT[0][count] = qr_reT.run_time;
                             LLL[0][count] = LLL_reT_omp.run_time;
-                            qrT[l][count] = qr_reT_omp.run_time;
-                            LLL[l][count] = LLL_reT_omp.run_time;
+                            qrT[qr_l][count] = qr_reT_omp.run_time;
+                            LLL[qr_l][count] = LLL_reT_omp.run_time;
                             printf("[ TEST INFO]\n"
                                    "01.The QR Error is %.5f.\n"
                                    "02.The determinant of LLL is %.5f.\n",
                                    qr_reT_omp.num_iter, LLL_reT_omp.num_iter);
                             printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
                             for (index init = -1; init <= 1; init++) {
-                                scalar t_omp_time = qrT[l][count] + LLL[l][count] + tim[init + 1][l][count];
+                                scalar t_omp_time = qrT[qr_l][count] + LLL[qr_l][count] + tim[init + 1][qr_l][count];
                                 scalar t_ser_time = qrT[0][count] + LLL[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
-                                t_spu[init + 1][l][count] += t_ser_time / t_omp_time;
+                                t_spu[init + 1][qr_l][count] += t_ser_time / t_omp_time;
                                 printf("Method: ILS_OMP, N_PROC: %2d, AVG RES: %.5f, AVG BER: %.5f, "
                                        "AVG TIME: %.5fs, RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs, "
                                        "NUM_ITER:%7.3f, SOVLER SPEEDUP: %8.3f, QR SER_TIME: %.5fs,"
                                        "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
                                        "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, TOTAL SPEEDUP: %8.3f\n",
-                                       n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i,
-                                       tim[init + 1][l][count] / i, r, b, t,
-                                       iter, spu[init + 1][l][count] / i, qrT[0][count],
-                                       qrT[l][count], qrT[0][count] / qrT[l][count], LLL[0][count],
-                                       LLL[l][count], LLL[0][count] / LLL[l][count], t_ser_time / t_omp_time);
+                                       n_proc, res[init + 1][qr_l][count] / i, ber[init + 1][qr_l][count] / i,
+                                       tim[init + 1][qr_l][count] / i, r, b, t,
+                                       iter, spu[init + 1][qr_l][count] / i, qrT[0][count],
+                                       qrT[qr_l][count], qrT[0][count] / qrT[qr_l][count], LLL[0][count],
+                                       LLL[qr_l][count], LLL[0][count] / LLL[qr_l][count], t_ser_time / t_omp_time);
                             }
-                            l++;
+                            qr_l++;
                         }
                     }
 
@@ -410,7 +410,7 @@ long plot_run() {
                     if (pModule != nullptr) {
                         pFunc = PyObject_GetAttrString(pModule, "plot_runtime");
                         if (pFunc && PyCallable_Check(pFunc)) {
-                            pArgs = PyTuple_New(19);
+                            pArgs = PyTuple_New(20);
                             if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                                 return false;
                             }
@@ -430,6 +430,9 @@ long plot_run() {
                                 return false;
                             }
                             if (PyTuple_SetItem(pArgs, 6, Py_BuildValue("i", is_qr)) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 19, Py_BuildValue("i", qr_l)) != 0) {
                                 return false;
                             }
                             if (PyTuple_SetItem(pArgs, 7, pRes) != 0) {
