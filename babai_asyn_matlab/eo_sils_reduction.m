@@ -44,6 +44,7 @@ Z = eye(n);
 
 f = true;
 swap = zeros(n,1);
+tic
 while f
     f = false;
     for i = 2:2:n
@@ -106,6 +107,7 @@ while f
         end
     end
 end
+toc
 Q1 = R_*Z/R;
 % Q1
 d = det(Q1*Q1');

@@ -42,7 +42,7 @@ namespace cils {
         index is_local = 0;
         index max_search = 1000000;//INT_MAX;
         index min_proc = 3;
-        index plot_itr = 10;
+        index plot_itr = 1;
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
         index max_thre = 1000000;//maximum search allowed for serial ils.
@@ -98,10 +98,13 @@ namespace cils {
                    "nswp=%d, max_search=%d\n",
                    k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search);
 
-            d_s[0] = block_size / 4;
-            d_s[1] = block_size / 4;
-            d_s[2] = block_size / 4;
-            d_s[3] = block_size / 4;
+            for(int i = 0; i<spilt_size; i++){
+                d_s[i] = block_size / spilt_size;
+            }
+
+//            d_s[1] = block_size / 4;
+//            d_s[2] = block_size / 4;
+//            d_s[3] = block_size / 4;
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }

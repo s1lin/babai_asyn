@@ -90,7 +90,8 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             y_a[i] += v_a[i];
         }
-        display_vector<scalar, index>(y_a);
+        if (n <= 16)
+            display_vector<scalar, index>(y_a);
 
         //Set Z to Eye:
         coder::eye(n, Z);

@@ -5,10 +5,11 @@ from textwrap import wrap
 import pandas as pd
 
 
-def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num, spu, time):
+def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr,
+                 ser_tim, d_s, proc_num, spu, time, lll, qrT, t_spu):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (20, 8)
-    fig, axes = plt.subplots(2, 5, constrained_layout=True)
+    plt.rcParams["figure.figsize"] = (30, 8)
+    fig, axes = plt.subplots(2, 8, constrained_layout=True)
     color = ['r', 'g', 'b', 'r']
     marker = ['o', '+', 'x', 'o']
 
@@ -18,28 +19,59 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
         axes[j, 0].set_title('Iterations ' + str(qam) + '-QAM', fontsize=13)
         axes[j, 1].set_title('Residual ' + str(qam) + '-QAM', fontsize=13)
         axes[j, 2].set_title('BER ' + str(qam) + '-QAM', fontsize=13)
-        axes[j, 3].set_title('Avg Solve Time ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 3].set_title('Avg ILS Solve Time ' + str(qam) + '-QAM', fontsize=13)
         axes[j, 4].set_title('Solver Speed Up ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 5].set_title('Avg QR/LLL Solve Time ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 6].set_title('QR/LLL Speed Up ' + str(qam) + '-QAM', fontsize=13)
+        # axes[j, 7].set_title('AvG QR Solve Time ' + str(qam) + '-QAM', fontsize=13)
+        # axes[j, 8].set_title('QR Speed Up ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 7].set_title('Total Speed Up ' + str(qam) + '-QAM', fontsize=13)
 
         axes[j, 0].set_ylabel('Avg. Iterations', fontsize=13)
         axes[j, 1].set_ylabel('Avg. Residual', fontsize=13)
         axes[j, 2].set_ylabel('Avg. BER', fontsize=13)
         axes[j, 3].set_ylabel('Avg. Solve Time (s)', fontsize=13)
         axes[j, 4].set_ylabel('Solver Speed Up x times', fontsize=13)
+        axes[j, 5].set_ylabel('Avg. QR/LLL Solve Time (s)', fontsize=13)
+        axes[j, 6].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
+        # axes[j, 7].set_ylabel('Avg QR Solve Time (s)', fontsize=13)
+        # axes[j, 8].set_ylabel('QR Speed Up x times', fontsize=13)
+        axes[j, 7].set_ylabel('Total Speed Up x times', fontsize=13)
 
         for x in range(0, 4):
             if x == 3:
-                block_stm = tim[x][1][j]
-                omp_stm = [0, block_stm]
-                itr_label = ['NT-' + str(proc) for proc in proc_num]
-                res_label = ['Babai', 'B-seq'] + itr_label
+                # block_stm = tim[x][1][j]
+                # omp_stm = [0, block_stm]
+                # itr_label = ['NT-' + str(proc) for proc in proc_num]
+                # res_label = ['Babai', 'B-seq'] + itr_label
+                # for l in range(2, l_max):
+                #     omp_stm.append(tim[x][l][j])
+                # print(omp_stm)
+                # omp_spu = block_stm / omp_stm
+                # axes[j, 3].plot(res_label[1:len(res_label)], np.array(omp_stm[1:len(res_label)]) / max_iter, color=color[x], marker=marker[x], linestyle='--')
+                # # axes[j, 4].plot(itr_label, omp_spu[2:len(itr_label) + 2], color=color[x], marker=marker[x], linestyle='--')
+                LLL_ser = lll[0][j]
+                qrT_ser = qrT[0][j]
+                omp_LLL = [LLL_ser]
+                omp_qrT = [qrT_ser]
                 for l in range(2, l_max):
-                    omp_stm.append(tim[x][l][j])
-                print(omp_stm)
-                omp_spu = block_stm / omp_stm
-                axes[j, 3].plot(res_label[1:len(res_label)], np.array(omp_stm[1:len(res_label)]) / max_iter, color=color[x], marker=marker[x], linestyle='--')
-                # axes[j, 4].plot(itr_label, omp_spu[2:len(itr_label) + 2], color=color[x], marker=marker[x], linestyle='--')
+                    omp_LLL.append(lll[l][j])
+                    omp_qrT.append(qrT[l][j])
+
+                proc_num = proc_num.astype(int)
+                itr_label = ['NT-' + str(proc) for proc in proc_num]
+
+                axes[j, 5].plot(itr_label, np.array(omp_LLL[0:len(itr_label)]) / max_iter, color=color[0], marker=marker[0])
+                axes[j, 6].plot(itr_label, np.array(LLL_ser / omp_LLL[0:len(itr_label)]), color=color[0], marker=marker[0])
+                axes[j, 5].plot(itr_label, np.array(omp_qrT[0:len(itr_label)]) / max_iter, color=color[2], marker=marker[2])
+                axes[j, 6].plot(itr_label, np.array(qrT_ser / omp_qrT[0:len(itr_label)]), color=color[2], marker=marker[2])
+
+                axes[j, 5].set_xticklabels(itr_label, rotation=45)
+                axes[j, 6].set_xticklabels(itr_label, rotation=45)
+                axes[j, 5].set_xticklabels(itr_label, rotation=45)
+                axes[j, 6].set_xticklabels(itr_label, rotation=45)
                 break
+
 
             babai_res = res[x][0][j]
             babai_ber = ber[x][0][j]
@@ -48,18 +80,21 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             block_ber = ber[x][1][j]
             block_stm = tim[x][1][j]
 
+
             omp_res = [babai_res, block_res]
             omp_ber = [babai_ber, block_ber]
             omp_stm = [babai_stm, block_stm]
 
             omp_itr = []
             omp_spu = []
+            omp_tsp = []
             for l in range(2, l_max):
                 omp_res.append(res[x][l][j])
                 omp_ber.append(ber[x][l][j])
                 omp_itr.append(itr[x][l][j])
                 omp_stm.append(tim[x][l][j])
                 omp_spu.append(spu[x][l][j])
+                omp_tsp.append(t_spu[x][l][j])
 
             proc_num = proc_num.astype(int)
             labels = ['$x_{init} = round(x_R)$', '$x_{init} = 0$', '$x_{init} = avg$']
@@ -76,12 +111,14 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             axes[j, 2].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 3].plot(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 4].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
+            axes[j, 7].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
 
             axes[j, 0].set_xticklabels(itr_label, rotation=45)
             axes[j, 1].set_xticklabels(res_label, rotation=45)
             axes[j, 2].set_xticklabels(res_label, rotation=45)
             axes[j, 3].set_xticklabels(res_label, rotation=45)
             axes[j, 4].set_xticklabels(spu_label, rotation=45)
+            axes[j, 7].set_xticklabels(spu_label, rotation=45)
 
     title = 'Residual Convergence and Bit Error Rate for ' + str(SNR) \
             + '-SNR and 4, 64-QAM with different number of threads and block size ' + str(block_size)
