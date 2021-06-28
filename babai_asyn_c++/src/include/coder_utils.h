@@ -315,6 +315,7 @@ namespace coder {
                     double s_tmp;
                     int coffset_tmp;
                     coffset_tmp = j << 1;
+//                    cout<<coffset_tmp<<","<<j<<" ";
                     s_tmp = B[coffset_tmp + 1];
                     C[coffset_tmp] = A_C[0] * B[coffset_tmp] + A_C[2] * s_tmp;
                     C[coffset_tmp + 1] = A_C[1] * B[coffset_tmp] + A_C[3] * s_tmp;

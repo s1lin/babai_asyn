@@ -83,6 +83,8 @@ while k <= n
         G = zeros(2,2);
         % Bring R back to an upper triangular matrix by a Givens rotation
         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
+        R
+        R([k1,k],k:n)
         R([k1,k],k:n) = G * R([k1,k],k:n);  
         %Q([k1,k],k:n) = G * Q([k1,k],k:n); 
         %B([k1,k],k:n) = G * B([k1,k],k:n); 

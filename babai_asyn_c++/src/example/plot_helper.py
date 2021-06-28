@@ -64,11 +64,11 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
 
                 axes[j, 5].plot(itr_label, np.array(omp_LLL[0:len(itr_label)]) / max_iter, color=color[0], marker=marker[0])
                 axes[j, 6].plot(itr_label, np.array(LLL_ser / omp_LLL[0:len(itr_label)]), color=color[0], marker=marker[0])
-                axes[j, 5].plot(itr_label, np.array(omp_qrT[0:len(itr_label)]) / max_iter, color=color[2], marker=marker[2])
-                axes[j, 6].plot(itr_label, np.array(qrT_ser / omp_qrT[0:len(itr_label)]), color=color[2], marker=marker[2])
+                # axes[j, 5].plot(itr_label, np.array(omp_qrT[0:len(itr_label)]) / max_iter, color=color[2], marker=marker[2])
+                # axes[j, 6].plot(itr_label, np.array(qrT_ser / omp_qrT[0:len(itr_label)]), color=color[2], marker=marker[2])
 
-                axes[j, 5].set_xticklabels(itr_label, rotation=45)
-                axes[j, 6].set_xticklabels(itr_label, rotation=45)
+                # axes[j, 5].set_xticklabels(itr_label, rotation=45)
+                # axes[j, 6].set_xticklabels(itr_label, rotation=45)
                 axes[j, 5].set_xticklabels(itr_label, rotation=45)
                 axes[j, 6].set_xticklabels(itr_label, rotation=45)
                 break

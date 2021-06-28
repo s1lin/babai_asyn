@@ -63,6 +63,7 @@ long plot_run() {
                             //LLL reduction
                             if (!is_qr) {
                                 LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
+                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
                             }
                         }
                         //Initialize R
@@ -258,10 +259,10 @@ long plot_run() {
                     }
                     if (!is_matlab && !is_qr) {
                         qr_l = 2;
-                        for (index n_proc = 2; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
+                        for (index n_proc = 3; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
                             printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
-                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
-                            cils.init_y();
+//                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
+//                            cils.init_y();
 
                             for (index ii = 0; ii < n; ii++) {
                                 for (index j = 0; j < n; j++) {
@@ -269,20 +270,21 @@ long plot_run() {
                                 }
                             }
                             //qr-block Testing
-                            init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
-                            cils.cils_block_search_serial(0, &d_s, &z_B);
-                            ber_qr = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-                            res_qr = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
                             if (verbose) {
+                                init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+                                cils.cils_block_search_serial(0, &d_s, &z_B);
+                                ber_qr = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                                res_qr = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
+
                                 cout << "SER:";
                                 cils::display_vector<scalar, index>(&z_B);
                             }
                             //LLL reduction
                             if (!is_qr) {
-                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 1);//n_proc);
+                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
                             }
                             qrT[0][count] = qr_reT.run_time;
-                            LLL[0][count] = LLL_reT_omp.run_time;
+                            LLL[0][count] = LLL_reT.run_time;
                             qrT[qr_l][count] = qr_reT_omp.run_time;
                             LLL[qr_l][count] = LLL_reT_omp.run_time;
                             printf("[ TEST INFO]\n"
