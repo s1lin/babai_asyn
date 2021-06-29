@@ -162,29 +162,40 @@ namespace cils {
 //        coder::qr(A, Q, R_Q);
 //        init_y();
 
-        coder::array<double, 2U> R_Z, Q_C;
+
 
         scalar time = 0, det = 0;
-//        R_R.set_size(n * n);
-
+        returnType<scalar, index> reT;
 
         if (n_proc <= 1) {
-            time = cils_LLL_serial();
-            cout << "SERTIME:" << time << endl;
+            reT = cils_LLL_serial();
+            printf("[ INFO: SER LLL TIME: %8.5f, Givens: %.1f]\n",
+                   reT.run_time, reT.num_iter);
+            time = reT.run_time;
         } else {
             time = cils_LLL_omp(n_proc);
-            cout << "OMPTIME:" << time << endl;
+            printf("[ INFO: OMP LLL TIME: %8.5f]\n", time);
         }
 
         if (eval) {
             if (verbose) {
+                printf("[ Printing R]\n");
                 for (index i = 0; i < n; i++) {
                     for (index j = 0; j < n; j++) {
                         printf("%8.5f ", R_R[j * n + i]);
                     }
                     printf("\n");
                 }
+                printf("[ Printing Z]\n");
+                for (index i = 0; i < n; i++) {
+                    for (index j = 0; j < n; j++) {
+                        printf("%8.5f ", Z[j * n + i]);
+                    }
+                    printf("\n");
+                }
             }
+            coder::array<double, 2U> R_Z, Q_C;
+
 
             R_Z.set_size(n, n);
             Q_C.set_size(n, n);
@@ -204,13 +215,13 @@ namespace cils {
         }
 //        printf("[ LLL INFO] ser_time: %8.5f, omp_time: %8.5f, speedup: %8.5f\n",
 //               ser_time, par_time, ser_time / par_time);
-        return {{}, time, det};
+        return {{reT.num_iter}, time, det};
     }
 
     template<typename scalar, typename index, index n>
-    scalar cils<scalar, index, n>::cils_LLL_serial() {
-        cout << "In cils_LLL_serial" << endl;
-        bool f = true;
+    returnType <scalar, index> cils<scalar, index, n>::cils_LLL_serial() {
+        cout << "[ In cils_LLL_serial]" << endl;
+        bool f = true, givens = false;
         coder::array<scalar, 1U> r, vi, vr;
         coder::array<double, 2U> b, b_R, r1;
         scalar G[4], low_tmp[2], zeta;
@@ -318,6 +329,7 @@ namespace cils {
                 // 'eo_sils_reduction:69' i1 = i-1;
                 // 'eo_sils_reduction:70' if swap(i) == 1
                 if (vi[static_cast<int>(c_i) - 1] == 1.0) {
+                    givens = true;
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     low_tmp[0] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2];
                     low_tmp[1] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1];
@@ -488,21 +500,21 @@ namespace cils {
             }
         }
         time = omp_get_wtime() - time;
-        return time;
+
+        return {{}, time, (scalar) givens};
     }
 
 
     template<typename scalar, typename index, index n>
     scalar cils<scalar, index, n>::cils_LLL_omp(const index n_proc) {
+#pragma omp parallel default(shared) num_threads(n_proc)
+        {}
         bool f = true;
-        cout << "In cils_LLL_omp" << endl;
+        cout << "[ In cils_LLL_omp]\n";
         scalar zeta, r_ii, alpha, s;
 
         index swap[n] = {}, counter = 0, c_i;
         index i1, ci2, c_tmp, tmp, i2, odd = static_cast<int>((n + -1.0) / 2.0);
-
-#pragma omp parallel default(shared) num_threads(n_proc)
-        {}
 
         scalar time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private (c_i, i1, ci2, c_tmp, tmp, i2, zeta, r_ii, alpha, s)
@@ -539,24 +551,33 @@ namespace cils {
                         // 'eo_sils_reduction:59' R_R(1:i-2,i) = R_R(1:i-2,i) - zeta * R_R(1:i-2,i-1);
                         if (1 <= c_i - 2) {
 //                        vr.set_size(ci2);
-                            for (i1 = 0; i1 < c_i - 2; i1++) {
-                                R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (c_i - 2)];
-                            }
-//                    b_loop_ub = vr.size(0);
+                            ci2 = c_i - 2;
+//                            scalar vr_2[ci2] = {};
 //                            for (i1 = 0; i1 < ci2; i1++) {
-//                                R_R[i1 + n * (c_i - 1)] = vr[i1];
+//                                vr_2[i1] = R_R[i1 + n * (c_i - 1)] - zeta * R_R[i1 + n * (c_i - 2)];
 //                            }
+////                    b_loop_ub = vr.size(0);
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                R_R[i1 + n * (c_i - 1)] = vr_2[i1];
+//                            }
+                            for (i1 = 0; i1 < ci2; i1++) {
+                                R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (ci2)];
+                            }
                         }
                         // 'eo_sils_reduction:60' Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
-//                    input_sizes_idx_1 = n - 1;
-//                    vr.set_size(n);
+//                        scalar vr[n] = {};
+//                        for (i1 = 0; i1 < n; i1++) {
+//                            vr[i1] = Z[i1 + n * (c_i - 1)] - zeta * Z[i1 + n * (c_i - 2)];
+//                        }
+//
+//                        for (i1 = 0; i1 < n; i1++) {
+//                            Z[i1 + n * (c_i - 1)] = vr[i1];
+//                        }
+
                         for (i1 = 0; i1 < n; i1++) {
                             Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
                         }
-//                    b_loop_ub = vr.size(0);
-//                    for (i1 = 0; i1 < n; i1++) {
-//                        Z[i1 + n * (c_i - 1)] = vr[i1];
-//                    }
+
                         //  Permute columns k-1 and k of R_R and Z
                         // 'eo_sils_reduction:63' R_R(1:i,[i1,i]) = R_R(1:i,[i,i1]);
 //                        sizes[0] = c_i - 2;
@@ -588,17 +609,30 @@ namespace cils {
                             R_R[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
                         }
 
+//                        scalar sizes[2] = {c_i - 2, c_i - 1};
+//                        scalar c_result[2] = {c_i - 1, c_i - 2};
+//                        scalar b_R2[n * 2] = {};
+//                        for (i1 = 0; i1 < 2; i1++) {
+//                            for (i2 = 0; i2 < n; i2++) {
+//                                b_R2[i2 + n * i1] = Z[i2 + n * c_result[i1]];
+//                            }
+//                        }
+//
+//                        for (i1 = 0; i1 < 2; i1++) {
+//                            for (i2 = 0; i2 < n; i2++) {
+//                                Z[i2 + n * sizes[i1]] = b_R2[i2 + n * i1];
+//                            }
+//                        }
+
                         for (i2 = 0; i2 < n; i2++) {
                             b_R[i2] = Z[i2 + n * (c_i - 1)];
-                            b_R[i2 + c_i] = Z[i2 + n * (c_i - 2)];
+                            b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
                         }
 
                         for (i2 = 0; i2 < n; i2++) {
                             Z[i2 + n * (c_i - 2)] = b_R[i2];
-                            Z[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
+                            Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
                         }
-
-
                         // 'eo_sils_reduction:64' Z(:,[i1,i]) = Z(:,[i,i1]);
 //                    sizes[0] = c_i - 2;
 //                    sizes[1] = c_i - 1;
@@ -634,6 +668,7 @@ namespace cils {
                             coder::planerot(low_tmp, G);
                             R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                             R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
+
                             // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
                             if (c_i > n) {
                                 i1 = i2 = 0;
@@ -650,33 +685,23 @@ namespace cils {
                                 b[2 * i2] = R_R[(c_i + n * tmp) - 2];
                                 b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
                             }
-//                        coder::internal::blas::mtimes(G, b, r1);
-//                  static void mtimes(const double A_C[4], const ::coder::array<double, 2U> &B,
-//                               ::coder::array<double, 2U> &C) {
-//                int n;
-//                n = B.size(1);
-//                C.set_size(2, B.size(1));
-//                for (int j{0}; j < n; j++) {
-//                    double s_tmp;
-//                    int coffset_tmp;
-//                    coffset_tmp = j << 1;
-//                    s_tmp = B[coffset_tmp + 1];
-//                    C[coffset_tmp] = A_C[0] * B[coffset_tmp] + A_C[2] * s_tmp;
-//                    C[coffset_tmp + 1] = A_C[1] * B[coffset_tmp] + A_C[3] * s_tmp;
-//                }
-//                      coder::internal::blas::mtimes(G, b, r1);
-                            scalar r1[ci2 * 2] = {};
-                            for (index j = 0; j < ci2; j++) {
-                                index coffset_tmp = j << 1;
-                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
-                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
-                            }
-
-//                        b_loop_ub = r1.size(1);
-                            for (i1 = 0; i1 < ci2; i1++) {
-                                tmp = (c_tmp + i1) - 1;
-                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
-                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+//                            scalar r1[ci2 * 2] = {};
+//                            for (index j = 0; j < ci2; j++) {
+//                                index coffset_tmp = j << 1;
+//                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
+//                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
+//                            }
+//
+////                        b_loop_ub = r1.size(1);
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                tmp = (c_tmp + i1) - 1;
+//                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
+//                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+//                            }
+                            for (i2 = 0; i2 < ci2; i2++) {
+                                tmp = i1 + i2;
+                                R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                                R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
                             }
                             // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
                             low_tmp[0] = y_r[c_i - 2];
@@ -717,27 +742,32 @@ namespace cils {
                         R_R[(c_i + n * (c_i - 1)) - 2] = alpha;
                         // 'eo_sils_reduction:59' R_R(1:i-2,i) = R_R(1:i-2,i) - zeta * R_R(1:i-2,i-1);
                         if (1 <= c_i - 2) {
-                            for (i1 = 0; i1 < c_i - 2; i1++) {
-                                R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (c_i - 2)];
-                            }
-//                            for (i1 = 0; i1 < c_i - 2; i1++) {
-//                                vr[i1] = R_R[i1 + n * (c_i - 1)] - zeta * R_R[i1 + n * (c_i - 2)];
+                            ci2 = c_i - 2;
+//                            scalar vr_2[ci2] = {};
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                vr_2[i1] = R_R[i1 + n * (c_i - 1)] - zeta * R_R[i1 + n * (c_i - 2)];
 //                            }
 ////                    b_loop_ub = vr.size(0);
-//                            for (i1 = 0; i1 < c_i - 2; i1++) {
-//                                R_R[i1 + n * (c_i - 1)] = vr[i1];
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                R_R[i1 + n * (c_i - 1)] = vr_2[i1];
 //                            }
+                            for (i1 = 0; i1 < ci2; i1++) {
+                                R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (ci2)];
+                            }
                         }
                         // 'eo_sils_reduction:60' Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
-//                    input_sizes_idx_1 = n - 1;
-//                    vr.set_size(n);
+//                        scalar vr[n] = {};
+//                        for (i1 = 0; i1 < n; i1++) {
+//                            vr[i1] = Z[i1 + n * (c_i - 1)] - zeta * Z[i1 + n * (c_i - 2)];
+//                        }
+//
+//                        for (i1 = 0; i1 < n; i1++) {
+//                            Z[i1 + n * (c_i - 1)] = vr[i1];
+//                        }
                         for (i1 = 0; i1 < n; i1++) {
                             Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
                         }
-//                    b_loop_ub = vr.size(0);
-//                    for (i1 = 0; i1 < n; i1++) {
-//                        Z[i1 + n * (c_i - 1)] = vr[i1];
-//                    }
+
                         //  Permute columns k-1 and k of R_R and Z
                         // 'eo_sils_reduction:63' R_R(1:i,[i1,i]) = R_R(1:i,[i,i1]);
                         scalar b_R[n * 2] = {};
@@ -753,17 +783,27 @@ namespace cils {
 
                         for (i2 = 0; i2 < n; i2++) {
                             b_R[i2] = Z[i2 + n * (c_i - 1)];
-                            b_R[i2 + c_i] = Z[i2 + n * (c_i - 2)];
+                            b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
                         }
 
                         for (i2 = 0; i2 < n; i2++) {
                             Z[i2 + n * (c_i - 2)] = b_R[i2];
-                            Z[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
+                            Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
                         }
+//                        scalar b_R2[n * 2] = {};
+//                        for (i2 = 0; i2 < n; i2++) {
+//                            b_R2[i2] = Z[i2 + n * (c_i - 1)];
+//                            b_R2[i2 + c_i] = Z[i2 + n * (c_i - 2)];
+//                        }
+//
+//                        for (i2 = 0; i2 < n; i2++) {
+//                            Z[i2 + n * (c_i - 2)] = b_R2[i2];
+//                            Z[i2 + n * (c_i - 1)] = b_R2[i2 + c_i];
+//                        }
                     }
                 }
 
-                if (f)
+                if (f)// && omp_get_thread_num() == 0)
 #pragma omp for schedule(static, 1)
                     for (index b_i = 0; b_i < odd; b_i++) {
                         c_i = static_cast<int>((b_i << 1) + 3U);
@@ -792,34 +832,26 @@ namespace cils {
                                 b[2 * i2] = R_R[(c_i + n * tmp) - 2];
                                 b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
                             }
-//                        coder::internal::blas::mtimes(G, b, r1);
-//                  static void mtimes(const double A_C[4], const ::coder::array<double, 2U> &B,
-//                               ::coder::array<double, 2U> &C) {
-//                int n;
-//                n = B.size(1);
-//                C.set_size(2, B.size(1));
-//                for (int j{0}; j < n; j++) {
-//                    double s_tmp;
-//                    int coffset_tmp;
-//                    coffset_tmp = j << 1;
-//                    s_tmp = B[coffset_tmp + 1];
-//                    C[coffset_tmp] = A_C[0] * B[coffset_tmp] + A_C[2] * s_tmp;
-//                    C[coffset_tmp + 1] = A_C[1] * B[coffset_tmp] + A_C[3] * s_tmp;
-//                }
-//                      coder::internal::blas::mtimes(G, b, r1);
-                            scalar r1[ci2 * 2] = {};
-                            for (index j = 0; j < ci2; j++) {
-                                scalar s_tmp;
-                                index coffset_tmp = j << 1;
-                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
-                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
-                            }
 
-//                        b_loop_ub = r1.size(1);
-                            for (i1 = 0; i1 < ci2; i1++) {
-                                tmp = (c_tmp + i1) - 1;
-                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
-                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+//                            scalar r1[ci2 * 2] = {};
+//                            for (index j = 0; j < ci2; j++) {
+//                                scalar s_tmp;
+//                                index coffset_tmp = j << 1;
+//                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
+//                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
+//                            }
+//
+////                        b_loop_ub = r1.size(1);
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                tmp = (c_tmp + i1) - 1;
+//                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
+//                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+//                            }
+
+                            for (i2 = 0; i2 < ci2; i2++) {
+                                tmp = i1 + i2;
+                                R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                                R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
                             }
                             // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
                             low_tmp[0] = y_r[c_i - 2];
