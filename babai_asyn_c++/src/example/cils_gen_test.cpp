@@ -261,8 +261,8 @@ long plot_run() {
                         qr_l = 2;
                         for (index n_proc = 3; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
                             printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
-//                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
-//                            cils.init_y();
+                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
+                            cils.init_y();
 
                             for (index ii = 0; ii < n; ii++) {
                                 for (index j = 0; j < n; j++) {
@@ -294,16 +294,14 @@ long plot_run() {
                             printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
                             for (index init = -1; init <= 1; init++) {
                                 scalar t_omp_time = qrT[qr_l][count] + LLL[qr_l][count] + tim[init + 1][qr_l][count];
-                                scalar t_ser_time = qrT[0][count] + LLL[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
+                                scalar t_ser_time =
+                                        qrT[0][count] + LLL[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
                                 t_spu[init + 1][qr_l][count] += t_ser_time / t_omp_time;
-                                printf("Method: ILS_OMP, N_PROC: %2d, AVG RES: %.5f, AVG BER: %.5f, "
-                                       "AVG TIME: %.5fs, RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs, "
-                                       "NUM_ITER:%7.3f, SOVLER SPEEDUP: %8.3f, QR SER_TIME: %.5fs,"
+                                printf("Method: QR/LLL_OMP, N_PROC: %2d, "
+                                       "SOVLER SPEEDUP: %8.3f, QR SER_TIME: %.5fs,"
                                        "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
                                        "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, TOTAL SPEEDUP: %8.3f\n",
-                                       n_proc, res[init + 1][qr_l][count] / i, ber[init + 1][qr_l][count] / i,
-                                       tim[init + 1][qr_l][count] / i, r, b, t,
-                                       iter, spu[init + 1][qr_l][count] / i, qrT[0][count],
+                                       n_proc, spu[init + 1][qr_l][count] / i, qrT[0][count],
                                        qrT[qr_l][count], qrT[0][count] / qrT[qr_l][count], LLL[0][count],
                                        LLL[qr_l][count], LLL[0][count] / LLL[qr_l][count], t_ser_time / t_omp_time);
                             }
@@ -494,6 +492,184 @@ long plot_run() {
         }
 
     }
+    return 0;
+}
+
+template<typename scalar, typename index, index n>
+long plot_LLL() {
+
+    for (SNR = 35; SNR <= 35; SNR += 30) {
+        scalar qr_spu[200] = {}, lll_spu[200] = {}, qrT[200] = {}, LLL[200] = {};
+        index verbose = n <= 16, count = 0, qr_l = 2;
+        scalar run_time;
+        cils::returnType<scalar, index> qr_reT, LLL_reT, LLL_reT_omp, qr_reT_omp;
+
+        for (index i = 1; i <= max_iter; i++) {
+
+            printf("[ PLOT LLL]\n++++++++++++++++++++++++++++++++++++++\n");
+            std::cout << "Init, size: " << n << std::endl;
+            run_time = omp_get_wtime();
+            cils::cils<scalar, index, n> cils(k, SNR);
+
+            scalar ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr;
+            printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
+            do {
+                //Initialize Problem
+                cils.init();
+
+                qr_reT = cils.cils_qr_omp(0, verbose, 15);
+                cils.init_y();
+
+                for (index ii = 0; ii < n; ii++) {
+                    for (index j = 0; j < n; j++) {
+                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+                    }
+                }
+
+                LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
+
+                for (index ii = 0; ii < n; ii++) {
+                    for (index j = 0; j < n; j++) {
+                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+                    }
+                }
+                coder::eye(n, cils.Z);
+                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
+
+                printf("[ INITIALIZATION INFO]\n"
+                       "01.The QR Error is %.5f.\n"
+                       "02.The determinant of LLL is %.5f.\n"
+                       "03.The Givens of LLL is %.5f.\n"
+                       "04.The determinant of OMP LLL is %.5f.\n",
+                       qr_reT.num_iter, LLL_reT.num_iter, LLL_reT.x[0], LLL_reT_omp.num_iter);
+                cout.flush();
+            } while (LLL_reT.run_time < 1e-4 || LLL_reT.x[0] == 0);
+
+            qr_reT = cils.cils_qr_serial(1, verbose);
+            qrT[0] += qr_reT.run_time;
+            LLL[0] += LLL_reT.run_time;
+
+            qr_l = 1;
+            for (index n_proc = 2; n_proc <= omp_get_max_threads(); n_proc += 2) {
+                printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
+                qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
+                cils.init_y();
+
+                for (index ii = 0; ii < n; ii++) {
+                    for (index j = 0; j < n; j++) {
+                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+                    }
+                }
+                coder::eye(n, cils.Z);
+                //qr-block Testing
+                //LLL reduction
+                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
+
+                qrT[qr_l] += qr_reT_omp.run_time;
+                LLL[qr_l] += LLL_reT_omp.run_time;
+                qr_spu[qr_l] += qrT[0] / qrT[qr_l];
+                lll_spu[qr_l] += LLL[0] / LLL[qr_l];
+
+                printf("[ TEST INFO]\n"
+                       "        01.The QR Error is %.5f.\n"
+                       "        02.The determinant of LLL is %.5f.\n",
+                       qr_reT_omp.num_iter, LLL_reT_omp.num_iter);
+                printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
+
+                printf("Method: QR/LLL_OMP, N_PROC: %2d, QR SER_TIME: %.5fs,"
+                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
+                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f\n",
+                       n_proc, qrT[0] / i, qrT[qr_l] / i, qr_spu[qr_l] / i, LLL[0] / i,
+                       LLL[qr_l] / i, lll_spu[qr_l] / i);
+
+                qr_l++;
+            }
+
+
+            run_time = omp_get_wtime() - run_time;
+            printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
+                   "++++++++++++++++++++++++++++++++++++++\n", i, run_time);
+            cout.flush();
+
+
+            printf("\n---------------------\nITER:%d\n---------------------\n", i);
+            if (i % plot_itr == 0) {//i % 50 == 0 &&
+                PyObject *pName, *pModule, *pFunc;
+                PyObject *pArgs, *pValue;
+                Py_Initialize();
+                if (_import_array() < 0)
+                    PyErr_Print();
+                npy_intp dim[1] = {200};
+
+                scalar proc_nums[qr_l - 2] = {};
+                index ll = 0;
+
+                for (index n_proc = 2; n_proc <= omp_get_max_threads(); n_proc += 2) {
+                    proc_nums[ll] = n_proc;
+                    ll++;
+                }
+                npy_intp dpc[1] = {ll};
+
+
+                PyObject *pQRT = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, qrT);
+                PyObject *pLLL = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, LLL);
+                PyObject *p_qr = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, qr_spu);
+                PyObject *pTsp = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, lll_spu);
+                if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
+                if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
+                if (p_qr == nullptr) printf("[ ERROR] p_qr has a problem.\n");
+                if (pTsp == nullptr) printf("[ ERROR] pTsp has a problem.\n");
+
+                PyObject *sys_path = PySys_GetObject("path");
+                PyList_Append(sys_path, PyUnicode_FromString(
+                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+                pName = PyUnicode_FromString("plot_helper");
+                pModule = PyImport_Import(pName);
+
+                if (pModule != nullptr) {
+                    pFunc = PyObject_GetAttrString(pModule, "plot_runtime_lll");
+                    if (pFunc && PyCallable_Check(pFunc)) {
+                        pArgs = PyTuple_New(7);
+                        if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", qr_l)) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", i)) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 3, pQRT) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 4, pLLL) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 5, p_qr) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 6, pTsp) != 0) {
+                            return false;
+                        }
+                        pValue = PyObject_CallObject(pFunc, pArgs);
+
+                    } else {
+                        if (PyErr_Occurred())
+                            PyErr_Print();
+                        fprintf(stderr, "Cannot find function qr\n");
+                    }
+                } else {
+                    PyErr_Print();
+                    fprintf(stderr, "Failed to load file\n");
+
+                }
+            }
+        }
+        printf("End of current TASK.\n");
+        printf("-------------------------------------------\n");
+
+    }
+
     return 0;
 }
 
