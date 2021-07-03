@@ -51,19 +51,27 @@ while f
         i1 = i-1;
         zeta = round(R(i1,i) / R(i1,i1));  
         alpha = R(i1,i) - zeta * R(i1,i1);     
-        if R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 + R(i,i)^2)                        
+        if R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 + R(i,i)^2)      
+            swap(i) = 1;
+            f = true;
             if zeta ~= 0
-                % Perform a size reduction on R(k-1,k) 
-                f = true;
-                swap(i) = 1;
+                % Perform a size reduction on R(k-1,k)
+                             
                 R(i1,i) = alpha;
                 R(1:i-2,i) = R(1:i-2,i) - zeta * R(1:i-2,i-1);
-                Z(:,i) = Z(:,i) - zeta * Z(:,i-1);        
-                
-                % Permute columns k-1 and k of R and Z
-                R(1:i,[i1,i]) = R(1:i,[i,i1]);
-                Z(:,[i1,i]) = Z(:,[i,i1]);
+                Z(:,i) = Z(:,i) - zeta * Z(:,i-1);       
+         
+%                 for l = i-2:-1:1
+%                     zeta = round(R(l,i)/R(l,l));  
+%                     if zeta ~= 0
+%                         R(1:l,i) = R(1:l,i) - zeta * R(1:l,l);  
+%                         Z(:,i) = Z(:,i) - zeta * Z(:,l);  
+%                     end
+%                 end                
             end
+            % Permute columns k-1 and k of R and Z
+            R(1:i,[i1,i]) = R(1:i,[i,i1]);
+            Z(:,[i1,i]) = Z(:,[i,i1]);
         end
     end  
     for i = 2:2:n
@@ -79,19 +87,26 @@ while f
         i1 = i-1;
         zeta = round(R(i1,i) / R(i1,i1));  
         alpha = R(i1,i) - zeta * R(i1,i1); 
-        if R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 + R(i,i)^2)           
-            if zeta ~= 0
-                f = true;
-                swap(i) = 1;
+        if R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 + R(i,i)^2)       
+            swap(i) = 1; 
+            f = true;
+            if zeta ~= 0  
                 % Perform a size reduction on R(k-1,k)
                 R(i1,i) = alpha;
                 R(1:i-2,i) = R(1:i-2,i) - zeta * R(1:i-2,i-1);
                 Z(:,i) = Z(:,i) - zeta * Z(:,i-1);         
-                
-                % Permute columns k-1 and k of R and Z
-                R(1:i,[i1,i]) = R(1:i,[i,i1]);
-                Z(:,[i1,i]) = Z(:,[i,i1]);
+                                
+%                 for l = i-2:-1:1
+%                     zeta = round(R(l,i)/R(l,l));  
+%                     if zeta ~= 0
+%                         R(1:l,i) = R(1:l,i) - zeta * R(1:l,l);  
+%                         Z(:,i) = Z(:,i) - zeta * Z(:,l);  
+%                     end
+%                 end
             end
+            % Permute columns k-1 and k of R and Z
+            R(1:i,[i1,i]) = R(1:i,[i,i1]);
+            Z(:,[i1,i]) = Z(:,[i,i1]);
         end
     end    
     for i = 3:2:n
@@ -110,5 +125,8 @@ end
 toc
 Q1 = R_*Z/R;
 % Q1
-d = det(Q1*Q1');
+d = det(Q1*Q1')
+sils_lll_eval(R);
+
+
 

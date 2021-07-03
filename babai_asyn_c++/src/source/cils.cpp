@@ -60,9 +60,111 @@ namespace cils {
         return error;
     }
 
+    /**
+     * Evaluating the decomposition
+     * @tparam scalar
+     * @tparam index
+     * @tparam n
+     * @param A
+     * @param Q
+     * @param R
+     * @param eval
+     * @return
+     */
+    template<typename scalar, typename index, index n>
+    returnType<scalar, index>
+    lll_validation(const coder::array<scalar, 2U> &R_R,
+                   const coder::array<scalar, 2U> &R_Q,
+                   const coder::array<scalar, 2U> &Z,
+                   const index verbose) {
+        printf("[ INFO: in LLL validation]\n");
+        scalar sum, error = 0, det;
+
+        if (verbose) {
+            printf("[ Printing R]\n");
+            for (index i = 0; i < n; i++) {
+                for (index j = 0; j < n; j++) {
+                    printf("%8.5f ", R_R[j * n + i]);
+                }
+                printf("\n");
+            }
+            printf("[ Printing Z]\n");
+            for (index i = 0; i < n; i++) {
+                for (index j = 0; j < n; j++) {
+                    printf("%8.5f ", Z[j * n + i]);
+                }
+                printf("\n");
+            }
+        }
+        coder::array<double, 2U> R_Z, Q_C;
+
+        R_Z.set_size(n, n);
+        Q_C.set_size(n, n);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                R_Z[i * n + j] = 0;
+                Q_C[i * n + j] = 0;
+            }
+        }
+        // 'eo_sils_reduction:109' Q1 = R_*Z_C/R_C;
+        coder::internal::blas::mtimes(R_Q, Z, R_Z);
+        coder::internal::mrdiv(R_Z, R_R);
+        //  Q1
+        // 'eo_sils_reduction:111' d = det(Q1*Q1');
+        coder::internal::blas::b_mtimes(R_Z, R_Z, Q_C);
+        det = coder::det(Q_C);
+
+        index i = 1, pass = true;
+        vector<scalar> fail_index(n, 0);
+        while (i < n) {
+
+            // 'eo_sils_reduction:50' i1 = i-1;
+            // 'eo_sils_reduction:51' zeta = round(R_R(i1,i) / R_R(i1,i1));
+            scalar zeta = std::round(R_R[i + n * (i - 1) - 2] / R_R[i + n * (i - 2) - 2]);
+            // 'eo_sils_reduction:52' alpha = R_R(i1,i) - zeta * R_R(i1,i1);
+            scalar s = R_R[(i + n * (i - 2)) - 2];
+            scalar alpha = R_R[(i + n * (i - 1)) - 2] - zeta * s;
+            // 'eo_sils_reduction:53' if R_R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 +
+            // R_R(i,i)^2)
+            scalar a = R_R[(i + n * (i - 1)) - 1];
+            if (s * s > 2.0 * (alpha * alpha + a * a)) {
+                // 'eo_sils_reduction:54' if zeta ~= 0
+                //  Perform a size reduction on R_R(k-1,k)
+                // 'eo_sils_reduction:56' f = true;
+                pass = false;
+                fail_index[i] = 1;
+            }
+            i++;
+        }
+
+        return {fail_index, det, pass};
+    }
+
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init() {
+        // Start MATLAB engine synchronously
+//        using namespace matlab::engine;
+//
+//        // Start MATLAB engine synchronously
+//        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
+//
+//        //Create MATLAB data array factory
+//        matlab::data::ArrayFactory factory;
+//
+//        // Call the MATLAB movsum function
+//        matlabPtr->eval(u" A = randn(512);");
+//        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+//
+//        index i = 0;
+//        A.set_size(n, n);
+//        for (auto r : A_A) {
+//            A[i] = r;
+//            ++i;
+//        }
+
+//        coder::qr(A, Q, R_Q);
+
         std::random_device rd;
         std::mt19937 gen(rd());
         //mean:0, std:sqrt(1/2). same as matlab.
@@ -90,10 +192,14 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             y_a[i] += v_a[i];
         }
+//        for (index i = 0; i < n; i++) {
+//            y_a[i] = 0;
+//        }
         if (n <= 16)
             display_vector<scalar, index>(y_a);
 
         //Set Z to Eye:
+
         coder::eye(n, Z);
     }
 

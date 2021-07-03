@@ -74,10 +74,12 @@ void run_test(int argc, char *argv[]) {
 
     switch (program_def::mode) {
         case 0:
+//            plot_LLL<scalar, int, N>();
             plot_res<scalar, int, N>();
             break;
         case 1:
-            plot_run<scalar, int, N>();
+            plot_LLL<scalar, int, N>();
+//            plot_run<scalar, int, N>();
             break;
         case 2:
 //            ils_block_search<scalar, int, N_4096>();

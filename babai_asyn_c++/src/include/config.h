@@ -26,13 +26,13 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 1;
-        index search_iter = 100;
+        index max_iter = 100 ;
+        index search_iter = 1000;
         index stop = 1;
         index schedule = 2;
         index chunk_size = 1;
         index block_size = 64;
-        index spilt_size = 4;
+        index spilt_size = 2;
         index is_constrained = true;
         index is_nc = false;
         index is_matlab = false; //Means LLL reduction
@@ -40,12 +40,12 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 0;
-        index max_search = 1000000;//INT_MAX;
+        index max_search = 5000000;//INT_MAX;
         index min_proc = 3;
         index plot_itr = 10;
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
-        index max_thre = 1000000;//maximum search allowed for serial ils.
+        index max_thre = 5000000;//maximum search allowed for serial ils.
 
 
    /*   Parameters for block size 64

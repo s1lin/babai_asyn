@@ -475,10 +475,11 @@ namespace cils {
          */
         returnType<scalar, index> cils_LLL_reduction(const index eval, const index verbose, const index n_proc);
 
-        scalar cils_LLL_serial();
+        returnType<scalar, index> cils_LLL_serial();
 
         scalar cils_LLL_omp(const index n_proc);
 
+        scalar cils_LLL_omp_2(const index n_proc);
         /**
          *
          * @param n_proc
