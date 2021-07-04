@@ -459,39 +459,39 @@ long plot_LLL() {
 
             scalar ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr;
             printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
-            do {
-                //Initialize Problem
-                cils.init();
 
-                qr_reT = cils.cils_qr_omp(0, verbose, 15);
-                cils.init_y();
-
-                for (index ii = 0; ii < n; ii++) {
-                    for (index j = 0; j < n; j++) {
-                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-                    }
-                }
-
-                LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
-
-                for (index ii = 0; ii < n; ii++) {
-                    for (index j = 0; j < n; j++) {
-                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-                    }
-                }
-                coder::eye(n, cils.Z);
-                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
-
-                printf("[ INITIALIZATION INFO]\n"
-                       "01.The QR Error is %.5f.\n"
-                       "02.The determinant of LLL is %.5f.\n"
-                       "03.The Givens of LLL is %.5f.\n"
-                       "04.The determinant of OMP LLL is %.5f.\n",
-                       qr_reT.num_iter, LLL_reT.num_iter, LLL_reT.x[0], LLL_reT_omp.num_iter);
-                cout.flush();
-            } while(LLL_reT.num_iter - 1.0 > 1e-3);//while (LLL_reT.run_time < 1e-4 || LLL_reT.x[0] == 0);
+            //Initialize Problem
+            cils.init();
 
             qr_reT = cils.cils_qr_serial(1, verbose);
+            cils.init_y();
+
+//            for (index ii = 0; ii < n; ii++) {
+//                for (index j = 0; j < n; j++) {
+//                    cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+//                }
+//            }
+
+            coder::eye(n, cils.Z);
+            LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
+
+//            for (index ii = 0; ii < n; ii++) {
+//                for (index j = 0; j < n; j++) {
+//                    cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+//                }
+//            }
+            coder::eye(n, cils.Z);
+            LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
+
+            printf("[ INITIALIZATION INFO]\n"
+                   "01.The QR Error is %.5f.\n"
+                   "02.The QR Time is %.5f.\n"
+                   "03.The determinant of LLL is %.5f.\n"
+                   "04.The Givens of LLL is %.5f.\n"
+                   "05.The determinant of OMP LLL is %.5f.\n",
+                   qr_reT.num_iter, qr_reT.run_time, LLL_reT.num_iter, LLL_reT.x[0], LLL_reT_omp.num_iter);
+            cout.flush();
+
             qrT[0] += qr_reT.run_time;
             LLL[0] += LLL_reT.run_time;
 
@@ -501,14 +501,15 @@ long plot_LLL() {
                 qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
                 cils.init_y();
 
-                for (index ii = 0; ii < n; ii++) {
-                    for (index j = 0; j < n; j++) {
-                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-                    }
-                }
-                coder::eye(n, cils.Z);
+//                for (index ii = 0; ii < n; ii++) {
+//                    for (index j = 0; j < n; j++) {
+//                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+//                    }
+//                }
+
                 //qr-block Testing
                 //LLL reduction
+                coder::eye(n, cils.Z);
                 LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
 
                 qrT[qr_l] += qr_reT_omp.run_time;

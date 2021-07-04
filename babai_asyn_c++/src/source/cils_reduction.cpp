@@ -8,6 +8,7 @@ namespace cils {
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
     cils<scalar, index, n>::cils_qr_serial(const index eval, const index verbose) {
+        cout << "[ In Serial QR]\n";
 
         index i, j, k, m;
         scalar error = -1, time, sum;
