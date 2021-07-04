@@ -137,7 +137,7 @@ namespace cils {
             i++;
         }
 
-        return {fail_index, det, pass};
+        return {fail_index, det, (scalar) pass};
     }
 
 

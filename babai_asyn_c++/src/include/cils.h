@@ -479,7 +479,9 @@ namespace cils {
 
         scalar cils_LLL_omp(const index n_proc);
 
-        scalar cils_LLL_omp_2(const index n_proc);
+        returnType<scalar, index> cils_LLL_qr_serial();
+        scalar cils_LLL_qr_omp(const index n_proc);
+
         /**
          *
          * @param n_proc
