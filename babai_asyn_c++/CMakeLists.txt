@@ -92,12 +92,13 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${Python3_INCLUDE_DIRS})
 include_directories(${Python3_NumPy_INCLUDE_DIR})
+include_directories(${Python3_SITELIB}/numpy/core/include/)
 include_directories(${Matlab_INCLUDE_DIRS})
 
 add_executable(cils src/include/rtwtypes.h src/include/rt_nonfinite.h main.cpp src/include/config.h src/include/coder_utils.h)
 
 if (Python3_NumPy_FOUND)
-    message("-- Python3_NumPy_FOUND ${Python3_NumPy_VERSION}")
+    message("-- Python3_NumPy_FOUND ${Python3_SITELIB}/numpy/core/include/")
 endif()
 
 if (Python3_FOUND)
