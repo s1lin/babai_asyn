@@ -15,8 +15,8 @@ namespace cils {
         //Deep Copy
         coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
-        R_Q.set_size(n, n);
-        Q.set_size(n, n);
+//        R_Q.set_size(n, n);
+//        Q.set_size(n, n);
 
         for (i = 0; i < n; i++) {
             for (j = 0; j < n; j++) {
@@ -71,8 +71,6 @@ namespace cils {
 
         coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
-        R_Q.set_size(n, n);
-        Q.set_size(n, n);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
                 R_Q[i * n + j] = 0;
@@ -185,7 +183,7 @@ namespace cils {
                         cout << i << ",";
                 }
                 cout << endl;
-                for (index l = 0; l < 10; l++) {
+                for (index l = 0; l < 3; l++) {
                     time = cils_LLL_qr_omp(n_proc);
                     lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
                     if (lll_val.num_iter == 1)
@@ -823,8 +821,8 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     scalar cils<scalar, index, n>::cils_LLL_qr_omp(const index n_proc) {
-#pragma omp parallel default(shared) num_threads(n_proc)
-        {}
+//#pragma omp parallel default(shared) num_threads(n_proc)
+//        {}
         bool f = true;
         cout << "[ In cils_LLL_qr_omp]\n";
         scalar zeta, r_ii, alpha, s;
@@ -835,25 +833,20 @@ namespace cils {
         scalar error = -1, time, sum = 0;
         coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
-//        R_Q.set_size(n, n);
-        Q.set_size(n, n);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-//                R_Q[i * n + j] = 0;
                 R_R[i * n + j] = 0;
                 Q[i * n + j] = 0;
             }
             omp_init_lock((&lock[i]));
+            omp_set_lock(&lock[i]);
         }
 
         time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private (c_i, i1, ci2, c_tmp, tmp, i2, zeta, r_ii, alpha, s, sum)
+#pragma omp parallel default(shared) num_threads(n_proc) private (c_i, i1, ci2, c_tmp, tmp, i2, zeta, r_ii, alpha, s, sum, counter)
         {
-            sum = 0;
-#pragma omp for schedule(static, 1)
-            for (index i = 0; i < n; i++) {
-                omp_set_lock(&lock[i]);
-            }
+            scalar b_R[n * 2] = {};
+            sum = counter = 0;
 
             if (omp_get_thread_num() == 0) {
                 // Calculation of ||A||
@@ -867,6 +860,7 @@ namespace cils {
                 }
                 omp_unset_lock(&lock[0]);
             }
+
             while (f) {
 #pragma omp barrier
 #pragma omp atomic write
@@ -923,7 +917,7 @@ namespace cils {
                                         Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
                                     }
                                 }
-                                scalar b_R[n * 2] = {};
+
                                 for (i2 = 0; i2 < c_i; i2++) {
                                     b_R[i2] = R_R[i2 + n * (c_i - 1)];
                                     b_R[i2 + c_i] = R_R[i2 + n * (c_i - 2)];
@@ -937,7 +931,6 @@ namespace cils {
                                     b_R[i2] = Z[i2 + n * (c_i - 1)];
                                     b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
                                 }
-
                                 for (i2 = 0; i2 < n; i2++) {
                                     Z[i2 + n * (c_i - 2)] = b_R[i2];
                                     Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
@@ -946,6 +939,7 @@ namespace cils {
                         }
                     }
                     counter = 1;
+
                 } else
 #pragma omp for schedule(static, 1)
                     for (index i = 0; i < n / 2; i++) {
@@ -970,7 +964,6 @@ namespace cils {
                                 }
                             }
 
-                            scalar b_R[n * 2] = {};
                             for (i2 = 0; i2 < c_i; i2++) {
                                 b_R[i2] = R_R[i2 + n * (c_i - 1)];
                                 b_R[i2 + c_i] = R_R[i2 + n * (c_i - 2)];
@@ -1083,7 +1076,7 @@ namespace cils {
                                 Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
                             }
                         }
-                        scalar b_R[n * 2] = {};
+
                         for (i2 = 0; i2 < c_i; i2++) {
                             b_R[i2] = R_R[i2 + n * (c_i - 1)];
                             b_R[i2 + c_i] = R_R[i2 + n * (c_i - 2)];

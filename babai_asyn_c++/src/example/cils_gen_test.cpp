@@ -259,7 +259,7 @@ long plot_run() {
                     }
 //                    if (!is_matlab && !is_qr) {
 //                        qr_l = 2;
-//                        for (index n_proc = 3; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
+//                        for (index n_proc = min_proc; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
 //                            printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
 //                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
 //                            cils.init_y();
@@ -496,7 +496,7 @@ long plot_LLL() {
             LLL[0] += LLL_reT.run_time;
 
             qr_l = 1;
-            for (index n_proc = 3; n_proc <=max_proc; n_proc += 3) {
+            for (index n_proc = min_proc; n_proc <=max_proc; n_proc += 3) {
                 printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
                 cout.flush();
                 qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
@@ -552,7 +552,7 @@ long plot_LLL() {
                 scalar proc_nums[qr_l - 2] = {};
                 index ll = 0;
 
-                for (index n_proc = 3; n_proc <=max_proc; n_proc += 3) {
+                for (index n_proc = min_proc; n_proc <=max_proc; n_proc += 3) {
                     proc_nums[ll] = n_proc;
                     ll++;
                 }
