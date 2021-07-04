@@ -92,13 +92,13 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${Python3_INCLUDE_DIRS})
 include_directories(${Python3_NumPy_INCLUDE_DIR})
-include_directories(${Python3_SITELIB}/numpy/core/include/)
+#include_directories(/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/)
 include_directories(${Matlab_INCLUDE_DIRS})
 
 add_executable(cils src/include/rtwtypes.h src/include/rt_nonfinite.h main.cpp src/include/config.h src/include/coder_utils.h)
 
 if (Python3_NumPy_FOUND)
-    message("-- Python3_NumPy_FOUND ${Python3_SITELIB}/numpy/core/include/")
+    message("-- Python3_NumPy_FOUND ${Python3_NumPy_INCLUDE_DIR}")
 endif()
 
 if (Python3_FOUND)
@@ -122,3 +122,5 @@ if (Matlab_FOUND)
 #    target_link_libraries(cils ${Matlab_LIBRARIES})
     message("-- Matlab_FOUND ${PROJECT_NAME} ${Matlab_LIBRARIES}")
 endif ()
+
+#cd ~/babai_asyn/babai_asyn_c++/ && cd build  && git pull && cmake .. -D Python3_NumPy_INCLUDE_DIR=/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/ && make -j 4

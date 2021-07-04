@@ -7,7 +7,7 @@ import pandas as pd
 
 def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (8, 8)
+    plt.rcParams["figure.figsize"] = (15, 8)
     fig, axes = plt.subplots(2, 2, constrained_layout=True)
     color = ['r', 'g', 'b', 'r']
     marker = ['o', '+', 'x', 'o']
@@ -23,7 +23,7 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
     axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
 
     # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 19, 2)]
+    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 41, 2)]
 
     axes[0, 0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i,     color=color[0], marker=marker[0])
     axes[0, 1].plot(itr_label, np.array(qr_spu[0:len(itr_label)]) / i,  color=color[0], marker=marker[0])
