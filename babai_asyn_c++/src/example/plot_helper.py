@@ -23,7 +23,7 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
     axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
 
     # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 11, 2)]
+    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 19, 2)]
 
     axes[0, 0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i,     color=color[0], marker=marker[0])
     axes[0, 1].plot(itr_label, np.array(qr_spu[0:len(itr_label)]) / i,  color=color[0], marker=marker[0])
@@ -40,7 +40,7 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
     fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
     fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=3)
 
-    plt.savefig(f'./{n}_report_plot_{i}_QR_LLL')
+    plt.savefig(f'./{n}_report_plot_{int(i / 100)}_QR_LLL')
     plt.close()
 
 

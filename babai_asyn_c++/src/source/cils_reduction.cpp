@@ -2,11 +2,8 @@
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
-//#include "../include/coder_array.h"
-
 
 namespace cils {
-
 
     template<typename scalar, typename index, index n>
     returnType <scalar, index>
@@ -1451,6 +1448,7 @@ namespace cils {
                 }
         }
         time = omp_get_wtime() - time;
+
         error = qr_validation<scalar, index, n>(A, Q, R_Q, 1, n <= 16);
         printf("[ NEW METHOD, QR ERROR: %.5f]\n", error);
         return {{}, time, (scalar) givens};

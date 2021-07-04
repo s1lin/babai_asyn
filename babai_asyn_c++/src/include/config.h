@@ -26,7 +26,7 @@ namespace cils {
          */
         index k = 3;
         index SNR = 35;
-        index max_iter = 100 ;
+        index max_iter = 1000;
         index search_iter = 1000;
         index stop = 1;
         index schedule = 2;
@@ -42,7 +42,7 @@ namespace cils {
         index is_local = 0;
         index max_search = 5000000;//INT_MAX;
         index min_proc = 3;
-        index plot_itr = 20;
+        index plot_itr = 1;
 
         index max_proc = min(omp_get_max_threads(), N / block_size);
         index max_thre = 5000000;//maximum search allowed for serial ils.

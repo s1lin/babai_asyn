@@ -109,6 +109,7 @@ set(CMAKE_CXX_STANDARD 14)
 #endif ()
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${Matlab_INCLUDE_DIRS})
+
 add_executable(cils src/include/rtwtypes.h src/include/rt_nonfinite.h main.cpp src/include/config.h src/include/coder_utils.h)
 
 if (MPI_FOUND)
@@ -138,8 +139,9 @@ endif ()
 #endif ()
 
 if (Python_FOUND)
+    set(Python_NumPy_INCLUDE_DIR "${PYTHON_INCLUDE_DIRS}")
     target_link_libraries(cils ${PYTHON_LIBRARIES})
-    message("-- Python_FOUND ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+    message("-- Python_FOUND ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES} ${Python_NumPy_INCLUDE_DIR}")
 endif ()
 
 if (Eigen3_FOUND)
