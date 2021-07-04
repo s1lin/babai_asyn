@@ -123,4 +123,5 @@ if (Matlab_FOUND)
     message("-- Matlab_FOUND ${PROJECT_NAME} ${Matlab_LIBRARIES}")
 endif ()
 
-#cd ~/babai_asyn/babai_asyn_c++/ && cd build  && git pull && cmake .. -D Python3_NumPy_INCLUDE_DIR=/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/ && make -j 4
+
+#cd ~/babai_asyn/babai_asyn_c++/ && cd build  && git pull && cmake .. -D Python3_NumPy_INCLUDE_DIR=/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/ && make -j 4 && cp cils ~/scratch/cils && cd ~/scratch/ && sbatch job_script_LLL.sh
