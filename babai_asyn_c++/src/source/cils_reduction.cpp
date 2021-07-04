@@ -65,6 +65,7 @@ namespace cils {
     cils<scalar, index, n>::cils_qr_omp(const index eval, const index verbose, const index n_proc) {
 
         cout << "[ In Parallel QR]\n";
+        cout.flush();
         scalar error = -1, time, sum = 0;
         auto lock = new omp_lock_t[n]();
 
@@ -184,6 +185,12 @@ namespace cils {
                         cout << i << ",";
                 }
                 cout << endl;
+                for (index l = 0; l < 10; l++) {
+                    time = cils_LLL_qr_omp(n_proc);
+                    lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
+                    if (lll_val.num_iter == 1)
+                        break;
+                }
             }
         }
 
@@ -1152,6 +1159,7 @@ namespace cils {
         for (index i = 0; i < n; i++) {
             omp_destroy_lock(&lock[i]);
         }
+        delete[] lock;
         return time;
     }
 
