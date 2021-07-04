@@ -91,21 +91,23 @@ find_package(Matlab REQUIRED)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${Python3_INCLUDE_DIRS})
+include_directories(${Python3_NumPy_INCLUDE_DIR})
 include_directories(${Matlab_INCLUDE_DIRS})
 
 add_executable(cils src/include/rtwtypes.h src/include/rt_nonfinite.h main.cpp src/include/config.h src/include/coder_utils.h)
 
 if (Python3_NumPy_FOUND)
-    message("-- Python3_NumPy_FOUND")
+    message("-- Python3_NumPy_FOUND ${Python3_NumPy_VERSION}")
 endif()
 
 if (Python3_FOUND)
+    message("-- Python3_FOUND ${Python3_LIBRARIES}")
     message("-- Python3_Interpreter_FOUND ${Python3_Interpreter_FOUND}")
     message("-- Python3_EXECUTABLE ${Python3_EXECUTABLE}")
     message("-- Python3_SITELIB ${Python3_SITELIB}")
-    message("-- Python3_LIBRARIES ${Python3_LIBRARIES}")
+    message("-- Python3_INCLUDE_DIRS ${Python3_INCLUDE_DIRS}")
     target_link_libraries(cils ${Python3_LIBRARIES})
-    message("-- Python3_FOUND ${Python3_INCLUDE_DIRS} ${PYTHON3_LIBRARIES} ${Python3_NumPy_INCLUDE_DIR}")
+
 endif ()
 
 if (Matlab_FOUND)
