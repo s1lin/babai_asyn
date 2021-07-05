@@ -229,7 +229,7 @@ namespace cils {
         index n = x.size(0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                cout << x[j * n + i] << " ";
+                printf("%8.5f ", x[j * n + i]);
             }
             cout << "\n";
         }
@@ -480,6 +480,7 @@ namespace cils {
         scalar cils_LLL_omp(const index n_proc);
 
         returnType<scalar, index> cils_LLL_qr_serial();
+
         scalar cils_LLL_qr_omp(const index n_proc);
 
         /**

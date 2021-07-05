@@ -25,9 +25,9 @@ namespace cils {
 
         //start
         time = omp_get_wtime();
-        for (k = 0; k < n; k++) {
-            //Check if Q[][i-1] (the previous column) is computed.
-            for (j = k; j < n; j++) {
+        for (j = 0; j < n; j++) {
+            for (k = 0; k <= j; k++) {
+                //Check if Q[][i-1] (the previous column) is computed.
                 R_Q[k * n + j] = 0;
                 for (i = 0; i < n; i++) {
                     R_Q[j * n + k] += Q[k * n + i] * A_t[j * n + i];
@@ -35,6 +35,7 @@ namespace cils {
                 for (i = 0; i < n; i++) {
                     A_t[j * n + i] -= R_Q[j * n + k] * Q[k * n + i];
                 }
+
                 //Calculate the norm(A)
                 if (j == k) {
                     sum = 0;
@@ -140,7 +141,63 @@ namespace cils {
         delete[] lock;
         delete[] A_t;
 
+        cout << "[  QR ERROR OMP:]" << error << endl;
         return {{}, time, error};
+
+
+        /*
+         * cout << "[ In Parallel QR]\n";
+        cout.flush();
+        scalar error = -1, time, sum = 0;
+        scalar *A_t = new scalar[n * n];
+        //Clear Variables:
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                R_Q[i * n + j] = 0;
+                Q[i * n + j] = 0;
+                A_t[i * n + j] = A[i * n + j];
+            }
+        }
+
+        time = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum)
+        {
+#pragma omp for schedule(dynamic, 1)
+            for (index j = 0; j < n; j++) {
+                for (index k = 0; k <= j; k++) {
+                    R_Q[k * n + j] = 0;
+                    for (index i = 0; i < n; i++) {
+                        R_Q[j * n + k] += Q[k * n + i] * A_t[j * n + i];
+                    }
+                    for (index i = 0; i < n; i++) {
+                        A_t[j * n + i] -= R_Q[j * n + k] * Q[k * n + i];
+                    }
+                    if (j == k) {
+                        sum = 0;
+                        for (index i = 0; i < n; i++) {
+                            sum = sum + A_t[k * n + i] * A_t[k * n + i];
+                        }
+                        R_Q[k * n + k] = sqrt(sum);
+                        for (index i = 0; i < n; i++) {
+                            Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
+                        }
+                    }
+
+                }
+            }
+        }
+
+        time = omp_get_wtime() - time;
+        if (eval || verbose) {
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
+        }
+#pragma parallel omp cancellation point
+#pragma omp flush
+        delete[] A_t;
+
+        cout << "[  QR ERROR OMP:]" << error << endl;
+        return {{}, time, error};
+         */
     }
 
     template<typename scalar, typename index, index n>
@@ -835,6 +892,7 @@ namespace cils {
             for (index j = 0; j < n; j++) {
                 Q[i * n + j] = 0;
                 R_R[i * n + j] = 0;
+//                R_Q[i * n + j] = 0;
                 A_t[i * n + j] = A[i * n + j];
             }
         }
@@ -850,7 +908,6 @@ namespace cils {
                 for (index i = 0; i < n; i++) {
                     sum = sum + A_t[i] * A_t[i];
                 }
-//                R_Q[0] = sqrt(sum);
                 R_R[0] = sqrt(sum);
                 for (index i = 0; i < n; i++) {
                     Q[i] = A_t[i] / R_R[0];
@@ -858,96 +915,54 @@ namespace cils {
                 omp_unset_lock(&lock[0]);
             }
 
-            while (f) {
+            for (index k = 1; k < n; k++) {
+                //Check if Q[][i-1] (the previous column) is computed.
 #pragma omp barrier
-#pragma omp atomic write
-                f = false;
-                if (counter == 0) {
-                    for (index k = 1; k < n; k++) {
-                        //Check if Q[][i-1] (the previous column) is computed.
-                        omp_set_lock(&lock[k - 1]);
-                        omp_unset_lock(&lock[k - 1]);
+                omp_set_lock(&lock[k - 1]);
+                omp_unset_lock(&lock[k - 1]);
 #pragma omp for schedule(static, 1)
-                        for (index j = 0; j < n; j++) {
-                            if (j >= k) {
-//                                R_Q[(k - 1) * n + j] = 0;
-                                R_R[(k - 1) * n + j] = 0;
-                                for (index i = 0; i < n; i++) {
-//                                    R_Q[j * n + (k - 1)] += Q[(k - 1) * n + i] * A_t[j * n + i];
-                                    R_R[j * n + (k - 1)] += Q[(k - 1) * n + i] * A_t[j * n + i];
-                                }
-                                for (index i = 0; i < n; i++) {
-                                    A_t[j * n + i] = A_t[j * n + i] - R_R[j * n + (k - 1)] * Q[(k - 1) * n + i];
-                                }
-                                if (j == k) {
-                                    sum = 0;
-                                    for (index i = 0; i < n; i++) {
-                                        sum = sum + A_t[k * n + i] * A_t[k * n + i];
-                                    }
-//                                    R_Q[k * n + k] = sqrt(sum);
-                                    R_R[k * n + k] = sqrt(sum);
-                                    for (index i = 0; i < n; i++) {
-                                        Q[k * n + i] = A_t[k * n + i] / R_R[k * n + k];
-                                    }
-                                    omp_unset_lock(&lock[k]);
-                                }
-                            }
+                for (index j = 0; j < n; j++) {
+                    if (j >= k) {
+
+                        R_R[(k - 1) * n + j] = 0;
+                        for (index i = 0; i < n; i++) {
+                            R_R[j * n + (k - 1)] += Q[(k - 1) * n + i] * A_t[j * n + i];
+//                            R_Q[j * n + (k - 1)] += Q[(k - 1) * n + i] * A_t[j * n + i];
                         }
-                        if (k % 2 == 0) {
-                            c_i = k;
-                            zeta = round(R_R[(c_i + n * (c_i - 1)) - 2] / R_R[(c_i + n * (c_i - 2)) - 2]);
-                            s = R_R[(c_i + n * (c_i - 2)) - 2];
-                            alpha = R_R[(c_i + n * (c_i - 1)) - 2] - zeta * s;
-                            r_ii = R_R[(c_i + n * (c_i - 1)) - 1];
-                            if (s * s > 2.0 * (alpha * alpha + r_ii * r_ii)) {
-                                f = true;
-                                swap[c_i - 1] = 1;
-                                if (zeta != 0.0) {
-                                    R_R[(c_i + n * (c_i - 1)) - 2] = alpha;
-                                    if (1 <= c_i - 2) {
-                                        ci2 = c_i - 2;
-                                        for (i1 = 0; i1 < ci2; i1++) {
-                                            R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (ci2)];
-                                        }
-                                    }
-                                    for (i1 = 0; i1 < n; i1++) {
-                                        Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
-                                    }
-                                }
+                        for (index i = 0; i < n; i++) {
+                            A_t[j * n + i] = A_t[j * n + i] - R_R[j * n + (k - 1)] * Q[(k - 1) * n + i];
 
-                                for (i2 = 0; i2 < c_i; i2++) {
-                                    b_R[i2] = R_R[i2 + n * (c_i - 1)];
-                                    b_R[i2 + c_i] = R_R[i2 + n * (c_i - 2)];
-                                }
-
-                                for (i2 = 0; i2 < c_i; i2++) {
-                                    R_R[i2 + n * (c_i - 2)] = b_R[i2];
-                                    R_R[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
-                                }
-                                for (i2 = 0; i2 < n; i2++) {
-                                    b_R[i2] = Z[i2 + n * (c_i - 1)];
-                                    b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
-                                }
-                                for (i2 = 0; i2 < n; i2++) {
-                                    Z[i2 + n * (c_i - 2)] = b_R[i2];
-                                    Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
-                                }
+//                            A_t[j * n + i] = A_t[j * n + i] - R_Q[j * n + (k - 1)] * Q[(k - 1) * n + i];
+                        }
+//Only one thread calculate
+                        if (j == k) {
+                            sum = 0;
+                            for (index i = 0; i < n; i++) {
+                                sum = sum + A_t[k * n + i] * A_t[k * n + i];
                             }
+//                            R_Q[k * n + k] = sqrt(sum);
+                            R_R[k * n + k] = sqrt(sum);
+                            for (index i = 0; i < n; i++) {
+                                Q[k * n + i] = A_t[k * n + i] / R_R[k * n + k];
+//                                Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
+                            }
+                            omp_unset_lock(&lock[k]);
                         }
                     }
-                    counter = 1;
-
-                } else
-#pragma omp for schedule(static, 1)
-                    for (index i = 0; i < n / 2; i++) {
-                        c_i = static_cast<int>((i << 1) + 2U);
+//                    printf("column:%d, row:%d, %8.5f \n",j, k, R_R[j * n + (k - 1)]);
+                }
+#pragma omp single
+                {
+                    if (k % 2 == 0) {
+                        c_i = k;
                         zeta = round(R_R[(c_i + n * (c_i - 1)) - 2] / R_R[(c_i + n * (c_i - 2)) - 2]);
                         s = R_R[(c_i + n * (c_i - 2)) - 2];
                         alpha = R_R[(c_i + n * (c_i - 1)) - 2] - zeta * s;
                         r_ii = R_R[(c_i + n * (c_i - 1)) - 1];
                         if (s * s > 2.0 * (alpha * alpha + r_ii * r_ii)) {
-                            f = true;
-                            swap[c_i - 1] = 1;
+//                            printf("%8.5f, %8.5f \n",R_R[(c_i + n * (c_i - 1)) - 2], R_R[(c_i + n * (c_i - 2)) - 2]);
+//                            display_2D<scalar, index>(R_R);
+//                            display_2D<scalar, index>(R_Q);
                             if (zeta != 0.0) {
                                 R_R[(c_i + n * (c_i - 1)) - 2] = alpha;
                                 if (1 <= c_i - 2) {
@@ -970,26 +985,25 @@ namespace cils {
                                 R_R[i2 + n * (c_i - 2)] = b_R[i2];
                                 R_R[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
                             }
+//                            for (i2 = 0; i2 < c_i; i2++) {
+//                                b_R[i2] = Q[i2 + n * (c_i - 1)];
+//                                b_R[i2 + c_i] = Q[i2 + n * (c_i - 2)];
+//                            }
+
+//                            for (i2 = 0; i2 < c_i; i2++) {
+//                                Q[i2 + n * (c_i - 2)] = b_R[i2];
+//                                Q[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
+//                            }
+
                             for (i2 = 0; i2 < n; i2++) {
                                 b_R[i2] = Z[i2 + n * (c_i - 1)];
                                 b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
                             }
-
                             for (i2 = 0; i2 < n; i2++) {
                                 Z[i2 + n * (c_i - 2)] = b_R[i2];
                                 Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
                             }
-                        }
-                    }
 
-                if (f)// && omp_get_thread_num() == 0)
-#pragma omp for schedule(static, 1)
-                    for (index i = 0; i < n / 2; i++) {
-                        c_i = static_cast<int>((i << 1) + 2U);
-                        // 'eo_sils_reduction:69' i1 = i-1;
-                        // 'eo_sils_reduction:70' if swap(i) == 1
-                        if (swap[c_i - 1]) {
-                            // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                             scalar G[4] = {};
                             scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
                             coder::planerot(low_tmp, G);
@@ -1012,38 +1026,99 @@ namespace cils {
                                 b[2 * i2] = R_R[(c_i + n * tmp) - 2];
                                 b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
                             }
-//                            scalar r1[ci2 * 2] = {};
-//                            for (index j = 0; j < ci2; j++) {
-//                                index coffset_tmp = j << 1;
-//                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
-//                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
-//                            }
-//
-////                        b_loop_ub = r1.size(1);
-//                            for (i1 = 0; i1 < ci2; i1++) {
-//                                tmp = (c_tmp + i1) - 1;
-//                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
-//                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
-//                            }
+
                             for (i2 = 0; i2 < ci2; i2++) {
                                 tmp = i1 + i2;
                                 R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
                                 R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
                             }
+
+//                            for (i2 = 0; i2 < ci2; i2++) {
+//                                tmp = i1 + i2;
+//                                b[2 * i2] = Q[(c_i + n * tmp) - 2];
+//                                b[2 * i2 + 1] = Q[(c_i + n * tmp) - 1];
+//                            }
+//
+//                            for (i2 = 0; i2 < ci2; i2++) {
+//                                tmp = i1 + i2;
+//                                Q[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+//                                Q[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+//                            }
+
                             // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
                             low_tmp[0] = y_r[c_i - 2];
                             low_tmp[1] = y_r[c_i - 1];
                             y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
                             y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
                             // 'eo_sils_reduction:74' swap(i) = 0;
-                            swap[c_i - 1] = 0;
+//                            swap[c_i - 1] = 1;
                         }
                     }
-
+                }
+                counter = 0;
+            }
 //#pragma omp barrier
+//#pragma omp for schedule(static, 1)
+//            for (index i = 0; i < n / 2; i++) {
+//                c_i = static_cast<int>((i << 1) + 2U);
+//                // 'eo_sils_reduction:69' i1 = i-1;
+//                // 'eo_sils_reduction:70' if swap(i) == 1
+//                if (swap[c_i - 1]) {
+//                    // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
+//                    scalar G[4] = {};
+//                    scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
+//                    coder::planerot(low_tmp, G);
+//                    R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
+//                    R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
+//
+//                    // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
+//                    if (c_i > n) {
+//                        i1 = i2 = 0;
+//                        c_tmp = 1;
+//                    } else {
+//                        i1 = c_i - 1;
+//                        i2 = n;
+//                        c_tmp = c_i;
+//                    }
+//                    ci2 = i2 - i1;
+//                    scalar b[ci2 * 2] = {};
+//                    for (i2 = 0; i2 < ci2; i2++) {
+//                        tmp = i1 + i2;
+//                        b[2 * i2] = R_R[(c_i + n * tmp) - 2];
+//                        b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
+//                    }
+////                            scalar r1[ci2 * 2] = {};
+////                            for (index j = 0; j < ci2; j++) {
+////                                index coffset_tmp = j << 1;
+////                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
+////                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
+////                            }
+////
+//////                        b_loop_ub = r1.size(1);
+////                            for (i1 = 0; i1 < ci2; i1++) {
+////                                tmp = (c_tmp + i1) - 1;
+////                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
+////                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+////                            }
+//                    for (i2 = 0; i2 < ci2; i2++) {
+//                        tmp = i1 + i2;
+//                        R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+//                        R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+//                    }
+//                    // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
+//                    low_tmp[0] = y_r[c_i - 2];
+//                    low_tmp[1] = y_r[c_i - 1];
+//                    y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+//                    y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
+//                    // 'eo_sils_reduction:74' swap(i) = 0;
+//                    swap[c_i - 1] = 0;
+//                }
+//            }
+
+            while (f) {
+#pragma omp barrier
 #pragma omp atomic write
                 f = false;
-
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
@@ -1141,11 +1216,116 @@ namespace cils {
                         }
                     }
 
+//#pragma omp barrier
+#pragma omp atomic write
+                f = false;
+#pragma omp for schedule(static, 1)
+                for (index i = 0; i < n / 2; i++) {
+                    c_i = static_cast<int>((i << 1) + 2U);
+                    zeta = round(R_R[(c_i + n * (c_i - 1)) - 2] / R_R[(c_i + n * (c_i - 2)) - 2]);
+                    s = R_R[(c_i + n * (c_i - 2)) - 2];
+                    alpha = R_R[(c_i + n * (c_i - 1)) - 2] - zeta * s;
+                    r_ii = R_R[(c_i + n * (c_i - 1)) - 1];
+                    if (s * s > 2.0 * (alpha * alpha + r_ii * r_ii)) {
+                        f = true;
+                        swap[c_i - 1] = 1;
+                        if (zeta != 0.0) {
+                            R_R[(c_i + n * (c_i - 1)) - 2] = alpha;
+                            if (1 <= c_i - 2) {
+                                ci2 = c_i - 2;
+                                for (i1 = 0; i1 < ci2; i1++) {
+                                    R_R[i1 + n * (c_i - 1)] -= zeta * R_R[i1 + n * (ci2)];
+                                }
+                            }
+                            for (i1 = 0; i1 < n; i1++) {
+                                Z[i1 + n * (c_i - 1)] -= zeta * Z[i1 + n * (c_i - 2)];
+                            }
+                        }
+
+                        for (i2 = 0; i2 < c_i; i2++) {
+                            b_R[i2] = R_R[i2 + n * (c_i - 1)];
+                            b_R[i2 + c_i] = R_R[i2 + n * (c_i - 2)];
+                        }
+
+                        for (i2 = 0; i2 < c_i; i2++) {
+                            R_R[i2 + n * (c_i - 2)] = b_R[i2];
+                            R_R[i2 + n * (c_i - 1)] = b_R[i2 + c_i];
+                        }
+                        for (i2 = 0; i2 < n; i2++) {
+                            b_R[i2] = Z[i2 + n * (c_i - 1)];
+                            b_R[i2 + n] = Z[i2 + n * (c_i - 2)];
+                        }
+
+                        for (i2 = 0; i2 < n; i2++) {
+                            Z[i2 + n * (c_i - 2)] = b_R[i2];
+                            Z[i2 + n * (c_i - 1)] = b_R[i2 + n];
+                        }
+                    }
+                }
+
+                if (f)// && omp_get_thread_num() == 0)
+#pragma omp for schedule(static, 1)
+                    for (index i = 0; i < n / 2; i++) {
+                        c_i = static_cast<int>((i << 1) + 2U);
+                        // 'eo_sils_reduction:69' i1 = i-1;
+                        // 'eo_sils_reduction:70' if swap(i) == 1
+                        if (swap[c_i - 1]) {
+                            // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
+                            scalar G[4] = {};
+                            scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
+                            coder::planerot(low_tmp, G);
+                            R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
+                            R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
+
+                            // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
+                            if (c_i > n) {
+                                i1 = i2 = 0;
+                                c_tmp = 1;
+                            } else {
+                                i1 = c_i - 1;
+                                i2 = n;
+                                c_tmp = c_i;
+                            }
+                            ci2 = i2 - i1;
+                            scalar b[ci2 * 2] = {};
+                            for (i2 = 0; i2 < ci2; i2++) {
+                                tmp = i1 + i2;
+                                b[2 * i2] = R_R[(c_i + n * tmp) - 2];
+                                b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
+                            }
+//                            scalar r1[ci2 * 2] = {};
+//                            for (index j = 0; j < ci2; j++) {
+//                                index coffset_tmp = j << 1;
+//                                r1[coffset_tmp] = G[0] * b[coffset_tmp] + G[2] * b[coffset_tmp + 1];
+//                                r1[coffset_tmp + 1] = G[1] * b[coffset_tmp] + G[3] * b[coffset_tmp + 1];
+//                            }
+//
+////                        b_loop_ub = r1.size(1);
+//                            for (i1 = 0; i1 < ci2; i1++) {
+//                                tmp = (c_tmp + i1) - 1;
+//                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
+//                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
+//                            }
+                            for (i2 = 0; i2 < ci2; i2++) {
+                                tmp = i1 + i2;
+                                R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                                R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+                            }
+                            // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
+                            low_tmp[0] = y_r[c_i - 2];
+                            low_tmp[1] = y_r[c_i - 1];
+                            y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                            y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
+                            // 'eo_sils_reduction:74' swap(i) = 0;
+                            swap[c_i - 1] = 0;
+                        }
+                    }
+
             }
         }
         time = omp_get_wtime() - time;
         error = qr_validation<scalar, index, n>(A, Q, R_Q, 1, n <= 16);
-        printf("[ NEW METHOD, QR ERROR: %.5f]\n", error);
+        printf("[ NEW OMP METHOD, QR ERROR: %.5f]\n", error);
         for (index i = 0; i < n; i++) {
             omp_destroy_lock(&lock[i]);
         }

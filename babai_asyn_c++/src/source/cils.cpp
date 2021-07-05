@@ -55,6 +55,16 @@ namespace cils {
                     error += fabs(A_T[i * n + j] - A[i * n + j]);
                 }
             }
+
+            if (verbose) {
+                printf("\nPrinting R...\n");
+                for (i = 0; i < n; i++) {
+                    for (j = 0; j < n; j++) {
+                        printf("%8.5f ", R[j * n + i]);
+                    }
+                    printf("\n");
+                }
+            }
         }
 
         return error;
