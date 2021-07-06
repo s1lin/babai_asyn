@@ -7,37 +7,37 @@ import pandas as pd
 
 def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (15, 8)
-    fig, axes = plt.subplots(2, 2, constrained_layout=True)
+    plt.rcParams["figure.figsize"] = (12, 6)
+    fig, axes = plt.subplots(1, 2, constrained_layout=True)
     color = ['r', 'g', 'b', 'r']
     marker = ['o', '+', 'x', 'o']
 
-    axes[0, 0].set_title('QR Solve Time', fontsize=13)
-    axes[0, 1].set_title('QR Speed Up', fontsize=13)
-    axes[1, 0].set_title('LLL Solve Time', fontsize=13)
-    axes[1, 1].set_title('LLL Speed Up', fontsize=13)
+    axes[0].set_title('QR/LLL Solve Time', fontsize=13)
+    axes[1].set_title('QR/LLL Speed Up', fontsize=13)
+    # axes[1, 0].set_title('LLL Solve Time', fontsize=13)
+    # axes[1, 1].set_title('LLL Speed Up', fontsize=13)
 
-    axes[0, 0].set_ylabel('QR Solve Time (s)', fontsize=13)
-    axes[0, 1].set_ylabel('QR Speed Up x times', fontsize=13)
-    axes[1, 0].set_ylabel('LLL  Solve Time (s)', fontsize=13)
-    axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
+    axes[0].set_ylabel('QR/LLL Solve Time (s)', fontsize=13)
+    axes[1].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
+    # axes[1, 0].set_ylabel('LLL  Solve Time (s)', fontsize=13)
+    # axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
 
     # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(3, 22, 3)]
+    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 20, 2)]
 
-    axes[0, 0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i,     color=color[0], marker=marker[0])
-    axes[0, 1].plot(itr_label, np.array(qr_spu[0:len(itr_label)]) / i,  color=color[0], marker=marker[0])
-    axes[1, 0].plot(itr_label, np.array(lll[0:len(itr_label)]) / i,     color=color[2], marker=marker[2])
-    axes[1, 1].plot(itr_label, np.array(lll_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
+    axes[0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
+    axes[1].plot(itr_label, np.array(qr_spu[0:len(itr_label)])  / i, color=color[0], marker=marker[0])
+    axes[0].plot(itr_label, np.array(lll[0:len(itr_label)]) / i, color=color[2], marker=marker[2], label='QR+LLL')
+    axes[1].plot(itr_label, np.array(lll_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
 
-    axes[0, 0].set_xticklabels(itr_label, rotation=45)
-    axes[0, 1].set_xticklabels(itr_label, rotation=45)
-    axes[1, 0].set_xticklabels(itr_label, rotation=45)
-    axes[1, 1].set_xticklabels(itr_label, rotation=45)
+    axes[0].set_xticklabels(itr_label, rotation=45)
+    axes[1].set_xticklabels(itr_label, rotation=45)
+    # axes[1, 0].set_xticklabels(itr_label, rotation=45)
+    # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
     title = 'Solve Time with speed up for solving QR and LLL with problem size ' + str(n)
 
-    fig.suptitle("\n".join(wrap(title, 60)), fontsize=15)
+    fig.suptitle(title, fontsize=15)
     fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=3)
 
     plt.savefig(f'./{n}_report_plot_{int(i / 100)}_QR_LLL')
@@ -76,7 +76,8 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
                     omp_stm.append(tim[x][l][j])
                 print(omp_stm)
                 omp_spu = block_stm / omp_stm
-                axes[j, 3].plot(res_label[1:len(res_label)], np.array(omp_stm[1:len(res_label)]) / max_iter, color=color[x], marker=marker[x], linestyle='--')
+                axes[j, 3].plot(res_label[1:len(res_label)], np.array(omp_stm[1:len(res_label)]) / max_iter,
+                                color=color[x], marker=marker[x], linestyle='--')
                 # axes[j, 4].plot(itr_label, omp_spu[2:len(itr_label) + 2], color=color[x], marker=marker[x], linestyle='--')
                 break
 
@@ -107,11 +108,14 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
             spu_label = itr_label
 
             if j == 0:
-                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x], marker=marker[x], label=labels[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x],
+                                marker=marker[x], label=labels[x])
             else:
-                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x], marker=marker[x])
+                axes[j, 0].plot(itr_label, np.array(omp_itr[0:len(itr_label)]) / max_iter, color=color[x],
+                                marker=marker[x])
 
-            axes[j, 1].semilogy(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
+            axes[j, 1].semilogy(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
+                                marker=marker[x])
             axes[j, 2].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 3].plot(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
             axes[j, 4].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
@@ -163,13 +167,20 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
         nt_15_stats = [np.mean(nt_15, axis=0), np.median(nt_15, axis=0), np.amax(nt_15, axis=0), np.amin(nt_15, axis=0)]
 
         # print(babai)
-        babai_df = pd.DataFrame(babai_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        block_df = pd.DataFrame(block_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        nt_03_df = pd.DataFrame(nt_03_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        nt_06_df = pd.DataFrame(nt_06_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        nt_09_df = pd.DataFrame(nt_09_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        nt_12_df = pd.DataFrame(nt_12_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
-        nt_15_df = pd.DataFrame(nt_15_stats, columns=["Rounded", "0", "Average"], index=["Average", "Median", "Maximum", "Minimum"])
+        babai_df = pd.DataFrame(babai_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        block_df = pd.DataFrame(block_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        nt_03_df = pd.DataFrame(nt_03_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        nt_06_df = pd.DataFrame(nt_06_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        nt_09_df = pd.DataFrame(nt_09_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        nt_12_df = pd.DataFrame(nt_12_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
+        nt_15_df = pd.DataFrame(nt_15_stats, columns=["Rounded", "0", "Average"],
+                                index=["Average", "Median", "Maximum", "Minimum"])
 
         print(babai_df)
         print(block_df)
@@ -179,7 +190,6 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
         print(nt_12_df)
         print(nt_15_df)
         print("------------------1------------------------")
-
 
     print("\n----------END TIMETABLE--------------\n")
 
