@@ -11,7 +11,7 @@ long plot_run() {
     for (SNR = 35; SNR <= 35; SNR += 30) {
         index d_s_size = d_s.size();
         scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[4][200][2] = {}, spu[4][200][2] = {}, t_spu[4][200][2] = {};
-        scalar itr[3][200][2] = {}, stm[3][200][2] = {}, qrT[200][2] = {}, LLL[200][2] = {};
+        scalar itr[3][200][2] = {}, stm[3][200][2] = {}, qrT[200][2] = {}, lll[200][2] = {};
         scalar all_time[7][1000][3][2] = {}; //Method, iter, init, qam
         scalar r, t, b, iter, ser_qrd, run_time, ser_time;
         scalar t2, r2, b2, iter2;
@@ -284,26 +284,26 @@ long plot_run() {
 //                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
 //                            }
 //                            qrT[0][count] = qr_reT.run_time;
-//                            LLL[0][count] = LLL_reT.run_time;
+//                            lll[0][count] = LLL_reT.run_time;
 //                            qrT[qr_l][count] = qr_reT_omp.run_time;
-//                            LLL[qr_l][count] = LLL_reT_omp.run_time;
+//                            lll[qr_l][count] = LLL_reT_omp.run_time;
 //                            printf("[ TEST INFO]\n"
 //                                   "01.The QR Error is %.5f.\n"
 //                                   "02.The determinant of LLL is %.5f.\n",
 //                                   qr_reT_omp.num_iter, LLL_reT_omp.num_iter);
 //                            printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
 //                            for (index init = -1; init <= 1; init++) {
-//                                scalar t_omp_time = qrT[qr_l][count] + LLL[qr_l][count] + tim[init + 1][qr_l][count];
+//                                scalar t_omp_time = qrT[qr_l][count] + lll[qr_l][count] + tim[init + 1][qr_l][count];
 //                                scalar t_ser_time =
-//                                        qrT[0][count] + LLL[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
+//                                        qrT[0][count] + lll[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
 //                                t_spu[init + 1][qr_l][count] += t_ser_time / t_omp_time;
 //                                printf("Method: QR/LLL_OMP, N_PROC: %2d, "
 //                                       "SOVLER SPEEDUP: %8.3f, QR SER_TIME: %.5fs,"
 //                                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
 //                                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, TOTAL SPEEDUP: %8.3f\n",
 //                                       n_proc, spu[init + 1][qr_l][count] / i, qrT[0][count],
-//                                       qrT[qr_l][count], qrT[0][count] / qrT[qr_l][count], LLL[0][count],
-//                                       LLL[qr_l][count], LLL[0][count] / LLL[qr_l][count], t_ser_time / t_omp_time);
+//                                       qrT[qr_l][count], qrT[0][count] / qrT[qr_l][count], lll[0][count],
+//                                       lll[qr_l][count], lll[0][count] / lll[qr_l][count], t_ser_time / t_omp_time);
 //                            }
 //                            qr_l++;
 //                        }
@@ -445,10 +445,11 @@ template<typename scalar, typename index, index n>
 long plot_LLL() {
 
     for (SNR = 35; SNR <= 35; SNR += 30) {
-        scalar qr_spu[200] = {}, lll_spu[200] = {}, qrT[200] = {}, LLL[200] = {};
+        scalar qr_spu[200] = {}, lll_spu[200] = {}, lll_qr_spu[200] = {}, qlll_spu[200] = {};
+        scalar qrT[200] = {}, lll[200] = {}, LLL_qr[200] = {};
         index verbose = n <= 16, count = 0, qr_l = 2;
         scalar run_time;
-        cils::returnType<scalar, index> qr_reT, LLL_reT, LLL_reT_omp, qr_reT_omp;
+        cils::returnType<scalar, index> qr_reT, LLL_reT, LLL_reT_omp, qr_reT_omp, LLL_qr_reT, LLL_qr_reT_omp;
 
         for (index i = 1; i <= max_iter; i++) {
 
@@ -463,72 +464,73 @@ long plot_LLL() {
             //Initialize Problem
             cils.init();
 
+            qr_reT_omp = cils.cils_qr_omp(1, verbose, 2);
+
             qr_reT = cils.cils_qr_serial(1, verbose);
             cils.init_y();
 
-//            for (index ii = 0; ii < n; ii++) {
-//                for (index j = 0; j < n; j++) {
-//                    cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-//                }
-//            }
-
-            coder::eye(n, cils.Z);
             LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
-
-//            for (index ii = 0; ii < n; ii++) {
-//                for (index j = 0; j < n; j++) {
-//                    cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-//                }
-//            }
-            coder::eye(n, cils.Z);
             LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
 
+            LLL_qr_reT = cils.cils_LLL_qr_reduction(1, verbose, 1);
+            LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, 2);
+
             printf("[ INITIALIZATION INFO]\n"
-                   "01.The QR Error is %.5f.\n"
-                   "02.The QR Time is %.5f.\n"
-                   "03.The determinant of LLL is %.5f.\n"
-                   "04.The Givens of LLL is %.5f.\n"
-                   "05.The determinant of OMP LLL is %.5f.\n",
-                   qr_reT.num_iter, qr_reT.run_time, LLL_reT.num_iter, LLL_reT.x[0], LLL_reT_omp.num_iter);
+                   "01.The QR SER Error is %.5f, the QR SER Time is %.5f.\n"
+                   "02.The QR OMP Error is %.5f, the QR OMP Time is %.5f.\n"
+                   "03.The LLL DET SER is %.5f, the LLL SER Time is %.5f.\n"
+                   "04.The LLL DET OMP is %.5f, the LLL DET OMP Time is %.5f.\n"
+                   "03.The LLLQR DET SER is %.5f, the LLLQR SER Time is %.5f.\n"
+                   "03.The LLLQR DET OMP is %.5f, the LLLQR OMP Time is %.5f.\n",
+                   qr_reT.num_iter, qr_reT.run_time,
+                   qr_reT_omp.num_iter, qr_reT_omp.run_time,
+                   LLL_reT.num_iter, LLL_reT.run_time,
+                   LLL_reT_omp.num_iter, LLL_reT_omp.run_time,
+                   LLL_qr_reT.num_iter, LLL_qr_reT.run_time,
+                   LLL_qr_reT_omp.num_iter, LLL_qr_reT_omp.run_time);
+
             cout.flush();
 
             qrT[0] += qr_reT.run_time;
-            LLL[0] += LLL_reT.run_time;
+            lll[0] += LLL_reT.run_time;
+            LLL_qr[0] += LLL_qr_reT.run_time;
 
             qr_l = 1;
-            for (index n_proc = min_proc; n_proc <=max_proc; n_proc += min_proc) {
+            for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
                 printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
                 cout.flush();
                 qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
                 cils.init_y();
 
-//                for (index ii = 0; ii < n; ii++) {
-//                    for (index j = 0; j < n; j++) {
-//                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-//                    }
-//                }
-
                 //qr-block Testing
                 //LLL reduction
-                coder::eye(n, cils.Z);
+
+                LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, n_proc);
                 LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
 
                 qrT[qr_l] += qr_reT_omp.run_time;
-                LLL[qr_l] += LLL_reT_omp.run_time;
+                lll[qr_l] += LLL_reT_omp.run_time;
+                LLL_qr[qr_l] += LLL_qr_reT_omp.run_time;
                 qr_spu[qr_l] += qrT[0] / qrT[qr_l];
-                lll_spu[qr_l] += LLL[0] / LLL[qr_l];
+                lll_spu[qr_l] += lll[0] / lll[qr_l];
+                lll_qr_spu[qr_l] += LLL_qr[0] / LLL_qr[qr_l];
+                qlll_spu[qr_l] += (qrT[0] + lll[0]) / (qrT[qr_l] + lll[qr_l]);
 
                 printf("[ TEST INFO]\n"
                        "        01.The QR Error is %.5f.\n"
-                       "        02.The determinant of LLL is %.5f.\n",
-                       qr_reT_omp.num_iter, LLL_reT_omp.num_iter);
-                printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
+                       "        02.The LLL DET is %.5f.\n"
+                       "        03.The LLL_QR DET is %.5f.\n",
+                       qr_reT_omp.num_iter, LLL_reT_omp.num_iter, LLL_qr_reT_omp.num_iter);
+                printf("[ QR_LLL Parallel TEST INFO]++++++++++++++++++++++++++++++++\n");
 
                 printf("Method: QR/LLL_OMP, N_PROC: %2d, QR SER_TIME: %.5fs,"
-                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
-                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f\n",
-                       n_proc, qrT[0] / i, qrT[qr_l] / i, qr_spu[qr_l] / i, LLL[0] / i,
-                       LLL[qr_l] / i, lll_spu[qr_l] / i);
+                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs"
+                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, , QR+LLL SPEEDUP: %7.3f,"
+                       "LLL_QR OMP_TIME: %.5fs, LLL_QR SPEEDUP: %7.3f.\n",
+                       n_proc, qrT[0] / i,
+                       qrT[qr_l] / i, qr_spu[qr_l] / i, lll[0] / i,
+                       lll[qr_l] / i, lll_spu[qr_l] / i, qlll_spu[qr_l] / i,
+                       LLL_qr[qr_l] / i, lll_qr_spu[qr_l] / i);
 
                 qr_l++;
             }
@@ -552,7 +554,7 @@ long plot_LLL() {
                 scalar proc_nums[qr_l - 2] = {};
                 index ll = 0;
 
-                for (index n_proc = min_proc; n_proc <=max_proc; n_proc += min_proc) {
+                for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
                     proc_nums[ll] = n_proc;
                     ll++;
                 }
@@ -560,26 +562,33 @@ long plot_LLL() {
 
 
                 PyObject *pQRT = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, qrT);
-                PyObject *pLLL = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, LLL);
+                PyObject *pLLL = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, lll);
+                PyObject *plqr = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, LLL_qr);
                 PyObject *p_qr = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, qr_spu);
                 PyObject *pTsp = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, lll_spu);
+                PyObject *plqs = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, lll_qr_spu);
+                PyObject *pqls = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, qlll_spu);
+
                 if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
                 if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
+                if (plqr == nullptr) printf("[ ERROR] plqr has a problem.\n");
                 if (p_qr == nullptr) printf("[ ERROR] p_qr has a problem.\n");
                 if (pTsp == nullptr) printf("[ ERROR] pTsp has a problem.\n");
+                if (plqs == nullptr) printf("[ ERROR] plqs has a problem.\n");
+                if (pqls == nullptr) printf("[ ERROR] pqls has a problem.\n");
 
                 PyObject *sys_path = PySys_GetObject("path");
-//                PyList_Append(sys_path, PyUnicode_FromString(
-//                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
                 PyList_Append(sys_path, PyUnicode_FromString(
-                        "./"));
+                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//                PyList_Append(sys_path, PyUnicode_FromString(
+//                        "./"));
                 pName = PyUnicode_FromString("plot_helper");
                 pModule = PyImport_Import(pName);
 
                 if (pModule != nullptr) {
                     pFunc = PyObject_GetAttrString(pModule, "plot_runtime_lll");
                     if (pFunc && PyCallable_Check(pFunc)) {
-                        pArgs = PyTuple_New(7);
+                        pArgs = PyTuple_New(10);
                         if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                             return false;
                         }
@@ -595,10 +604,19 @@ long plot_LLL() {
                         if (PyTuple_SetItem(pArgs, 4, pLLL) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 5, p_qr) != 0) {
+                        if (PyTuple_SetItem(pArgs, 5, plqr) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 6, pTsp) != 0) {
+                        if (PyTuple_SetItem(pArgs, 6, p_qr) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 7, pTsp) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 8, plqs) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 9, pqls) != 0) {
                             return false;
                         }
                         pValue = PyObject_CallObject(pFunc, pArgs);

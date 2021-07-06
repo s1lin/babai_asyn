@@ -5,9 +5,9 @@ from textwrap import wrap
 import pandas as pd
 
 
-def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
+def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, qlll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (12, 6)
+    plt.rcParams["figure.figsize"] = (14, 6)
     fig, axes = plt.subplots(1, 2, constrained_layout=True)
     color = ['r', 'g', 'b', 'r']
     marker = ['o', '+', 'x', 'o']
@@ -27,8 +27,10 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, qr_spu, lll_spu):
 
     axes[0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
     axes[1].plot(itr_label, np.array(qr_spu[0:len(itr_label)])  / i, color=color[0], marker=marker[0])
-    axes[0].plot(itr_label, np.array(lll[0:len(itr_label)]) / i, color=color[2], marker=marker[2], label='QR+LLL')
-    axes[1].plot(itr_label, np.array(lll_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
+    axes[0].plot(itr_label, np.array(lll_qr[0:len(itr_label)]) / i, color=color[2], marker=marker[2], label='LLL_QR(new)')
+    axes[1].plot(itr_label, np.array(lll_qr_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
+    axes[0].plot(itr_label, (np.array(lll[0:len(itr_label)]) + np.array(qrT[0:len(itr_label)])) / i, color=color[1], marker=marker[1], label='QR+LLL')
+    axes[1].plot(itr_label, np.array(qlll_spu[0:len(itr_label)]) / i, color=color[1], marker=marker[1])
 
     axes[0].set_xticklabels(itr_label, rotation=45)
     axes[1].set_xticklabels(itr_label, rotation=45)
