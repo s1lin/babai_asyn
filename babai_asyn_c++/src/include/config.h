@@ -44,7 +44,7 @@ namespace cils {
         index min_proc = 2;
         index plot_itr = 1;
 
-        index max_proc = 19;//min(omp_get_max_threads(), N / block_size);
+        index max_proc = 22;//min(omp_get_max_threads(), N / block_size);
         index max_thre = 5000000;//maximum search allowed for serial ils.
 
 

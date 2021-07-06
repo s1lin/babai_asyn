@@ -880,6 +880,8 @@ namespace cils {
         {}
 
         cout << "[ In cils_LLL_qr_omp]\n";
+        cout.flush();
+
         scalar zeta, r_ii, alpha, s;
         bool f = true;
         index swap[n] = {}, counter = 0, c_i;
@@ -1061,6 +1063,8 @@ namespace cils {
 #pragma omp barrier
 #pragma omp atomic write
                 f = false;
+
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
                     c_i = static_cast<int>((i << 1) + 2U);
@@ -1105,36 +1109,36 @@ namespace cils {
                     }
                 }
 
-                if (f)// && omp_get_thread_num() == 0)
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
-                    for (index i = 0; i < n / 2; i++) {
-                        c_i = static_cast<int>((i << 1) + 2U);
-                        // 'eo_sils_reduction:69' i1 = i-1;
-                        // 'eo_sils_reduction:70' if swap(i) == 1
-                        if (swap[c_i - 1]) {
-                            // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
-                            scalar G[4] = {};
-                            scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                            coder::planerot(low_tmp, G);
-                            R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
-                            R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
+                for (index i = 0; i < n / 2; i++) {
+                    c_i = static_cast<int>((i << 1) + 2U);
+                    // 'eo_sils_reduction:69' i1 = i-1;
+                    // 'eo_sils_reduction:70' if swap(i) == 1
+                    if (swap[c_i - 1]) {
+                        // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
+                        scalar G[4] = {};
+                        scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
+                        coder::planerot(low_tmp, G);
+                        R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
+                        R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
-                            // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
-                            if (c_i > n) {
-                                i1 = i2 = 0;
-                                c_tmp = 1;
-                            } else {
-                                i1 = c_i - 1;
-                                i2 = n;
-                                c_tmp = c_i;
-                            }
-                            ci2 = i2 - i1;
-                            scalar b[ci2 * 2] = {};
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                b[2 * i2] = R_R[(c_i + n * tmp) - 2];
-                                b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
-                            }
+                        // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
+                        if (c_i > n) {
+                            i1 = i2 = 0;
+                            c_tmp = 1;
+                        } else {
+                            i1 = c_i - 1;
+                            i2 = n;
+                            c_tmp = c_i;
+                        }
+                        ci2 = i2 - i1;
+                        scalar b[ci2 * 2] = {};
+                        for (i2 = 0; i2 < ci2; i2++) {
+                            tmp = i1 + i2;
+                            b[2 * i2] = R_R[(c_i + n * tmp) - 2];
+                            b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
+                        }
 //                            scalar r1[ci2 * 2] = {};
 //                            for (index j = 0; j < ci2; j++) {
 //                                index coffset_tmp = j << 1;
@@ -1148,22 +1152,27 @@ namespace cils {
 //                                R_R[(c_i + n * tmp) - 2] = r1[2 * i1];
 //                                R_R[(c_i + n * tmp) - 1] = r1[2 * i1 + 1];
 //                            }
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
-                                R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
-                            }
-                            // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
-                            low_tmp[0] = y_r[c_i - 2];
-                            low_tmp[1] = y_r[c_i - 1];
-                            y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
-                            y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
-                            // 'eo_sils_reduction:74' swap(i) = 0;
-                            swap[c_i - 1] = 0;
+                        for (i2 = 0; i2 < ci2; i2++) {
+                            tmp = i1 + i2;
+                            R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                            R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
                         }
+                        // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
+                        low_tmp[0] = y_r[c_i - 2];
+                        low_tmp[1] = y_r[c_i - 1];
+                        y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                        y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
+                        // 'eo_sils_reduction:74' swap(i) = 0;
+                        swap[c_i - 1] = 0;
                     }
+                }
+
+
+#pragma omp barrier
 #pragma omp atomic write
                 f = false;
+
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
@@ -1216,50 +1225,50 @@ namespace cils {
                     }
                 }
 
-                if (f)// && omp_get_thread_num() == 0)
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
-                    for (index b_i = 0; b_i < odd; b_i++) {
-                        c_i = static_cast<int>((b_i << 1) + 3U);
-                        // 'eo_sils_reduction:69' i1 = i-1;
-                        // 'eo_sils_reduction:70' if swap(i) == 1
-                        if (swap[c_i - 1]) {
-                            // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
-                            scalar G[4] = {};
-                            scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                            coder::planerot(low_tmp, G);
-                            R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
-                            R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
-                            // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
-                            if (c_i > n) {
-                                i1 = i2 = 0;
-                                c_tmp = 1;
-                            } else {
-                                i1 = c_i - 1;
-                                i2 = n;
-                                c_tmp = c_i;
-                            }
-                            ci2 = i2 - i1;
-                            scalar b[ci2 * 2] = {};
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                b[2 * i2] = R_R[(c_i + n * tmp) - 2];
-                                b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
-                            }
-
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
-                                R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
-                            }
-                            // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
-                            low_tmp[0] = y_r[c_i - 2];
-                            low_tmp[1] = y_r[c_i - 1];
-                            y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
-                            y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
-                            // 'eo_sils_reduction:74' swap(i) = 0;
-                            swap[c_i - 1] = 0;
+                for (index b_i = 0; b_i < odd; b_i++) {
+                    c_i = static_cast<int>((b_i << 1) + 3U);
+                    // 'eo_sils_reduction:69' i1 = i-1;
+                    // 'eo_sils_reduction:70' if swap(i) == 1
+                    if (swap[c_i - 1]) {
+                        // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
+                        scalar G[4] = {};
+                        scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
+                        coder::planerot(low_tmp, G);
+                        R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
+                        R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
+                        // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
+                        if (c_i > n) {
+                            i1 = i2 = 0;
+                            c_tmp = 1;
+                        } else {
+                            i1 = c_i - 1;
+                            i2 = n;
+                            c_tmp = c_i;
                         }
+                        ci2 = i2 - i1;
+                        scalar b[ci2 * 2] = {};
+                        for (i2 = 0; i2 < ci2; i2++) {
+                            tmp = i1 + i2;
+                            b[2 * i2] = R_R[(c_i + n * tmp) - 2];
+                            b[2 * i2 + 1] = R_R[(c_i + n * tmp) - 1];
+                        }
+
+                        for (i2 = 0; i2 < ci2; i2++) {
+                            tmp = i1 + i2;
+                            R_R[(c_i + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                            R_R[(c_i + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+                        }
+                        // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
+                        low_tmp[0] = y_r[c_i - 2];
+                        low_tmp[1] = y_r[c_i - 1];
+                        y_r[c_i - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                        y_r[c_i - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
+                        // 'eo_sils_reduction:74' swap(i) = 0;
+                        swap[c_i - 1] = 0;
                     }
+                }
 
                 counter++;
             }
