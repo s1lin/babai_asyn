@@ -504,8 +504,9 @@ long plot_LLL() {
 
                 //qr-block Testing
                 //LLL reduction
-
+                coder::eye(n, cils.Z);
                 LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, n_proc);
+
                 LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
 
                 qrT[qr_l] += qr_reT_omp.run_time;
@@ -578,10 +579,10 @@ long plot_LLL() {
                 if (pqls == nullptr) printf("[ ERROR] pqls has a problem.\n");
 
                 PyObject *sys_path = PySys_GetObject("path");
-                PyList_Append(sys_path, PyUnicode_FromString(
-                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
 //                PyList_Append(sys_path, PyUnicode_FromString(
-//                        "./"));
+//                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+                PyList_Append(sys_path, PyUnicode_FromString(
+                        "./"));
                 pName = PyUnicode_FromString("plot_helper");
                 pModule = PyImport_Import(pName);
 

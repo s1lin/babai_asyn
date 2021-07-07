@@ -206,15 +206,15 @@ namespace cils {
     cils<scalar, index, n>::cils_LLL_qr_reduction(const index eval, const index verbose, const index n_proc) {
         scalar time = 0, det = 0;
         returnType<scalar, index> reT, lll_val;
-        coder::eye(n, Z);
+
         if (n_proc <= 1) {
             reT = cils_LLL_qr_serial();
-            printf("[ INFO: SER LLL TIME: %8.5f, Givens: %.1f]\n",
+            printf("[ INFO: SER LLL QR TIME: %8.5f, Givens: %.1f]\n",
                    reT.run_time, reT.num_iter);
             time = reT.run_time;
         } else {
             time = cils_LLL_qr_omp(n_proc);
-            printf("[ INFO: OMP LLL TIME: %8.5f]\n", time);
+            printf("[ INFO: OMP LLL QR TIME: %8.5f]\n", time);
         }
 
         if (eval) {
@@ -259,10 +259,10 @@ namespace cils {
         if (eval) {
             lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
             if (lll_val.num_iter != 1) {
-                cout << "LLL Failed, index:";
+                cerr << "0: LLL Failed, index:";
                 for (index i = 0; i < n; i++) {
                     if (lll_val.x[i] != 0)
-                        cout << i << ",";
+                        cerr << i << ",";
                 }
                 cout << endl;
                 for (index l = 0; l < 3; l++) {
@@ -272,6 +272,12 @@ namespace cils {
                     lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
                     if (lll_val.num_iter == 1)
                         break;
+                    else
+                        cerr << l << " LLL Failed, index:";
+                    for (index i = 0; i < n; i++) {
+                        if (lll_val.x[i] != 0)
+                            cerr << i << ",";
+                    }
                 }
             }
         }
@@ -608,6 +614,7 @@ namespace cils {
 #pragma omp atomic write
                 f = false;
 
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
                     c_i = static_cast<int>((i << 1) + 2U);
@@ -651,6 +658,7 @@ namespace cils {
                         }
                     }
                 }
+
 
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
@@ -709,10 +717,11 @@ namespace cils {
                     }
                 }
 
-
+#pragma omp barrier
 #pragma omp atomic write
                 f = false;
 
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
@@ -764,6 +773,7 @@ namespace cils {
                         }
                     }
                 }
+
 
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
@@ -1383,7 +1393,7 @@ namespace cils {
 #pragma omp atomic write
                 f = false;
 
-#pragma omp barrier
+//#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
                     c_i = static_cast<int>((i << 1) + 2U);
@@ -1491,7 +1501,7 @@ namespace cils {
 #pragma omp atomic write
                 f = false;
 
-#pragma omp barrier
+//#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);

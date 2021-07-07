@@ -8,32 +8,38 @@ import pandas as pd
 def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, qlll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 6)
-    fig, axes = plt.subplots(1, 2, constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, constrained_layout=True)
     color = ['r', 'g', 'b', 'r']
     marker = ['o', '+', 'x', 'o']
 
     axes[0].set_title('QR/LLL Solve Time', fontsize=13)
-    axes[1].set_title('QR/LLL Speed Up', fontsize=13)
+    axes[1].set_title('QR/LLL Solve Time (log)', fontsize=13)
+    axes[2].set_title('QR/LLL Speed Up', fontsize=13)
     # axes[1, 0].set_title('LLL Solve Time', fontsize=13)
     # axes[1, 1].set_title('LLL Speed Up', fontsize=13)
 
     axes[0].set_ylabel('QR/LLL Solve Time (s)', fontsize=13)
-    axes[1].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
+    axes[1].set_ylabel('QR/LLL Solve Time (log)', fontsize=13)
+    axes[2].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
     # axes[1, 0].set_ylabel('LLL  Solve Time (s)', fontsize=13)
     # axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
 
     # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 20, 2)]
+    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 21, 2)]
 
     axes[0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
-    axes[1].plot(itr_label, np.array(qr_spu[0:len(itr_label)])  / i, color=color[0], marker=marker[0])
+    axes[1].semilogy(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
+    axes[2].plot(itr_label, np.array(qr_spu[0:len(itr_label)])  / i, color=color[0], marker=marker[0])
     axes[0].plot(itr_label, np.array(lll_qr[0:len(itr_label)]) / i, color=color[2], marker=marker[2], label='LLL_QR(new)')
-    axes[1].plot(itr_label, np.array(lll_qr_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
+    axes[1].semilogy(itr_label, np.array(lll_qr[0:len(itr_label)]) / i, color=color[2], marker=marker[2], label='LLL_QR(new)')
+    axes[2].plot(itr_label, np.array(lll_qr_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
     axes[0].plot(itr_label, (np.array(lll[0:len(itr_label)]) + np.array(qrT[0:len(itr_label)])) / i, color=color[1], marker=marker[1], label='QR+LLL')
-    axes[1].plot(itr_label, np.array(qlll_spu[0:len(itr_label)]) / i, color=color[1], marker=marker[1])
+    axes[1].semilogy(itr_label, (np.array(lll[0:len(itr_label)]) + np.array(qrT[0:len(itr_label)])) / i, color=color[1], marker=marker[1], label='QR+LLL')
+    axes[2].plot(itr_label, np.array(qlll_spu[0:len(itr_label)]) / i, color=color[1], marker=marker[1])
 
     axes[0].set_xticklabels(itr_label, rotation=45)
     axes[1].set_xticklabels(itr_label, rotation=45)
+    axes[2].set_xticklabels(itr_label, rotation=45)
     # axes[1, 0].set_xticklabels(itr_label, rotation=45)
     # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
