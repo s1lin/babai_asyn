@@ -1393,7 +1393,7 @@ namespace cils {
 #pragma omp atomic write
                 f = false;
 
-//#pragma omp barrier
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
                     c_i = static_cast<int>((i << 1) + 2U);
@@ -1438,7 +1438,7 @@ namespace cils {
                     }
                 }
 
-#pragma omp barrier
+//#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index i = 0; i < n / 2; i++) {
                     c_i = static_cast<int>((i << 1) + 2U);
@@ -1501,7 +1501,7 @@ namespace cils {
 #pragma omp atomic write
                 f = false;
 
-//#pragma omp barrier
+#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
@@ -1554,7 +1554,7 @@ namespace cils {
                     }
                 }
 
-#pragma omp barrier
+//#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
