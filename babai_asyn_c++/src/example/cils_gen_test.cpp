@@ -525,12 +525,14 @@ long plot_LLL() {
                 printf("[ QR_LLL Parallel TEST INFO]++++++++++++++++++++++++++++++++\n");
 
                 printf("Method: QR/LLL_OMP, N_PROC: %2d, QR SER_TIME: %.5fs,"
-                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs"
-                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, , QR+LLL SPEEDUP: %7.3f,"
+                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
+                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, "
+                       "QR+LLL SER_TIME: %.5fs, QR+LLL OMP_TIME: %.5fs, QR+LLL SPEEDUP: %7.3f,"
                        "LLL_QR OMP_TIME: %.5fs, LLL_QR SPEEDUP: %7.3f.\n",
                        n_proc, qrT[0] / i,
                        qrT[qr_l] / i, qr_spu[qr_l] / i, lll[0] / i,
-                       lll[qr_l] / i, lll_spu[qr_l] / i, qlll_spu[qr_l] / i,
+                       lll[qr_l] / i, lll_spu[qr_l] / i,
+                       (qrT[0] + lll[0]) / i, (qrT[qr_l] + lll[qr_l]) / i, qlll_spu[qr_l] / i,
                        LLL_qr[qr_l] / i, lll_qr_spu[qr_l] / i);
 
                 qr_l++;
