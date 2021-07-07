@@ -25,7 +25,7 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, 
     # axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
 
     # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 21, 2)]
+    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(2, 31, 2)]
 
     axes[0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
     axes[1].semilogy(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0])
