@@ -4,7 +4,6 @@ import numpy as np
 from textwrap import wrap
 import pandas as pd
 
-
 def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, qlll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 6)
@@ -23,6 +22,7 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, 
     axes[2].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
     # axes[1, 0].set_ylabel('LLL  Solve Time (s)', fontsize=13)
     # axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
+    ax_zoom = fig.add_axes([0.52, 0.51, 0.12, 0.3])
 
     # proc_num = proc_num.astype(int)
     itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(3, 31, 3)]
@@ -43,6 +43,10 @@ def plot_runtime_lll(n, qr_l, i, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, 
     # axes[1, 0].set_xticklabels(itr_label, rotation=45)
     # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
+    ax_zoom.semilogy(itr_label[3: 5], np.array(qrT[3: 5]) / i, color=color[0], marker=marker[0])
+    ax_zoom.semilogy(itr_label[3: 5], np.array(lll_qr[3: 5]) / i, color=color[2], marker=marker[2])
+    ax_zoom.semilogy(itr_label[3: 5], np.array(np.array(lll[3: 5]) + np.array(qrT[3: 5])) / i, color=color[1], marker=marker[1])
+    ax_zoom.set_title('NT-6 to NT-8 Zoom', fontsize=13)
     title = 'Solve Time with speed up for solving QR and LLL with problem size ' + str(n)
 
     fig.suptitle(title, fontsize=15)

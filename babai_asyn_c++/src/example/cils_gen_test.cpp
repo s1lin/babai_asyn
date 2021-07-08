@@ -581,10 +581,10 @@ long plot_LLL() {
                 if (pqls == nullptr) printf("[ ERROR] pqls has a problem.\n");
 
                 PyObject *sys_path = PySys_GetObject("path");
-//                PyList_Append(sys_path, PyUnicode_FromString(
-//                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
                 PyList_Append(sys_path, PyUnicode_FromString(
-                        "./"));
+                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//                PyList_Append(sys_path, PyUnicode_FromString(
+//                        "./"));
                 pName = PyUnicode_FromString("plot_helper");
                 pModule = PyImport_Import(pName);
 
