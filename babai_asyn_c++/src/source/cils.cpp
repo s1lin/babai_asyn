@@ -153,64 +153,87 @@ namespace cils {
 
     template<typename scalar, typename index, index n>
     void cils<scalar, index, n>::init() {
+//         Start MATLAB engine synchronously
+        using namespace matlab::engine;
+
         // Start MATLAB engine synchronously
-//        using namespace matlab::engine;
-//
-//        // Start MATLAB engine synchronously
-//        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
-//
-//        //Create MATLAB data array factory
-//        matlab::data::ArrayFactory factory;
-//
-//        // Call the MATLAB movsum function
-//        matlabPtr->eval(u" A = randn(512);");
-//        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
-//
-//        index i = 0;
-//        A.set_size(n, n);
-//        for (auto r : A_A) {
-//            A[i] = r;
-//            ++i;
-//        }
+        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
+
+        //Create MATLAB data array factory
+        matlab::data::ArrayFactory factory;
+
+        // Call the MATLAB movsum function
+        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
+        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
+        matlabPtr->setVariable(u"k", std::move(k_M));
+        matlabPtr->setVariable(u"n", std::move(m_M));
+        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+
+        // Call the MATLAB movsum function
+        matlabPtr->eval(u" [A, y, x_t] = gen(k, n, SNR);");
+
+        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+        matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
+        matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
+
+        index i = 0;
+        A.set_size(n, n);
+        for (auto r : A_A) {
+            A[i] = r;
+            ++i;
+        }
+        i = 0;
+        y_a.set_size(n);
+        for (auto r : y_M) {
+            y_a[i] = r;
+            ++i;
+        }
+        i = 0;
+        x_t.set_size(n);
+        for (auto r : x_M) {
+            x_t[i] = r;
+            ++i;
+        }
 
 //        coder::qr(A, Q, R_Q);
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        //mean:0, std:sqrt(1/2). same as matlab.
-        std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, sigma);
-        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
-        std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
-
-        for (index i = 0; i < n / 2; i++) {
-            for (index j = 0; j < n / 2; j++) {
-                A[i + j * n] = 2 * A_norm_dis(gen);
-                A[i + n / 2 + j * n] = -2 * A_norm_dis(gen);
-                A[i + n / 2 + (j + n / 2) * n] = A[i + j * n];
-                A[i + (j + n / 2) * n] = -A[i + n / 2 + j * n];
-            }
-            x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-            v_a[i] = v_norm_dis(gen);
-            x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
-            v_a[i + n / 2] = v_norm_dis(gen);
-        }
-
-        scalar sum = 0;
-
-        //init y_a
-        coder::internal::blas::mtimes(A, x_t, y_a);
-        for (index i = 0; i < n; i++) {
-            y_a[i] += v_a[i];
-        }
-//        for (index i = 0; i < n; i++) {
-//            y_a[i] = 0;
+//        std::random_device rd;
+//        std::mt19937 gen(rd());
+//        //mean:0, std:sqrt(1/2). same as matlab.
+//        std::normal_distribution<scalar> A_norm_dis(0, sqrt(0.5)), v_norm_dis(0, sigma);
+//        //Returns a new random number that follows the distribution's parameters associated to the object (version 1) or those specified by parm
+//        std::uniform_int_distribution<index> int_dis(-pow(2, qam - 1), pow(2, qam - 1) - 1);
+//
+//        for (index i = 0; i < n / 2; i++) {
+//            for (index j = 0; j < n / 2; j++) {
+//                A[i + j * n] = 2 * A_norm_dis(gen);
+//                A[i + n / 2 + j * n] = -2 * A_norm_dis(gen);
+//                A[i + n / 2 + (j + n / 2) * n] = A[i + j * n];
+//                A[i + (j + n / 2) * n] = -A[i + n / 2 + j * n];
+//            }
+//            x_t[i] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+//            v_a[i] = v_norm_dis(gen);
+//            x_t[i + n / 2] = (pow(2, qam) + 2 * int_dis(gen)) / 2;
+//            v_a[i + n / 2] = v_norm_dis(gen);
 //        }
-        if (n <= 16)
-            display_vector<scalar, index>(y_a);
-
-        //Set Z to Eye:
-
-        coder::eye(n, Z);
+//
+//        scalar sum = 0;
+//
+//        //init y_a
+//        coder::internal::blas::mtimes(A, x_t, y_a);
+//        for (index i = 0; i < n; i++) {
+//            y_a[i] += v_a[i];
+//        }
+////        for (index i = 0; i < n; i++) {
+////            y_a[i] = 0;
+////        }
+//        if (n <= 16)
+//            display_vector<scalar, index>(y_a);
+//
+//        //Set Z to Eye:
+//
+//        coder::eye(n, Z);
     }
 
     template<typename scalar, typename index, index n>
