@@ -13,12 +13,14 @@ namespace cils {
         index i, j, k, m;
         scalar error = -1, time, sum;
         //Deep Copy
-        coder::array<scalar, 2U> A_t(A);
+        scalar *A_t = new scalar[n * n];
+//        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
         for (i = 0; i < n; i++) {
             for (j = 0; j < n; j++) {
                 R_Q[i * n + j] = 0;
                 Q[i * n + j] = 0;
+                A_t[i * n + j] = A[i * n + j];
             }
         }
 
@@ -74,7 +76,7 @@ namespace cils {
 //        }
 
         time = omp_get_wtime() - time;
-
+        delete[] A_t;
         if (eval) {
             error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
         }
@@ -90,14 +92,14 @@ namespace cils {
         cout.flush();
         scalar error = -1, time, sum = 0;
         auto lock = new omp_lock_t[n]();
-//        scalar *A_t = new scalar[n * n];
-        coder::array<scalar, 2U> A_t(A);
+        scalar *A_t = new scalar[n * n];
+//        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
                 R_Q[i * n + j] = 0;
                 Q[i * n + j] = 0;
-//                A_t[i * n + j] = A[i * n + j];
+                A_t[i * n + j] = A[i * n + j];
             }
         }
 
@@ -163,7 +165,7 @@ namespace cils {
 #pragma parallel omp cancellation point
 #pragma omp flush
         delete[] lock;
-//        delete[] A_t;
+        delete[] A_t;
         cout << "[  QR ERROR OMP:]" << error << endl;
         return {{}, time, error};
 
@@ -573,7 +575,7 @@ namespace cils {
         {
 
             counter = 0;
-            while (f && counter < 100) {
+            while (f && counter < 50) {
 #pragma omp barrier
 #pragma omp atomic write
                 f = false;
@@ -683,8 +685,6 @@ namespace cils {
 //#pragma omp barrier
 //#pragma omp atomic write
 //                f = false;
-
-#pragma omp barrier
 #pragma omp for schedule(static, 1)
                 for (index b_i = 0; b_i < odd; b_i++) {
                     c_i = static_cast<int>((b_i << 1) + 3U);
@@ -798,8 +798,8 @@ namespace cils {
         index swap[n] = {}, givens = 0, c_i;
         index i1, ci2, c_tmp, tmp, i2, odd = static_cast<int>((n + -1.0) / 2.0);
         scalar error = -1, time, sum = 0;
-//        scalar *A_t = new scalar[n * n];
-        coder::array<scalar, 2U> A_t(A);
+        scalar *A_t = new scalar[n * n];
+//        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
 //        b_R.set_size(n, n);
         for (index i = 0; i < n; i++) {
@@ -807,7 +807,7 @@ namespace cils {
                 Q[i * n + j] = 0;
                 R_R[i * n + j] = 0;
 //                R_Q[i * n + j] = 0;
-//                A_t[i * n + j] = A[i * n + j];
+                A_t[i * n + j] = A[i * n + j];
             }
         }
 
@@ -1114,7 +1114,7 @@ namespace cils {
         time = omp_get_wtime() - time;
         error = qr_validation<scalar, index, n>(A, Q, R_Q, 1, n <= 16);
         printf("[ NEW METHOD, QR ERROR: %.5f]\n", error);
-//        delete[] A_t;
+        delete[] A_t;
         return {{}, time, (scalar) givens};
     }
 
