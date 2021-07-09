@@ -172,6 +172,7 @@ namespace cils {
 
         // Call the MATLAB movsum function
         matlabPtr->eval(u" [A, y, x_t] = gen(k, n, SNR);");
+//        matlabPtr->eval(u" A = magic(n);");
 
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
         matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");

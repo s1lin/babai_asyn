@@ -581,17 +581,20 @@ long plot_LLL() {
                 if (pqls == nullptr) printf("[ ERROR] pqls has a problem.\n");
 
                 PyObject *sys_path = PySys_GetObject("path");
-                PyList_Append(sys_path, PyUnicode_FromString(
-                        "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
-//                PyList_Append(sys_path, PyUnicode_FromString(
-//                        "./"));
+
+                if (is_local)
+                    PyList_Append(sys_path, PyUnicode_FromString(
+                            "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+                else
+                    PyList_Append(sys_path, PyUnicode_FromString("./"));
+
                 pName = PyUnicode_FromString("plot_helper");
                 pModule = PyImport_Import(pName);
 
                 if (pModule != nullptr) {
                     pFunc = PyObject_GetAttrString(pModule, "plot_runtime_lll");
                     if (pFunc && PyCallable_Check(pFunc)) {
-                        pArgs = PyTuple_New(10);
+                        pArgs = PyTuple_New(12);
                         if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                             return false;
                         }
@@ -601,25 +604,31 @@ long plot_LLL() {
                         if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", i)) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 3, pQRT) != 0) {
+                        if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", max_proc)) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 4, pLLL) != 0) {
+                        if (PyTuple_SetItem(pArgs, 4, Py_BuildValue("i", min_proc)) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 5, plqr) != 0) {
+                        if (PyTuple_SetItem(pArgs, 5, pQRT) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 6, p_qr) != 0) {
+                        if (PyTuple_SetItem(pArgs, 6, pLLL) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 7, pTsp) != 0) {
+                        if (PyTuple_SetItem(pArgs, 7, plqr) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 8, plqs) != 0) {
+                        if (PyTuple_SetItem(pArgs, 8, p_qr) != 0) {
                             return false;
                         }
-                        if (PyTuple_SetItem(pArgs, 9, pqls) != 0) {
+                        if (PyTuple_SetItem(pArgs, 9, pTsp) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 10, plqs) != 0) {
+                            return false;
+                        }
+                        if (PyTuple_SetItem(pArgs, 11, pqls) != 0) {
                             return false;
                         }
                         pValue = PyObject_CallObject(pFunc, pArgs);

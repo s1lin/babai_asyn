@@ -39,12 +39,12 @@ namespace cils {
         index is_qr = false;
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
-        index is_local = 0;
+        index is_local = 1;
         index max_search = 5000000;//INT_MAX;
         index min_proc = 3;
         index plot_itr = 1;
 
-        index max_proc = 30;//min(omp_get_max_threads(), N / block_size);
+        index max_proc = is_local ? 20 : 30;//min(omp_get_max_threads(), N / block_size);
         index max_thre = 5000000;//maximum search allowed for serial ils.
 
 
@@ -78,21 +78,7 @@ namespace cils {
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
-                k = stoi(argv[1]);
-                SNR = stoi(argv[2]);
-                max_iter = stoi(argv[3]);
-                search_iter = stoi(argv[4]);
-                stop = stoi(argv[5]);
-                schedule = stoi(argv[6]);
-                chunk_size = stoi(argv[7]);
-                block_size = stoi(argv[8]);
-                is_constrained = stoi(argv[9]);
-                is_matlab = stoi(argv[11]);
-                mode = stoi(argv[12]);
-                num_trials = stoi(argv[13]);
-                is_local = stoi(argv[14]);
-                max_search = stoi(argv[15]);
-                min_proc = stoi(argv[16]);
+                is_local = stoi(argv[0]);
             }
             printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d\n",
