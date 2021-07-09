@@ -47,11 +47,11 @@ def plot_runtime_lll(n, qr_l, i, max_proc, min_proc, qrT, lll, lll_qr, qr_spu, l
     # axes[1, 0].set_xticklabels(itr_label, rotation=45)
     # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
-    ax_zoom.semilogy(itr_label[3: 5], np.array(qrT[3: 5]) / i, color=color[0], marker=marker[0])
-    ax_zoom.semilogy(itr_label[3: 5], np.array(lll_qr[3: 5]) / i, color=color[2], marker=marker[2])
-    ax_zoom.semilogy(itr_label[3: 5], np.array(np.array(lll[3: 5]) + np.array(qrT[3: 5])) / i, color=color[1],
+    ax_zoom.semilogy(itr_label[2: 5], np.array(qrT[2: 5]) / i, color=color[0], marker=marker[0])
+    ax_zoom.semilogy(itr_label[2: 5], np.array(lll_qr[2: 5]) / i, color=color[2], marker=marker[2])
+    ax_zoom.semilogy(itr_label[2: 5], np.array(np.array(lll[2: 5]) + np.array(qrT[2: 5])) / i, color=color[1],
                      marker=marker[1])
-    ax_zoom_title = itr_label[3] + itr_label[4] + 'Zoom'
+    ax_zoom_title = itr_label[2] + ' ' +itr_label[3] + ' ' + itr_label[4] + ' Zoom'
     ax_zoom.set_title(ax_zoom_title, fontsize=13)
     title = 'Solve Time with speed up for solving QR and LLL with problem size ' + str(n)
 

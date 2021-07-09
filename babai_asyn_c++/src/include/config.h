@@ -78,7 +78,7 @@ namespace cils {
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
-                is_local = stoi(argv[0]);
+                is_local = stoi(argv[1]);
             }
             printf("The settings are: k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d\n",
