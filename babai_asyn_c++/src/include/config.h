@@ -80,7 +80,7 @@ namespace cils {
             if (argc != 1) {
                 is_local = stoi(argv[1]);
             }
-            max_proc = is_local ? 20 : 30;
+            max_proc = is_local ? 17 : 30;
             printf("[ INFO: The program settings are: "
                    "k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
                    "nswp=%d, max_search=%d, is_local=%d\n",
