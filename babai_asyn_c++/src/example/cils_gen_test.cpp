@@ -4,97 +4,129 @@
 #include "../source/cils_block_search.cpp"
 #include "../source/cils_babai_search.cpp"
 #include "../source/cils_reduction.cpp"
+#include <ctime>
 
-template<typename scalar, typename index, index n>
+template<typename scalar, typename index, index m, index n>
 long plot_run() {
-
+    time_t t0 = time(nullptr);
+    struct tm *lt = localtime(&t0);
+    char time_str[20];
+    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+            lt->tm_hour, lt->tm_min, lt->tm_sec
+    );
+    printf("====================[ TEST | ILS | %s ]==================================\n", time_str);
     for (SNR = 35; SNR <= 35; SNR += 30) {
         index d_s_size = d_s.size();
         scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[4][200][2] = {}, spu[4][200][2] = {}, t_spu[4][200][2] = {};
-        scalar itr[3][200][2] = {}, stm[3][200][2] = {}, qrT[200][2] = {}, lll[200][2] = {};
+        scalar itr[3][200][2] = {}, stm[3][200][2] = {};
         scalar all_time[7][1000][3][2] = {}; //Method, iter, init, qam
-        scalar r, t, b, iter, ser_qrd, run_time, ser_time;
+
+        index verbose = n <= 16, count = 0, qr_l = 2;
+        scalar run_time;
+        cils::returnType<scalar, index> reT, qr_reT, LLL_reT, LLL_reT_omp, qr_reT_omp, LLL_qr_reT, LLL_qr_reT_omp;
+
+        scalar r, t, b, iter, ser_qrd, ser_time;
         scalar t2, r2, b2, iter2;
 
-        index verbose = n <= 16, count = 0, l = 2, qr_l = 2; //count for qam.
+        index l = 2; //count for qam.
 
         vector<scalar> z_B(n, 0);
-
-        cils::returnType<scalar, index> reT, qr_reT, LLL_reT, LLL_reT_omp, qr_reT_omp;
 //        for (k = 1; k <= 3; k += 2) {
+        scalar qr_spu[200][2] = {}, lll_spu[200][2] = {}, lll_qr_spu[200][2] = {}, qlll_spu[200][2] = {};
+        scalar qrT[200][2] = {}, lll[200][2] = {}, LLL_qr[200][2] = {};
+        cils::cils<scalar, index, m, n> cils(k, SNR);
         for (index tt = 0; tt <= 0; tt++) {
             is_qr = tt;
             for (index i = 1; i <= max_iter; i++) {
                 ser_qrd = 0;
                 l = 2;
                 for (k = 3; k >= 1; k -= 2) {
-                    printf("[ PLOT RES]\n++++++++++++++++++++++++++++++++++++++\n");
-                    std::cout << "Init, size: " << n << std::endl;
-                    std::cout << "Init, QAM: " << std::pow(4, k) << std::endl;
                     count = k == 1 ? 0 : 1;
                     run_time = omp_get_wtime();
-                    cils::cils<scalar, index, n> cils(k, SNR);
-
+                    cils.qam = k;
                     scalar ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr;
                     printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
                     do {
                         //Initialize Problem
-                        cils.init();
+                        //cils.init();
                         if (is_matlab)
                             qr_reT = cils.cils_qr_matlab();
                         else {
+                            //Matlab gen
+                            cils.cils_qr_matlab();
+                            //QR Decomposition
+//                            qr_reT_omp = cils.cils_qr_omp(1, verbose, 2);
                             qr_reT = cils.cils_qr_serial(1, verbose);
-                            cils.init_y();
 
+                            //QR - Block Solver Testing
+                            coder::eye<scalar, index, m, n>(n, cils.Z);
                             for (index ii = 0; ii < n; ii++) {
                                 for (index j = 0; j < n; j++) {
                                     cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
                                 }
                             }
-                            //qr-block Testing
-                            init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+
+                            init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
                             cils.cils_block_search_serial(0, &d_s, &z_B);
-                            ber_qr = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-                            res_qr = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
+                            ber_qr = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
+                            res_qr = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
                             if (verbose) {
-                                cout << "SER:";
+                                cout << "[ SER:";
                                 cils::display_vector<scalar, index>(&z_B);
+                                cout << "]\n";
                             }
                             //LLL reduction
                             if (!is_qr) {
-                                LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
-                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
+//                                LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
+//                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
+
+//                                LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, 2);
+                                LLL_qr_reT = cils.cils_LLL_qr_reduction(1, verbose, 1);
+
+//                                printf("[ LLL INITIALIZATION INFO]\n"
+//                                       "01.The QR SER Error is %.5f, the QR SER Time is %.5f.\n"
+//                                       "02.The QR OMP Error is %.5f, the QR OMP Time is %.5f.\n"
+//                                       "03.The LLL DET SER is %.5f, the LLL SER Time is %.5f.\n"
+//                                       "04.The LLL DET OMP is %.5f, the LLL DET OMP Time is %.5f.\n"
+//                                       "03.The LLLQR DET SER is %.5f, the LLLQR SER Time is %.5f.\n"
+//                                       "03.The LLLQR DET OMP is %.5f, the LLLQR OMP Time is %.5f.\n",
+//                                       qr_reT.num_iter, qr_reT.run_time,
+//                                       qr_reT_omp.num_iter, qr_reT_omp.run_time,
+//                                       LLL_reT.num_iter, LLL_reT.run_time,
+//                                       LLL_reT_omp.num_iter, LLL_reT_omp.run_time,
+//                                       LLL_qr_reT.num_iter, LLL_qr_reT.run_time,
+//                                       LLL_qr_reT_omp.num_iter, LLL_qr_reT_omp.run_time);
                             }
                         }
-                        //Initialize R
-                        cils.init_R();
 
-                        //Validating
-                        cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, cils.x_t.data());
-                        init_guess<scalar, index, n>(2, &z_B, cils.x_t.data());
+                        //LLL - Validating
+                        cils.init_res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, cils.x_t.data());
 
-                        coder::array<scalar, 1U> z;
-                        coder::array<scalar, 2U> ZINV(cils.Z);
+                        array<scalar, m * n> ZINV;
+                        array<scalar, n> z;
+                        ZINV.fill(0);
+                        z.fill(0);
                         if (!is_qr) {
-                            //Validating LLL
-                            coder::eye(n, ZINV);
-                            coder::internal::mrdiv(ZINV, cils.Z);
+                            coder::eye<scalar, index, m, n>(n, ZINV);
+                            coder::internal::mrdiv<scalar, index, m, n, n>(ZINV, cils.Z);
                         }
                         //qr: Z is eye Zx_t = x, LLL: Z^{-1}x_t = x
-                        coder::internal::blas::mtimes(ZINV, cils.x_t, z);
-                        scalar R_res = cils::find_residual<scalar, index, n>(cils.R_R, cils.y_r, z.data());
+                        coder::internal::blas::mtimes<scalar, index, m, n, 1>(ZINV, cils.x_t, z);
+                        scalar R_res = cils::find_residual<scalar, index, m, n>(cils.R_R, cils.y_r, z.data());
                         if (verbose) {
                             cout << "Z*x:";
-                            cils::display_vector<scalar, index>(z);
+                            cils::display_vector<scalar, index, n>(z);
                             cout << "x_t:";
-                            cils::display_vector<scalar, index>(cils.x_t);
+                            cils::display_vector<scalar, index, n>(cils.x_t);
                         }
 
-                        //Validating Result is solvable
+                        //LLL - Block Solver Testing
+                        cils.init_R();
                         //Babai
-                        init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
                         cils.cils_babai_search_serial(&z_B);
-                        ber_babai = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                        ber_babai = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
 
                         if (verbose) {
                             cout << "BAB:";
@@ -102,9 +134,9 @@ long plot_run() {
                         }
 
                         //P-Block Solver, 3 threads
-                        init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
                         cils.cils_block_search_omp(3, num_trials, 0, &d_s, &z_B);
-                        ber_thre3 = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                        ber_thre3 = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
 
                         if (verbose) {
                             cout << "OMP:";
@@ -112,33 +144,28 @@ long plot_run() {
                         }
 
                         //S-Block Solver.
-                        init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
                         cils.cils_block_search_serial(0, &d_s, &z_B);
-                        ber_serial = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-                        res_lll = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
+                        ber_serial = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
+                        res_lll = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
                         if (verbose) {
                             cout << "SER:";
                             cils::display_vector<scalar, index>(&z_B);
                         }
 
                         printf("[ INITIALIZATION INFO]\n"
-                               "01.The QR Error is %.5f.\n"
-                               "02.The determinant of LLL is %.5f.\n"
-                               "03.Init Residual by A is %.5f.\n"
-                               "04.Init Residual by R is %.5f.\n"
-                               "05.ber_babai by R is %.5f.\n"
-                               "06.ber_thre3 by R is %.5f.\n"
-                               "07.ber_serial by R is %.5f.\n"
-                               "08.Result SER Residual by A is %.5f.\n"
-                               "09.QR Result SER Residual by A is %.5f.\n"
-                               "10.QR Result BER Residual by A is %.5f.\n",
-                               qr_reT.num_iter, LLL_reT.num_iter, cils.init_res, R_res,
-                               ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr);
+                               "01.Init Residual by A is %.5f.\n"
+                               "02.Init Residual by R is %.5f.\n"
+                               "03.ber_babai by R is %.5f.\n"
+                               "04.ber_thre3 by R is %.5f.\n"
+                               "05.ber_serial by R is %.5f.\n"
+                               "06.Result SER Residual by A is %.5f.\n"
+                               "07.QR Result SER Residual by A is %.5f.\n"
+                               "08.QR Result BER Residual by A is %.5f.\n",
+                               cils.init_res, R_res, ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr);
                         cout.flush();
                     } while (ber_babai < ber_thre3 || ber_babai < ber_serial);
                     cils.cils_back_solve(cils.x_r);
-
-
                     ser_qrd += qr_reT.run_time;
 
                     for (index init = -1; init <= 1; init++) {
@@ -148,10 +175,10 @@ long plot_run() {
                         /*
                          * Babai Test
                          */
-                        init_guess<scalar, index, n>(init, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(init, &z_B, cils.x_r.data());
                         reT = cils.cils_babai_search_serial(&z_B);
-                        r = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                        b = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                        r = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                        b = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
                         t = reT.run_time;
                         res[init + 1][0][count] += r;
                         ber[init + 1][0][count] += b;
@@ -166,10 +193,10 @@ long plot_run() {
                         /*
                          * Serial Block Babai Test
                          */
-                        init_guess<scalar, index, n>(init, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(init, &z_B, cils.x_r.data());
                         reT = cils.cils_block_search_serial(init, &d_s, &z_B);
-                        r = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                        b = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                        r = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                        b = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
                         ser_time = reT.run_time;
                         res[init + 1][1][count] += r;
                         ber[init + 1][1][count] += b;
@@ -186,7 +213,7 @@ long plot_run() {
                         /*
                          * BLOCK CPU TEST:
                          */
-//                        cils::vector_reverse_permutation<scalar, index, n>(cils.Z, &z_B);
+//                        cils::vector_reverse_permutation<scalar, index, m,  n>(cils.Z, &z_B);
                         reT = cils.cils_block_search_serial_CPUTEST(&d_s, &z_B);
 
                         scalar block_ils_time = std::accumulate(reT.x.begin(), reT.x.begin() + d_s.size(), 0.0);
@@ -201,22 +228,31 @@ long plot_run() {
                         /*
                          * Parallel Block Babai Test
                          */
+                        LLL_qr[0][count] += (LLL_qr_reT.run_time / coeff);
                         l = 2;
+                        qr_l = 1;
                         scalar prev_t = INFINITY;
                         for (index n_proc = 2; n_proc <= max_proc; n_proc += min_proc) {
-#pragma omp parallel default(none) num_threads(n_proc)
-                            {}
+
                             t = r = b = iter = 0;
                             t2 = r2 = b2 = iter2 = INFINITY;
-
                             index _ll = 0;
+
+                            LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, n_proc);
+                            cils.cils_LLL_qr_reduction(1, verbose, 1);
+
+                            if (init == -1) {
+                                LLL_qr[qr_l][count] += (LLL_qr_reT_omp.run_time / coeff);
+                                lll_qr_spu[qr_l][count] += LLL_qr_reT.run_time / LLL_qr_reT_omp.run_time;
+                            }
+
                             while (true) {
-                                init_guess<scalar, index, n>(init, &z_B, cils.x_r.data());
+                                init_guess<scalar, index, m, n>(init, &z_B, cils.x_r.data());
                                 reT = cils.cils_block_search_omp(n_proc, num_trials, init, &d_s, &z_B);
                                 iter = reT.num_iter;
 
-                                r = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                                b = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                                r = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                                b = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
                                 t = reT.run_time;
 
                                 t2 = min(t, t2);
@@ -235,6 +271,7 @@ long plot_run() {
                                 }
                             }
 
+
                             res[init + 1][l][count] += r;
                             ber[init + 1][l][count] += b;
                             tim[init + 1][l][count] += t;
@@ -244,72 +281,22 @@ long plot_run() {
                             itr[init + 1][l][count] += iter;
                             spu[init + 1][l][count] += ser_time / t;
 
-
-                            printf("Method: ILS_OMP, N_PROC: %2d, AVG RES: %.5f, AVG BER: %.5f, "
-                                   "AVG TIME: %.5fs, RES: %.5f, BER: %.5f, SOLVE TIME: %.5fs, "
-                                   "NUM_ITER:%7.3f, SPEEDUP: %7.3f,\n",
+                            t_spu[init + 1][l][count] +=
+                                    (ser_time + LLL_qr_reT.run_time / coeff) / (t + LLL_qr_reT_omp.run_time / coeff);
+                            printf("Method: ILS_OMP, N_PROC: %2d, AVG RES: %8.5f, AVG BER: %8.5f, "
+                                   "AVG TIME: %8.5fs, RES: %8.5f, BER: %8.5f, SOLVE TIME: %8.5fs, "
+                                   "NUM_ITER:%7.3f, SPEEDUP: %7.3f, TOTAL SPU: %7.3f, ",
                                    n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i,
                                    tim[init + 1][l][count] / i, r, b, t,
-                                   iter, spu[init + 1][l][count] / i);
+                                   iter, spu[init + 1][l][count] / i, t_spu[init + 1][l][count] / i);
+                            printf("LLL_QR SER TIME: %8.5fs, LLL_QR OMP_TIME: %8.5fs, LLL_QR SPEEDUP: %7.3f.\n",
+                                   LLL_qr_reT.run_time, LLL_qr_reT_omp.run_time, lll_qr_spu[qr_l][count] / i);
 
-
+                            qr_l++;
                             l++;
                             prev_t = t;
                         }
                     }
-//                    if (!is_matlab && !is_qr) {
-//                        qr_l = 2;
-//                        for (index n_proc = min_proc; n_proc <= omp_get_max_threads(); n_proc += min_proc) {
-//                            printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
-//                            qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
-//                            cils.init_y();
-//
-//                            for (index ii = 0; ii < n; ii++) {
-//                                for (index j = 0; j < n; j++) {
-//                                    cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
-//                                }
-//                            }
-//                            //qr-block Testing
-//                            if (verbose) {
-//                                init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
-//                                cils.cils_block_search_serial(0, &d_s, &z_B);
-//                                ber_qr = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-//                                res_qr = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-//
-//                                cout << "SER:";
-//                                cils::display_vector<scalar, index>(&z_B);
-//                            }
-//                            //LLL reduction
-//                            if (!is_qr) {
-//                                LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
-//                            }
-//                            qrT[0][count] = qr_reT.run_time;
-//                            lll[0][count] = LLL_reT.run_time;
-//                            qrT[qr_l][count] = qr_reT_omp.run_time;
-//                            lll[qr_l][count] = LLL_reT_omp.run_time;
-//                            printf("[ TEST INFO]\n"
-//                                   "01.The QR Error is %.5f.\n"
-//                                   "02.The determinant of LLL is %.5f.\n",
-//                                   qr_reT_omp.num_iter, LLL_reT_omp.num_iter);
-//                            printf("[ QR_LLL Parallel TEST END]++++++++++++++++++++++++++++++++\n");
-//                            for (index init = -1; init <= 1; init++) {
-//                                scalar t_omp_time = qrT[qr_l][count] + lll[qr_l][count] + tim[init + 1][qr_l][count];
-//                                scalar t_ser_time =
-//                                        qrT[0][count] + lll[0][count] + tim[init + 1][1][count]; //[0]:Babai [1]: Block
-//                                t_spu[init + 1][qr_l][count] += t_ser_time / t_omp_time;
-//                                printf("Method: QR/LLL_OMP, N_PROC: %2d, "
-//                                       "SOVLER SPEEDUP: %8.3f, QR SER_TIME: %.5fs,"
-//                                       "QR OMP_TIME: %.5fs, QR SPEEDUP: %7.3f, LLL SER_TIME: %.5fs,"
-//                                       "LLL OMP_TIME: %.5fs, LLL SPEEDUP: %7.3f, TOTAL SPEEDUP: %8.3f\n",
-//                                       n_proc, spu[init + 1][qr_l][count] / i, qrT[0][count],
-//                                       qrT[qr_l][count], qrT[0][count] / qrT[qr_l][count], lll[0][count],
-//                                       lll[qr_l][count], lll[0][count] / lll[qr_l][count], t_ser_time / t_omp_time);
-//                            }
-//                            qr_l++;
-//                        }
-//                    }
-
-
                     run_time = omp_get_wtime() - run_time;
                     printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
                            "++++++++++++++++++++++++++++++++++++++\n", i, run_time);
@@ -318,10 +305,11 @@ long plot_run() {
                 printf("\n---------------------\nITER:%d\n---------------------\n", i);
                 if (i % plot_itr == 0) {//i % 50 == 0 &&
                     PyObject *pName, *pModule, *pFunc;
-                    PyObject *pArgs, *pValue, *pRes, *pBer, *pTim, *pItr, *pSer, *pD_s, *pPrc, *pSpu, *pAtm;
+
                     Py_Initialize();
                     if (_import_array() < 0)
                         PyErr_Print();
+                    npy_intp di2[2] = {200, 2};
                     npy_intp dim[3] = {3, 200, 2};
                     npy_intp di4[3] = {4, 200, 2};
                     npy_intp di5[4] = {7, 1000, 3, 2};
@@ -340,24 +328,41 @@ long plot_run() {
                     }
                     npy_intp dpc[1] = {ll};
 
-                    pRes = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, res);
-                    pBer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber);
-                    pTim = PyArray_SimpleNewFromData(3, di4, NPY_DOUBLE, tim);
-                    pItr = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, itr);
-                    pSer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, stm);
-                    pSpu = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, spu);
-                    pD_s = PyArray_SimpleNewFromData(1, dsd, NPY_DOUBLE, d_s_A);
-                    pPrc = PyArray_SimpleNewFromData(1, dpc, NPY_DOUBLE, proc_nums);
-                    pAtm = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, all_time);
-                    if (pRes == nullptr) printf("pRes has a problem.\n");
-                    if (pBer == nullptr) printf("pBer has a problem.\n");
-                    if (pTim == nullptr) printf("pTim has a problem.\n");
-                    if (pItr == nullptr) printf("pItr has a problem.\n");
-                    if (pSer == nullptr) printf("pSer has a problem.\n");
-                    if (pD_s == nullptr) printf("pD_s has a problem.\n");
-                    if (pPrc == nullptr) printf("pPrc has a problem.\n");
-                    if (pSpu == nullptr) printf("pSpu has a problem.\n");
-                    if (pAtm == nullptr) printf("pAtm has a problem.\n");
+                    PyObject *pRes = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, res);
+                    PyObject *pBer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber);
+                    PyObject *pTim = PyArray_SimpleNewFromData(3, di4, NPY_DOUBLE, tim);
+                    PyObject *pItr = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, itr);
+                    PyObject *pSer = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, stm);
+                    PyObject *pSpu = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, spu);
+                    PyObject *pD_s = PyArray_SimpleNewFromData(1, dsd, NPY_DOUBLE, d_s_A);
+                    PyObject *pPrc = PyArray_SimpleNewFromData(1, dpc, NPY_DOUBLE, proc_nums);
+                    PyObject *pAtm = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, all_time);
+
+                    PyObject *pQRT = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, qrT);
+                    PyObject *pLLL = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, lll);
+                    PyObject *plqr = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, LLL_qr);
+                    PyObject *p_qr = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, qr_spu);
+                    PyObject *pTsp = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, lll_spu);
+                    PyObject *plqs = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, lll_qr_spu);
+                    PyObject *pqls = PyArray_SimpleNewFromData(2, di2, NPY_DOUBLE, qlll_spu);
+                    PyObject *pTpu = PyArray_SimpleNewFromData(3, di4, NPY_DOUBLE, t_spu);
+                    if (pRes == nullptr) printf("[ ERROR] pRes has a problem.\n");
+                    if (pBer == nullptr) printf("[ ERROR] pBer has a problem.\n");
+                    if (pTim == nullptr) printf("[ ERROR] pTim has a problem.\n");
+                    if (pItr == nullptr) printf("[ ERROR] pItr has a problem.\n");
+                    if (pSer == nullptr) printf("[ ERROR] pSer has a problem.\n");
+                    if (pD_s == nullptr) printf("[ ERROR] pD_s has a problem.\n");
+                    if (pPrc == nullptr) printf("[ ERROR] pPrc has a problem.\n");
+                    if (pSpu == nullptr) printf("[ ERROR] pSpu has a problem.\n");
+                    if (pAtm == nullptr) printf("[ ERROR] pAtm has a problem.\n");
+                    if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
+                    if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
+                    if (plqr == nullptr) printf("[ ERROR] plqr has a problem.\n");
+                    if (p_qr == nullptr) printf("[ ERROR] p_qr has a problem.\n");
+                    if (pTsp == nullptr) printf("[ ERROR] pTsp has a problem.\n");
+                    if (plqs == nullptr) printf("[ ERROR] plqs has a problem.\n");
+                    if (pqls == nullptr) printf("[ ERROR] pqls has a problem.\n");
+                    if (pTpu == nullptr) printf("[ ERROR] pTpu has a problem.\n");
 
                     PyObject *sys_path = PySys_GetObject("path");
                     PyList_Append(sys_path,
@@ -369,7 +374,7 @@ long plot_run() {
                     if (pModule != nullptr) {
                         pFunc = PyObject_GetAttrString(pModule, "plot_runtime");
                         if (pFunc && PyCallable_Check(pFunc)) {
-                            pArgs = PyTuple_New(16);
+                            PyObject *pArgs = PyTuple_New(27);
                             if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                                 return false;
                             }
@@ -418,8 +423,41 @@ long plot_run() {
                             if (PyTuple_SetItem(pArgs, 15, pAtm) != 0) {
                                 return false;
                             }
+                            if (PyTuple_SetItem(pArgs, 16, Py_BuildValue("i", qr_l)) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 17, Py_BuildValue("i", max_proc)) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 18, Py_BuildValue("i", min_proc)) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 19, pQRT) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 20, pLLL) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 21, plqr) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 22, p_qr) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 23, pTsp) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 24, plqs) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 25, pqls) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 26, pTpu) != 0) {
+                                return false;
+                            }
 
-                            pValue = PyObject_CallObject(pFunc, pArgs);
+                            PyObject *pValue = PyObject_CallObject(pFunc, pArgs);
 
                         } else {
                             if (PyErr_Occurred())
@@ -441,9 +479,16 @@ long plot_run() {
     return 0;
 }
 
-template<typename scalar, typename index, index n>
+template<typename scalar, typename index, index m, index n>
 long plot_LLL() {
-
+    time_t t0 = time(nullptr);
+    struct tm *lt = localtime(&t0);
+    char time_str[20];
+    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+            lt->tm_hour, lt->tm_min, lt->tm_sec
+    );
+    printf("====================[ TEST | LLL | %s ]==================================\n", time_str);
     for (SNR = 35; SNR <= 35; SNR += 30) {
         scalar qr_spu[200] = {}, lll_spu[200] = {}, lll_qr_spu[200] = {}, qlll_spu[200] = {};
         scalar qrT[200] = {}, lll[200] = {}, LLL_qr[200] = {};
@@ -456,7 +501,7 @@ long plot_LLL() {
             printf("[ PLOT LLL]\n++++++++++++++++++++++++++++++++++++++\n");
             std::cout << "Init, size: " << n << std::endl;
             run_time = omp_get_wtime();
-            cils::cils<scalar, index, n> cils(k, SNR);
+            cils::cils<scalar, index, m, n> cils(k, SNR);
 
             scalar ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr;
             printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
@@ -467,7 +512,6 @@ long plot_LLL() {
             qr_reT_omp = cils.cils_qr_omp(1, verbose, 2);
 
             qr_reT = cils.cils_qr_serial(1, verbose);
-            cils.init_y();
 
             LLL_reT = cils.cils_LLL_reduction(1, verbose, 1);
             LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, 2);
@@ -500,11 +544,10 @@ long plot_LLL() {
                 printf("[ QR_LLL Parallel TEST: %d-thread]++++++++++++++++++++++++++++++++\n", n_proc);
                 cout.flush();
                 qr_reT_omp = cils.cils_qr_omp(1, verbose, n_proc);
-                cils.init_y();
 
                 //qr-block Testing
                 //LLL reduction
-                coder::eye(n, cils.Z);
+
                 LLL_qr_reT_omp = cils.cils_LLL_qr_reduction(1, verbose, n_proc);
 
                 LLL_reT_omp = cils.cils_LLL_reduction(1, verbose, n_proc);
@@ -653,10 +696,10 @@ long plot_LLL() {
     return 0;
 }
 
-template<typename scalar, typename index, index n>
+template<typename scalar, typename index, index m, index n>
 long test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
-    cils::cils<scalar, index, n> cils(k, SNR);
+    cils::cils<scalar, index, m, n> cils(k, SNR);
     index init = -1;
     scalar error = 0, b, r, ber;
     vector<scalar> z_B(n, 0);
@@ -664,7 +707,7 @@ long test_ils_search() {
 
     for (index i = 0; i < max_iter; i++) {
         cils.init();
-        cils::display_vector<scalar, index>(cils.x_t);
+        cils::display_vector<scalar, index, n>(cils.x_t);
         scalar res = 0;
         do {
 //                qr_reT = cils.cils_hqr_decomposition_serial(1, 1);
@@ -672,43 +715,43 @@ long test_ils_search() {
 //                qr_reT = cils.cils_LLL_reduction(0, 1);
 //                cils.init_R();
             cils.init_y();
-            cils::display_vector<scalar, index>(cils.x_t);
+            cils::display_vector<scalar, index, n>(cils.x_t);
 //                cils.init_R();
 
 
-//                cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_A, cils.x_t);
+//                cils.init_res = cils::find_residual<scalar, index, m,  n>(cils.A, cils.y_A, cils.x_t);
 //                cout << "INIT_RES:" << cils.init_res <<endl;
-            cils.init_res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, cils.x_t.data());
+            cils.init_res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, cils.x_t.data());
             cout << "INIT_RES:" << cils.init_res << endl;
 
             //Validating Result is solvable
-            init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+            init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
             cils.cils_babai_search_serial(&z_B);
-            b = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-            init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+            b = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
+            init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
             cils.cils_block_search_omp(3, num_trials, 0, &d_s, &z_B);
 //                cils::display_vector<scalar, index>(&z_B);
-//                cils::display_vector<scalar, index>(cils.x_t);
-            b = b - cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
-            r = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
+//                cils::display_vector<scalar, index, n>(cils.x_t);
+            b = b - cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
+            r = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
             cout << "The BER diff is " << b << " and the res is " << r << "\n";
         } while (b < 0);
         cils.cils_back_solve(cils.x_r);
 
         printf("init_res: %.5f, real_res: %.5f, sigma: %.5f, qr_error: %.1f\n", cils.init_res, res, cils.sigma, error);
 
-        init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+        init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
         reT = cils.cils_babai_search_serial(&z_B);
-        res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-        ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+        res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+        ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
         printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar bab_tim_constrained = reT.run_time;
 
-        init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+        init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
         reT = cils.cils_block_search_serial(init, &d_s, &z_B);
-        res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-        ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+        res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+        ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
         printf("\nMethod: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs, qr_time: %.5fs Total Time: %.5fs\n",
                block_size, res, ber, reT.run_time, qr_reT.run_time, qr_reT.run_time + reT.run_time);
         scalar ils_tim_constrained = reT.run_time;
@@ -716,10 +759,10 @@ long test_ils_search() {
 //        for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
 //#pragma omp parallel default(none) num_threads(n_proc)
 //            {}
-//            init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+//            init_guess<scalar, index, m,  n>(0, &z_B, cils.x_r.data());
 //            reT = cils.cils_babai_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, &z_B);
-//            res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-//            ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+//            res = cils::find_residual<scalar, index, m,  n>(cils.A, cils.y_a, z_B.data());
+//            ber = cils::find_bit_error_rate<scalar, index, m,  n>(&z_B, cils.x_t, k);
 //            printf("Method: BAB_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %f, "
 //                   "Solve Time: %.5fs, Solve SpeedUp: %.3f, "
 //                   "QR Error: %.5f, QR Time: %.5fs, QR SpeedUp: %.3f, "
@@ -734,11 +777,11 @@ long test_ils_search() {
             for (index n_proc = min_proc; n_proc <= max_proc; n_proc += min_proc) {
 #pragma omp parallel default(none) num_threads(n_proc)
                 {}
-                init_guess<scalar, index, n>(init, &z_B, z_B.data());
+                init_guess<scalar, index, m, n>(init, &z_B, z_B.data());
                 reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, num_trials, init, &d_s, &z_B);
 //                cils::display_vector_by_block<scalar, index>(&d_s, &z_B);
-                res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
                 printf("Method: ILS_OMP, n_proc: %d, Res: %.5f, BER: %.5f, Num_iter: %.1f, "
                        "Solve Time: %.5fs, Solve SpeedUp: %.3f, "
                        "QR Error: %.5f, QR Time: %.5fs, QR SpeedUp: %.3f, "
@@ -755,7 +798,7 @@ long test_ils_search() {
     return 0;
 }
 
-template<typename scalar, typename index, index n>
+template<typename scalar, typename index, index m, index n>
 void plot_res() {
     for (k = 1; k <= 3; k += 2)
         for (SNR = 15; SNR <= 35; SNR += 20) {
@@ -765,7 +808,7 @@ void plot_res() {
             std::cout << "Init, SNR: " << SNR << std::endl;
 
             //bool read_r, bool read_ra, bool read_xy
-            cils::cils<scalar, index, n> cils(k, SNR);
+            cils::cils<scalar, index, m, n> cils(k, SNR);
             cils.init();
             auto reT = cils.cils_qr_matlab();
             cils.init_R();
@@ -773,24 +816,24 @@ void plot_res() {
 
             vector<scalar> z_B(n, 0);
             reT = cils.cils_babai_search_serial(&z_B);
-            scalar res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-            scalar ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+            scalar res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+            scalar ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
             printf("Method: BAB_SER, Res: %.5f, BER: %.5f, Solve Time: %.5fs\n",
                    res, ber, reT.run_time);
 
 //            &z_B.assign(n, 0);
             reT = cils.cils_block_search_serial(0, &d_s, &z_B);
-            res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-            ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+            res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+            ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
             printf("Method: ILS_SER, Block size: %d, Res: %.5f, BER: %.5f, Solve Time: %.5fs\n",
                    block_size, res, ber, reT.run_time);
 
             for (index init = -1; init <= 1; init++) {
                 cout << "init," << init << "\n";
-                init_guess<scalar, index, n>(0, &z_B, cils.x_r.data());
+                init_guess<scalar, index, m, n>(0, &z_B, cils.x_r.data());
                 reT = cils.cils_block_search_serial(init, &d_s, &z_B);
-                res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
 
                 printf("Method: ILS_SER, Block size: %d, Res: %.5f, Ber: %.5f, Time: %.5fs\n",
                        block_size, res, ber, reT.run_time);
@@ -798,10 +841,10 @@ void plot_res() {
                     cout << d_s[d_s.size() - 1] << "," << n_proc << ",";
                     std::cout.flush();
                     for (index nswp = 1; nswp < max_iter; nswp++) {
-                        init_guess<scalar, index, n>(init, &z_B, cils.x_r.data());
+                        init_guess<scalar, index, m, n>(init, &z_B, cils.x_r.data());
                         reT = cils.cils_block_search_omp(n_proc > max_proc ? max_proc : n_proc, nswp, init, &d_s, &z_B);
-                        res = cils::find_residual<scalar, index, n>(cils.A, cils.y_a, z_B.data());
-                        ber = cils::find_bit_error_rate<scalar, index, n>(&z_B, cils.x_t, k);
+                        res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
+                        ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
                         printf("diff=%.1f, res=%.5f, ber=%.5f, ",
                                reT.num_iter > (N / block_size) ? (N / block_size) : reT.num_iter, res, ber);
                     }

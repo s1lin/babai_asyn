@@ -1,28 +1,26 @@
 #include <cstring>
 
-#include <Python.h>
-#include <numpy/arrayobject.h>
+#include "cils.cpp"
 
 namespace cils {
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_qr_serial(const index eval, const index verbose) {
+    cils<scalar, index, n>::cils_qr_serial(const index eval, const index verbose) {
         cout << "[ In Serial QR]\n";
 
-        index i, j, k;
+        index i, j, k, m;
         scalar error = -1, time, sum;
-
         //Deep Copy
-        array<scalar, m * n> A_t;
-
+//        scalar *A_t = new scalar[n * n];
+        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
-        for (i = 0; i < m; i++) {
+        for (i = 0; i < n; i++) {
             for (j = 0; j < n; j++) {
-                R_Q[i * n + j] = Q[i * n + j] = 0;
-                A_t[i * n + j] = A[i * n + j];
+                R_Q[i * n + j] = 0;
+                Q[i * n + j] = 0;
+//                A_t[i * n + j] = A[i * n + j];
             }
-            y_q[i] = y_r[i] = 0;
         }
 
         //start
@@ -50,16 +48,6 @@ namespace cils {
                 }
             }
         }
-        for (i = 0; i < n; i++) {
-            sum = 0;
-            for (j = 0; j < n; j++) {
-                sum += Q[i * n + j] * y_a[j]; //Q'*y;
-            }
-            y_q[i] = sum;
-            y_r[i] = y_q[i];
-        }
-
-
         //COLUMN:
 //        for (j = 0; j < n; j++) {
 //            for (k = 0; k <= j; k++) {
@@ -89,30 +77,29 @@ namespace cils {
         time = omp_get_wtime() - time;
 //        delete[] A_t;
         if (eval) {
-            error = qr_validation<scalar, index, m, n>(A, Q, R_Q, eval, verbose);
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
         }
-        cout << "[  QR ERROR SER:]" << error << endl;
         return {{}, time, error};
     }
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_qr_omp(const index eval, const index verbose, const index n_proc) {
+    cils<scalar, index, n>::cils_qr_omp(const index eval, const index verbose, const index n_proc) {
 #pragma omp parallel default(shared) num_threads(n_proc)
         {}
         cout << "[ In Parallel QR]\n";
         cout.flush();
-        scalar error = -1, time, sum = 0, sum_q = 0;
+        scalar error = -1, time, sum = 0;
         auto lock = new omp_lock_t[n]();
 //        scalar *A_t = new scalar[n * n];
-        array<scalar, n * n> A_t;
+        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                R_Q[i * n + j] = Q[i * n + j] = 0;
-                A_t[i * n + j] = A[i * n + j];
+                R_Q[i * n + j] = 0;
+                Q[i * n + j] = 0;
+//                A_t[i * n + j] = A[i * n + j];
             }
-            y_q[i] = y_r[i] = 0;
         }
 
         time = omp_get_wtime();
@@ -165,22 +152,11 @@ namespace cils {
                     }
                 }
             }
-
-            for (index i = 0; i < n; i++) {
-#pragma omp barrier
-                sum_q = 0;
-#pragma omp for schedule(static, 1) reduction(+ : sum_q)
-                for (index j = 0; j < n; j++) {
-                    sum_q += Q[i * n + j] * y_a[j]; //Q'*y;
-                }
-                y_q[i] = sum_q;
-                y_r[i] = y_q[i];
-            }
         }
         time = omp_get_wtime() - time;
 
         if (eval || verbose) {
-            error = qr_validation<scalar, index, m, n>(A, Q, R_Q, eval, verbose);
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
         }
         for (index i = 0; i < n; i++) {
             omp_destroy_lock(&lock[i]);
@@ -237,7 +213,7 @@ namespace cils {
 
         time = omp_get_wtime() - time;
         if (eval || verbose) {
-            error = qr_validation<scalar, index, m,  n>(A, Q, R_Q, eval, verbose);
+            error = qr_validation<scalar, index, n>(A, Q, R_Q, eval, verbose);
         }
 #pragma parallel omp cancellation point
 #pragma omp flush
@@ -248,12 +224,12 @@ namespace cils {
          */
     }
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_LLL_qr_reduction(const index eval, const index verbose, const index n_proc) {
+    cils<scalar, index, n>::cils_LLL_qr_reduction(const index eval, const index verbose, const index n_proc) {
         scalar time = 0, det = 0;
         returnType<scalar, index> reT, lll_val;
-        coder::eye<scalar, index, m, n>(n, Z);
+
         if (n_proc <= 1) {
             reT = cils_LLL_qr_serial();
             printf("[ INFO: SER LLL QR TIME: %8.5f, Givens: %.1f]\n",
@@ -265,7 +241,7 @@ namespace cils {
         }
 
         if (eval) {
-            lll_val = lll_validation<scalar, index, m, n>(R_R, R_Q, Z, verbose, matlabPtr);
+            lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
             if (lll_val.num_iter != 1) {
                 cerr << "0: LLL Failed, index:";
                 for (index i = 0; i < n; i++) {
@@ -281,7 +257,7 @@ namespace cils {
                         time = cils_LLL_qr_omp(n_proc);
                     //return {fail_index, det, (scalar) pass};
                     //lll_val.run_time ====> DET
-                    lll_val = lll_validation<scalar, index, m, n>(R_R, R_Q, Z, verbose, matlabPtr);
+                    lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
                     if (lll_val.num_iter == 1)
                         break;
                     else
@@ -297,13 +273,13 @@ namespace cils {
         return {{reT.num_iter, lll_val.num_iter}, time, lll_val.run_time};
     }
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_LLL_reduction(const index eval, const index verbose, const index n_proc) {
+    cils<scalar, index, n>::cils_LLL_reduction(const index eval, const index verbose, const index n_proc) {
         scalar time = 0, det = 0;
         returnType<scalar, index> reT, lll_val;
 
-        coder::eye<scalar, index, m, n>(n, Z);
+        coder::eye(n, Z);
 
         if (n_proc <= 1) {
             reT = cils_LLL_serial();
@@ -316,7 +292,7 @@ namespace cils {
         }
 
         if (eval) {
-            lll_val = lll_validation<scalar, index, m, n>(R_R, R_Q, Z, verbose);
+            lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
             if (lll_val.num_iter != 1) {
                 cerr << "0: LLL Failed, index:";
                 for (index i = 0; i < n; i++) {
@@ -332,7 +308,7 @@ namespace cils {
                         time = cils_LLL_omp(n_proc);
                     //return {fail_index, det, (scalar) pass};
                     //lll_val.run_time ====> DET
-                    lll_val = lll_validation<scalar, index, m, n>(R_R, R_Q, Z, verbose);
+                    lll_val = lll_validation<scalar, index, n>(R_R, R_Q, Z, verbose);
                     if (lll_val.num_iter == 1)
                         break;
                     else
@@ -350,9 +326,9 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_LLL_serial() {
+    cils<scalar, index, n>::cils_LLL_serial() {
         cout << "[ In cils_LLL_serial]" << endl;
         bool f = true, givens = false;
         scalar zeta, r_ii, alpha, s;
@@ -424,7 +400,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -531,7 +507,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -573,8 +549,8 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    scalar cils<scalar, index, m, n>::cils_LLL_omp(const index n_proc) {
+    template<typename scalar, typename index, index n>
+    scalar cils<scalar, index, n>::cils_LLL_omp(const index n_proc) {
         cout << "[ In cils_LLL_omp]\n";
         cout.flush();
 #pragma omp parallel default(shared) num_threads(n_proc)
@@ -657,7 +633,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_RA([i1,i],i1)] = planerot(R_RA([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_RA[(c_i + n * (c_i - 2)) - 2], R_RA[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        coder::planerot(low_tmp, G);
                         R_RA[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_RA[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -769,7 +745,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_RA([i1,i],i1)] = planerot(R_RA([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_RA[(c_i + n * (c_i - 2)) - 2], R_RA[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        coder::planerot(low_tmp, G);
                         R_RA[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_RA[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                         // 'eo_sils_reduction:72' R_RA([i1,i],i:n) = G * R_RA([i1,i],i:n);
@@ -811,8 +787,8 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    returnType <scalar, index> cils<scalar, index, m, n>::cils_LLL_qr_serial() {
+    template<typename scalar, typename index, index n>
+    returnType <scalar, index> cils<scalar, index, n>::cils_LLL_qr_serial() {
 
         cout << "[ In cils_LLL_qr_serial]\n";
         scalar zeta, r_ii, alpha, s;
@@ -820,15 +796,17 @@ namespace cils {
         index swap[n] = {}, givens = 0, c_i;
         index i1, ci2, c_tmp, tmp, i2, odd = static_cast<int>((n + -1.0) / 2.0);
         scalar error = -1, time, sum = 0;
-
-        array<scalar, n * n> A_t;
+//        scalar *A_t = new scalar[n * n];
+        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
+//        b_R.set_size(n, n);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
-                Q[i * n + j] = R_R[i * n + j] = 0;
-                A_t[i * n + j] = A[i * n + j];
+                Q[i * n + j] = 0;
+                R_R[i * n + j] = 0;
+//                R_Q[i * n + j] = 0;
+//                A_t[i * n + j] = A[i * n + j];
             }
-            y_q[i] = y_r[i] = 0;
         }
 
         time = omp_get_wtime();
@@ -846,21 +824,17 @@ namespace cils {
                 }
                 //Calculate the norm(A)
                 if (j == k) {
-                    s = sum = 0;
+                    sum = 0;
                     for (index i = 0; i < n; i++) {
                         sum += pow(A_t[k * n + i], 2);
                     }
                     R_R[k * n + k] = sqrt(sum);
                     for (index i = 0; i < n; i++) {
                         Q[k * n + i] = A_t[k * n + i] / R_R[k * n + k];
-                        s += Q[k * n + i] * y_a[i]; //Q'*y;
                     }
-                    y_q[k] = s;
-                    y_r[k] = y_q[k];
                 }
             }
-
-            if (k % 2 == 0 && k != 0) {
+            if (k % 2 == 0) {
                 c_i = k;
                 zeta = round(R_R[(c_i + n * (c_i - 1)) - 2] / R_R[(c_i + n * (c_i - 2)) - 2]);
                 s = R_R[(c_i + n * (c_i - 2)) - 2];
@@ -901,7 +875,7 @@ namespace cils {
 
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -998,7 +972,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1086,7 +1060,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -1136,15 +1110,15 @@ namespace cils {
         }
 
         time = omp_get_wtime() - time;
-        error = qr_validation<scalar, index, m, n>(A, Q, R_Q, 1, n <= 16);
+        error = qr_validation<scalar, index, n>(A, Q, R_Q, 1, n <= 16);
         printf("[ NEW METHOD, QR ERROR: %.5f]\n", error);
 //        delete[] A_t;
         return {{}, time, (scalar) givens};
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    scalar cils<scalar, index, m, n>::cils_LLL_qr_omp(const index n_proc) {
+    template<typename scalar, typename index, index n>
+    scalar cils<scalar, index, n>::cils_LLL_qr_omp(const index n_proc) {
 #pragma omp parallel default(shared) num_threads(n_proc)
         {}
 
@@ -1156,9 +1130,10 @@ namespace cils {
         index swap[n] = {}, counter = 0, c_i;
         index i1, ci2, c_tmp, tmp, i2, odd = static_cast<int>((n + -1.0) / 2.0);
         auto lock = new omp_lock_t[n]();
-        scalar error = -1, time, sum = 0, tmp_sum = 0, sum_q = 0;
+        scalar error = -1, time, sum = 0, tmp_sum = 0;
         scalar *b_R = new scalar[n * n];
-        array<scalar, n * n> A_t(A);
+//        scalar *A_t = new scalar[n * n];
+        coder::array<scalar, 2U> A_t(A);
         //Clear Variables:
 //        b_R.set_size(n, n);
         for (index i = 0; i < n; i++) {
@@ -1166,9 +1141,10 @@ namespace cils {
                 Q[i * n + j] = 0;
                 R_R[i * n + j] = 0;
                 b_R[i * n + j] = 0;
+//                R_Q[i * n + j] = 0;
+//                A_t[i * n + j] = A[i * n + j];
             }
             omp_set_lock(&lock[i]);
-            y_r[i] = y_q[i] = 0;
         }
 
         time = omp_get_wtime();
@@ -1218,7 +1194,7 @@ namespace cils {
                         }
 //Only one thread calculate
                         if (j == k) {
-                            sum_q = sum = 0;
+                            sum = 0;
                             for (index i = 0; i < n; i++) {
                                 sum += pow(A_t[k * n + i], 2);
                             }
@@ -1226,10 +1202,8 @@ namespace cils {
                             R_R[k * n + k] = sqrt(sum);
                             for (index i = 0; i < n; i++) {
                                 Q[k * n + i] = A_t[k * n + i] / R_R[k * n + k];
-                                sum_q += Q[k * n + i] * y_a[i]; //Q'*y;
+//                                Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
                             }
-                            y_q[k] = sum_q;
-                            y_r[k] = y_q[k];
                             omp_unset_lock(&lock[k]);
                         }
                     }
@@ -1288,54 +1262,54 @@ namespace cils {
 
 //#pragma omp single
 //                            {
-                            scalar G[4] = {};
-                            scalar low_tmp[2] = {R_R[(k + n * (k - 2)) - 2], R_R[(k + n * (k - 2)) - 1]};
-                            coder::planerot<scalar, index>(low_tmp, G);
-                            R_R[(k + n * (k - 2)) - 2] = low_tmp[0];
-                            R_R[(k + n * (k - 2)) - 1] = low_tmp[1];
+                                scalar G[4] = {};
+                                scalar low_tmp[2] = {R_R[(k + n * (k - 2)) - 2], R_R[(k + n * (k - 2)) - 1]};
+                                coder::planerot(low_tmp, G);
+                                R_R[(k + n * (k - 2)) - 2] = low_tmp[0];
+                                R_R[(k + n * (k - 2)) - 1] = low_tmp[1];
 
-                            // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
-                            if (k > n) {
-                                i1 = i2 = 0;
-                                c_tmp = 1;
-                            } else {
-                                i1 = k - 1;
-                                i2 = n;
-                                c_tmp = k;
-                            }
-                            ci2 = i2 - i1;
-                            scalar b[ci2 * 2] = {};
+                                // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
+                                if (k > n) {
+                                    i1 = i2 = 0;
+                                    c_tmp = 1;
+                                } else {
+                                    i1 = k - 1;
+                                    i2 = n;
+                                    c_tmp = k;
+                                }
+                                ci2 = i2 - i1;
+                                scalar b[ci2 * 2] = {};
 
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                b[2 * i2] = R_R[(k + n * tmp) - 2];
-                                b[2 * i2 + 1] = R_R[(k + n * tmp) - 1];
-                            }
+                                for (i2 = 0; i2 < ci2; i2++) {
+                                    tmp = i1 + i2;
+                                    b[2 * i2] = R_R[(k + n * tmp) - 2];
+                                    b[2 * i2 + 1] = R_R[(k + n * tmp) - 1];
+                                }
 
-                            for (i2 = 0; i2 < ci2; i2++) {
-                                tmp = i1 + i2;
-                                R_R[(k + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
-                                R_R[(k + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
-                            }
+                                for (i2 = 0; i2 < ci2; i2++) {
+                                    tmp = i1 + i2;
+                                    R_R[(k + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                                    R_R[(k + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+                                }
 
-                            //                            for (i2 = 0; i2 < ci2; i2++) {
-                            //                                tmp = i1 + i2;
-                            //                                b[2 * i2] = Q[(k + n * tmp) - 2];
-                            //                                b[2 * i2 + 1] = Q[(k + n * tmp) - 1];
-                            //                            }
-                            //
-                            //                            for (i2 = 0; i2 < ci2; i2++) {
-                            //                                tmp = i1 + i2;
-                            //                                Q[(k + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
-                            //                                Q[(k + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
-                            //                            }
+                                //                            for (i2 = 0; i2 < ci2; i2++) {
+                                //                                tmp = i1 + i2;
+                                //                                b[2 * i2] = Q[(k + n * tmp) - 2];
+                                //                                b[2 * i2 + 1] = Q[(k + n * tmp) - 1];
+                                //                            }
+                                //
+                                //                            for (i2 = 0; i2 < ci2; i2++) {
+                                //                                tmp = i1 + i2;
+                                //                                Q[(k + n * tmp) - 2] = G[0] * b[2 * i2] + G[2] * b[2 * i2 + 1];
+                                //                                Q[(k + n * tmp) - 1] = G[1] * b[2 * i2] + G[3] * b[2 * i2 + 1];
+                                //                            }
 
-                            // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
-                            low_tmp[0] = y_r[k - 2];
-                            low_tmp[1] = y_r[k - 1];
-                            y_r[k - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
-                            y_r[k - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
-                            // 'eo_sils_reduction:74' swap(i) = 0;
+                                // 'eo_sils_reduction:73' y_L([i1,i]) = G * y_L([i1,i]);
+                                low_tmp[0] = y_r[k - 2];
+                                low_tmp[1] = y_r[k - 1];
+                                y_r[k - 2] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                                y_r[k - 1] = low_tmp[0] * G[1] + low_tmp[1] * G[3];
+                                // 'eo_sils_reduction:74' swap(i) = 0;
 //                            swap[k - 1] = 1;
 //                            }
                         }
@@ -1412,7 +1386,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        coder::planerot(low_tmp, G);
                         R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                         // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1502,7 +1476,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        coder::planerot(low_tmp, G);
                         R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -1554,7 +1528,7 @@ namespace cils {
             }
         }
         time = omp_get_wtime() - time;
-        error = qr_validation<scalar, index, m, n>(A, Q, R_Q, 1, n <= 16);
+        error = qr_validation<scalar, index, n>(A, Q, R_Q, 1, n <= 16);
         printf("[ NEW OMP METHOD, QR ERROR: %.5f]\n", error);
         for (index i = 0; i < n; i++) {
             omp_destroy_lock(&lock[i]);
@@ -1566,84 +1540,95 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_qr_py(const index eval, const index qr_eval) {
+//    template<typename scalar, typename index, index n>
+//    returnType <scalar, index>
+//    cils<scalar, index, n>::cils_qr_py(const index eval, const index qr_eval) {
+//
+//        scalar error, time = omp_get_wtime();
+////        cils_qr_py_helper();
+//        time = omp_get_wtime() - time;
+//
+//        if (eval || qr_eval) {
+////            error = qr_validation<scalar, index, n>(A, Q, R_Q, R_A, eval, qr_eval);
+//        }
+//
+//        return {{}, time, (index) error};
+//    }
+//
+//    template<typename scalar, typename index, index n>
+//    long int cils<scalar, index, n>::cils_qr_py_helper() {
+//        PyObject *pName, *pModule, *pFunc;
+//        PyObject *pArgs, *pValue, *pVec;
+//        Py_Initialize();
+//        if (_import_array() < 0)
+//            PyErr_Print();
+//
+//        npy_intp dim[1] = {A.size(0)};
+//
+//        pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A.data());
+//        if (pVec == NULL) printf("There is a problem.\n");
+//
+//        PyObject *sys_path = PySys_GetObject("path");
+//        PyList_Append(sys_path,
+//                      PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//        pName = PyUnicode_FromString("py_qr");
+//        pModule = PyImport_Import(pName);
+//
+//        if (pModule != NULL) {
+//            pFunc = PyObject_GetAttrString(pModule, "qr");
+//            if (pFunc && PyCallable_Check(pFunc)) {
+//                pArgs = PyTuple_New(2);
+//                if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
+//                    return false;
+//                }
+//                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
+//                    return false;
+//                }
+//                pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
+//                if (pValue != NULL) {
+//                    PyArrayObject *q, *r;
+//                    PyArg_ParseTuple(pValue, "O|O", &q, &r);
+//                    Q = reinterpret_cast<scalar *>(PyArray_DATA(q));
+//                    R_R = reinterpret_cast<scalar *>(PyArray_DATA(r));
+//                } else {
+//                    PyErr_Print();
+//                }
+//            } else {
+//                if (PyErr_Occurred())
+//                    PyErr_Print();
+//                fprintf(stderr, "Cannot find function qr\n");
+//            }
+//        } else {
+//            PyErr_Print();
+//            fprintf(stderr, "Failed to load file\n");
+//        }
+//        return 0;
+//    }
 
-        scalar error, time = omp_get_wtime();
-//        cils_qr_py_helper();
-        time = omp_get_wtime() - time;
 
-        if (eval || qr_eval) {
-//            error = qr_validation<scalar, index, m,  n>(A, Q, R_Q, R_A, eval, qr_eval);
-        }
-
-        return {{}, time, (index) error};
-    }
-
-    template<typename scalar, typename index, index m, index n>
-    long int cils<scalar, index, m, n>::cils_qr_py_helper() {
-        PyObject *pName, *pModule, *pFunc;
-        PyObject *pArgs, *pValue, *pVec;
-        Py_Initialize();
-        if (_import_array() < 0)
-            PyErr_Print();
-
-        npy_intp dim[1] = {A.size(0)};
-
-        pVec = PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, A.data());
-        if (pVec == NULL) printf("There is a problem.\n");
-
-        PyObject *sys_path = PySys_GetObject("path");
-        PyList_Append(sys_path,
-                      PyUnicode_FromString("/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
-        pName = PyUnicode_FromString("py_qr");
-        pModule = PyImport_Import(pName);
-
-        if (pModule != NULL) {
-            pFunc = PyObject_GetAttrString(pModule, "qr");
-            if (pFunc && PyCallable_Check(pFunc)) {
-                pArgs = PyTuple_New(2);
-                if (PyTuple_SetItem(pArgs, 0, pVec) != 0) {
-                    return false;
-                }
-                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", n)) != 0) {
-                    return false;
-                }
-                pValue = PyObject_CallObject(pFunc, pArgs);//Perform QR no return value
-                if (pValue != NULL) {
-                    PyArrayObject *q, *r;
-                    PyArg_ParseTuple(pValue, "O|O", &q, &r);
-                    Q = reinterpret_cast<scalar *>(PyArray_DATA(q));
-                    R_R = reinterpret_cast<scalar *>(PyArray_DATA(r));
-                } else {
-                    PyErr_Print();
-                }
-            } else {
-                if (PyErr_Occurred())
-                    PyErr_Print();
-                fprintf(stderr, "Cannot find function qr\n");
-            }
-        } else {
-            PyErr_Print();
-            fprintf(stderr, "Failed to load file\n");
-        }
-        return 0;
-    }
-
-
-    template<typename scalar, typename index, index m, index n, index mb>
-    void value_input_helper(matlab::data::TypedArray<scalar> const x, array<scalar, n * mb> &arr) {
+    template<typename scalar, typename index, index n>
+    void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 1U> &arr) {
         index i = 0;
+        arr.set_size(n);
         for (auto r : x) {
             arr[i] = r;
             ++i;
         }
     }
 
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
+    void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 2U> &arr) {
+        index i = 0;
+        arr.set_size(n, n);
+        for (auto r : x) {
+            arr[i] = r;
+            ++i;
+        }
+    }
+
+    template<typename scalar, typename index, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_qr_matlab() {
+    cils<scalar, index, n>::cils_qr_matlab() {
 
         scalar time = omp_get_wtime();
         scalar true_res = cils_qr_matlab_helper();
@@ -1652,8 +1637,8 @@ namespace cils {
         return {{}, time, true_res};
     }
 
-    template<typename scalar, typename index, index m, index n>
-    scalar cils<scalar, index, m, n>::cils_qr_matlab_helper() {
+    template<typename scalar, typename index, index n>
+    scalar cils<scalar, index, n>::cils_qr_matlab_helper() {
 
         // Start MATLAB engine synchronously
         using namespace matlab::engine;
@@ -1665,7 +1650,7 @@ namespace cils {
         matlab::data::ArrayFactory factory;
 
         // Create variables
-        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(this->qam);
+        matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(program_def::k);
         matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
         matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(n);
         matlab::data::TypedArray<scalar> qr_M = factory.createScalar<scalar>(program_def::is_qr);
@@ -1675,7 +1660,7 @@ namespace cils {
         matlabPtr->setVariable(u"qr", std::move(qr_M));
 
         // Call the MATLAB movsum function
-        matlabPtr->eval(u" [A, R_R, Z, y, y_LLL, x_t, init_res, info] = sils_driver(k, n, SNR, qr);");
+        matlabPtr->eval(u" [A, R_R, Z, y, y_LLL, x_t, init_res, info] = sils_driver_mex(k, n, SNR, qr);");
 
         // Get the result
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
@@ -1688,14 +1673,14 @@ namespace cils {
         matlab::data::TypedArray<scalar> const b_n = matlabPtr->getVariable(u"info");
         matlab::data::ArrayDimensions dim = A_A.getDimensions();
 
-        value_input_helper<scalar, index, m, m, n>(A_A, A);
-//        value_input_helper<scalar, index, m,  n>(R_N, R_Q);
-//        value_input_helper<scalar, index, m,  n>(R_N, R_R);
-//        value_input_helper<scalar, index, m,  n>(Z_N, Z);
-        value_input_helper<scalar, index, m, n, 1>(y_N, y_a);//Original
-//        value_input_helper<scalar, index, m,  n>(y_R, y_r);//Reduced
-//        value_input_helper<scalar, index, m,  n>(y_R, y_q);//Reduced
-        value_input_helper<scalar, index, m, n, 1>(x_T, x_t);
+        value_input_helper<scalar, index, n>(A_A, A);
+        value_input_helper<scalar, index, n>(R_N, R_Q);
+        value_input_helper<scalar, index, n>(R_N, R_R);
+        value_input_helper<scalar, index, n>(Z_N, Z);
+        value_input_helper<scalar, index, n>(y_N, y_a);//Original
+        value_input_helper<scalar, index, n>(y_R, y_r);//Reduced
+        value_input_helper<scalar, index, n>(y_R, y_q);//Reduced
+        value_input_helper<scalar, index, n>(x_T, x_t);
 
         for (auto r : res) {
             init_res = r;
@@ -1717,8 +1702,8 @@ namespace cils {
 
 /*
  * Backup
- *  template<typename scalar, typename index, index m, index n>
-    scalar cils<scalar, index, m,  n>::cils_LLL_serial() {
+ *  template<typename scalar, typename index, index n>
+    scalar cils<scalar, index, n>::cils_LLL_serial() {
         bool f = true;
         coder::array<scalar, 1U> r, vi, vr;
         coder::array<double, 2U> b, b_R, r1;
@@ -1830,7 +1815,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     low_tmp[0] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2];
                     low_tmp[1] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1];
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2] = low_tmp[0];
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1956,7 +1941,7 @@ namespace cils {
                     // 'eo_sils_reduction:100' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     low_tmp[0] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2];
                     low_tmp[1] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1];
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    coder::planerot(low_tmp, G);
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2] = low_tmp[0];
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:101' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "../include/cils.h"
 
 using namespace std;
@@ -16,10 +18,10 @@ namespace cils {
      * @param eval
      * @return
      */
-    template<typename scalar, typename index, index m, index n>
-    scalar qr_validation(const array<scalar, m * n> &A,
-                         const array<scalar, m * n> &Q,
-                         const array<scalar, m * n> &R,
+    template<typename scalar, typename index, index n>
+    scalar qr_validation(const coder::array<scalar, 2U> &A,
+                         const coder::array<scalar, 2U> &Q,
+                         const coder::array<scalar, 2U> &R,
                          const index eval, const index verbose) {
         index i, j, k;
         scalar sum, error = 0;
@@ -35,9 +37,8 @@ namespace cils {
                 }
             }
 
-            array<scalar, m * n> A_T;
-            A_T.fill(0);
-            coder::internal::blas::mtimes<scalar, index, n, n, n>(Q, R, A_T);
+            coder::array<scalar, 2U> A_T;
+            coder::internal::blas::mtimes(Q, R, A_T);
 
             if (verbose) {
                 printf("\nQ*R (Init A matrix) : \n");
@@ -80,10 +81,12 @@ namespace cils {
      * @param eval
      * @return
      */
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     returnType<scalar, index>
-    lll_validation(const array<scalar, m * n> &R_R, const array<scalar, m * n> &R_Q, const array<scalar, m * n> &Z,
-                   const index verbose, std::unique_ptr<matlab::engine::MATLABEngine> &matlabPtr) {
+    lll_validation(const coder::array<scalar, 2U> &R_R,
+                   const coder::array<scalar, 2U> &R_Q,
+                   const coder::array<scalar, 2U> &Z,
+                   const index verbose) {
         printf("[ INFO: in LLL validation]\n");
         scalar sum, error = 0, det;
 
@@ -103,36 +106,26 @@ namespace cils {
                 printf("\n");
             }
         }
+        coder::array<double, 2U> R_Z, Q_C;
 
-
-        //Create MATLAB data array factory
-        matlab::data::ArrayFactory factory;
-
-        // Call the MATLAB movsum function
-        matlab::data::TypedArray<double> R_M = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, R_Q.begin(), R_Q.end());
-        matlab::data::TypedArray<double> Z_M = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, Z.begin(), Z.end());
-        matlab::data::TypedArray<double> RCM = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, R_R.begin(), R_R.end());
-        matlabPtr->setVariable(u"R_M", std::move(R_M));
-        matlabPtr->setVariable(u"Z_C", std::move(Z_M));
-        matlabPtr->setVariable(u"R_C", std::move(RCM));
-
-        // Call the MATLAB movsum function
-        matlabPtr->eval(u" d = det(mldivide(R_M * Z_C, R_C));");
-//        matlabPtr->eval(u" A = magic(n);");
-
-        matlab::data::TypedArray<double> const d = matlabPtr->getVariable(u"d");
-        int i = 0;
-        for (auto r : d) {
-            det = r;
-            ++i;
+        R_Z.set_size(n, n);
+        Q_C.set_size(n, n);
+        for (index i = 0; i < n; i++) {
+            for (index j = 0; j < n; j++) {
+                R_Z[i * n + j] = 0;
+                Q_C[i * n + j] = 0;
+            }
         }
+        // 'eo_sils_reduction:109' Q1 = R_*Z_C/R_C;
+        coder::internal::blas::mtimes(R_Q, Z, R_Z);
+        coder::internal::mrdiv(R_Z, R_R);
+        //  Q1
+        // 'eo_sils_reduction:111' d = det(Q1*Q1');
+        coder::internal::blas::b_mtimes(R_Z, R_Z, Q_C);
+        det = coder::det(Q_C);
 
-        index pass = true;
+        index i = 1, pass = true;
         vector<scalar> fail_index(n, 0);
-        i = 2;
         while (i < n) {
 
             // 'eo_sils_reduction:50' i1 = i-1;
@@ -158,9 +151,13 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init() {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init() {
+//         Start MATLAB engine synchronously
+        using namespace matlab::engine;
 
+        // Start MATLAB engine synchronously
+        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
 
         //Create MATLAB data array factory
         matlab::data::ArrayFactory factory;
@@ -182,16 +179,19 @@ namespace cils {
         matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
 
         index i = 0;
+        A.set_size(n, n);
         for (auto r : A_A) {
             A[i] = r;
             ++i;
         }
         i = 0;
+        y_a.set_size(n);
         for (auto r : y_M) {
             y_a[i] = r;
             ++i;
         }
         i = 0;
+        x_t.set_size(n);
         for (auto r : x_M) {
             x_t[i] = r;
             ++i;
@@ -237,8 +237,8 @@ namespace cils {
 //        coder::eye(n, Z);
     }
 
-    template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init_y() {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init_y() {
 
         for (index i = 0; i < n; i++) {
             scalar sum = 0;
@@ -251,8 +251,8 @@ namespace cils {
     }
 
 
-    template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init_R() {
+    template<typename scalar, typename index, index n>
+    void cils<scalar, index, n>::init_R() {
         if (!is_matlab) {
             if (is_qr) {
                 for (index i = 0; i < n; i++) {
@@ -291,16 +291,17 @@ namespace cils {
         }
     }
 
-    template<typename scalar, typename index, index m, index n>
-    inline void vector_permutation(const array<scalar, m * n> &Z, vector<scalar> *x) {
-        array<scalar, n> x_c, x_z;
-        x_c.fill(0);
-        x_z.fill(0);
+    template<typename scalar, typename index, index n>
+    inline void vector_permutation(const coder::array<scalar, 2U> &Z,
+                                   vector<scalar> *x) {
+        coder::array<scalar, 1U> x_c, x_z;
+        x_z.set_size(n);
+
         for (index i = 0; i < n; i++) {
             x_z[i] = x->at(i);
         }
 
-        coder::internal::blas::mtimes<scalar, index, m, n, 1>(Z, x_z, x_c);
+        coder::internal::blas::mtimes(Z, x_z, x_c);
 
         for (index i = 0; i < n; i++) {
             x->at(i) = x_c[i];

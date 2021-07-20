@@ -6,10 +6,10 @@
 #include <cmath>
 #include <iostream>
 #include <climits>
+#include "coder_array.h"
 
 
-const static int M = 256;
-const static int N = 256;
+const static int N = 512;
 
 using namespace std;
 
@@ -31,7 +31,7 @@ namespace cils {
         index stop = 1;
         index schedule = 2;
         index chunk_size = 1;
-        index block_size = 32;
+        index block_size = 64;
         index spilt_size = 2;
         index is_constrained = true;
         index is_nc = false;
@@ -40,12 +40,12 @@ namespace cils {
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 100000;//INT_MAX;
-        index min_proc = 2;
+        index max_search = 5000000;//INT_MAX;
+        index min_proc = 3;
         index plot_itr = 1;
-        scalar coeff = 17.5;
-        index max_proc = min(omp_get_max_threads(), N / block_size);
-        index max_thre = 100000;//maximum search allowed for serial ils.
+
+        index max_proc = 20;//min(omp_get_max_threads(), N / block_size);
+        index max_thre = 5000000;//maximum search allowed for serial ils.
 
 
         /*   Parameters for block size 64
@@ -80,16 +80,11 @@ namespace cils {
             if (argc != 1) {
                 is_local = stoi(argv[1]);
             }
-//            max_proc = is_local ? 17 : 30;
-            printf("[ INFO: The program settings are:]\n"
-                   "1. QAM: %d, SNR: %d, epoch: %d, block size: %d;\n"
-                   "2. ILS-Max number of interger search points: %d;\n"
-                   "3. Chaotic stop minimum: %d, chatoic number of iteratios(nswp): %d;\n"
-                   "4. ILS-Max of integer search iterations:%d;\n"
-                   "5. qr: %d, constrained: %d, matlab for qr/LLL: %d.\n",
-                   (int) pow(k, 4), SNR, max_iter, block_size,
-                   search_iter, stop, num_trials, max_search,
-                   is_local, is_constrained, is_matlab);
+            max_proc = is_local ? 17 : 30;
+            printf("[ INFO: The program settings are: "
+                   "k=%d, SNR=%d, max_iter=%d, search_iter=%d, stop=%d, block_size=%d, "
+                   "nswp=%d, max_search=%d, is_local=%d\n",
+                   k, SNR, max_iter, search_iter, stop, block_size, num_trials, max_search, is_local);
 
             for (int i = 0; i < spilt_size; i++) {
                 d_s[i] = block_size / spilt_size;
@@ -101,7 +96,6 @@ namespace cils {
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }
-            cout << "6. Block Construction: ";
             for (index d_ : d_s) {
                 cout << d_ << ", ";
             }
@@ -109,7 +103,7 @@ namespace cils {
         }
 
 
-        template<typename scalar, typename index, index m ,index n>
+        template<typename scalar, typename index, index n>
         void init_guess(index init_value, vector<scalar> *z_B, scalar *x_R) {
             if (init_value == 0) {
                 for (index i = 0; i < n; i++)

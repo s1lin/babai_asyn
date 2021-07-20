@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
-project(cils_solver)
+cmake_minimum_required(VERSION 3.8.2)
+project(cils_reduction)
 
 # detect C++ compiler - the C compiler must be the same type too
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -85,7 +85,6 @@ elseif (CXX_COMPILER_CRAY)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -hlist=a -hreport=fisv")
 endif ()
 
-find_package(Python3 COMPONENTS Interpreter NumPy)
 find_package(OpenMP REQUIRED)
 find_package(Matlab REQUIRED)
 set(CMAKE_CXX_STANDARD 14)
@@ -95,37 +94,21 @@ include_directories(${Python3_NumPy_INCLUDE_DIR})
 #include_directories(/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/)
 include_directories(${Matlab_INCLUDE_DIRS})
 
-find_library(reduction_lib reduction REQUIRED)
-add_executable(cils main.cpp src/include/config.h src/include/coder_utils.h)
-target_link_libraries(cils ${reduction_lib})
-message("-- reduction ${reduction_lib}")
+add_library(reduction SHARED src/source/cils_reduction.cpp src/include/cils.h src/include/rtwtypes.h src/include/rt_nonfinite.h src/include/config.h src/include/coder_utils.h)
 
-if (Python3_NumPy_FOUND)
-    message("-- Python3_NumPy_FOUND ${Python3_NumPy_INCLUDE_DIR}")
-endif ()
-
-if (Python3_FOUND)
-    message("-- Python3_FOUND ${Python3_LIBRARIES}")
-    message("-- Python3_Interpreter_FOUND ${Python3_Interpreter_FOUND}")
-    message("-- Python3_EXECUTABLE ${Python3_EXECUTABLE}")
-    message("-- Python3_SITELIB ${Python3_SITELIB}")
-    message("-- Python3_INCLUDE_DIRS ${Python3_INCLUDE_DIRS}")
-    target_link_libraries(cils ${Python3_LIBRARIES})
-
-endif ()
+install(TARGETS reduction LIBRARY DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reduction PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reduction)
 
 if (Matlab_FOUND)
 
     message(STATUS "Linking UNIX C++")
-    target_link_libraries(cils ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabEngine.so)
-    target_link_libraries(cils ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabDataArray.so)
+    target_link_libraries(reduction ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabEngine.so)
+    target_link_libraries(reduction ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabDataArray.so)
 
-    #    find_package(Threads)
-    #    target_link_libraries(cils ${CMAKE_THREAD_LIBS_INIT})
-    #    target_link_libraries(cils ${Matlab_LIBRARIES})
+#    find_package(Threads)
+#    target_link_libraries(cils ${CMAKE_THREAD_LIBS_INIT})
+#    target_link_libraries(cils ${Matlab_LIBRARIES})
     message("-- Matlab_FOUND ${PROJECT_NAME} ${Matlab_LIBRARIES}")
 endif ()
 
 
-#message("-- reduction PRIVATE ${reduction_lib}")
 #cd ~/babai_asyn/babai_asyn_c++/ && cd build  && git pull && cmake .. -D Python3_NumPy_INCLUDE_DIR=/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/scipy-stack/2020b/lib/python3.8/site-packages/numpy/core/include/ && make -j 4 && cp cils ~/scratch/cils && cd ~/scratch/ && sbatch job_script_LLL.sh

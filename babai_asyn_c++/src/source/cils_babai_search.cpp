@@ -18,9 +18,9 @@
 
 namespace cils {
 
-    template<typename scalar, typename index, index n>
+    template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_babai_search_omp(const index n_proc, const index nswp, vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_babai_search_omp(const index n_proc, const index nswp, vector<scalar> *z_B) {
 
         index num_iter = 0, end = 1, x_min = 0, ni, nj, diff = 0, z_p[n] = {}, result[n] = {};
         bool flag = false, check = false;
@@ -74,15 +74,15 @@ namespace cils {
 #pragma omp flush
         //Matlab Partial Reduction needs to do the permutation
 //        if (is_matlab)
-//        vector_permutation<scalar, index, n>(Z, z_B);
+//        vector_permutation<scalar, index, m,  n>(Z, z_B);
         cout << end << "," << diff << "," << (index) run_time2 / run_time << ",";
         returnType<scalar, index> reT = {{}, run_time, num_iter};
         return reT;
     }
 
-    template<typename scalar, typename index, index n>
+    template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_babai_search_serial(vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_babai_search_serial(vector<scalar> *z_B) {
         scalar sum = 0;
         scalar start = omp_get_wtime();
 
@@ -102,14 +102,14 @@ namespace cils {
         scalar run_time = omp_get_wtime() - start;
         //Matlab Partial Reduction needs to do the permutation
 //        if (is_matlab)
-        vector_permutation<scalar, index, n>(Z, z_B);
+        vector_permutation<scalar, index, m, n>(Z, z_B);
         returnType<scalar, index> reT = {{}, run_time, 0};
         return reT;
     }
 
-    template<typename scalar, typename index, index n>
+    template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_back_solve(coder::array<scalar, 1U> &z_B) {
+    cils<scalar, index, m, n>::cils_back_solve(array<scalar, n> &z_B) {
         scalar sum = 0;
 
         scalar start = omp_get_wtime();
@@ -133,10 +133,10 @@ namespace cils {
         return reT;
     }
 
-    template<typename scalar, typename index, index n>
+    template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, n>::cils_back_solve_omp(const index n_proc, const index nswp,
-                                                vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_back_solve_omp(const index n_proc, const index nswp,
+                                                   vector<scalar> *z_B) {
 
         index s = n_proc, x_min = 0, ni, nj, diff;
         bool flag = false, check = false;
@@ -179,7 +179,7 @@ namespace cils {
         scalar run_time = omp_get_wtime() - start;
 #pragma parallel omp cancellation point
 #pragma omp flush
-        vector_permutation<scalar, index, n>(Z, z_B);
+        vector_permutation<scalar, index, m, n>(Z, z_B);
         returnType<scalar, index> reT = {{}, run_time, num_iter};
         return reT;
     }

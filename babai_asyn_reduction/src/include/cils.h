@@ -37,6 +37,7 @@
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
+#include "coder_array.h"
 #include "coder_utils.h"
 
 using namespace std;
@@ -68,9 +69,9 @@ namespace cils {
      * @param x
      * @return residual
      */
-    template<typename scalar, typename index, index m, index n>
-    inline scalar find_residual(const array<scalar, m * n> &A,
-                                const array<scalar, n> &y,
+    template<typename scalar, typename index, index n>
+    inline scalar find_residual(const coder::array<scalar, 2U> &A,
+                                const coder::array<scalar, 1U> &y,
                                 scalar *x) {
         scalar res = 0, sum = 0;
         for (index i = 0; i < n; i++) {
@@ -83,10 +84,10 @@ namespace cils {
         return std::sqrt(res);
     }
 
-//    template<typename scalar, typename index, index m, index n>
-//    inline vector<scalar> find_residual_by_block(const vector<scalar>A,
-//                                                 const vector<scalar> y,
-//                                                 const vector<index> *d, vector<scalar> x) {
+//    template<typename scalar, typename index, index n>
+//    inline vector<scalar> find_residual_by_block(const coder::array<scalar, 2U> A,
+//                                                 const coder::array<scalar, 1U> y,
+//                                                 const vector<index> *d, coder::array<scalar, 1U> x) {
 //        index ds = d->size();
 //        vector<scalar> y_b(n, 0), res(ds, 0);
 //        for (index i = 0; i < ds; i++) {
@@ -114,7 +115,7 @@ namespace cils {
 //        return res;
 //    }
 
-//    template<typename scalar, typename index, index m, index n>
+//    template<typename scalar, typename index, index n>
 //    inline vector<scalar> find_bit_error_rate_by_block(const vector<scalar> *x_b, const vector<scalar> *x_t,
 //                                                       const vector<index> *d, const index k) {
 //        index ds = d->size();
@@ -155,9 +156,9 @@ namespace cils {
 
 
 
-//    template<typename scalar, typename index, index m, index n>
-//    inline void vector_reverse_permutation(const vector<scalar>Z,
-//                                           vector<scalar> x) {
+//    template<typename scalar, typename index, index n>
+//    inline void vector_reverse_permutation(const coder::array<scalar, 2U> Z,
+//                                           coder::array<scalar, 1U> x) {
 //        vector<scalar> x_P(n, 0);
 //        for (index i = 0; i < n; i++) {
 //            scalar sum = 0;
@@ -186,9 +187,9 @@ namespace cils {
      * @param is_binary
      * @return
      */
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     inline scalar find_bit_error_rate(const vector<scalar> *x_b,
-                                      const array<scalar, n> &x_t,
+                                      const coder::array<scalar, 1U> &x_t,
                                       const index k) {
         index error = 0;
         for (index i = 0; i < n; i++) {
@@ -224,7 +225,7 @@ namespace cils {
      * @param x
      */
     template<typename scalar, typename index>
-    void display_2D(const vector<scalar> &x) {
+    void display_2D(const coder::array<scalar, 2U> &x) {
         index n = x.size(0);
         for (index i = 0; i < n; i++) {
             for (index j = 0; j < n; j++) {
@@ -240,10 +241,10 @@ namespace cils {
      * @tparam index
      * @param x
      */
-    template<typename scalar, typename index, index n>
-    inline void display_vector(const array<scalar, n> &x) {
+    template<typename scalar, typename index>
+    inline void display_vector(const coder::array<scalar, 1U> &x) {
         scalar sum = 0;
-        for (index i = 0; i < x.size(); i++) {
+        for (index i = 0; i < x.size(0); i++) {
             printf("%8.5f ", x[i]);
             sum += x[i];
         }
@@ -275,7 +276,7 @@ namespace cils {
      * @return
      */
     template<typename scalar, typename index>
-    inline scalar find_success_prob_babai(const vector<scalar> &R_B,
+    inline scalar find_success_prob_babai(const coder::array<scalar, 2U> &R_B,
                                           const index row_begin, const index row_end,
                                           const index block_size, const scalar sigma) {
         scalar p = 1;
@@ -287,10 +288,10 @@ namespace cils {
     }
 
 //    template<typename scalar>
-//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> &arr);
+//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 1U> &arr);
 //
 //    template<typename scalar>
-//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar>&arr);
+//    static void value_input_helper(matlab::data::TypedArray<scalar> const x, coder::array<scalar, 2U> &arr);
 //
 //    template<typename scalar>
 //    static void value_input_helper(matlab::data::TypedArray<scalar> const x, vector<scalar> *arr);
@@ -299,53 +300,113 @@ namespace cils {
      * 
      * @tparam scalar 
      * @tparam index 
-     * @tparam m
-     * @tparam n
+     * @tparam n 
      */
-    template<typename scalar, typename index, index m, index n>
+    template<typename scalar, typename index, index n>
     class cils {
 
     public:
         index qam, snr, upper, lower;
-        scalar init_res, sigma;
-        array<scalar, m * (n + 1) / 2> R_A;
+        scalar init_res, sigma, *R_A;
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
-        array<scalar, m * n> R_R, R_Q, A, Q, Z;
+        coder::array<double, 2U> R_R, R_Q, A, Q, Z;
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR 
-        array<scalar, n> x_r, x_t, y_a, y_r, y_q, v_a, v_q;
+        coder::array<double, 1U> x_r, x_t, y_a, y_r, y_q, v_a, v_q;
 
-        std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
+    private:
+
+        /**
+         * ils_search_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular integer least squares problem
+         * min_{z}||y-Rz|| by a depth-first search algorithm.
+         * @param n_dx_q_0
+         * @param n_dx_q_1
+         * @param y_B
+         * @param z_x
+         * @param is_constrained
+         * @return
+         */
+        inline scalar ils_search_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                     const scalar *y_B, scalar *z_x);
+
+
+        /**
+         * ils_search(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular integer least squares problem
+         * min_{z}||y-Rz|| by a depth-first search algorithm.
+         * @param R_B
+         * @param y_B
+         * @param x
+         * @param is_constrained
+         * @return
+         */
+        inline scalar ils_search(const index n_dx_q_0, const index n_dx_q_1,
+                                 const vector<scalar> *y_B, vector<scalar> *z_x);
+
+
+        /**
+         * ils_search_obils(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular box-constrained integer least squares problem
+         * min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
+         * @param n_dx_q_0
+         * @param n_dx_q_1
+         * @param y_B
+         * @param z_x
+         * @return
+         */
+        inline scalar ils_search_obils(const index n_dx_q_0, const index n_dx_q_1,
+                                       const vector<scalar> *y_B, vector<scalar> *z_x);
+
+
+        /**
+         * ils_search_obils_omp(n_dx_q_0, n_dx_q_1, y_B, z_x) produces the optimal solution to
+         * the upper triangular box-constrained integer least squares problem
+         * min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
+         * @deprecated
+         * @param n_dx_q_0
+         * @param n_dx_q_1
+         * @param i
+         * @param ds
+         * @param y_B
+         * @param z_x
+         * @return
+         */
+        inline bool ils_search_obils_omp(const index n_dx_q_0, const index n_dx_q_1,
+                                         const index i, const index ds, scalar *y_B, scalar *z_x);
+
+
     public:
         cils(index qam, index snr) {
+            //R_A: no zeros, R_R: LLL reduced, R_Q: QR
+//            coder::array<scalar, 2U> R_A, R_R, R_Q, A, Q, Z;
+            //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR
+//            coder::array<scalar, 1U> x_r, x_t, y_a, y_r, y_q, v_a;
 
-            // Start MATLAB engine synchronously
-            this->matlabPtr = matlab::engine::startMATLAB();
             this->init_res = INFINITY;
             this->qam = qam;
             this->snr = snr;
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->upper = pow(2, qam) - 1;
 
-            this->R_A.fill(0);// = new scalar[n * (n + 1) / 2];
+            this->R_A = new scalar[n * (n + 1) / 2];
 
-            this->R_R.fill(0);//.resize(n * n, 0);
-            this->R_Q.fill(0);//.resize(n * n, 0);
-            this->A  .fill(0);//.resize(n * n, 0);
-            this->Q  .fill(0);//.resize(n * n, 0);
-            this->Z  .fill(0);//.resize(n * n, 0);
+            this->R_R.set_size(n, n);
+            this->R_Q.set_size(n, n);
+            this->A.set_size(n, n);
+            this->Q.set_size(n, n);
+            this->Z.set_size(n, n);
 
-            this->x_r.fill(0);//.resize(n, 0);
-            this->x_t.fill(0);//.resize(n, 0);
-            this->y_a.fill(0);//.resize(n, 0);
-            this->y_r.fill(0);//.resize(n, 0);
-            this->y_q.fill(0);//.resize(n, 0);
-            this->v_a.fill(0);//.resize(n, 0);
-            this->v_q.fill(0);//.resize(n, 0);
+            this->x_r.set_size(n);
+            this->x_t.set_size(n);
+            this->y_a.set_size(n);
+            this->y_r.set_size(n);
+            this->y_q.set_size(n);
+            this->v_a.set_size(n);
+            this->v_q.set_size(n);
         }
 
         ~cils() {
-//            delete[] R_A;
-            matlab::engine::terminateEngineClient();
+            delete[] R_A;
         }
 
         /**
@@ -444,7 +505,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index>
-        cils_back_solve(array<scalar, n> &z_B);
+        cils_back_solve(coder::array<scalar, 1U> &z_B);
 
         /**
         * Serial Babai solver
@@ -465,7 +526,7 @@ namespace cils {
         cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B);
 
         /**
-         * Parallel Babai solver
+         * Constrained version of Parallel Babai solver
          * @param n_proc: number of Processors/Threads
          * @param nswp: maximum number of iterations
          * @param z_B: estimation of the true parameter
@@ -475,7 +536,7 @@ namespace cils {
         cils_babai_search_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
 
         /**
-         * Parallel Babai solver
+         * Constrained version of Parallel Babai solver
          * @param n_proc: number of Processors/Threads
          * @param nswp: maximum number of iterations
          * @param z_B: estimation of the true parameter
@@ -485,7 +546,7 @@ namespace cils {
         cils_back_solve_omp(const index n_proc, const index nswp, vector<scalar> *z_B);
 
         /**
-         * Serial version of Block Babai solver
+         * Unconstrained serial version of Block Babai solver
          * @param z_B
          * @param d
          * @return
@@ -495,7 +556,7 @@ namespace cils {
 
 
         /**
-         * Parallel version of Block Babai solver
+         * Unconstrained Parallel version of Block Babai solver
          * @param n_proc
          * @param nswp
          * @param stop
@@ -507,6 +568,11 @@ namespace cils {
         returnType<scalar, index>
         cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d,
                               vector<scalar> *z_B);
+
+
+        returnType<scalar, index>
+        cils_block_search_omp_dynamic_block(const index n_proc, const index nswp, const index init,
+                                            const vector<index> *d, vector<scalar> *z_B);
 
         /**
          * Unconstrained GPU version of Block Babai solver
