@@ -96,7 +96,7 @@ include_directories(${Python3_NumPy_INCLUDE_DIR})
 include_directories(${Matlab_INCLUDE_DIRS})
 
 find_library(reduction_lib reduction REQUIRED)
-add_executable(cils main.cpp src/include/config.h src/include/coder_utils.h)
+add_executable(cils main.cpp src/include/config.h src/include/helper.h)
 target_link_libraries(cils ${reduction_lib})
 message("-- reduction ${reduction_lib}")
 

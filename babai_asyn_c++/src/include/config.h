@@ -8,8 +8,8 @@
 #include <climits>
 
 
-const static int M = 256;
-const static int N = 256;
+const static int M = 7;
+const static int N = 20;
 
 using namespace std;
 
@@ -28,24 +28,25 @@ namespace cils {
         index SNR = 35;
         index max_iter = 1000;
         index search_iter = 1000;
-        index stop = 1;
+        index stop = 3;
         index schedule = 2;
         index chunk_size = 1;
         index block_size = 32;
         index spilt_size = 2;
-        index is_constrained = true;
+        index offset = 2;
+        index is_constrained = false;
         index is_nc = false;
         index is_matlab = false; //Means LLL reduction
         index is_qr = false;
         index mode = 1; //test mode 3: c++ gen
         index num_trials = 10; //nswp
         index is_local = 1;
-        index max_search = 100000;//INT_MAX;
+        index max_search = 400000;//INT_MAX;
         index min_proc = 2;
         index plot_itr = 1;
         scalar coeff = 17.5;
         index max_proc = min(omp_get_max_threads(), N / block_size);
-        index max_thre = 100000;//maximum search allowed for serial ils.
+        index max_thre = 400000;//maximum search allowed for serial ils.
 
 
         /*   Parameters for block size 64
@@ -94,10 +95,9 @@ namespace cils {
             for (int i = 0; i < spilt_size; i++) {
                 d_s[i] = block_size / spilt_size;
             }
+            d_s[0] -= offset;
+            d_s[1] += offset;
 
-//            d_s[1] = block_size / 4;
-//            d_s[2] = block_size / 4;
-//            d_s[3] = block_size / 4;
             for (index i = d_s.size() - 2; i >= 0; i--) {
                 d_s[i] += d_s[i + 1];
             }

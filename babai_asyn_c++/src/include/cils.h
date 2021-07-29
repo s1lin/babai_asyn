@@ -37,7 +37,7 @@
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
-#include "coder_utils.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -223,14 +223,23 @@ namespace cils {
      * @tparam index
      * @param x
      */
-    template<typename scalar, typename index>
-    void display_2D(const vector<scalar> &x) {
-        index n = x.size(0);
-        for (index i = 0; i < n; i++) {
+    template<typename scalar, typename index, index m, index n>
+    void display_matrix(const array<scalar, m * n> &x) {
+        for (index i = 0; i < m; i++) {
             for (index j = 0; j < n; j++) {
-                printf("%8.5f ", x[j * n + i]);
+                printf("%8.4f ", x[j * m + i]);
             }
             cout << "\n";
+        }
+    }
+
+    template<typename scalar, typename index, index m, index n>
+    void display_2D_T(const array<scalar, m * n> &x) {
+        for (index i = 0; i < m * n; i++) {
+//            for (index j = 0; j < n; j++) {
+                printf("%8.4f ", x[i]);
+//            }
+//            cout << "\n";
         }
     }
 
@@ -310,9 +319,11 @@ namespace cils {
         scalar init_res, sigma;
         array<scalar, m * (n + 1) / 2> R_A;
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
-        array<scalar, m * n> R_R, R_Q, A, Q, Z;
-        //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR 
-        array<scalar, n> x_r, x_t, y_a, y_r, y_q, v_a, v_q;
+        array<scalar, m * n> R_R, R_Q, A, Z, H;
+        array<scalar, m * m> Q;
+        //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR
+        array<scalar, n> x_r, x_t;
+        array<scalar, m> y_a, v_a, v_q, y_r, y_q;
 
         std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
     public:
@@ -330,9 +341,10 @@ namespace cils {
 
             this->R_R.fill(0);//.resize(n * n, 0);
             this->R_Q.fill(0);//.resize(n * n, 0);
-            this->A  .fill(0);//.resize(n * n, 0);
-            this->Q  .fill(0);//.resize(n * n, 0);
-            this->Z  .fill(0);//.resize(n * n, 0);
+            this->A.fill(0);//.resize(n * n, 0);
+            this->Q.fill(0);//.resize(n * n, 0);
+            this->Z.fill(0);//.resize(n * n, 0);
+            this->H.fill(0);//.resize(n * n, 0);
 
             this->x_r.fill(0);//.resize(n, 0);
             this->x_t.fill(0);//.resize(n, 0);
@@ -345,13 +357,19 @@ namespace cils {
 
         ~cils() {
 //            delete[] R_A;
-            matlab::engine::terminateEngineClient();
+            matlabPtr.get_deleter();
+//            matlab::engine::terminateEngineClient();
         }
 
         /**
          * Initialize the problem either reading from files (.csv or .nc) or generating the problem
          */
         void init();
+
+        /**
+         *
+         */
+        void init_ud();
 
         /**
          * Only invoke is function when it is not reading from files and after completed qr!
@@ -363,27 +381,21 @@ namespace cils {
          */
         void init_R();
 
-        /**
-         * Serial version of QR-factorization using modified Gram-Schmidt algorithm
-         * @tparam scalar
-         * @tparam index
-         * @param A
-         * @param Q
-         * @param R
-         * @param n_proc
-         * @return
-         */
+
+         /**
+          * Serial version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
+          * @param eval
+          * @param verbose
+          * @return
+          */
         returnType<scalar, index>
         cils_qr_serial(const index eval, const index verbose);
 
 
         /**
-         * Serial version of QR-factorization using modified Gram-Schmidt algorithm
-         * @tparam scalar
-         * @tparam index
-         * @param A
-         * @param Q
-         * @param R
+         * Parallel version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
+         * @param eval
+         * @param verbose
          * @param n_proc
          * @return
          */
@@ -508,19 +520,12 @@ namespace cils {
         cils_block_search_omp(const index n_proc, const index nswp, const index init, const vector<index> *d,
                               vector<scalar> *z_B);
 
-        /**
-         * Unconstrained GPU version of Block Babai solver
-         * @param n_proc
-         * @param nswp
-         * @param R_B
-         * @param y_B
-         * @param z_B
-         * @param d
-         * @return
-         */
-        returnType<scalar, index>
-        cils_block_search_cuda(index nswp, scalar stop, const vector<index> *d, vector<scalar> *z_B);
 
+        returnType<scalar, index>
+        cils_sic_serial(vector<scalar> &x, array<scalar, m * n> &A_t, array<scalar, n * n> &P);
+
+        returnType<scalar, index>
+        cils_qrp_serial(vector<scalar> &x, array<scalar, m * n> &A_t, array<scalar, n * n> &P);
     };
 }
 #endif

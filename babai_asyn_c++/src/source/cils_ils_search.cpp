@@ -294,15 +294,15 @@ namespace cils {
                         k--;
                         row_k--;
                         sum = 0;
+                        R_kk = R_R[n * row_k + row_k];
+                        p[row_k] = newprsd;
                         for (index col = k + 1; col < dx; col++) {
                             sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col + n_dx_q_0];
                         }
-                        R_kk = R_R[n * row_k + row_k];
-                        p[row_k] = newprsd;
+
                         c[row_k] = (y_B[row_k] - sum) / R_kk;
                         z[row_k] = round(c[row_k]);
                         gamma = R_kk * (c[row_k] - z[row_k]);
-
                         d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
 
                     } else {
@@ -319,7 +319,7 @@ namespace cils {
                             }
                         }
                         z[row_k] += d[row_k];
-                        gamma = R_R[row_k] * (c[row_k] - z[row_k]);
+                        gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > row_k ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 } else {
@@ -340,26 +340,24 @@ namespace cils {
         inline bool ils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,
                                    const array<scalar, m * (n + 1) / 2> &R_A, const array<scalar, 1 * n> &y_B, scalar *z_x) {
 
-            //variables
             index dx = n_dx_q_1 - n_dx_q_0;
             index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
-            index iter = 0, diff = 0, k = dx - 1;
+            index dflag = 1, iter = 0, diff = 0, k = dx - 1;
             scalar R_kk = R_A[row_kk + row_k], beta = INFINITY;
 
-#pragma omp simd
+//#pragma omp simd
             for (index r = n_dx_q_0; r < n_dx_q_1; r++) {
                 z[r] = z_x[r];
             }
 
-            //Initial squared search radius
             c[row_k] = y_B[row_k] / R_kk;
             z[row_k] = round(c[row_k]);
-            scalar gamma = R_kk * (c[row_k] - z[row_k]);
-            scalar newprsd, sum;
 
             //  Determine enumeration direction at level block_size
             d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
-
+//Initial squared search radius
+            scalar gamma = R_kk * (c[row_k] - z[row_k]);
+            scalar newprsd, sum;
             //ILS search process
             for (index count = 0; count < program_def::max_search || iter == 0; count++) {
                 newprsd = p[row_k] + gamma * gamma;
@@ -369,13 +367,14 @@ namespace cils {
                         row_k--;
                         sum = 0;
                         row_kk -= (n - row_k - 1);
+                        R_kk = R_A[row_kk + row_k];
+                        p[row_k] = newprsd;
 #pragma omp simd reduction(+ : sum)
                         for (index col = k + 1; col < dx; col++) {
                             sum += R_A[row_kk + col + n_dx_q_0] * z[col + n_dx_q_0];
                         }
-                        R_kk = R_A[row_kk + row_k];
-                        p[row_k] = newprsd;
-                        c[row_k] = ((y_B[row_k] - y_B[row_k - n_dx_q_0]) - sum) / R_kk;
+
+                        c[row_k] = (y_B[row_k] - sum) / R_kk;
                         z[row_k] = round(c[row_k]);
                         gamma = R_kk * (c[row_k] - z[row_k]);
                         d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
@@ -395,7 +394,7 @@ namespace cils {
                         }
 
                         z[row_k] += d[row_k];
-                        gamma = R_A[row_k] * (c[row_k] - z[row_k]);
+                        gamma = R_A[row_kk + row_k] * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 } else {

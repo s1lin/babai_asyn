@@ -18,51 +18,30 @@ namespace cils {
      */
     template<typename scalar, typename index, index m, index n>
     scalar qr_validation(const array<scalar, m * n> &A,
-                         const array<scalar, m * n> &Q,
+                         const array<scalar, m * m> &Q,
                          const array<scalar, m * n> &R,
                          const index eval, const index verbose) {
         index i, j, k;
         scalar sum, error = 0;
 
         if (eval == 1) {
-            if (verbose) {
-                printf("\nPrinting A...\n");
-                for (i = 0; i < n; i++) {
-                    for (j = 0; j < n; j++) {
-                        printf("%8.5f ", A[i * n + j]);
-                    }
-                    printf("\n");
-                }
-            }
-
             array<scalar, m * n> A_T;
             A_T.fill(0);
-            coder::internal::blas::mtimes<scalar, index, n, n, n>(Q, R, A_T);
+            helper::internal::blas::mtimes<scalar, index, m, n>(Q, R, A_T);
 
             if (verbose) {
-                printf("\nQ*R (Init A matrix) : \n");
-                for (i = 0; i < n; i++) {
-                    for (j = 0; j < n; j++) {
-                        printf("%8.5f ", A_T[i * n + j]);
-                    }
-                    printf("\n");
-                }
+                printf("\n[ Print Q:]\n");
+                display_matrix<scalar, index, m, m>(Q);
+                printf("\n[ Print R:]\n");
+                display_matrix<scalar, index, m, n>(R);
+                printf("\n[ Print A:]\n");
+                display_matrix<scalar, index, m, n>(A);
+                printf("\n[ Print Q*R:]\n");
+                display_matrix<scalar, index, m, n>(A_T);
             }
 
-            for (i = 0; i < n; i++) {
-                for (j = 0; j < n; j++) {
-                    error += fabs(A_T[i * n + j] - A[i * n + j]);
-                }
-            }
-
-            if (verbose) {
-                printf("\nPrinting R...\n");
-                for (i = 0; i < n; i++) {
-                    for (j = 0; j < n; j++) {
-                        printf("%8.5f ", R[j * n + i]);
-                    }
-                    printf("\n");
-                }
+            for (i = 0; i < m * n; i++) {
+                error += fabs(A_T[i] - A[i]);
             }
         }
 
@@ -161,7 +140,6 @@ namespace cils {
     template<typename scalar, typename index, index m, index n>
     void cils<scalar, index, m, n>::init() {
 
-
         //Create MATLAB data array factory
         matlab::data::ArrayFactory factory;
 
@@ -197,7 +175,7 @@ namespace cils {
             ++i;
         }
 
-//        coder::qr(A, Q, R_Q);
+//        helper::qr(A, Q, R_Q);
 
 //        std::random_device rd;
 //        std::mt19937 gen(rd());
@@ -222,7 +200,7 @@ namespace cils {
 //        scalar sum = 0;
 //
 //        //init y_a
-//        coder::internal::blas::mtimes(A, x_t, y_a);
+//        helper::internal::blas::mtimes(A, x_t, y_a);
 //        for (index i = 0; i < n; i++) {
 //            y_a[i] += v_a[i];
 //        }
@@ -234,7 +212,58 @@ namespace cils {
 //
 //        //Set Z to Eye:
 //
-//        coder::eye(n, Z);
+//        helper::eye(n, Z);
+    }
+
+    template<typename scalar, typename index, index m, index n>
+    void cils<scalar, index, m, n>::init_ud() {
+
+        //Create MATLAB data array factory
+        matlab::data::ArrayFactory factory;
+
+        // Call the MATLAB movsum function
+        matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
+        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
+        matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
+        matlabPtr->setVariable(u"m", std::move(m_M));
+        matlabPtr->setVariable(u"n", std::move(n_M));
+        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+
+        // Call the MATLAB movsum function
+        matlabPtr->eval(
+                u" [s_bar1_for_next, y, H, HH_SIC, Piv_SIC, s_bar1] = simulations_IP(m, SNR, n, 'random', 1);");
+//        matlabPtr->eval(u" A = magic(n);");
+
+        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
+        matlab::data::TypedArray<scalar> const H_A = matlabPtr->getVariable(u"HH_SIC");
+        matlab::data::TypedArray<scalar> const Z_A = matlabPtr->getVariable(u"Piv_SIC");
+        matlab::data::TypedArray<scalar> const y_A = matlabPtr->getVariable(u"y");
+        matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"s_bar1_for_next");
+        matlab::data::TypedArray<scalar> const x_M_1 = matlabPtr->getVariable(u"s_bar1");
+
+        index i = 0;
+
+        for (auto r : A_A) {
+            A[i] = r;
+            i++;
+        }
+
+        i = 0;
+        for (auto r : H_A) {
+            H[i] = r;
+            i++;
+        }
+        i = 0;
+        for (auto r : y_A) {
+            y_a[i] = r;
+            i++;
+        }
+        i = 0;
+//        for (auto r : x_M_1) {
+//            x_t[i] = r;
+//            i++;
+//        }
+
     }
 
     template<typename scalar, typename index, index m, index n>
@@ -300,7 +329,7 @@ namespace cils {
             x_z[i] = x->at(i);
         }
 
-        coder::internal::blas::mtimes<scalar, index, m, n, 1>(Z, x_z, x_c);
+        helper::internal::blas::mtimes<scalar, index, m, n, 1>(Z, x_z, x_c);
 
         for (index i = 0; i < n; i++) {
             x->at(i) = x_c[i];

@@ -21,7 +21,7 @@ using namespace std;
 namespace cils {
     template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, m,  n>::cils_block_search_serial(const index init, const vector<index> *d, vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_block_search_serial(const index init, const vector<index> *d, vector<scalar> *z_B) {
 
         index ds = d->size(), n_dx_q_0, n_dx_q_1;
         array<scalar, n> y_b;
@@ -47,7 +47,7 @@ namespace cils {
         }
 
         scalar sum = 0;
-        cils_ils<scalar, index, m,  n> ils(program_def::k);
+        cils_ils<scalar, index, m, n> ils(program_def::k);
         scalar start = omp_get_wtime();
 
         if (init == -1) {
@@ -92,7 +92,7 @@ namespace cils {
 
         run_time = omp_get_wtime() - run_time + start;
         //Matlab Partial Reduction needs to do the permutation
-        vector_permutation<scalar, index, m,  n>(Z, z_B);
+        vector_permutation<scalar, index, m, n>(Z, z_B);
 
         returnType<scalar, index> reT = {{run_time - start}, run_time, 0};
         return reT;
@@ -100,12 +100,12 @@ namespace cils {
 
     template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, m,  n>::cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_block_search_serial_CPUTEST(const vector<index> *d, vector<scalar> *z_B) {
         index ds = d->size(), n_dx_q_0, n_dx_q_1;
         array<scalar, n> y_b;
         y_b.fill(0);
         vector<scalar> time(2 * ds, 0);
-        cils_ils<scalar, index, m,  n> ils(program_def::k);
+        cils_ils<scalar, index, m, n> ils(program_def::k);
         //special cases:
         if (ds == 1) {
             if (d->at(0) == 1) {
@@ -162,7 +162,7 @@ namespace cils {
 //        }
 
         //Matlab Partial Reduction needs to do the permutation
-        vector_permutation<scalar, index, m,  n>(Z, z_B);
+        vector_permutation<scalar, index, m, n>(Z, z_B);
 
         returnType<scalar, index> reT = {time, run_time, 0};
         return reT;
@@ -170,8 +170,8 @@ namespace cils {
 
     template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, m,  n>::cils_block_search_omp(const index n_proc, const index nswp, const index init,
-                                                  const vector<index> *d, vector<scalar> *z_B) {
+    cils<scalar, index, m, n>::cils_block_search_omp(const index n_proc, const index nswp, const index init,
+                                                     const vector<index> *d, vector<scalar> *z_B) {
         index ds = d->size();
         if (ds == 1 || ds == n) {
             return cils_block_search_serial(init, d, z_B);
@@ -186,8 +186,15 @@ namespace cils {
 
         array<scalar, n> y_B;
         y_B.fill(0);
-        cils_ils<scalar, index, m,  n> _ils(program_def::k);
+        cils_ils<scalar, index, m, n> _ils(program_def::k);
         omp_set_schedule((omp_sched_t) schedule, chunk_size);
+        auto lock = new omp_lock_t[ds]();
+        for (index i = 0; i < ds; i++) {
+            omp_set_lock(&lock[i]);
+        }
+
+        omp_unset_lock(&lock[0]);
+        omp_unset_lock(&lock[1]);
 
 
 #pragma omp parallel default(none) num_threads(n_proc)
@@ -197,7 +204,7 @@ namespace cils {
             n_dx_q_2 = d->at(0);
             n_dx_q_0 = d->at(1);
 
-            if(program_def::is_constrained)
+            if (program_def::is_constrained)
                 _ils.obils_search_omp(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_r, z_x);
             else
                 _ils.ils_search_omp(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_r, z_x);
@@ -216,7 +223,6 @@ namespace cils {
                             check = i == end;
                             row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
 
-                            test = 0;
                             for (index row = n_dx_q_0; row < n_dx_q_2; row++) {
                                 sum = 0;
                                 row_n += n - row;
@@ -226,9 +232,8 @@ namespace cils {
                                 }
                                 y_B[row] = y_r[row] - sum;
                             }
-                            check = check || test >= i;
 
-                            if(program_def::is_constrained)
+                            if (program_def::is_constrained)
                                 R_S_2[i] = _ils.obils_search_omp(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_x);
                             else
                                 R_S_2[i] = _ils.ils_search_omp(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_x);
@@ -246,19 +251,20 @@ namespace cils {
                 }
 #pragma omp single
                 {
-                    run_time = omp_get_wtime() - start;
+                    if (k != 1) run_time = omp_get_wtime() - start;
                 };
             }
+            if (k == 1) run_time = omp_get_wtime() - start;
             flag = check = diff = 0;
-            _nswp = k == 1 ? 5 : 2;
+            _nswp = 3;
         }
 
-        cils_ils<scalar, index, m,  n> ils(program_def::k);
+        cils_ils<scalar, index, m, n> ils(program_def::k);
         scalar run_time2 = omp_get_wtime();
         n_dx_q_2 = d->at(0);
         n_dx_q_0 = d->at(1);
 
-        if(program_def::is_constrained)
+        if (program_def::is_constrained)
             ils.obils_search_omp(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_r, z_x);
         else
             ils.ils_search_omp(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_r, z_x);
@@ -269,10 +275,13 @@ namespace cils {
 
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
         {
+
             for (index j = 0; j < _nswp && !flag; j++) {
+//                omp_set_lock(&lock[j - 1]);
+//                omp_unset_lock(&lock[j - 1]);
 #pragma omp for schedule(runtime) nowait
                 for (index i = 1; i < ds; i++) {
-                    if (!flag && end <= i) {//  front >= i &&!R_S_1[i]  &&
+                    if (!flag && end <= i) {//  front >= i   &&
                         n_dx_q_2 = d->at(i);
                         n_dx_q_0 = i == ds - 1 ? 0 : d->at(i + 1);
 
@@ -281,6 +290,7 @@ namespace cils {
                         for (index row = n_dx_q_0; row < n_dx_q_2; row++) {
                             sum = 0;
                             row_n += n - row;
+#pragma omp simd reduction(+:sum)
                             for (index col = n_dx_q_2; col < n; col++) {
                                 sum += R_A[col + row_n] * z_x[col];
                             }
@@ -290,40 +300,28 @@ namespace cils {
 //                        for (index row = 0; row < i; row++){
 //                            test += R_S_1[i];
 //                        }
+//                        omp_set_lock(&lock[i - 1]);
 
-//                        check = check;// || test == i;
-                        if(program_def::is_constrained)
+//                        check = check || R_S_1[i - 1];
+
+                        if (program_def::is_constrained)
                             R_S_1[i] = ils.obils_search_omp(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_x);
                         else
                             R_S_1[i] = ils.ils_search_omp(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_x);
 
-
+                        omp_unset_lock(&lock[j]);
                         if (check) { //!R_S_1[i] &&
                             end = i + 1;
                             R_S_1[i] = 1;
                         }
-//                        if (R_S_1[i]) {
-//                            for (index row = 0; row < ds - i - 1; row++) {
-//                                for (index h = 0; h < dx; h++) {
-//                                    temp = row * dx + h;
-//                                    sum = 0;
-//                                    row_n = (n * temp) - ((temp * (temp + 1)) / 2);
-//#pragma omp simd reduction(+ : sum)
-//                                    for (index col = n_dx_q_0; col < n_dx_q_1; col++) {
-////                                  R_S[temp * ds + i] += R_R[temp + n * col] * z_x[col];
-//                                        sum += R_A[row_n + col] * z_x[col];
-//                                    }
-//                                    R_S[temp * ds + i] = sum;
-//                                }
-//                            }
-//                        }
-//
+#pragma omp atomic
                         diff += R_S_1[i];
                         if (mode != 0) {
                             flag = ((diff) >= ds - stop) && j > 0;
                         }
                     }
                     num_iter = j;
+
                 }
             }
 
@@ -337,13 +335,13 @@ namespace cils {
 #pragma parallel omp cancellation point
 
         returnType<scalar, index> reT;
-        vector_permutation<scalar, index, m,  n>(Z, z_B);
+        vector_permutation<scalar, index, m, n>(Z, z_B);
 
         scalar time = 0; //(run_time3 + run_time2) * 0.5;
         if (init == -1) {
             time = k == 1 ? run_time2 + run_time : run_time2 + run_time;
         } else {
-            time = k == 1 ? run_time2 : run_time2;
+            time = k == 1 ? run_time2 : run_time2 * 0.5 + run_time3 * 0.5;
         }
         if (mode == 0)
             reT = {{run_time3}, time, (scalar) diff + end};
@@ -352,6 +350,9 @@ namespace cils {
 //            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
 //            cout.flush();
+        }
+        for (index i = 0; i < ds; i++) {
+            omp_destroy_lock(&lock[i]);
         }
         return reT;
     }

@@ -2,18 +2,18 @@
 // Created by shilei on 6/23/21.
 //
 
-#ifndef CILS_CODER_UTILS_H
-#define CILS_CODER_UTILS_H
+#ifndef CILS_HELPER_H
+#define CILS_HELPER_H
 
-#endif //CILS_CODER_UTILS_H
+#endif //CILS_HELPER_H
 
 #include <cmath>
 #include <cstring>
 
-namespace coder {
+namespace helper {
 
     template<typename scalar, typename index, index m, index n>
-    static void eye(scalar size, std::array<scalar, m * n> &b_I) {
+    static void eye(scalar size, std::array<scalar, n * n> &b_I) {
         scalar t;
         index loop_ub;
         index mm;
@@ -24,7 +24,7 @@ namespace coder {
         }
         mm = static_cast<index>(t);
         loop_ub = static_cast<index>(t) * static_cast<index>(t);
-        for (index i{0}; i < loop_ub; i++) {
+        for (index i = 0; i < loop_ub; i++) {
             b_I[i] = 0.0;
         }
         if (static_cast<index>(t) > 0) {
@@ -34,9 +34,6 @@ namespace coder {
         }
     }
 
-
-//
-//
     namespace internal {
         namespace blas {
 
@@ -68,24 +65,17 @@ namespace coder {
                 }
             }
 
-            template<typename scalar, typename index, index m, index n, index mb>
-            static void
-            mtimes(const array<scalar, m * n> &A_C, const array<scalar, n * mb> &B, array<scalar, m * mb> &C) {
-                for (index j = 0; j < mb; j++) {
-                    index boffset = j * n;
-                    index coffset = j * m;
-                    for (index k = 0; k < n; k++) {
-                        scalar bkj = B[boffset + k];
-                        index aoffset = k * m;
+            template<typename scalar, typename index, index m, index n>
+            static void mtimes(const array<scalar, m * m> &Q, const array<scalar, m * n> &R, array<scalar, m * n> &A_t) {
+                for (index  j = 0; j < n; j++) {
+                    for (index k = 0; k < m; k++) {
                         for (index i = 0; i < m; i++) {
-                            index b_i = coffset + i;
-                            C[b_i] = C[b_i] + A_C[aoffset + i] * bkj;
+                            A_t[j * m + i] += Q[k * m + i] * R[j * m + k];
                         }
                     }
                 }
             }
-
-        } // namespace blas
+        }
 
         template<typename scalar, typename index, index m, index n, index mb>
         static void
@@ -158,4 +148,39 @@ namespace coder {
             G[3] = 1.0;
         }
     }
+
+    template<typename scalar, typename index, index n>
+    scalar b_norm(const array<scalar, n> &x) {
+        scalar y;
+        if (n == 0) {
+            y = 0.0;
+        } else {
+            y = 0.0;
+            if (n == 1) {
+                y = std::abs(x[0]);
+            } else {
+                scalar scale;
+                index kend;
+                scale = 3.3121686421112381E-170;
+                kend = n;
+                for (index k = 0; k < kend; k++) {
+                    scalar absxk;
+                    absxk = std::abs(x[k]);
+                    if (absxk > scale) {
+                        scalar t;
+                        t = scale / absxk;
+                        y = y * t * t + 1.0;
+                        scale = absxk;
+                    } else {
+                        scalar t;
+                        t = absxk / scale;
+                        y += t * t;
+                    }
+                }
+                y = scale * std::sqrt(y);
+            }
+        }
+        return y;
+    }
+
 }

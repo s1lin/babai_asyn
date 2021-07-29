@@ -13,81 +13,56 @@ namespace cils {
         index i, j, k;
         scalar error = -1, time, sum;
 
-        //Deep Copy
-        array<scalar, m * n> A_t;
+        array<scalar, m * (n + 1)> A_t, R_Qy;
+        A_t.fill(0);
+        R_Qy.fill(0);
+        for (i = 0; i < m * n; i++) {
+            A_t[i] = A[i];
+        }
+        for (i = m * n; i < m * (n + 1); i++) {
+            A_t[i] = y_a[i - m * n];
+        }
 
         //Clear Variables:
-        for (i = 0; i < m; i++) {
-            for (j = 0; j < n; j++) {
-                R_Q[i * n + j] = Q[i * n + j] = 0;
-                A_t[i * n + j] = A[i * n + j];
-            }
-            y_q[i] = y_r[i] = 0;
-        }
+        R_Q.fill(0);
+        Q.fill(0);
+        y_q.fill(0);
+        y_r.fill(0);
 
         //start
         time = omp_get_wtime();
-        for (k = 0; k < n; k++) {
+        for (j = 0; j < m; j++) {
             //Check if Q[][i-1] (the previous column) is computed.
-            for (j = k; j < n; j++) {
-                R_Q[k * n + j] = 0;
-                for (i = 0; i < n; i++) {
-                    R_Q[j * n + k] += Q[k * n + i] * A_t[j * n + i];
+            for (k = j; k < n + 1; k++) {
+                R_Qy[j + m * k] = 0;
+                for (i = 0; i < m; i++) {
+                    R_Qy[j + m * k] += Q[i + m * j] * A_t[i + m * k];
                 }
-                for (i = 0; i < n; i++) {
-                    A_t[j * n + i] -= R_Q[j * n + k] * Q[k * n + i];
+                for (i = 0; i < m; i++) {
+                    A_t[i + m * k] -= Q[i + m * j] * R_Qy[j + m * k];
                 }
                 //Calculate the norm(A)
                 if (j == k) {
                     sum = 0;
-                    for (i = 0; i < n; i++) {
-                        sum += pow(A_t[k * n + i], 2);
+                    for (i = 0; i < m; i++) {
+                        sum += pow(A_t[i + m * k], 2);
                     }
-                    R_Q[k * n + k] = sqrt(sum);
-                    for (i = 0; i < n; i++) {
-                        Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
+                    R_Qy[k + m * k] = std::sqrt(sum);
+                    for (i = 0; i < m; i++) {
+                        Q[i + m * k] = A_t[i + m * k] / R_Qy[k + m * k];
                     }
                 }
             }
         }
-        for (i = 0; i < n; i++) {
-            sum = 0;
-            for (j = 0; j < n; j++) {
-                sum += Q[i * n + j] * y_a[j]; //Q'*y;
-            }
-            y_q[i] = sum;
-            y_r[i] = y_q[i];
+
+        for (i = 0; i < n * m; i++) {
+            R_Q[i] = R_Qy[i];
         }
-
-
-        //COLUMN:
-//        for (j = 0; j < n; j++) {
-//            for (k = 0; k <= j; k++) {
-//                //Check if Q[][i-1] (the previous column) is computed.
-//                R_Q[k * n + j] = 0;
-//                for (i = 0; i < n; i++) {
-//                    R_Q[j * n + k] += Q[k * n + i] * A_t[j * n + i];
-//                }
-//                for (i = 0; i < n; i++) {
-//                    A_t[j * n + i] -= R_Q[j * n + k] * Q[k * n + i];
-//                }
-//
-//                //Calculate the norm(A)
-//                if (j == k) {
-//                    sum = 0;
-//                    for (i = 0; i < n; i++) {
-//                        sum += pow(A_t[k * n + i], 2);
-//                    }
-//                    R_Q[k * n + k] = sqrt(sum);
-//                    for (i = 0; i < n; i++) {
-//                        Q[k * n + i] = A_t[k * n + i] / R_Q[k * n + k];
-//                    }
-//                }
-//            }
-//        }
-
+        for (i = m * n; i < m * (n + 1); i++) {
+            y_q[i - m * n] = R_Qy[i];
+            y_r[i - m * n] = y_q[i - m * n];
+        }
         time = omp_get_wtime() - time;
-//        delete[] A_t;
         if (eval) {
             error = qr_validation<scalar, index, m, n>(A, Q, R_Q, eval, verbose);
         }
@@ -253,7 +228,7 @@ namespace cils {
     cils<scalar, index, m, n>::cils_LLL_qr_reduction(const index eval, const index verbose, const index n_proc) {
         scalar time = 0, det = 0;
         returnType<scalar, index> reT, lll_val;
-        coder::eye<scalar, index, m, n>(n, Z);
+        helper::eye<scalar, index, m, n>(n, Z);
         if (n_proc <= 1) {
             reT = cils_LLL_qr_serial();
             printf("[ INFO: SER LLL QR TIME: %8.5f, Givens: %.1f]\n",
@@ -303,7 +278,7 @@ namespace cils {
         scalar time = 0, det = 0;
         returnType<scalar, index> reT, lll_val;
 
-        coder::eye<scalar, index, m, n>(n, Z);
+        helper::eye<scalar, index, m, n>(n, Z);
 
         if (n_proc <= 1) {
             reT = cils_LLL_serial();
@@ -424,7 +399,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -531,7 +506,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -657,7 +632,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_RA([i1,i],i1)] = planerot(R_RA([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_RA[(c_i + n * (c_i - 2)) - 2], R_RA[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        helper::planerot<scalar, index>(low_tmp, G);
                         R_RA[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_RA[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -769,7 +744,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_RA([i1,i],i1)] = planerot(R_RA([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_RA[(c_i + n * (c_i - 2)) - 2], R_RA[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        helper::planerot<scalar, index>(low_tmp, G);
                         R_RA[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_RA[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                         // 'eo_sils_reduction:72' R_RA([i1,i],i:n) = G * R_RA([i1,i],i:n);
@@ -901,7 +876,7 @@ namespace cils {
 
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -998,7 +973,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1086,7 +1061,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     scalar G[4] = {};
                     scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                     R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -1290,7 +1265,7 @@ namespace cils {
 //                            {
                             scalar G[4] = {};
                             scalar low_tmp[2] = {R_R[(k + n * (k - 2)) - 2], R_R[(k + n * (k - 2)) - 1]};
-                            coder::planerot<scalar, index>(low_tmp, G);
+                            helper::planerot<scalar, index>(low_tmp, G);
                             R_R[(k + n * (k - 2)) - 2] = low_tmp[0];
                             R_R[(k + n * (k - 2)) - 1] = low_tmp[1];
 
@@ -1412,7 +1387,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        helper::planerot<scalar, index>(low_tmp, G);
                         R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
                         // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1502,7 +1477,7 @@ namespace cils {
                         // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R_R[(c_i + n * (c_i - 2)) - 2], R_R[(c_i + n * (c_i - 2)) - 1]};
-                        coder::planerot<scalar, index>(low_tmp, G);
+                        helper::planerot<scalar, index>(low_tmp, G);
                         R_R[(c_i + n * (c_i - 2)) - 2] = low_tmp[0];
                         R_R[(c_i + n * (c_i - 2)) - 1] = low_tmp[1];
 
@@ -1720,8 +1695,8 @@ namespace cils {
  *  template<typename scalar, typename index, index m, index n>
     scalar cils<scalar, index, m,  n>::cils_LLL_serial() {
         bool f = true;
-        coder::array<scalar, 1U> r, vi, vr;
-        coder::array<double, 2U> b, b_R, r1;
+        helper::array<scalar, 1U> r, vi, vr;
+        helper::array<double, 2U> b, b_R, r1;
         scalar G[4], low_tmp[2], zeta;
         index c_result[2], sizes[2], b_loop_ub, i, i1, input_sizes_idx_1 = n, loop_ub, result;
 
@@ -1830,7 +1805,7 @@ namespace cils {
                     // 'eo_sils_reduction:71' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     low_tmp[0] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2];
                     low_tmp[1] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1];
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2] = low_tmp[0];
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:72' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1850,7 +1825,7 @@ namespace cils {
                         b[2 * i2] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 2];
                         b[2 * i2 + 1] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 1];
                     }
-                    coder::internal::blas::mtimes(G, b, r1);
+                    helper::internal::blas::mtimes(G, b, r1);
                     b_loop_ub = r1.size(1);
                     for (i1 = 0; i1 < b_loop_ub; i1++) {
                         input_sizes_idx_1 = (result + i1) - 1;
@@ -1956,7 +1931,7 @@ namespace cils {
                     // 'eo_sils_reduction:100' [G,R_R([i1,i],i1)] = planerot(R_R([i1,i],i1));
                     low_tmp[0] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2];
                     low_tmp[1] = R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1];
-                    coder::planerot<scalar, index>(low_tmp, G);
+                    helper::planerot<scalar, index>(low_tmp, G);
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 2] = low_tmp[0];
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 2)) - 1] = low_tmp[1];
                     // 'eo_sils_reduction:101' R_R([i1,i],i:n) = G * R_R([i1,i],i:n);
@@ -1976,7 +1951,7 @@ namespace cils {
                         b[2 * i2] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 2];
                         b[2 * i2 + 1] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 1];
                     }
-                    coder::internal::blas::mtimes(G, b, r1);
+                    helper::internal::blas::mtimes(G, b, r1);
                     b_loop_ub = r1.size(1);
                     for (i1 = 0; i1 < b_loop_ub; i1++) {
                         input_sizes_idx_1 = (result + i1) - 1;

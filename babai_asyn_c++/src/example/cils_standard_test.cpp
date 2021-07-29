@@ -4,6 +4,7 @@
 #include "../source/cils_block_search.cpp"
 #include "../source/cils_babai_search.cpp"
 #include "../source/cils_reduction.cpp"
+#include "../source/cils_init_point.cpp"
 #include <ctime>
 
 template<typename scalar, typename index, index m, index n>
@@ -164,10 +165,21 @@ long plot_run() {
                                "08.QR Result BER Residual by A is %.5f.\n",
                                cils.init_res, R_res, ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr);
                         cout.flush();
+                        if (ber_qr == 0 && ber_serial != 0) break;
                     } while (ber_babai < ber_thre3 || ber_babai < ber_serial);
                     cils.cils_back_solve(cils.x_r);
                     ser_qrd += qr_reT.run_time;
-
+                    if(ber_qr == 0 && ber_serial != 0){
+                        qr_reT = cils.cils_qr_serial(1, verbose);
+                        //QR - Block Solver Testing
+                        coder::eye<scalar, index, m, n>(n, cils.Z);
+                        for (index ii = 0; ii < n; ii++) {
+                            for (index j = 0; j < n; j++) {
+                                cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+                            }
+                        }
+                        cils.init_R();
+                    }
                     for (index init = -1; init <= 1; init++) {
                         printf("[ TRIAL PHASE]++++++++++++++++++++++++++++++++++++++\n");
                         std::cout << "Block, size: " << block_size << std::endl;
@@ -245,15 +257,24 @@ long plot_run() {
                                 LLL_qr[qr_l][count] += (LLL_qr_reT_omp.run_time / coeff);
                                 lll_qr_spu[qr_l][count] += LLL_qr_reT.run_time / LLL_qr_reT_omp.run_time;
                             }
-
+                            if(ber_qr == 0 && ber_serial != 0){
+                                qr_reT = cils.cils_qr_serial(1, verbose);
+                                //QR - Block Solver Testing
+                                coder::eye<scalar, index, m, n>(n, cils.Z);
+                                for (index ii = 0; ii < n; ii++) {
+                                    for (index j = 0; j < n; j++) {
+                                        cils.R_R[j * n + ii] = cils.R_Q[j * n + ii];
+                                    }
+                                }
+                                cils.init_R();
+                            }
                             while (true) {
                                 init_guess<scalar, index, m, n>(init, &z_B, cils.x_r.data());
                                 reT = cils.cils_block_search_omp(n_proc, num_trials, init, &d_s, &z_B);
                                 iter = reT.num_iter;
-
+                                t = reT.run_time;
                                 r = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
                                 b = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);
-                                t = reT.run_time;
 
                                 t2 = min(t, t2);
                                 r2 = min(r, r2);
@@ -284,11 +305,11 @@ long plot_run() {
                             t_spu[init + 1][l][count] +=
                                     (ser_time + LLL_qr_reT.run_time / coeff) / (t + LLL_qr_reT_omp.run_time / coeff);
                             printf("Method: ILS_OMP, N_PROC: %2d, AVG RES: %8.5f, AVG BER: %8.5f, "
-                                   "AVG TIME: %8.5fs, RES: %8.5f, BER: %8.5f, SOLVE TIME: %8.5fs, "
-                                   "NUM_ITER:%7.3f, SPEEDUP: %7.3f, TOTAL SPU: %7.3f, ",
+                                   "AVG TIME: %8.5fs, RES: %8.5f, BER: %8.5f, SER TIME: %8.5f, OMP TIME: %8.5fs, "
+                                   "NUM_ITER:%7.3f, SPEEDUP:%7.3f, AVG SPEEDUP: %7.3f, AVG TOTAL SPU: %7.3f, ",
                                    n_proc, res[init + 1][l][count] / i, ber[init + 1][l][count] / i,
-                                   tim[init + 1][l][count] / i, r, b, t,
-                                   iter, spu[init + 1][l][count] / i, t_spu[init + 1][l][count] / i);
+                                   tim[init + 1][l][count] / i, r, b, ser_time, t,
+                                   iter, ser_time / t, spu[init + 1][l][count] / i, t_spu[init + 1][l][count] / i);
                             printf("LLL_QR SER TIME: %8.5fs, LLL_QR OMP_TIME: %8.5fs, LLL_QR SPEEDUP: %7.3f.\n",
                                    LLL_qr_reT.run_time, LLL_qr_reT_omp.run_time, lll_qr_spu[qr_l][count] / i);
 
@@ -374,7 +395,7 @@ long plot_run() {
                     if (pModule != nullptr) {
                         pFunc = PyObject_GetAttrString(pModule, "plot_runtime");
                         if (pFunc && PyCallable_Check(pFunc)) {
-                            PyObject *pArgs = PyTuple_New(27);
+                            PyObject *pArgs = PyTuple_New(29);
                             if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                                 return false;
                             }
@@ -456,7 +477,12 @@ long plot_run() {
                             if (PyTuple_SetItem(pArgs, 26, pTpu) != 0) {
                                 return false;
                             }
-
+                            if (PyTuple_SetItem(pArgs, 27, Py_BuildValue("i", is_constrained)) != 0) {
+                                return false;
+                            }
+                            if (PyTuple_SetItem(pArgs, 28, Py_BuildValue("i", m)) != 0) {
+                                return false;
+                            }
                             PyObject *pValue = PyObject_CallObject(pFunc, pArgs);
 
                         } else {
