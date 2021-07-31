@@ -29,7 +29,7 @@ namespace cils {
 
 
         x.resize(n, 0);
-        helper::eye<scalar, index, m, n>(n, P);
+        helper::eye<scalar, index, n>(P);
         for (i = 0; i < m; i++) {
             y_q[i] = y_a[i];
         }
@@ -121,7 +121,7 @@ namespace cils {
         scalar c_i, x_est, b_i, b_m, loop_ub, bound = 1, max_res;
 
         x.resize(n, 0);
-        helper::eye<scalar, index, m, n>(n, P);
+        helper::eye<scalar, index, n>(P);
         for (i = 0; i < m * n; i++) {
             A_t[i] = A[i];
         }

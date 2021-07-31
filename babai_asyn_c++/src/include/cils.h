@@ -237,7 +237,7 @@ namespace cils {
     void display_2D_T(const array<scalar, m * n> &x) {
         for (index i = 0; i < m * n; i++) {
 //            for (index j = 0; j < n; j++) {
-                printf("%8.4f ", x[i]);
+            printf("%8.4f ", x[i]);
 //            }
 //            cout << "\n";
         }
@@ -250,7 +250,17 @@ namespace cils {
      * @param x
      */
     template<typename scalar, typename index, index n>
-    inline void display_vector(const array<scalar, n> &x) {
+    inline void display_array(const array<scalar, n> &x) {
+        scalar sum = 0;
+        for (index i = 0; i < n; i++) {
+            printf("%8.5f ", x[i]);
+            sum += x[i];
+        }
+        printf("SUM = %8.5f\n", sum);
+    }
+
+    template<typename scalar, typename index>
+    inline void display_vector(const vector<scalar> &x) {
         scalar sum = 0;
         for (index i = 0; i < x.size(); i++) {
             printf("%8.5f ", x[i]);
@@ -319,8 +329,9 @@ namespace cils {
         scalar init_res, sigma;
         array<scalar, m * (n + 1) / 2> R_A;
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
-        array<scalar, m * n> R_R, R_Q, A, Z, H;
+        array<scalar, m * n> R_R, R_Q, A, H;
         array<scalar, m * m> Q;
+        array<scalar, n * n> Z;
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR
         array<scalar, n> x_r, x_t;
         array<scalar, m> y_a, v_a, v_q, y_r, y_q;
@@ -382,12 +393,12 @@ namespace cils {
         void init_R();
 
 
-         /**
-          * Serial version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
-          * @param eval
-          * @param verbose
-          * @return
-          */
+        /**
+         * Serial version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
+         * @param eval
+         * @param verbose
+         * @return
+         */
         returnType<scalar, index>
         cils_qr_serial(const index eval, const index verbose);
 
@@ -526,6 +537,10 @@ namespace cils {
 
         returnType<scalar, index>
         cils_qrp_serial(vector<scalar> &x, array<scalar, m * n> &A_t, array<scalar, n * n> &P);
+
+        returnType<scalar, index>
+        cils_sic_subopt(vector<scalar> &z, array<scalar, m> &v_cur, array<scalar, m * n> A_t, scalar v_norm_cur,
+                        scalar tolerance, index method);
     };
 }
 #endif

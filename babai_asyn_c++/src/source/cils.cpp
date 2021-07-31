@@ -27,7 +27,7 @@ namespace cils {
         if (eval == 1) {
             array<scalar, m * n> A_T;
             A_T.fill(0);
-            helper::internal::blas::mtimes<scalar, index, m, n>(Q, R, A_T);
+            helper::mtimes<scalar, index, m, n>(Q, R, A_T);
 
             if (verbose) {
                 printf("\n[ Print Q:]\n");
@@ -200,7 +200,7 @@ namespace cils {
 //        scalar sum = 0;
 //
 //        //init y_a
-//        helper::internal::blas::mtimes(A, x_t, y_a);
+//        helper::mtimes(A, x_t, y_a);
 //        for (index i = 0; i < n; i++) {
 //            y_a[i] += v_a[i];
 //        }
@@ -208,7 +208,7 @@ namespace cils {
 ////            y_a[i] = 0;
 ////        }
 //        if (n <= 16)
-//            display_vector<scalar, index>(y_a);
+//            display_array<scalar, index>(y_a);
 //
 //        //Set Z to Eye:
 //
@@ -223,23 +223,23 @@ namespace cils {
 
         // Call the MATLAB movsum function
         matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
-        matlab::data::TypedArray<scalar> SNR_M = factory.createScalar<scalar>(program_def::SNR);
         matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
-        matlabPtr->setVariable(u"m", std::move(m_M));
-        matlabPtr->setVariable(u"n", std::move(n_M));
-        matlabPtr->setVariable(u"SNR", std::move(SNR_M));
+        matlabPtr->setVariable(u"K", std::move(m_M));
+        matlabPtr->setVariable(u"N", std::move(n_M));
 
         // Call the MATLAB movsum function
         matlabPtr->eval(
-                u" [s_bar1_for_next, y, H, HH_SIC, Piv_SIC, s_bar1] = simulations_IP(m, SNR, n, 'random', 1);");
+                u" [s_bar_cur, s_bar1, s_bar2, y, H, HH, Piv] = "
+                "simulations_SIC(K, N, 100, 'random', 1, false);");
 //        matlabPtr->eval(u" A = magic(n);");
 
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
-        matlab::data::TypedArray<scalar> const H_A = matlabPtr->getVariable(u"HH_SIC");
-        matlab::data::TypedArray<scalar> const Z_A = matlabPtr->getVariable(u"Piv_SIC");
+        matlab::data::TypedArray<scalar> const H_A = matlabPtr->getVariable(u"HH");
+        matlab::data::TypedArray<scalar> const Z_A = matlabPtr->getVariable(u"Piv");
         matlab::data::TypedArray<scalar> const y_A = matlabPtr->getVariable(u"y");
-        matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"s_bar1_for_next");
-        matlab::data::TypedArray<scalar> const x_M_1 = matlabPtr->getVariable(u"s_bar1");
+        matlab::data::TypedArray<scalar> const x_1 = matlabPtr->getVariable(u"s_bar_cur");//v_a
+        matlab::data::TypedArray<scalar> const x_2 = matlabPtr->getVariable(u"s_bar1");//x_t
+        matlab::data::TypedArray<scalar> const x_3 = matlabPtr->getVariable(u"s_bar2");//x_r
 
         index i = 0;
 
@@ -259,10 +259,20 @@ namespace cils {
             i++;
         }
         i = 0;
-//        for (auto r : x_M_1) {
-//            x_t[i] = r;
-//            i++;
-//        }
+        for (auto r : x_1) {
+            v_a[i] = r;
+            i++;
+        }
+        i = 0;
+        for (auto r : x_2) {
+            x_t[i] = r;
+            i++;
+        }
+        i = 0;
+        for (auto r : x_3) {
+            x_r[i] = r;
+            i++;
+        }
 
     }
 
@@ -321,7 +331,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index, index m, index n>
-    inline void vector_permutation(const array<scalar, m * n> &Z, vector<scalar> *x) {
+    inline void matrix_vector_mult(const array<scalar, m * n> &Z, vector<scalar> *x) {
         array<scalar, n> x_c, x_z;
         x_c.fill(0);
         x_z.fill(0);
@@ -329,10 +339,27 @@ namespace cils {
             x_z[i] = x->at(i);
         }
 
-        helper::internal::blas::mtimes<scalar, index, m, n, 1>(Z, x_z, x_c);
+        helper::mtimes<scalar, index, n, 1>(Z, x_z, x_c);
 
         for (index i = 0; i < n; i++) {
             x->at(i) = x_c[i];
+        }
+    }
+
+    template<typename scalar, typename index, index m, index n>
+    inline void matrix_vector_mult(const array<scalar, m * n> &Z, const vector<scalar> &x, vector<scalar> &c) {
+        array<scalar, n> x_z;
+        array<scalar, m> x_c;
+        x_c.fill(0);
+        x_z.fill(0);
+        for (index i = 0; i < n; i++) {
+            x_z[i] = x[i];
+        }
+
+        helper::mtimes_1<scalar, index, m, n>(Z, x_z, x_c);
+
+        for (index i = 0; i < m; i++) {
+            c[i] = x_c[i];
         }
     }
 
