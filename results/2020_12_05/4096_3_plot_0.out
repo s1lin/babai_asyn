@@ -19,9 +19,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :212.80044, BER: 0.47314, num_iter: 8.74000, Average time: 0.21455s
-Block Size: 16, n_proc: 24, Res :212.78157, BER: 0.47424, num_iter: 8.84000, Average time: 0.12596s
-Block Size: 16, n_proc: 48, Res :216.28794, BER: 0.47357, num_iter: 8.79000, Average time: 0.07415s
+Block Size: 16, n_proc: 12, Res :212.80044, BER: 0.47314, info: 8.74000, Average time: 0.21455s
+Block Size: 16, n_proc: 24, Res :212.78157, BER: 0.47424, info: 8.84000, Average time: 0.12596s
+Block Size: 16, n_proc: 48, Res :216.28794, BER: 0.47357, info: 8.79000, Average time: 0.07415s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -33,9 +33,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :212.31520, BER: 0.47357, num_iter: 8.79000, Average time: 0.21750s
-Block Size: 16, n_proc: 24, Res :211.19470, BER: 0.47418, num_iter: 8.95000, Average time: 0.12770s
-Block Size: 16, n_proc: 48, Res :220.32334, BER: 0.47083, num_iter: 8.89000, Average time: 0.07371s
+Block Size: 16, n_proc: 12, Res :212.31520, BER: 0.47357, info: 8.79000, Average time: 0.21750s
+Block Size: 16, n_proc: 24, Res :211.19470, BER: 0.47418, info: 8.95000, Average time: 0.12770s
+Block Size: 16, n_proc: 48, Res :220.32334, BER: 0.47083, info: 8.89000, Average time: 0.07371s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -47,9 +47,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :207.90938, BER: 0.47137, num_iter: 8.90000, Average time: 0.21828s
-Block Size: 16, n_proc: 24, Res :206.88766, BER: 0.47369, num_iter: 8.99000, Average time: 0.12808s
-Block Size: 16, n_proc: 48, Res :223.50621, BER: 0.47333, num_iter: 8.95000, Average time: 0.07414s
+Block Size: 16, n_proc: 12, Res :207.90938, BER: 0.47137, info: 8.90000, Average time: 0.21828s
+Block Size: 16, n_proc: 24, Res :206.88766, BER: 0.47369, info: 8.99000, Average time: 0.12808s
+Block Size: 16, n_proc: 48, Res :223.50621, BER: 0.47333, info: 8.95000, Average time: 0.07414s
 End of current TASK.
 -------------------------------------------
 plot_run-------------------------------------------
@@ -70,9 +70,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, num_iter: 4.74000, Average time: 0.16430s
-Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, num_iter: 5.64000, Average time: 0.11622s
-Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, num_iter: 6.87000, Average time: 0.08677s
+Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, info: 4.74000, Average time: 0.16430s
+Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, info: 5.64000, Average time: 0.11622s
+Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, info: 6.87000, Average time: 0.08677s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -84,9 +84,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, num_iter: 6.07000, Average time: 0.18250s
-Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, num_iter: 7.23000, Average time: 0.13939s
-Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, num_iter: 8.83000, Average time: 0.07942s
+Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, info: 6.07000, Average time: 0.18250s
+Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, info: 7.23000, Average time: 0.13939s
+Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, info: 8.83000, Average time: 0.07942s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -98,9 +98,9 @@ Block OMP, Stopping criteria: 0
 Threads:120 
 Threads:240 
 Threads:480 
-Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, num_iter: 5.62000, Average time: 0.19271s
-Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, num_iter: 6.73000, Average time: 0.12477s
-Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, num_iter: 8.03000, Average time: 0.09668s
+Block Size: 16, n_proc: 12, Res :12.71981, BER: 0.00000, info: 5.62000, Average time: 0.19271s
+Block Size: 16, n_proc: 24, Res :12.71981, BER: 0.00000, info: 6.73000, Average time: 0.12477s
+Block Size: 16, n_proc: 48, Res :12.71981, BER: 0.00000, info: 8.03000, Average time: 0.09668s
 End of current TASK.
 -------------------------------------------
 

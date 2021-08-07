@@ -20,12 +20,13 @@ namespace cils {
     template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
     cils<scalar, index, m, n>::cils_sic_subopt(vector<scalar> &z, array<scalar, m> &v_cur,
-                                               array<scalar, m * n> A_t, scalar v_norm_cur, scalar tolerance, index method) {
+                                               array<scalar, m * n> A_t, scalar v_norm_cur, scalar tolerance,
+                                               index method) {
 
         vector<scalar> stopping(3, 0);
         array<scalar, n> s_bar_temp;
         array<scalar, m> v_best, v_temp;
-        index i, j, l, loop_ub, depth = 0;
+        index i, j, l, depth = 0;
         // 'SIC_subopt:32' if v_norm_cur <= tolerance
         if (v_norm_cur <= tolerance) {
             stopping[0] = 1;
@@ -36,9 +37,8 @@ namespace cils {
             // 'SIC_subopt:39' v_temp = 0;
             v_best.fill(0.0);
             // 'SIC_subopt:40' while v_norm_cur > tolerance
-            int exitg2;
             while (v_norm_cur > tolerance) {
-                scalar H_cur_tmp, b_s_bar_temp, res;
+                scalar A_tmp, z_tmp, res;
                 int i1;
                 for (i = 0; i < n; i++) {
                     s_bar_temp[i] = z[i];
@@ -53,40 +53,38 @@ namespace cils {
                     for (j = 0; j < n; j++) {
                         i = n - j;
                         // 'SIC_subopt:93' v = v+s_bar(j)*H(:,j);
-                        for (i1 = 0; i1 < n; i1++) {
+                        for (i1 = 0; i1 < m; i1++) {
                             v_best[i1] += s_bar_temp[i - 1] * A_t[i1 + m * (i - 1)];
                         }
-                        loop_ub = m;
-                        b_s_bar_temp = 0.0;
+                        display_array<scalar, index, m>(v_best);
+                        z_tmp = 0.0;
                         res = 0.0;
-                        for (i1 = 0; i1 < loop_ub; i1++) {
-                            H_cur_tmp = A_t[i1 + m * (i - 1)];
-                            b_s_bar_temp += H_cur_tmp * v_best[i1];
-                            res += H_cur_tmp * H_cur_tmp;
+                        for (i1 = 0; i1 < m; i1++) {
+                            A_tmp = A_t[i1 + m * (i - 1)];
+                            z_tmp += A_tmp * v_best[i1];
+                            res += A_tmp * A_tmp;
                         }
-                        b_s_bar_temp = 2.0 * std::floor(b_s_bar_temp / res / 2.0) + 1.0;
+                        z_tmp = 2.0 * std::floor(z_tmp / res / 2.0) + 1.0;
                         // 'round_int:17' for i = 1:length(rounded_val)
                         // 'round_int:18' if rounded_val(i) < lower
-                        if (b_s_bar_temp < -1.0) {
-                            // 'round_int:19' rounded_val(i) = lower;
-                            b_s_bar_temp = -1.0;
-                        } else if (b_s_bar_temp > 1.0) {
-                            // 'round_int:20' elseif rounded_val(i) > upper
-                            // 'round_int:21' rounded_val(i) = upper;
-                            b_s_bar_temp = 1.0;
+                        if (z_tmp < -1.0) {
+                            z_tmp = -1.0;
+                        } else if (z_tmp > 1.0) {
+                            z_tmp = 1.0;
                         }
                         // 'SIC_subopt:97' v =v- s_bar_temp *H(:,j);
                         for (i1 = 0; i1 < m; i1++) {
-                            v_best[i1] -= b_s_bar_temp * A_t[i1 + m * (i - 1)];
+                            v_best[i1] -= z_tmp * A_t[i1 + m * (i - 1)];
                         }
                         // Updates the term for \hat{x}_j in the residual
                         // 'SIC_subopt:98' s_bar(j)=s_bar_temp;
-                        s_bar_temp[i - 1] = b_s_bar_temp;
+                        s_bar_temp[i - 1] = z_tmp;
                     }
                     // 'SIC_subopt:100' v_norm = norm(v);
-                    max_res = helper::b_norm<scalar, index, m>(v_best);
+                    max_res = helper::norm<scalar, index, m>(v_best);
                 }
                 // 'SIC_subopt:44' if method == 2
+
                 if (method == 2) {
                     scalar s_est;
                     // 'SIC_subopt:45' [s_bar_temp, v_norm_temp, v_temp] =
@@ -95,48 +93,42 @@ namespace cils {
                     // 'SIC_subopt:125' s_est = 0;
                     s_est = 0.0;
                     // 'SIC_subopt:126' v_best = -inf;
-                    v_best.fill(-INFINITY);
+                    v_best.fill(0);
+                    v_best[0] = -INFINITY;
                     // 'SIC_subopt:127' max_res = inf;
                     max_res = INFINITY;
                     // 'SIC_subopt:128' for j=n:-1:1
                     for (j = 0; j < m; j++) {
                         i = n - j;
-                        // 'SIC_subopt:129' v_temp = v+s_bar(j)*H(:,j);
-                        b_s_bar_temp = z[i - 1];
-                        for (i1 = 0; i1 < n; i1++) {
-                            v_temp[i1] = v_cur[i1] + b_s_bar_temp * A_t[i1 + m * (i - 1)];
+                        // 'SIC_subopt:129' v_temp = v + s_bar(j)*H(:,j);
+                        for (i1 = 0; i1 < m; i1++) {
+                            v_temp[i1] = v_cur[i1] + z[i - 1] * A_t[i1 + m * (i - 1)];
                         }
-                        loop_ub = m;
-                        b_s_bar_temp = 0.0;
+                        z_tmp = 0.0;
                         res = 0.0;
-                        for (i1 = 0; i1 < loop_ub; i1++) {
-                            H_cur_tmp = A_t[i1 + m * (i - 1)];
-                            b_s_bar_temp += H_cur_tmp * v_temp[i1];
-                            res += H_cur_tmp * H_cur_tmp;
+                        for (i1 = 0; i1 < m; i1++) {
+                            A_tmp = A_t[i1 + m * (i - 1)];
+                            z_tmp += A_tmp * v_temp[i1];
+                            res += A_tmp * A_tmp;
                         }
-                        b_s_bar_temp = 2.0 * std::floor(b_s_bar_temp / res / 2.0) + 1.0;
-                        // 'round_int:17' for i = 1:length(rounded_val)
-                        // 'round_int:18' if rounded_val(i) < lower
-                        if (b_s_bar_temp < -1.0) {
-                            // 'round_int:19' rounded_val(i) = lower;
-                            b_s_bar_temp = -1.0;
-                        } else if (b_s_bar_temp > 1.0) {
-                            // 'round_int:20' elseif rounded_val(i) > upper
-                            // 'round_int:21' rounded_val(i) = upper;
-                            b_s_bar_temp = 1.0;
+                        z_tmp = 2.0 * std::floor(z_tmp / res / 2.0) + 1.0;
+                        if (z_tmp < -1.0) {
+                            z_tmp = -1.0;
+                        } else if (z_tmp > 1.0) {
+                            z_tmp = 1.0;
                         }
                         // 'SIC_subopt:133' v_temp =v_temp- s_bar_temp *H(:,j);
                         for (i1 = 0; i1 < m; i1++) {
-                            v_temp[i1] = v_temp[i1] - b_s_bar_temp * A_t[i1 + m * (i - 1)];
+                            v_temp[i1] = v_temp[i1] - z_tmp * A_t[i1 + m * (i - 1)];
                         }
                         // 'SIC_subopt:134' res = norm(v_temp);
-                        res = helper::b_norm<scalar, index, m>(v_best);
+                        res = helper::norm<scalar, index, m>(v_best);
                         // 'SIC_subopt:135' if res < max_res
                         if (res < max_res) {
                             // 'SIC_subopt:136' l=j;
                             l = i;
                             // 'SIC_subopt:137' s_est=s_bar_temp;
-                            s_est = b_s_bar_temp;
+                            s_est = z_tmp;
                             // 'SIC_subopt:138' v_best = v_temp;
                             for (i1 = 0; i1 < m; i1++) {
                                 v_best[i1] = v_temp[i1];
@@ -150,6 +142,7 @@ namespace cils {
                     // 'SIC_subopt:143' v = v_best;
                     // 'SIC_subopt:144' v_norm = max_res;
                 }
+
                 // 'SIC_subopt:47' depth = depth+1;
                 depth++;
                 // 'SIC_subopt:49' if v_norm_temp < 0.99999 * v_norm_cur
@@ -157,19 +150,23 @@ namespace cils {
                     // 'SIC_subopt:50' z = s_bar_temp;
                     for (i = 0; i < n; i++) {
                         z[i] = s_bar_temp[i];
+                    }
+                    for (i = 0; i < m; i++) {
                         v_cur[i] = v_best[i];
                     }
                     // 'SIC_subopt:52' v_norm_cur = v_norm_temp;
                     v_norm_cur = max_res;
                 } else {
-                    // 'SIC_subopt:59' stopping(2) = 1;
+                    stopping[2] = 1.0;
+                    break;
+                }
+                if (v_norm_cur < tolerance) {
                     stopping[1] = 1.0;
                     break;
                 }
             }
         }
-        if(v_norm_cur < tolerance)
-            stopping[2] = 1.0;
+
 
         return {stopping, 0, v_norm_cur};
     }

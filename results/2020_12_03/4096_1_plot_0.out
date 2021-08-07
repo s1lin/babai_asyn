@@ -20,10 +20,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :206.73152, BRR: 0.37585, num_iter: 8.78650, Average time: 0.11976s
-Block Size: 16, n_proc: 12, Res :208.11525, BRR: 0.36176, num_iter: 8.77800, Average time: 0.06796s
-Block Size: 16, n_proc: 24, Res :209.54050, BRR: 0.36731, num_iter: 8.77900, Average time: 0.04019s
-Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.36359, num_iter: 8.78150, Average time: 0.02344s
+Block Size: 16, n_proc: 6, Res :206.73152, BRR: 0.37585, info: 8.78650, Average time: 0.11976s
+Block Size: 16, n_proc: 12, Res :208.11525, BRR: 0.36176, info: 8.77800, Average time: 0.06796s
+Block Size: 16, n_proc: 24, Res :209.54050, BRR: 0.36731, info: 8.77900, Average time: 0.04019s
+Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.36359, info: 8.78150, Average time: 0.02344s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -36,10 +36,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :207.19357, BRR: 0.37524, num_iter: 8.81750, Average time: 0.12092s
-Block Size: 16, n_proc: 12, Res :209.31501, BRR: 0.37378, num_iter: 8.82150, Average time: 0.06817s
-Block Size: 16, n_proc: 24, Res :209.54050, BRR: 0.37201, num_iter: 8.85150, Average time: 0.03995s
-Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.37390, num_iter: 8.83150, Average time: 0.02342s
+Block Size: 16, n_proc: 6, Res :207.19357, BRR: 0.37524, info: 8.81750, Average time: 0.12092s
+Block Size: 16, n_proc: 12, Res :209.31501, BRR: 0.37378, info: 8.82150, Average time: 0.06817s
+Block Size: 16, n_proc: 24, Res :209.54050, BRR: 0.37201, info: 8.85150, Average time: 0.03995s
+Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.37390, info: 8.83150, Average time: 0.02342s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -52,10 +52,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :207.23328, BRR: 0.37115, num_iter: 8.76050, Average time: 0.12044s
-Block Size: 16, n_proc: 12, Res :208.02405, BRR: 0.37390, num_iter: 8.81250, Average time: 0.06800s
-Block Size: 16, n_proc: 24, Res :207.75085, BRR: 0.35480, num_iter: 8.84900, Average time: 0.03998s
-Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.36841, num_iter: 8.84450, Average time: 0.02325s
+Block Size: 16, n_proc: 6, Res :207.23328, BRR: 0.37115, info: 8.76050, Average time: 0.12044s
+Block Size: 16, n_proc: 12, Res :208.02405, BRR: 0.37390, info: 8.81250, Average time: 0.06800s
+Block Size: 16, n_proc: 24, Res :207.75085, BRR: 0.35480, info: 8.84900, Average time: 0.03998s
+Block Size: 16, n_proc: 48, Res :209.54050, BRR: 0.36841, info: 8.84450, Average time: 0.02325s
 End of current TASK.
 -------------------------------------------
 plot_run-------------------------------------------
@@ -77,10 +77,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, num_iter: 2.00000, Average time: 0.06812s
-Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, num_iter: 2.00000, Average time: 0.04213s
-Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, num_iter: 2.00000, Average time: 0.02691s
-Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, num_iter: 2.01200, Average time: 0.01645s
+Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, info: 2.00000, Average time: 0.06812s
+Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, info: 2.00000, Average time: 0.04213s
+Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, info: 2.00000, Average time: 0.02691s
+Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, info: 2.01200, Average time: 0.01645s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -93,10 +93,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, num_iter: 2.92250, Average time: 0.07767s
-Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, num_iter: 3.38350, Average time: 0.05197s
-Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, num_iter: 4.42050, Average time: 0.03451s
-Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, num_iter: 6.18250, Average time: 0.02498s
+Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, info: 2.92250, Average time: 0.07767s
+Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, info: 3.38350, Average time: 0.05197s
+Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, info: 4.42050, Average time: 0.03451s
+Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, info: 6.18250, Average time: 0.02498s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -109,10 +109,10 @@ Threads:6
 Threads:12
 Threads:24
 Threads:48
-Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, num_iter: 2.92050, Average time: 0.07771s
-Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, num_iter: 3.22200, Average time: 0.05012s
-Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, num_iter: 4.16700, Average time: 0.03449s
-Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, num_iter: 6.02000, Average time: 0.02412s
+Block Size: 16, n_proc: 6, Res :2.80184, BRR: 0.00000, info: 2.92050, Average time: 0.07771s
+Block Size: 16, n_proc: 12, Res :2.80184, BRR: 0.00000, info: 3.22200, Average time: 0.05012s
+Block Size: 16, n_proc: 24, Res :2.80184, BRR: 0.00000, info: 4.16700, Average time: 0.03449s
+Block Size: 16, n_proc: 48, Res :2.80184, BRR: 0.00000, info: 6.02000, Average time: 0.02412s
 End of current TASK.
 -------------------------------------------
 

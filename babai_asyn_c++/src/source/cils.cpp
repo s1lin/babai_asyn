@@ -5,138 +5,6 @@ using namespace cils::program_def;
 
 namespace cils {
 
-    /**
-     * Evaluating the decomposition
-     * @tparam scalar
-     * @tparam index
-     * @tparam n
-     * @param A
-     * @param Q
-     * @param R
-     * @param eval
-     * @return
-     */
-    template<typename scalar, typename index, index m, index n>
-    scalar qr_validation(const array<scalar, m * n> &A,
-                         const array<scalar, m * m> &Q,
-                         const array<scalar, m * n> &R,
-                         const index eval, const index verbose) {
-        index i, j, k;
-        scalar sum, error = 0;
-
-        if (eval == 1) {
-            array<scalar, m * n> A_T;
-            A_T.fill(0);
-            helper::mtimes<scalar, index, m, n>(Q, R, A_T);
-
-            if (verbose) {
-                printf("\n[ Print Q:]\n");
-                display_matrix<scalar, index, m, m>(Q);
-                printf("\n[ Print R:]\n");
-                display_matrix<scalar, index, m, n>(R);
-                printf("\n[ Print A:]\n");
-                display_matrix<scalar, index, m, n>(A);
-                printf("\n[ Print Q*R:]\n");
-                display_matrix<scalar, index, m, n>(A_T);
-            }
-
-            for (i = 0; i < m * n; i++) {
-                error += fabs(A_T[i] - A[i]);
-            }
-        }
-
-        return error;
-    }
-
-    /**
-     * Evaluating the decomposition
-     * @tparam scalar
-     * @tparam index
-     * @tparam n
-     * @param A
-     * @param Q
-     * @param R
-     * @param eval
-     * @return
-     */
-    template<typename scalar, typename index, index m, index n>
-    returnType<scalar, index>
-    lll_validation(const array<scalar, m * n> &R_R, const array<scalar, m * n> &R_Q, const array<scalar, m * n> &Z,
-                   const index verbose, std::unique_ptr<matlab::engine::MATLABEngine> &matlabPtr) {
-        printf("[ INFO: in LLL validation]\n");
-        scalar sum, error = 0, det;
-
-        if (verbose) {
-            printf("[ Printing R]\n");
-            for (index i = 0; i < n; i++) {
-                for (index j = 0; j < n; j++) {
-                    printf("%8.5f ", R_R[j * n + i]);
-                }
-                printf("\n");
-            }
-            printf("[ Printing Z]\n");
-            for (index i = 0; i < n; i++) {
-                for (index j = 0; j < n; j++) {
-                    printf("%8.5f ", Z[j * n + i]);
-                }
-                printf("\n");
-            }
-        }
-
-
-        //Create MATLAB data array factory
-        matlab::data::ArrayFactory factory;
-
-        // Call the MATLAB movsum function
-        matlab::data::TypedArray<double> R_M = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, R_Q.begin(), R_Q.end());
-        matlab::data::TypedArray<double> Z_M = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, Z.begin(), Z.end());
-        matlab::data::TypedArray<double> RCM = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, R_R.begin(), R_R.end());
-        matlabPtr->setVariable(u"R_M", std::move(R_M));
-        matlabPtr->setVariable(u"Z_C", std::move(Z_M));
-        matlabPtr->setVariable(u"R_C", std::move(RCM));
-
-        // Call the MATLAB movsum function
-        matlabPtr->eval(u" d = det(mldivide(R_M * Z_C, R_C));");
-//        matlabPtr->eval(u" A = magic(n);");
-
-        matlab::data::TypedArray<double> const d = matlabPtr->getVariable(u"d");
-        int i = 0;
-        for (auto r : d) {
-            det = r;
-            ++i;
-        }
-
-        index pass = true;
-        vector<scalar> fail_index(n, 0);
-        i = 2;
-        while (i < n) {
-
-            // 'eo_sils_reduction:50' i1 = i-1;
-            // 'eo_sils_reduction:51' zeta = round(R_R(i1,i) / R_R(i1,i1));
-            scalar zeta = std::round(R_R[i + n * (i - 1) - 2] / R_R[i + n * (i - 2) - 2]);
-            // 'eo_sils_reduction:52' alpha = R_R(i1,i) - zeta * R_R(i1,i1);
-            scalar s = R_R[(i + n * (i - 2)) - 2];
-            scalar alpha = R_R[(i + n * (i - 1)) - 2] - zeta * s;
-            // 'eo_sils_reduction:53' if R_R(i1,i1)^2 > (1 + 1.e-0) * (alpha^2 +
-            // R_R(i,i)^2)
-            scalar a = R_R[(i + n * (i - 1)) - 1];
-            if (s * s > 2.0 * (alpha * alpha + a * a)) {
-                // 'eo_sils_reduction:54' if zeta ~= 0
-                //  Perform a size reduction on R_R(k-1,k)
-                // 'eo_sils_reduction:56' f = true;
-                pass = false;
-                fail_index[i] = 1;
-            }
-            i++;
-        }
-
-        return {fail_index, det, (scalar) pass};
-    }
-
-
     template<typename scalar, typename index, index m, index n>
     void cils<scalar, index, m, n>::init() {
 
@@ -208,7 +76,7 @@ namespace cils {
 ////            y_a[i] = 0;
 ////        }
 //        if (n <= 16)
-//            display_array<scalar, index>(y_a);
+//            display_vector<scalar, index>(y_a);
 //
 //        //Set Z to Eye:
 //
@@ -224,6 +92,9 @@ namespace cils {
         // Call the MATLAB movsum function
         matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
         matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
+        matlabPtr->setVariable(u"m", std::move(m_M));
+        matlabPtr->setVariable(u"n", std::move(n_M));
+        /*
         matlabPtr->setVariable(u"K", std::move(m_M));
         matlabPtr->setVariable(u"N", std::move(n_M));
 
@@ -231,8 +102,13 @@ namespace cils {
         matlabPtr->eval(
                 u" [s_bar_cur, s_bar1, s_bar2, y, H, HH, Piv] = "
                 "simulations_SIC(K, N, 100, 'random', 1, false);");
-//        matlabPtr->eval(u" A = magic(n);");
+        */
 
+        matlabPtr->eval(
+                u" [s_bar4, y, H, HH, Piv, s_bar1, s] = "
+                "simulations_Block_Optimal(m, n, 3000, 3000, 10000, 'random', 1, false);");
+
+        /*
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
         matlab::data::TypedArray<scalar> const H_A = matlabPtr->getVariable(u"HH");
         matlab::data::TypedArray<scalar> const Z_A = matlabPtr->getVariable(u"Piv");
@@ -240,7 +116,16 @@ namespace cils {
         matlab::data::TypedArray<scalar> const x_1 = matlabPtr->getVariable(u"s_bar_cur");//v_a
         matlab::data::TypedArray<scalar> const x_2 = matlabPtr->getVariable(u"s_bar1");//x_t
         matlab::data::TypedArray<scalar> const x_3 = matlabPtr->getVariable(u"s_bar2");//x_r
-
+        */
+        matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
+        matlab::data::TypedArray<scalar> const H_A = matlabPtr->getVariable(u"HH");
+        matlab::data::TypedArray<scalar> const Z_A = matlabPtr->getVariable(u"Piv");
+        matlab::data::TypedArray<scalar> const y_A = matlabPtr->getVariable(u"y");
+        matlab::data::TypedArray<scalar> const x_1 = matlabPtr->getVariable(u"s_bar1");
+        matlab::data::TypedArray<scalar> const x_2 = matlabPtr->getVariable(u"s_bar4");
+        matlab::data::TypedArray<scalar> const x_s = matlabPtr->getVariable(u"s");
+//        matlab::data::TypedArray<scalar> const l_A = matlabPtr->getVariable(u"l");
+//        matlab::data::TypedArray<scalar> const u_A = matlabPtr->getVariable(u"u");
         index i = 0;
 
         for (auto r : A_A) {
@@ -258,78 +143,74 @@ namespace cils {
             y_a[i] = r;
             i++;
         }
-        i = 0;
-        for (auto r : x_1) {
-            v_a[i] = r;
-            i++;
-        }
+//        i = 0;
+//        for (auto r : x_1) {
+//            v_a[i] = r;
+//            i++;
+//        }
         i = 0;
         for (auto r : x_2) {
-            x_t[i] = r;
-            i++;
-        }
-        i = 0;
-        for (auto r : x_3) {
             x_r[i] = r;
             i++;
         }
+        i = 0;
+        for (auto r : x_s) {
+            x_t[i] = r;
+            i++;
+        }
+//        i = 0;
+//        for (auto r : u_A) {
+//            u[i] = r;
+//            i++;
+//        }
+        i = 0;
+//        for (auto r : x_3) {
+//            x_r[i] = r;
+//            i++;
+//        }
 
     }
 
-    template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init_y() {
-
-        for (index i = 0; i < n; i++) {
-            scalar sum = 0;
-            for (index j = 0; j < n; j++) {
-                sum += Q[i * n + j] * y_a[j]; //Q'*y;
-            }
-            y_q[i] = sum;
-            y_r[i] = y_q[i];
-        }
-    }
-
-
-    template<typename scalar, typename index, index m, index n>
-    void cils<scalar, index, m, n>::init_R() {
-        if (!is_matlab) {
-            if (is_qr) {
-                for (index i = 0; i < n; i++) {
-                    for (index j = 0; j < n; j++) {
-                        R_R[j * n + i] = R_Q[j * n + i];
-                    }
-                }
-                for (index i = 0; i < n; i++) {
-                    for (index j = i; j < n; j++) {
-                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
-                    }
-                }
-            } else {
-                for (index i = 0; i < n; i++) {
-                    for (index j = i; j < n; j++) {
-                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_R[j * n + i];
-                    }
-                }
-            }
-        } else {
-            for (index i = 0; i < n; i++) {
-                for (index j = i; j < n; j++) {
-                    R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
-                }
-            }
-        }
-        if (n <= 16) {
-            cout << endl;
-            for (index i = 0; i < n; i++) {
-                for (index j = i; j < n; j++) {
-//                swap(R[i * n + j], R[j * n + i]);
-                    printf("%8.5f ", R_A[(n * i) + j - ((i * (i + 1)) / 2)]);
-                }
-                cout << endl;
-            }
-        }
-    }
-
+/*    template<typename scalar, typename index, index m, index n>
+//    void cils<scalar, index, m, n>::init_R() {
+//        if (!is_matlab) {
+//            if (is_qr) {
+//                for (index i = 0; i < n; i++) {
+//                    for (index j = 0; j < n; j++) {
+//                        R_R[j * n + i] = R_Q[j * n + i];
+//                    }
+//                }
+//                for (index i = 0; i < n; i++) {
+//                    for (index j = i; j < n; j++) {
+//                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
+//                    }
+//                }
+//            } else {
+//                for (index i = 0; i < n; i++) {
+//                    for (index j = i; j < n; j++) {
+//                        R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_R[j * n + i];
+//                    }
+//                }
+//            }
+//        } else {
+//            for (index i = 0; i < n; i++) {
+//                for (index j = i; j < n; j++) {
+//                    R_A[(n * i) + j - ((i * (i + 1)) / 2)] = R_Q[j * n + i];
+//                }
+//            }
+//        }
+//        if (n <= 16) {
+//            cout << endl;
+//            for (index i = 0; i < n; i++) {
+//                for (index j = i; j < n; j++) {
+////                swap(R[i * n + j], R[j * n + i]);
+//                    printf("%8.5f ", R_A[(n * i) + j - ((i * (i + 1)) / 2)]);
+//                }
+//                cout << endl;
+//            }
+//        }
+   }
+*/
     template<typename scalar, typename index, index m, index n>
     inline void matrix_vector_mult(const array<scalar, m * n> &Z, vector<scalar> *x) {
         array<scalar, n> x_c, x_z;
@@ -356,7 +237,7 @@ namespace cils {
             x_z[i] = x[i];
         }
 
-        helper::mtimes_1<scalar, index, m, n>(Z, x_z, x_c);
+        helper::mtimes_Axy<scalar, index, m, n>(Z, x_z, x_c);
 
         for (index i = 0; i < m; i++) {
             c[i] = x_c[i];

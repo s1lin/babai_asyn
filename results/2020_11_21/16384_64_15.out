@@ -75,10 +75,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.64052s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.80614s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.63707s
-Block Size: 8, n_proc: 12, res :3323.02423, num_iter: 7.00000, Average time: 0.79097s
-Block Size: 8, n_proc: 24, res :3332.95266, num_iter: 7.00000, Average time: 0.44535s
-Block Size: 8, n_proc: 48, res :3365.27982, num_iter: 7.00000, Average time: 0.24050s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.63707s
+Block Size: 8, n_proc: 12, res :3323.02423, info: 7.00000, Average time: 0.79097s
+Block Size: 8, n_proc: 24, res :3332.95266, info: 7.00000, Average time: 0.44535s
+Block Size: 8, n_proc: 48, res :3365.27982, info: 7.00000, Average time: 0.24050s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: -1
@@ -87,10 +87,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57288s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.75815s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.66941s
-Block Size: 16, n_proc: 12, res :3328.49831, num_iter: 7.00000, Average time: 0.81680s
-Block Size: 16, n_proc: 24, res :3331.35196, num_iter: 7.00000, Average time: 0.43091s
-Block Size: 16, n_proc: 48, res :3353.51337, num_iter: 7.00000, Average time: 0.25047s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.66941s
+Block Size: 16, n_proc: 12, res :3328.49831, info: 7.00000, Average time: 0.81680s
+Block Size: 16, n_proc: 24, res :3331.35196, info: 7.00000, Average time: 0.43091s
+Block Size: 16, n_proc: 48, res :3353.51337, info: 7.00000, Average time: 0.25047s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: -1
@@ -99,10 +99,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57306s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.03600s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 7.00000, Average time: 5.17311s
-Block Size: 32, n_proc: 12, res :3548.45916, num_iter: 7.00000, Average time: 4.33665s
-Block Size: 32, n_proc: 24, res :8723.86000, num_iter: 7.00000, Average time: 3.93790s
-Block Size: 32, n_proc: 48, res :10427.74484, num_iter: 7.00000, Average time: 3.56009s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 7.00000, Average time: 5.17311s
+Block Size: 32, n_proc: 12, res :3548.45916, info: 7.00000, Average time: 4.33665s
+Block Size: 32, n_proc: 24, res :8723.86000, info: 7.00000, Average time: 3.93790s
+Block Size: 32, n_proc: 48, res :10427.74484, info: 7.00000, Average time: 3.56009s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 0
@@ -111,10 +111,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57435s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.82564s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.61342s
-Block Size: 8, n_proc: 12, res :3320.64347, num_iter: 7.00000, Average time: 0.79292s
-Block Size: 8, n_proc: 24, res :3326.42912, num_iter: 7.00000, Average time: 0.42887s
-Block Size: 8, n_proc: 48, res :3352.41745, num_iter: 7.00000, Average time: 0.24033s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.61342s
+Block Size: 8, n_proc: 12, res :3320.64347, info: 7.00000, Average time: 0.79292s
+Block Size: 8, n_proc: 24, res :3326.42912, info: 7.00000, Average time: 0.42887s
+Block Size: 8, n_proc: 48, res :3352.41745, info: 7.00000, Average time: 0.24033s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -123,10 +123,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57406s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.75047s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.66681s
-Block Size: 16, n_proc: 12, res :3331.09185, num_iter: 7.00000, Average time: 0.83459s
-Block Size: 16, n_proc: 24, res :3338.26536, num_iter: 7.00000, Average time: 0.43405s
-Block Size: 16, n_proc: 48, res :3361.77790, num_iter: 7.00000, Average time: 0.24706s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.66681s
+Block Size: 16, n_proc: 12, res :3331.09185, info: 7.00000, Average time: 0.83459s
+Block Size: 16, n_proc: 24, res :3338.26536, info: 7.00000, Average time: 0.43405s
+Block Size: 16, n_proc: 48, res :3361.77790, info: 7.00000, Average time: 0.24706s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 0
@@ -135,10 +135,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57312s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.01730s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 7.00000, Average time: 5.17205s
-Block Size: 32, n_proc: 12, res :3562.51148, num_iter: 7.00000, Average time: 4.37780s
-Block Size: 32, n_proc: 24, res :15305.07521, num_iter: 7.00000, Average time: 4.22175s
-Block Size: 32, n_proc: 48, res :21590.43753, num_iter: 7.00000, Average time: 3.55307s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 7.00000, Average time: 5.17205s
+Block Size: 32, n_proc: 12, res :3562.51148, info: 7.00000, Average time: 4.37780s
+Block Size: 32, n_proc: 24, res :15305.07521, info: 7.00000, Average time: 4.22175s
+Block Size: 32, n_proc: 48, res :21590.43753, info: 7.00000, Average time: 3.55307s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 1
@@ -147,10 +147,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.60594s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.81545s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.60281s
-Block Size: 8, n_proc: 12, res :3317.78293, num_iter: 7.00000, Average time: 0.81422s
-Block Size: 8, n_proc: 24, res :3332.27525, num_iter: 7.00000, Average time: 0.42777s
-Block Size: 8, n_proc: 48, res :3348.30638, num_iter: 7.00000, Average time: 0.24402s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.60281s
+Block Size: 8, n_proc: 12, res :3317.78293, info: 7.00000, Average time: 0.81422s
+Block Size: 8, n_proc: 24, res :3332.27525, info: 7.00000, Average time: 0.42777s
+Block Size: 8, n_proc: 48, res :3348.30638, info: 7.00000, Average time: 0.24402s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -159,10 +159,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57361s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.76021s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.63111s
-Block Size: 16, n_proc: 12, res :3329.68362, num_iter: 7.00000, Average time: 0.80608s
-Block Size: 16, n_proc: 24, res :3349.96562, num_iter: 7.00000, Average time: 0.43006s
-Block Size: 16, n_proc: 48, res :3374.39510, num_iter: 7.00000, Average time: 0.24519s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.63111s
+Block Size: 16, n_proc: 12, res :3329.68362, info: 7.00000, Average time: 0.80608s
+Block Size: 16, n_proc: 24, res :3349.96562, info: 7.00000, Average time: 0.43006s
+Block Size: 16, n_proc: 48, res :3374.39510, info: 7.00000, Average time: 0.24519s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 1
@@ -171,10 +171,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57672s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.02415s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 7.00000, Average time: 5.20368s
-Block Size: 32, n_proc: 12, res :3553.49974, num_iter: 7.00000, Average time: 4.32619s
-Block Size: 32, n_proc: 24, res :15151.13134, num_iter: 7.00000, Average time: 3.91004s
-Block Size: 32, n_proc: 48, res :19518.11208, num_iter: 7.00000, Average time: 3.53509s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 7.00000, Average time: 5.20368s
+Block Size: 32, n_proc: 12, res :3553.49974, info: 7.00000, Average time: 4.32619s
+Block Size: 32, n_proc: 24, res :15151.13134, info: 7.00000, Average time: 3.91004s
+Block Size: 32, n_proc: 48, res :19518.11208, info: 7.00000, Average time: 3.53509s
 -------------------------------------------
 Init, size: 16384
 Init, QAM: 64
@@ -190,10 +190,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.58132s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.80478s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.68438s
-Block Size: 8, n_proc: 12, res :3330.93947, num_iter: 6.20000, Average time: 0.40201s
-Block Size: 8, n_proc: 24, res :3329.38121, num_iter: 6.60000, Average time: 0.29167s
-Block Size: 8, n_proc: 48, res :3385.16526, num_iter: 7.00000, Average time: 0.24300s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.68438s
+Block Size: 8, n_proc: 12, res :3330.93947, info: 6.20000, Average time: 0.40201s
+Block Size: 8, n_proc: 24, res :3329.38121, info: 6.60000, Average time: 0.29167s
+Block Size: 8, n_proc: 48, res :3385.16526, info: 7.00000, Average time: 0.24300s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: -1
@@ -202,10 +202,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57425s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.76063s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.68673s
-Block Size: 16, n_proc: 12, res :3331.38872, num_iter: 7.00000, Average time: 0.82239s
-Block Size: 16, n_proc: 24, res :3360.40637, num_iter: 7.00000, Average time: 0.43148s
-Block Size: 16, n_proc: 48, res :3362.23962, num_iter: 7.00000, Average time: 0.24691s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.68673s
+Block Size: 16, n_proc: 12, res :3331.38872, info: 7.00000, Average time: 0.82239s
+Block Size: 16, n_proc: 24, res :3360.40637, info: 7.00000, Average time: 0.43148s
+Block Size: 16, n_proc: 48, res :3362.23962, info: 7.00000, Average time: 0.24691s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: -1
@@ -214,10 +214,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57377s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.03911s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 6.20000, Average time: 4.72272s
-Block Size: 32, n_proc: 12, res :3450.14511, num_iter: 4.00000, Average time: 2.74714s
-Block Size: 32, n_proc: 24, res :7775.45000, num_iter: 2.20000, Average time: 1.58057s
-Block Size: 32, n_proc: 48, res :10490.81765, num_iter: 2.00000, Average time: 1.33353s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 6.20000, Average time: 4.72272s
+Block Size: 32, n_proc: 12, res :3450.14511, info: 4.00000, Average time: 2.74714s
+Block Size: 32, n_proc: 24, res :7775.45000, info: 2.20000, Average time: 1.58057s
+Block Size: 32, n_proc: 48, res :10490.81765, info: 2.00000, Average time: 1.33353s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 0
@@ -226,10 +226,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.58531s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.82372s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.61742s
-Block Size: 8, n_proc: 12, res :3327.48275, num_iter: 7.00000, Average time: 0.79342s
-Block Size: 8, n_proc: 24, res :3333.18823, num_iter: 7.00000, Average time: 0.42912s
-Block Size: 8, n_proc: 48, res :3362.77425, num_iter: 7.00000, Average time: 0.23964s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.61742s
+Block Size: 8, n_proc: 12, res :3327.48275, info: 7.00000, Average time: 0.79342s
+Block Size: 8, n_proc: 24, res :3333.18823, info: 7.00000, Average time: 0.42912s
+Block Size: 8, n_proc: 48, res :3362.77425, info: 7.00000, Average time: 0.23964s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -238,10 +238,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.57382s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.75808s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.67092s
-Block Size: 16, n_proc: 12, res :3328.12956, num_iter: 7.00000, Average time: 0.80818s
-Block Size: 16, n_proc: 24, res :3344.86203, num_iter: 7.00000, Average time: 0.43184s
-Block Size: 16, n_proc: 48, res :3378.57914, num_iter: 7.00000, Average time: 0.24687s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.67092s
+Block Size: 16, n_proc: 12, res :3328.12956, info: 7.00000, Average time: 0.80818s
+Block Size: 16, n_proc: 24, res :3344.86203, info: 7.00000, Average time: 0.43184s
+Block Size: 16, n_proc: 48, res :3378.57914, info: 7.00000, Average time: 0.24687s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 0
@@ -250,10 +250,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.58450s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.06212s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 6.00000, Average time: 4.55829s
-Block Size: 32, n_proc: 12, res :3607.83241, num_iter: 3.60000, Average time: 3.04063s
-Block Size: 32, n_proc: 24, res :20341.00442, num_iter: 2.20000, Average time: 1.58763s
-Block Size: 32, n_proc: 48, res :21309.86006, num_iter: 2.00000, Average time: 1.34023s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 6.00000, Average time: 4.55829s
+Block Size: 32, n_proc: 12, res :3607.83241, info: 3.60000, Average time: 3.04063s
+Block Size: 32, n_proc: 24, res :20341.00442, info: 2.20000, Average time: 1.58763s
+Block Size: 32, n_proc: 48, res :21309.86006, info: 2.00000, Average time: 1.34023s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 1
@@ -262,10 +262,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.60699s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 3325.40819, Run time: 0.81964s
 Block OMP:
-Block Size: 8, n_proc: 6, res :3325.40819, num_iter: 7.00000, Average time: 1.63686s
-Block Size: 8, n_proc: 12, res :3325.10376, num_iter: 7.00000, Average time: 0.79712s
-Block Size: 8, n_proc: 24, res :3317.12426, num_iter: 7.00000, Average time: 0.42927s
-Block Size: 8, n_proc: 48, res :3392.44448, num_iter: 7.00000, Average time: 0.24633s
+Block Size: 8, n_proc: 6, res :3325.40819, info: 7.00000, Average time: 1.63686s
+Block Size: 8, n_proc: 12, res :3325.10376, info: 7.00000, Average time: 0.79712s
+Block Size: 8, n_proc: 24, res :3317.12426, info: 7.00000, Average time: 0.42927s
+Block Size: 8, n_proc: 48, res :3392.44448, info: 7.00000, Average time: 0.24633s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -274,10 +274,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.58086s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 3334.40211, Run time: 0.75442s
 Block OMP:
-Block Size: 16, n_proc: 6, res :3334.40211, num_iter: 7.00000, Average time: 1.65248s
-Block Size: 16, n_proc: 12, res :3329.68700, num_iter: 7.00000, Average time: 0.81348s
-Block Size: 16, n_proc: 24, res :3350.95088, num_iter: 7.00000, Average time: 0.43729s
-Block Size: 16, n_proc: 48, res :3349.55182, num_iter: 7.00000, Average time: 0.24731s
+Block Size: 16, n_proc: 6, res :3334.40211, info: 7.00000, Average time: 1.65248s
+Block Size: 16, n_proc: 12, res :3329.68700, info: 7.00000, Average time: 0.81348s
+Block Size: 16, n_proc: 24, res :3350.95088, info: 7.00000, Average time: 0.43729s
+Block Size: 16, n_proc: 48, res :3349.55182, info: 7.00000, Average time: 0.24731s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 1
@@ -286,10 +286,10 @@ Thread: SR, Res: 3349.68070, Run time: 0.61047s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 3336.52917, Run time: 2.05593s
 Block OMP:
-Block Size: 32, n_proc: 6, res :3336.52917, num_iter: 5.80000, Average time: 4.40785s
-Block Size: 32, n_proc: 12, res :3599.44268, num_iter: 3.80000, Average time: 2.62257s
-Block Size: 32, n_proc: 24, res :14448.44031, num_iter: 2.20000, Average time: 1.57413s
-Block Size: 32, n_proc: 48, res :19428.49768, num_iter: 2.00000, Average time: 1.33109s
+Block Size: 32, n_proc: 6, res :3336.52917, info: 5.80000, Average time: 4.40785s
+Block Size: 32, n_proc: 12, res :3599.44268, info: 3.80000, Average time: 2.62257s
+Block Size: 32, n_proc: 24, res :14448.44031, info: 2.20000, Average time: 1.57413s
+Block Size: 32, n_proc: 48, res :19428.49768, info: 2.00000, Average time: 1.33109s
 -------------------------------------------
 -------------------------------------------
 Init, size: 16384
@@ -366,10 +366,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57934s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.80397s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.58908s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.78900s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42524s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24072s
+Block Size: 8, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.58908s
+Block Size: 8, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.78900s
+Block Size: 8, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42524s
+Block Size: 8, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24072s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: -1
@@ -378,10 +378,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57491s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.73376s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.58846s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.81247s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42608s
-Block Size: 16, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24871s
+Block Size: 16, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.58846s
+Block Size: 16, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.81247s
+Block Size: 16, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42608s
+Block Size: 16, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24871s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: -1
@@ -390,10 +390,10 @@ Thread: SR, Res: 27.65740, Run time: 0.59708s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.72611s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.63912s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.81763s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42932s
-Block Size: 32, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.23119s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.63912s
+Block Size: 32, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.81763s
+Block Size: 32, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42932s
+Block Size: 32, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.23119s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 0
@@ -402,10 +402,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57314s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.80825s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.64845s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.79879s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.43165s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24014s
+Block Size: 8, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.64845s
+Block Size: 8, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.79879s
+Block Size: 8, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.43165s
+Block Size: 8, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24014s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -414,10 +414,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57429s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.74720s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.63594s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.79417s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42826s
-Block Size: 16, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24114s
+Block Size: 16, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.63594s
+Block Size: 16, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.79417s
+Block Size: 16, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42826s
+Block Size: 16, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24114s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 0
@@ -426,10 +426,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57312s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.70281s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 2.10510s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 1.07763s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.59111s
-Block Size: 32, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.36296s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 2.10510s
+Block Size: 32, n_proc: 12, res :27.65740, info: 7.00000, Average time: 1.07763s
+Block Size: 32, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.59111s
+Block Size: 32, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.36296s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 1
@@ -438,10 +438,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57444s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.80561s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.71694s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.79520s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42583s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24916s
+Block Size: 8, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.71694s
+Block Size: 8, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.79520s
+Block Size: 8, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42583s
+Block Size: 8, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24916s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -450,10 +450,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57955s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.74573s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.65392s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.79559s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42541s
-Block Size: 16, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24576s
+Block Size: 16, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.65392s
+Block Size: 16, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.79559s
+Block Size: 16, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42541s
+Block Size: 16, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24576s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 1
@@ -462,10 +462,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57677s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.70779s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.96150s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.98463s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.58058s
-Block Size: 32, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.34027s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.96150s
+Block Size: 32, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.98463s
+Block Size: 32, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.58058s
+Block Size: 32, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.34027s
 -------------------------------------------
 Init, size: 16384
 Init, QAM: 64
@@ -481,10 +481,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57411s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.81155s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 6.20000, Average time: 1.09698s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 3.60000, Average time: 0.27069s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 2.80000, Average time: 0.08579s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 2.00000, Average time: 0.04974s
+Block Size: 8, n_proc: 6, res :27.65740, info: 6.20000, Average time: 1.09698s
+Block Size: 8, n_proc: 12, res :27.65740, info: 3.60000, Average time: 0.27069s
+Block Size: 8, n_proc: 24, res :27.65740, info: 2.80000, Average time: 0.08579s
+Block Size: 8, n_proc: 48, res :27.65740, info: 2.00000, Average time: 0.04974s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: -1
@@ -493,10 +493,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57711s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.74419s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 6.60000, Average time: 1.35677s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 4.80000, Average time: 0.40749s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 2.00000, Average time: 0.08460s
-Block Size: 16, n_proc: 48, res :130.55602, num_iter: 3.60000, Average time: 0.04919s
+Block Size: 16, n_proc: 6, res :27.65740, info: 6.60000, Average time: 1.35677s
+Block Size: 16, n_proc: 12, res :27.65740, info: 4.80000, Average time: 0.40749s
+Block Size: 16, n_proc: 24, res :27.65740, info: 2.00000, Average time: 0.08460s
+Block Size: 16, n_proc: 48, res :130.55602, info: 3.60000, Average time: 0.04919s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: -1
@@ -505,10 +505,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57681s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.70053s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.62110s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 3.60000, Average time: 0.14223s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 2.60000, Average time: 0.08481s
-Block Size: 32, n_proc: 48, res :27.65740, num_iter: 3.20000, Average time: 0.05386s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.62110s
+Block Size: 32, n_proc: 12, res :27.65740, info: 3.60000, Average time: 0.14223s
+Block Size: 32, n_proc: 24, res :27.65740, info: 2.60000, Average time: 0.08481s
+Block Size: 32, n_proc: 48, res :27.65740, info: 3.20000, Average time: 0.05386s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 0
@@ -517,10 +517,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57874s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.80434s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.64359s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.78950s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.43447s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24242s
+Block Size: 8, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.64359s
+Block Size: 8, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.78950s
+Block Size: 8, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.43447s
+Block Size: 8, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24242s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
@@ -529,10 +529,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57561s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.73560s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.68701s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.80646s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42916s
-Block Size: 16, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.27771s
+Block Size: 16, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.68701s
+Block Size: 16, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.80646s
+Block Size: 16, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42916s
+Block Size: 16, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.27771s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 0
@@ -541,10 +541,10 @@ Thread: SR, Res: 27.65740, Run time: 0.58728s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.71406s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 2.00177s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 1.11150s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 6.00000, Average time: 0.52330s
-Block Size: 32, n_proc: 48, res :43508.18906, num_iter: 2.20000, Average time: 0.12467s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 2.00177s
+Block Size: 32, n_proc: 12, res :27.65740, info: 7.00000, Average time: 1.11150s
+Block Size: 32, n_proc: 24, res :27.65740, info: 6.00000, Average time: 0.52330s
+Block Size: 32, n_proc: 48, res :43508.18906, info: 2.20000, Average time: 0.12467s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 8
 Init, value: 1
@@ -553,10 +553,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57514s
 Block Serial:
 Method: ILS_SER, Block size: 8, Res: 27.65740, Run time: 0.82511s
 Block OMP:
-Block Size: 8, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.65667s
-Block Size: 8, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.81130s
-Block Size: 8, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.43594s
-Block Size: 8, n_proc: 48, res :27.65740, num_iter: 7.00000, Average time: 0.24355s
+Block Size: 8, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.65667s
+Block Size: 8, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.81130s
+Block Size: 8, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.43594s
+Block Size: 8, n_proc: 48, res :27.65740, info: 7.00000, Average time: 0.24355s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
@@ -565,10 +565,10 @@ Thread: SR, Res: 27.65740, Run time: 0.57897s
 Block Serial:
 Method: ILS_SER, Block size: 16, Res: 27.65740, Run time: 0.74366s
 Block OMP:
-Block Size: 16, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.65380s
-Block Size: 16, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 0.81170s
-Block Size: 16, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.42420s
-Block Size: 16, n_proc: 48, res :784.65421, num_iter: 7.00000, Average time: 0.24822s
+Block Size: 16, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.65380s
+Block Size: 16, n_proc: 12, res :27.65740, info: 7.00000, Average time: 0.81170s
+Block Size: 16, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.42420s
+Block Size: 16, n_proc: 48, res :784.65421, info: 7.00000, Average time: 0.24822s
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 32
 Init, value: 1
@@ -577,8 +577,8 @@ Thread: SR, Res: 27.65740, Run time: 0.58019s
 Block Serial:
 Method: ILS_SER, Block size: 32, Res: 27.65740, Run time: 0.72587s
 Block OMP:
-Block Size: 32, n_proc: 6, res :27.65740, num_iter: 7.00000, Average time: 1.98993s
-Block Size: 32, n_proc: 12, res :27.65740, num_iter: 7.00000, Average time: 1.00791s
-Block Size: 32, n_proc: 24, res :27.65740, num_iter: 7.00000, Average time: 0.64526s
-Block Size: 32, n_proc: 48, res :6928.33580, num_iter: 3.00000, Average time: 0.22879s
+Block Size: 32, n_proc: 6, res :27.65740, info: 7.00000, Average time: 1.98993s
+Block Size: 32, n_proc: 12, res :27.65740, info: 7.00000, Average time: 1.00791s
+Block Size: 32, n_proc: 24, res :27.65740, info: 7.00000, Average time: 0.64526s
+Block Size: 32, n_proc: 48, res :6928.33580, info: 3.00000, Average time: 0.22879s
 -------------------------------------------

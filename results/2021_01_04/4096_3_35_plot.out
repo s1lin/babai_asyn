@@ -16,30 +16,30 @@ Block, size: 16
 Init, value: -1
 Method: BBA_SER, Block size: 16, Res: 589.65595, BER: 0.35197, Time: 307.54765s, Avg Time: 0.15377s
 Method: ILS_SER, Block size: 16, Res: 12.71981, BER: 0.00000, Time: 361.13726s, Avg Time: 0.18057s
-Method: ILS_OMP, n_proc: 12, Res :13.66651, BER: 0.00018, num_iter: 2.47400, Time: 57.79273s, Avg Time: 0.02890s, Speed up: 6.249
-Method: ILS_OMP, n_proc: 24, Res :14.11627, BER: 0.00018, num_iter: 3.27100, Time: 39.78100s, Avg Time: 0.01989s, Speed up: 9.078
-Method: ILS_OMP, n_proc: 36, Res :14.61164, BER: 0.00022, num_iter: 3.88950, Time: 33.57186s, Avg Time: 0.01679s, Speed up: 10.757
-Method: ILS_OMP, n_proc: 48, Res :26.33165, BER: 0.00156, num_iter: 4.47400, Time: 32.99466s, Avg Time: 0.01650s, Speed up: 10.945
+Method: ILS_OMP, n_proc: 12, Res :13.66651, BER: 0.00018, info: 2.47400, Time: 57.79273s, Avg Time: 0.02890s, Speed up: 6.249
+Method: ILS_OMP, n_proc: 24, Res :14.11627, BER: 0.00018, info: 3.27100, Time: 39.78100s, Avg Time: 0.01989s, Speed up: 9.078
+Method: ILS_OMP, n_proc: 36, Res :14.61164, BER: 0.00022, info: 3.88950, Time: 33.57186s, Avg Time: 0.01679s, Speed up: 10.757
+Method: ILS_OMP, n_proc: 48, Res :26.33165, BER: 0.00156, info: 4.47400, Time: 32.99466s, Avg Time: 0.01650s, Speed up: 10.945
 ++++++++++++++++++++++++++++++++++++++
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 0
 Method: BBA_SER, Block size: 16, Res: 589.65595, BER: 0.35197, Time: 305.86894s, Avg Time: 0.15293s
 Method: ILS_SER, Block size: 16, Res: 12.71981, BER: 0.00000, Time: 358.84633s, Avg Time: 0.17942s
-Method: ILS_OMP, n_proc: 12, Res :13.18200, BER: 0.00010, num_iter: 1.99950, Time: 64.25344s, Avg Time: 0.03213s, Speed up: 5.585
-Method: ILS_OMP, n_proc: 24, Res :13.23734, BER: 0.00007, num_iter: 3.02350, Time: 46.16526s, Avg Time: 0.02308s, Speed up: 7.773
-Method: ILS_OMP, n_proc: 36, Res :22.56554, BER: 0.00136, num_iter: 4.40600, Time: 42.63039s, Avg Time: 0.02132s, Speed up: 8.418
-Method: ILS_OMP, n_proc: 48, Res :30.68589, BER: 0.00160, num_iter: 4.98600, Time: 39.80714s, Avg Time: 0.01990s, Speed up: 9.015
+Method: ILS_OMP, n_proc: 12, Res :13.18200, BER: 0.00010, info: 1.99950, Time: 64.25344s, Avg Time: 0.03213s, Speed up: 5.585
+Method: ILS_OMP, n_proc: 24, Res :13.23734, BER: 0.00007, info: 3.02350, Time: 46.16526s, Avg Time: 0.02308s, Speed up: 7.773
+Method: ILS_OMP, n_proc: 36, Res :22.56554, BER: 0.00136, info: 4.40600, Time: 42.63039s, Avg Time: 0.02132s, Speed up: 8.418
+Method: ILS_OMP, n_proc: 48, Res :30.68589, BER: 0.00160, info: 4.98600, Time: 39.80714s, Avg Time: 0.01990s, Speed up: 9.015
 ++++++++++++++++++++++++++++++++++++++
 ++++++++++++++++++++++++++++++++++++++
 Block, size: 16
 Init, value: 1
 Method: BBA_SER, Block size: 16, Res: 589.65595, BER: 0.35197, Time: 309.01642s, Avg Time: 0.15451s
 Method: ILS_SER, Block size: 16, Res: 12.71981, BER: 0.00000, Time: 358.55084s, Avg Time: 0.17928s
-Method: ILS_OMP, n_proc: 12, Res :13.18237, BER: 0.00005, num_iter: 1.99750, Time: 63.90922s, Avg Time: 0.03195s, Speed up: 5.610
-Method: ILS_OMP, n_proc: 24, Res :13.83012, BER: 0.00014, num_iter: 2.59900, Time: 41.91907s, Avg Time: 0.02096s, Speed up: 8.553
-Method: ILS_OMP, n_proc: 36, Res :20.05430, BER: 0.00107, num_iter: 3.82900, Time: 39.28132s, Avg Time: 0.01964s, Speed up: 9.128
-Method: ILS_OMP, n_proc: 48, Res :30.11867, BER: 0.00108, num_iter: 4.20350, Time: 36.72933s, Avg Time: 0.01836s, Speed up: 9.762
+Method: ILS_OMP, n_proc: 12, Res :13.18237, BER: 0.00005, info: 1.99750, Time: 63.90922s, Avg Time: 0.03195s, Speed up: 5.610
+Method: ILS_OMP, n_proc: 24, Res :13.83012, BER: 0.00014, info: 2.59900, Time: 41.91907s, Avg Time: 0.02096s, Speed up: 8.553
+Method: ILS_OMP, n_proc: 36, Res :20.05430, BER: 0.00107, info: 3.82900, Time: 39.28132s, Avg Time: 0.01964s, Speed up: 9.128
+Method: ILS_OMP, n_proc: 48, Res :30.11867, BER: 0.00108, info: 4.20350, Time: 36.72933s, Avg Time: 0.01836s, Speed up: 9.762
 ++++++++++++++++++++++++++++++++++++++
 End of current TASK.
 -------------------------------------------

@@ -88,7 +88,7 @@ endif ()
 find_package(Python3 COMPONENTS Interpreter NumPy)
 find_package(OpenMP REQUIRED)
 find_package(Matlab REQUIRED)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 include_directories(${Python3_INCLUDE_DIRS})
 include_directories(${Python3_NumPy_INCLUDE_DIR})

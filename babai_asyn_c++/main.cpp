@@ -7,8 +7,8 @@ using namespace cils;
 void run_test(int argc, char *argv[]) {
 
     program_def::init_program_def(argc, argv);
-//    init_point_test<scalar, int, M, N>();
-    sic_opt_test<scalar, int, M, N>();
+    block_optimal_test<scalar, int, M, N>();
+//    sic_opt_test<scalar, int, M, N>();
 //    switch (program_def::mode) {
 //        case 0:
 ////            plot_LLL<scalar, index, M,  N>();
