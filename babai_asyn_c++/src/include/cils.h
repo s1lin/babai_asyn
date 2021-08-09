@@ -32,12 +32,11 @@
 #include <algorithm>
 #include <netcdf.h>
 #include <bitset>
-#include <math.h>
+#include <cmath>
 #include "config.h"
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
-#include "helper.h"
 
 using namespace std;
 
@@ -65,7 +64,7 @@ namespace cils {
 
     public:
         index qam, snr, upper, lower;
-        scalar init_res, sigma;
+        scalar init_res, sigma, tolerance;
         array<scalar, m * (n + 1) / 2> R_A;
 
         array<scalar, m * n> A, H;
@@ -228,20 +227,22 @@ namespace cils {
          * @tparam n - integer scalar
          * @param x_cur - n-dimensional integer vector for the sub-optimal solution
          * @param v_norm_cur - real scalar for the norm of the residual vector
-         * @param tolerance - for norm of residual vector
          * @param max_Babai - integer scalar, maximum number of calls to block_opt
          * @param stopping - 1-by-3 boolean vector, indicates stopping criterion used
          * @return {}
          */
         returnType<scalar, index>
-        cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, scalar tolerance, index max_Babai);
+        cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur);
 
         returnType <scalar, index>
-        cils_block_search_serial(const index init, const scalar *R_R, const scalar y_r, const vector<index> *d,
+        cils_block_search_serial(const index init, const scalar *R_R, const scalar *y_r, const vector<index> *d,
                                  vector<scalar> *z_B);
 
         returnType <scalar, index>
-        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, scalar tolerance, index max_Babai);
+        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur);
+
+        returnType <scalar, index>
+        cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar v_norm_cur);
     };
 }
 #endif

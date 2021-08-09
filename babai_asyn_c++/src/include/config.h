@@ -6,9 +6,9 @@
 #include <cmath>
 #include <iostream>
 #include <climits>
+#include "helper.h"
 
-
-const static int M = 7;
+const static int M = 10;
 const static int N = 20;
 
 using namespace std;
@@ -76,6 +76,7 @@ namespace cils {
 
         std::vector<index> d_s(N / block_size + spilt_size - 1, block_size);
 //        std::vector<index> d_s(N / block_size, block_size);
+        vector<vector<scalar>> permutation(max_iter);
 
         void init_program_def(int argc, char *argv[]) {
             if (argc != 1) {
@@ -91,7 +92,11 @@ namespace cils {
                    (int) pow(k, 4), SNR, max_iter, block_size,
                    search_iter, stop, num_trials, max_search,
                    is_local, is_constrained, is_matlab);
-
+            for (index k1 = 0; k1 < max_iter; k1++) {
+                permutation[k1] = vector<scalar>(N);
+                permutation[k1].assign(N, 0);
+                helper::randperm(N, permutation[k1].data());
+            }
             for (int i = 0; i < spilt_size; i++) {
                 d_s[i] = block_size / spilt_size;
             }
@@ -109,7 +114,7 @@ namespace cils {
         }
 
 
-        template<typename scalar, typename index, index m ,index n>
+        template<typename scalar, typename index, index m, index n>
         void init_guess(index init_value, vector<scalar> *z_B, scalar *x_R) {
             if (init_value == 0) {
                 for (index i = 0; i < n; i++)

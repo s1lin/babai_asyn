@@ -116,9 +116,16 @@ void block_optimal_test() {
     printf("error_bits: %d, v_norm: %8.4f, time: %8.4f\n", diff, v_norm, reT.run_time);
 
 
+
+
+    x_tmp.assign(n, 0);
+    for(index i = 0; i<n;i++){
+        x_ser[i] = x_q[i];
+        x_omp[i] = x_q[i];
+    }
+
     //STEP 2: Block SCP:
-    x_ser.assign(x_q.begin(), x_q.end());
-    reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr, 1e-6, 3000);
+    reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr);
     v_norm = reT2.info;
     helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_ser.data(), x_tmp.data());
 
@@ -131,8 +138,8 @@ void block_optimal_test() {
            diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
 
     //STEP 2: OMP-Block SCP:
-    x_omp.assign(x_q.begin(), x_q.end());
-    reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr, 1e-6, 3000);
+    x_tmp.assign(n, 0);
+    reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr);
     v_norm = reT2.info;
     helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
 

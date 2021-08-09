@@ -105,8 +105,8 @@ namespace cils {
         */
 
         matlabPtr->eval(
-                u" [s_bar4, y, H, HH, Piv, s_bar1, s] = "
-                "simulations_Block_Optimal(m, n, 3000, 3000, 10000, 'random', 1, false);");
+                u" [s_bar4, y, H, HH, Piv, s_bar1, s, tolerance] = "
+                "simulations_Block_Optimal(m, n, 3000, 3000, 10000, 'random', 1, true);");
 
         /*
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
@@ -124,6 +124,7 @@ namespace cils {
         matlab::data::TypedArray<scalar> const x_1 = matlabPtr->getVariable(u"s_bar1");
         matlab::data::TypedArray<scalar> const x_2 = matlabPtr->getVariable(u"s_bar4");
         matlab::data::TypedArray<scalar> const x_s = matlabPtr->getVariable(u"s");
+        matlab::data::TypedArray<scalar> const tolerance_s = matlabPtr->getVariable(u"tolerance");
 //        matlab::data::TypedArray<scalar> const l_A = matlabPtr->getVariable(u"l");
 //        matlab::data::TypedArray<scalar> const u_A = matlabPtr->getVariable(u"u");
         index i = 0;
@@ -164,10 +165,10 @@ namespace cils {
 //            i++;
 //        }
         i = 0;
-//        for (auto r : x_3) {
-//            x_r[i] = r;
-//            i++;
-//        }
+        for (auto r : tolerance_s) {
+            this->tolerance = r;
+            i++;
+        }
 
     }
 

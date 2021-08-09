@@ -144,6 +144,8 @@ namespace cils {
             this->R_Q.resize(m * n);
             this->Q.resize(m * m);
             this->y_q.resize(m);
+            this->Z.resize(n * n);
+            helper::eye<scalar, index>(n, Z.data());
         }
 
         /**

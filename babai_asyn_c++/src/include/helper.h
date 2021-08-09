@@ -25,14 +25,13 @@
 #include <cstring>
 
 const double ZERO = 3.3121686421112381E-170;
-
+using namespace std;
 namespace helper {
 
-    void b_rand(const int n, vector<double> &r) {
+    void b_rand(const int n, double *r) {
         unsigned int state[625];
         unsigned int u[2];
         int i = n;
-        r.resize(i);
         for (int k{0}; k < i; k++) {
             double b_r;
             // ========================= COPYRIGHT NOTICE ============================
@@ -124,25 +123,25 @@ namespace helper {
         }
     }
 
-    void randperm(double n, vector<double> &p) {
-        vector<int> idx;
-        vector<int> iwork;
+    void randperm(int n, double *p) {
+        std::vector<int> idx;
+        std::vector<int> iwork;
         int b_i;
         int b_n;
         int i;
         int qEnd;
         b_rand(n, p);
-        b_n = p.size() + 1;
-        idx.resize(p.size());
-        i = p.size();
+        b_n = n + 1;
+        idx.resize(n);
+        i = n;
         for (b_i = 0; b_i < i; b_i++) {
             idx[b_i] = 0;
         }
-        if (p.size() != 0) {
+        if (n != 0) {
             double d;
             int k;
-            iwork.resize(p.size());
-            b_i = p.size() - 1;
+            iwork.resize(n);
+            b_i = n - 1;
             for (k = 1; k <= b_i; k += 2) {
                 d = p[k];
                 if ((p[k - 1] <= d) || std::isnan(d)) {
@@ -153,8 +152,8 @@ namespace helper {
                     idx[k] = k;
                 }
             }
-            if ((p.size() & 1) != 0) {
-                idx[p.size() - 1] = p.size();
+            if ((n & 1) != 0) {
+                idx[n - 1] = n;
             }
             i = 2;
             while (i < b_n - 1) {
@@ -208,9 +207,7 @@ namespace helper {
                 i = i2;
             }
         }
-        i = p.size();
-        p.resize(1, i);
-        for (b_i = 0; b_i < i; b_i++) {
+        for (b_i = 0; b_i < n; b_i++) {
             p[b_i] = idx[b_i];
         }
     }
@@ -297,7 +294,6 @@ namespace helper {
     }
 
 
-
     /**
      * 
      * @tparam scalar 
@@ -316,34 +312,34 @@ namespace helper {
         return diff;
     }
 
-    template<typename scalar, typename index, index m, index n, index mb>
-    void mrdiv(array<scalar, m * n> &B, const array<scalar, n * mb> &A) {
-        using namespace matlab::engine;
-
-        // Start MATLAB engine synchronously
-        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
-
-        //Create MATLAB data array factory
-        matlab::data::ArrayFactory factory;
-
-        // Call the MATLAB movsum function
-        matlab::data::TypedArray<scalar> A_M = factory.createArray(
-                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, A.begin(), A.end());
-        matlab::data::TypedArray<scalar> B_M = factory.createArray(
-                {static_cast<unsigned long>(n), static_cast<unsigned long>(mb)}, B.begin(), B.end());
-        matlabPtr->setVariable(u"A", std::move(A_M));
-        matlabPtr->setVariable(u"B", std::move(B_M));
-
-        // Call the MATLAB movsum function
-        matlabPtr->eval(u" R = mldivide(A, B);");
-
-        matlab::data::TypedArray<scalar> const R = matlabPtr->getVariable(u"R");
-        index i = 0;
-        for (auto r : R) {
-            B[i] = r;
-            ++i;
-        }
-    }
+//    template<typename scalar, typename index, index m, index n, index mb>
+//    void mrdiv(array<scalar, m * n> &B, const array<scalar, n * mb> &A) {
+//        using namespace matlab::engine;
+//
+//        // Start MATLAB engine synchronously
+//        std::unique_ptr<MATLABEngine> matlabPtr = startMATLAB();
+//
+//        //Create MATLAB data array factory
+//        matlab::data::ArrayFactory factory;
+//
+//        // Call the MATLAB movsum function
+//        matlab::data::TypedArray<scalar> A_M = factory.createArray(
+//                {static_cast<unsigned long>(m), static_cast<unsigned long>(n)}, A.begin(), A.end());
+//        matlab::data::TypedArray<scalar> B_M = factory.createArray(
+//                {static_cast<unsigned long>(n), static_cast<unsigned long>(mb)}, B.begin(), B.end());
+//        matlabPtr->setVariable(u"A", std::move(A_M));
+//        matlabPtr->setVariable(u"B", std::move(B_M));
+//
+//        // Call the MATLAB movsum function
+//        matlabPtr->eval(u" R = mldivide(A, B);");
+//
+//        matlab::data::TypedArray<scalar> const R = matlabPtr->getVariable(u"R");
+//        index i = 0;
+//        for (auto r : R) {
+//            B[i] = r;
+//            ++i;
+//        }
+//    }
 
     /**
      * Givens plane rotation
@@ -463,17 +459,17 @@ namespace helper {
         return (scalar) error / (n * k);
     }
 
-     /**
-      * Simple function for displaying a m-by-n matrix with name
-      * @tparam scalar : real number type
-      * @tparam index : integer type
-      * @param m : integer scalar, size of the matrix
-      * @param n : integer scalar, size of the matrix
-      * @param x : matrix, in pointer
-      * @param name: display name of the matrix
-      */
+    /**
+     * Simple function for displaying a m-by-n matrix with name
+     * @tparam scalar : real number type
+     * @tparam index : integer type
+     * @param m : integer scalar, size of the matrix
+     * @param n : integer scalar, size of the matrix
+     * @param x : matrix, in pointer
+     * @param name: display name of the matrix
+     */
     template<typename scalar, typename index>
-     void display_matrix(index m, index n, const scalar *x, string name) {
+    void display_matrix(index m, index n, const scalar *x, string name) {
         cout << name << ": \n";
         for (index i = 0; i < m; i++) {
             for (index j = 0; j < n; j++) {
@@ -481,7 +477,7 @@ namespace helper {
             }
             cout << "\n";
         }
-         cout << endl;
+        cout << endl;
     }
 
     /**
@@ -493,7 +489,7 @@ namespace helper {
      * @param name: display name of the vector
      */
     template<typename scalar, typename index>
-    void display_vector(const index n, const scalar *x, string name) {
+    void display_vector(const index n, const scalar *x, const string &name) {
         cout << name << ": ";
         scalar sum = 0;
         for (index i = 0; i < n; i++) {
@@ -511,7 +507,7 @@ namespace helper {
      */
     template<typename index>
     bool if_all_x_true(const vector<bool> &x) {
-        bool y = (x.size() != 0);
+        bool y = (!x.empty());
         if (!y) return y;
 //        for(index k = 0; k < x.size(); k++){
 //            if(!x[k]) {
