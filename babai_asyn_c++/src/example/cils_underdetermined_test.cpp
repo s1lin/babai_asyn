@@ -89,65 +89,97 @@
 //}
 
 template<typename scalar, typename index, index m, index n>
-void block_optimal_test() {
-    time_t t0 = time(nullptr);
-    struct tm *lt = localtime(&t0);
-    char time_str[20];
-    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
-            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
-            lt->tm_hour, lt->tm_min, lt->tm_sec
-    );
-    printf("====================[ TEST | SIC_OPT | %s ]==================================\n", time_str);
+void block_optimal_test(int size, int rank) {
+    vector<scalar> x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
+    double *v_norm_qr = (double *) calloc(1, sizeof(double));
 
-
+    scalar v_norm;
+    cils::returnType<scalar, index> reT3;
     cils::cils<scalar, index, m, n> cils(k, 35);
-    cils.init_ud();
+    //auto a = (double *)malloc(N * sizeof(double));
+    if (rank == 0) {
+        cils.init_ud();
+        time_t t0 = time(nullptr);
+        struct tm *lt = localtime(&t0);
+        char time_str[20];
+        sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+                lt->tm_hour, lt->tm_min, lt->tm_sec
+        );
+        printf("====================[ TEST | SIC_OPT | %s ]==================================\n", time_str);
 
-    vector<scalar> x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0);
-    scalar v_norm, v_norm_qr;
-    cils::returnType<scalar, index> reT, reT2;
-
-    //STEP 1: init point by QRP
-    reT = cils.cils_qrp_serial(x_q);
-    helper::display_vector<scalar, index>(n, x_q.data(), "x");
-    v_norm_qr = reT.info;
-    helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
-    index diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-    printf("error_bits: %d, v_norm: %8.4f, time: %8.4f\n", diff, v_norm, reT.run_time);
+        cils::returnType<scalar, index> reT, reT2;
+        //STEP 1: init point by QRP
+        reT = cils.cils_qrp_serial(x_q);
+        helper::display_vector<scalar, index>(n, x_q.data(), "x");
+        v_norm_qr[0] = reT.info;
+        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
+        index diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        printf("error_bits: %d, v_norm: %8.4f, time: %8.4f\n", diff, v_norm, reT.run_time);
 
 
+        x_tmp.assign(n, 0);
+        for (index i = 0; i < n; i++) {
+            x_ser[i] = x_q[i];
+            x_omp[i] = x_q[i];
+            x_mpi[i] = x_q[i];
+        }
 
 
-    x_tmp.assign(n, 0);
-    for(index i = 0; i<n;i++){
-        x_ser[i] = x_q[i];
-        x_omp[i] = x_q[i];
+        //STEP 2: Block SCP:
+        reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr[0]);
+        v_norm = reT2.info;
+        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_ser.data(), x_tmp.data());
+
+        //Result Validation:
+        helper::display_vector<scalar, index>(n, x_ser.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
+               diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+
+        //STEP 2: OMP-Block SCP:
+        x_tmp.assign(n, 0);
+        reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr[0]);
+        v_norm = reT2.info;
+        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
+
+        //Result Validation:
+        helper::display_vector<scalar, index>(n, x_omp.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
+               diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+
     }
 
-    //STEP 2: Block SCP:
-    reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr);
-    v_norm = reT2.info;
-    helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_ser.data(), x_tmp.data());
+    //STEP 2: MPI-Block SCP:
+    MPI_Bcast(&x_mpi[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Bcast(&v_norm_qr[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Bcast(&cils.y_a[0], m, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Bcast(&cils.H[0], m * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    //Result Validation:
-    helper::display_vector<scalar, index>(n, x_ser.data(), "x_z");
-    helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-    helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
-    diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-    printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
-           diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+    reT3 = cils.cils_scp_block_optimal_mpi(x_mpi, v_norm_qr, size, rank);
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    //STEP 2: OMP-Block SCP:
-    x_tmp.assign(n, 0);
-    reT2 = cils.cils_scp_block_optimal_omp(x_omp, v_norm_qr);
-    v_norm = reT2.info;
-    helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
+    if (rank == 0) {
+//        v_norm = reT3.info;
+        x_tmp.assign(n, 0);
+        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_mpi.data(), x_tmp.data());
 
-    //Result Validation:
-    helper::display_vector<scalar, index>(n, x_omp.data(), "x_z");
-    helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-    helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
-    diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
-    printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f\n",
-           diff, reT2.x[0], reT2.x[1], reT2.x[2], v_norm, reT2.run_time);
+        //Result Validation:
+        helper::display_vector<scalar, index>(n, x_mpi.data(), "x_z");
+        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
+        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_p");
+        index diff = helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        printf("error_bits: %d, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f, rank:%d\n",
+               diff, reT3.x[0], reT3.x[1], reT3.x[2], v_norm, reT3.run_time, rank);
+    }
+
 }

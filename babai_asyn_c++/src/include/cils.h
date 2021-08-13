@@ -242,7 +242,7 @@ namespace cils {
         cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur);
 
         returnType <scalar, index>
-        cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar v_norm_cur);
+        cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar *v_norm_cur, index size, index rank);
     };
 }
 #endif

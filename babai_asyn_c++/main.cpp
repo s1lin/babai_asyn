@@ -4,10 +4,10 @@
 using namespace std;
 using namespace cils;
 
-void run_test(int argc, char *argv[]) {
+void run_test(int argc, char *argv[], int rank) {
 
-    program_def::init_program_def(argc, argv);
-    block_optimal_test<scalar, int, M, N>();
+
+//    block_optimal_test<scalar, int, M, N>(rank);
 //    sic_opt_test<scalar, int, M, N>();
 //    switch (program_def::mode) {
 //        case 0:
@@ -30,15 +30,54 @@ void run_test(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    double t;
+    MPI_Comm comm;
+    int rank, size;
+    MPI_Init(nullptr, nullptr);
+    comm = MPI_COMM_WORLD;
+    /* Determine the sender and receiver */
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
 
-    printf("====================[ Run | cils | Release ]==================================\n");
+    if (rank == 0) {
+        printf("====================[ Run | cils | Release ]==================================\n");
+        t = omp_get_wtime();
 
-    double t = omp_get_wtime();
-    run_test(argc, argv);
-    t = omp_get_wtime() - t;
+    }
+    program_def::init_program_def(argc, argv);
+    block_optimal_test<scalar, int, M, N>(size, rank);
 
-    printf("====================[TOTAL TIME | %2.2fs, %2.2fm, %2.2fh]==================================\n",
-           t, t / 60, t / 3600);
+    if (rank == 0) {
+        t = omp_get_wtime() - t;
+
+        printf("====================[TOTAL TIME | %2.2fs, %2.2fm, %2.2fh]==================================\n",
+               t, t / 60, t / 3600);
+    }
+    /* do a zero length gather */
+    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+    MPI_Finalize();
 
     return 0;
 }
+
+//int main(int argc, char *argv[]) {
+//    int numprocs, rank, namelen;
+//    char processor_name[MPI_MAX_PROCESSOR_NAME];
+//    int iam = 0, np = 1;
+//
+//    MPI_Init(&argc, &argv);
+//    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+//    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+//    MPI_Get_processor_name(processor_name, &namelen);
+//
+//  #pragma omp parallel default(shared) private(iam, np)
+//    {
+//        np = omp_get_num_threads();
+//        iam = omp_get_thread_num();
+//        printf("Hello from thread %d out of %d from process %d out of %d on %s\n",
+//               iam, np, rank, numprocs, processor_name);
+//    }
+//
+//    MPI_Finalize();
+//}
