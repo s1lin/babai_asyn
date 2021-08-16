@@ -84,12 +84,12 @@ namespace cils {
             this->snr = snr;
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->upper = pow(2, qam) - 1;
+            helper::eye<scalar, index>(n, P.data());
+            helper::eye<scalar, index>(n, Z.data());
 
             this->R_A.fill(0);// = new scalar[n * (n + 1) / 2];
 
             this->A.fill(0);//.resize(n * n, 0);
-            this->Z.fill(0);//.resize(n * n, 0);
-            this->P.fill(0);//.resize(n * n, 0);
             this->H.fill(0);//.resize(n * n, 0);
 
             this->x_r.fill(0);//.resize(n, 0);
@@ -239,7 +239,7 @@ namespace cils {
                                  vector<scalar> *z_B);
 
         returnType <scalar, index>
-        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur);
+        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc);
 
         returnType <scalar, index>
         cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar *v_norm_cur, index size, index rank);

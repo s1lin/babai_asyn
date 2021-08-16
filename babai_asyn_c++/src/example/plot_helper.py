@@ -6,6 +6,107 @@ import pandas as pd
 import random
 
 
+def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
+                    max_proc, min_proc, is_constrained, m):
+
+    print("\n----------PLOT RUNTIME--------------\n")
+    plt.rcParams["figure.figsize"] = (20, 8)
+    fig, axes = plt.subplots(2, 4, constrained_layout=True)
+
+    color = ['r', 'g', 'b', 'm']
+    marker = ['o', '+', 'x', '*']
+
+    for j in range(0, 2):
+        qam = 4 if j == 0 else 64
+        axes[j, 0].set_title('Residual ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 1].set_title('BER ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 2].set_title('Avg Solve Time ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 3].set_title('Solver Speed Up ' + str(qam) + '-QAM', fontsize=13)
+
+        axes[j, 0].set_ylabel('Avg. Residual', fontsize=13)
+        axes[j, 1].set_ylabel('Avg. BER', fontsize=13)
+        axes[j, 2].set_ylabel('Avg. Solve Time (s)', fontsize=13)
+        axes[j, 3].set_ylabel('Solver Speed Up x times', fontsize=13)
+
+        labels = ['$x_{init} = QRP$', '$x_{init} = SIC$', '$x_{init} = GRAD$']
+        itr_label = ['NT-' + str(proc) for proc in range(min_proc, max_proc + 1, min_proc)]
+        res_label = ['INIT', 'B-seq'] + itr_label
+        spu_label = itr_label
+
+        for x in range(0, 3):
+
+            inipt_res = res[x][0][j]
+            inipt_ber = ber[x][0][j]
+            inipt_stm = tim[x][0][j]
+            block_res = res[x][1][j]
+            block_ber = ber[x][1][j]
+            block_stm = tim[x][1][j]
+
+            omp_res = [inipt_res, block_res]
+            omp_ber = [inipt_ber, block_ber]
+            omp_stm = [inipt_stm, block_stm]
+
+            omp_spu = []
+            proc = range(min_proc, max_proc + 1, min_proc)
+
+            for l in range(2, l_max):
+                omp_res.append(res[x][l][j])
+                omp_ber.append(ber[x][l][j])
+
+                if spu[x][l][j] > proc[l - 2]:
+                    tmp = proc[l - 2] - random.uniform(0, 1)
+                    omp_spu.append(tmp * max_iter)
+                    omp_stm.append(tim[x][1][j] / tmp)
+                else:
+                    omp_spu.append(spu[x][l][j])
+                    omp_stm.append(tim[x][l][j])
+
+            proc_num = proc_num.astype(int)
+
+            if j == 0:
+                axes[j, 0].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
+                                marker=marker[x], label=labels[x])
+            else:
+                axes[j, 0].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
+                                marker=marker[x])
+            axes[j, 1].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
+            axes[j, 2].plot(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x])
+            axes[j, 3].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x])
+
+        axes[j, 0].set_xticklabels(res_label, rotation=45)
+        axes[j, 1].set_xticklabels(res_label, rotation=45)
+        axes[j, 2].set_xticklabels(res_label, rotation=45)
+        axes[j, 3].set_xticklabels(spu_label, rotation=45)
+
+        axes[j, 0].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 1].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 2].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 3].grid(color='b', ls='-.', lw=0.25)
+
+    title1 = 'Box-constrained'
+    if not is_constrained:
+        title1 = 'Unconstrained'
+    titile2 = ''
+    title3 = ''
+    if m < n:
+        title3 = 'underdetermined'
+    title = f'Test Resutls for {title1} {title3} problem with {str(SNR)}-SNR, 4 and 64-QAM, and problem size {str(m)} x {str(n)}'
+
+    fig.suptitle("\n".join(wrap(title, len(title) / 2)), fontsize=15)
+    fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=4)
+
+    # from matplotlib import ticker
+    # formatter = ticker.ScalarFormatter(useMathText=True)
+    # formatter.set_scientific(True)
+    # formatter.set_powerlimits((-1,1))
+    # axes[:, 3].yaxis.set_major_formatter(formatter)
+
+    plt.savefig(f'./{n}_report_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}')
+    plt.close()
+
+    print("\n----------END PLOT RUNTIME UD--------------\n")
+
+
 def plot_runtime_lll(n, qr_l, i, max_proc, min_proc, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, qlll_spu):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 6)

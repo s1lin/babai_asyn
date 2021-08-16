@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
 
     }
     program_def::init_program_def(argc, argv);
-    block_optimal_test<scalar, int, M, N>(size, rank);
+    plot_run<scalar, int, M, N>(size, rank);
+    //block_optimal_test<scalar, int, M, N>(size, rank);
 
     if (rank == 0) {
         t = omp_get_wtime() - t;

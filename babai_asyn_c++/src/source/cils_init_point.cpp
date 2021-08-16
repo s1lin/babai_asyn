@@ -28,7 +28,7 @@ namespace cils {
         index ij[2], ji[2], i1, i2, b_j, i, bound = 1, t = 0;//pow(2, qam) - 1, t = 0;
 
         x.resize(n, 0);
-        helper::eye<scalar, index, n>(P);
+        helper::eye<scalar, index>(n, P.data());
         for (i = 0; i < m; i++) {
             y_2[i] = y_a[i];
         }
@@ -60,7 +60,7 @@ namespace cils {
                 for (i2 = 0; i2 < m; i2++) {
                     y_1[i2] = y_2[i2] - s_temp * H[i2 + m * i];
                 }
-                res = helper::norm<scalar, index, m>(y_1);
+                res = helper::norm<scalar, index>(m, y_1.data());
 
                 if (res < max_res) {
                     t = i + 1;
@@ -104,7 +104,7 @@ namespace cils {
                 y_2[i1] = y_2[i1] - x[b_j - 1] * H[i1 + m * (b_j - 1)];
             }
         }
-        scalar v_norm = helper::norm<scalar, index, m>(y_2);
+        scalar v_norm = helper::norm<scalar, index>(m, y_2.data());
         time = omp_get_wtime() - time;
 
         return {{}, time, v_norm};
@@ -118,11 +118,11 @@ namespace cils {
         array<scalar, m> b_y_q;
         index ij[2], ji[2], t = -1, i1, i2, i, j;
         scalar c_i, x_est = 0, b_i, b_m, loop_ub, bound = 1, max_res;
-
+        scalar time = omp_get_wtime();
         //QR:
         cils_reduction<scalar, index> reduction(m, n, 0, 0);
         reduction.cils_qr_serial(A.data(), y_a.data());
-        helper::display_vector<scalar, index>(m, reduction.y_q.data(), "y_q");
+//        helper::display_vector<scalar, index>(m, reduction.y_q.data(), "y_q");
         
         x.resize(n, 0);
         helper::eye<scalar, index>(n, P.data());
@@ -247,12 +247,13 @@ namespace cils {
             reduction.y_q[i] = reduction.y_q[i] - b_y_q[i];
         }
         scalar v_norm = helper::norm<scalar, index>(m, reduction.y_q.data());
-        return {{}, 0, v_norm};
+        time = omp_get_wtime() - time;
+        return {{}, time, v_norm};
     }
 
     template<typename scalar, typename index, index m, index n>
     returnType <scalar, index>
-    cils<scalar, index, m, n>::cils_grad_proj(vector<scalar> &x, const index max_iter) {
+    cils<scalar, index, m, n>::cils_grad_proj(vector<scalar> &x, const index search_iter) {
         vector<scalar> r0, ex;
         array<scalar, n> c, g, pj_1;
         array<scalar, m> q;
@@ -275,6 +276,7 @@ namespace cils {
         //     x - n-dimensional real vector, a solution
         // 'ubils_reduction:221' n = length(x);
         // 'ubils_reduction:223' c = A'*y_a;
+        scalar time = omp_get_wtime();
         c.fill(0);
         for (j = 0; j < m; j++) {
             for (i = 0; i < n; i++) {
@@ -282,8 +284,8 @@ namespace cils {
             }
         }
 
-        // 'ubils_reduction:225' for iter = 1:max_iter
-        for (index iter = 0; iter < max_iter; iter++) {
+        // 'ubils_reduction:225' for iter = 1:search_iter
+        for (index iter = 0; iter < search_iter; iter++) {
             // 'ubils_reduction:227' g = A'*(A*x-y_a);
             r0.resize(m);
             for (i = 0; i < m; i++) {
@@ -579,7 +581,21 @@ namespace cils {
                 }
             }
         }
-        return {{}, 0, 0};
+        //s_bar4 = round_int(s_bar4_unrounded, -1, 1);
+        index bound = 1;
+        for(i = 0; i < n; i++){
+            scalar x_est = x[i];
+            x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
+            if (x_est < -bound) {
+                x_est = -bound;
+            } else if (x_est > bound) {
+                x_est = bound;
+            }
+            x[i] = x_est;
+        }
+        //todo: v_norm
+        time = omp_get_wtime() - time;
+        return {{}, 0, time};
     }
 
 

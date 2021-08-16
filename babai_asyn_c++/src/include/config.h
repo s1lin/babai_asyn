@@ -8,8 +8,8 @@
 #include <climits>
 #include "helper.h"
 
-const static int M = 7;
-const static int N = 20;
+const static int M = 20;
+const static int N = 30;
 
 using namespace std;
 
@@ -24,8 +24,8 @@ namespace cils::program_def {
      */
     index k = 3;
     index SNR = 35;
-    index max_iter = 1000;
-    index search_iter = 1000;
+    index max_iter = 100;
+    index search_iter = 3000;
     index stop = 3;
     index schedule = 2;
     index chunk_size = 1;
@@ -40,10 +40,10 @@ namespace cils::program_def {
     index num_trials = 10; //nswp
     index is_local = 1;
     index max_search = 400000;//INT_MAX;
-    index min_proc = 2;
+    index min_proc = 3;
     index plot_itr = 1;
     scalar coeff = 17.5;
-    index max_proc = min(omp_get_max_threads(), N / block_size);
+    index max_proc = 12;
     index max_thre = 400000;//maximum search allowed for serial ils.
     auto q = static_cast<index>(std::ceil((scalar) N / (scalar) M));
 
@@ -75,7 +75,7 @@ namespace cils::program_def {
     std::vector<index> d_s(N / block_size + spilt_size - 1, block_size);
     std::vector<index> indicator(2 * q, 0);
 //        std::vector<index> d_s(N / block_size, block_size);
-    vector<vector<scalar>> permutation(max_iter);
+    vector<vector<scalar>> permutation(search_iter);
 
     void init_program_def(int argc, char *argv[]) {
         if (argc != 1) {
@@ -91,7 +91,11 @@ namespace cils::program_def {
                (int) pow(k, 4), SNR, max_iter, block_size,
                search_iter, stop, num_trials, max_search,
                is_local, is_constrained, is_matlab);
-        for (index k1 = 0; k1 < max_iter; k1++) {
+        permutation[0] = vector<scalar>(N);
+        for (index k1 = 0; k1 < N; k1++) {
+            permutation[0][k1] = k1 + 1;
+        }
+        for (index k1 = 1; k1 < search_iter; k1++) {
             permutation[k1] = vector<scalar>(N);
             permutation[k1].assign(N, 0);
             helper::randperm(N, permutation[k1].data());

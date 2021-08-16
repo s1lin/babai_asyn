@@ -92,8 +92,10 @@ namespace cils {
         // Call the MATLAB movsum function
         matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
         matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
+        matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(snr);
         matlabPtr->setVariable(u"m", std::move(m_M));
         matlabPtr->setVariable(u"n", std::move(n_M));
+        matlabPtr->setVariable(u"snr", std::move(SNR));
         /*
         matlabPtr->setVariable(u"K", std::move(m_M));
         matlabPtr->setVariable(u"N", std::move(n_M));
@@ -106,7 +108,7 @@ namespace cils {
 
         matlabPtr->eval(
                 u" [s_bar4, y, H, HH, Piv, s_bar1, s, tolerance] = "
-                "simulations_Block_Optimal(m, n, 3000, 3000, 10000, 'random', 1, true);");
+                "simulations_Block_Optimal(snr, m, n, 3000, 3000, 10000, 'random', 1, true);");
 
         /*
         matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"H");
