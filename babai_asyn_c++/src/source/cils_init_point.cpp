@@ -263,6 +263,11 @@ namespace cils {
         vector<index> r1, r2, r3, r4, r5;
         vector<bool> b_x_0, b_x_1(n, 0);
         index i, j, k1, k2, k3;
+        H.fill(0);
+        helper::eye<scalar, index>(n, P.data());
+        for (i = 0; i < m * n; i++) {
+            H[i] = A[i];
+        }
         //
         //  Find a solution to the box-constrained real least squares problem
         //  min_{l<=x<=u}||y_a-Bx|| by the gradient projection method

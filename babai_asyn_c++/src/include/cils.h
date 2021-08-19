@@ -234,14 +234,14 @@ namespace cils {
          * @return {}
          */
         returnType<scalar, index>
-        cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur);
+        cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
 
         returnType <scalar, index>
         cils_block_search_serial(const index init, const scalar *R_R, const scalar *y_r, const vector<index> *d,
                                  vector<scalar> *z_B);
 
         returnType <scalar, index>
-        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc);
+        cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);
 
         returnType <scalar, index>
         cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar *v_norm_cur, index size, index rank);

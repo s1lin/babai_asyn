@@ -121,9 +121,8 @@ void block_optimal_test(int size, int rank) {
         //STEP 1: init point by QRP
         reT = cils.cils_qrp_serial(x_q);
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
-        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
-                                                                     cils.y_a.data());
-        scalar ber = 0; //helper::length_nonzeros<scalar, index, n>(x_tmp.data(), cils.x_t.data());
+        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(), cils.y_a.data());
+        scalar ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
         helper::display_vector<scalar, index>(n, x_tmp.data(), "x_q");
         printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
 
@@ -137,7 +136,7 @@ void block_optimal_test(int size, int rank) {
 
         //STEP 2: Block SCP:
         x_tmp.assign(n, 0);
-        reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr[0]);
+        reT2 = cils.cils_scp_block_optimal_serial(x_ser, v_norm_qr[0], 0);
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_ser.data(), x_tmp.data());
         v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(), cils.y_a.data());
 
@@ -227,7 +226,7 @@ long plot_run(int size, int rank) {
                 cils.qam = k;
                 cils.upper = pow(2, k) - 1;
                 cils.u.fill(cils.upper);
-                cils.init();
+                cils.init(0);
                 r = helper::find_residual<scalar, index>(m, n, cils.A.data(), cils.x_t.data(), cils.y_a.data());
                 printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
 
@@ -249,20 +248,13 @@ long plot_run(int size, int rank) {
                         cout << "Method: SIC, ";
                     } else {
                         reT = cils.cils_grad_proj(z_ini, search_iter);
-                        for (i = 0; i < m * n; i++) {
-                            cils.H[i] = cils.A[i];
-                        }
                         cout << "Method: GRD, ";
                     }
                     //Grad_proj, P = eye(n);
-                    v_norm_qr[0] = reT.info;
                     helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ini.data(), z_tmp.data());
-//                    if (k == 3) {
-//                        helper::display_vector<scalar, index>(n, cils.x_t.data(), "x_t");
-//                        helper::display_vector<scalar, index>(n, z_tmp.data(), "x_i");
-//                    }
                     b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), k);
                     r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
+                    v_norm_qr[0] = r;
                     t = reT.run_time;
                     res[init + 1][0][count] += r;
                     ber[init + 1][0][count] += b;
@@ -277,13 +269,15 @@ long plot_run(int size, int rank) {
                      * Serial Block SCP Test
                      */
                     z_ser.assign(z_ini.begin(), z_ini.end());
-                    reT = cils.cils_scp_block_optimal_serial(z_ser, v_norm_qr[0]);
                     z_tmp.assign(n, 0);
-                    helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ser.data(), z_tmp.data());
-//                    if (k == 3) {
-//                        helper::display_vector<scalar, index>(n, z_tmp.data(), "x_s");
-//                    }
-                    b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), cils.qam);
+                    index itr = 0;
+                    do{
+                        reT = cils.cils_scp_block_optimal_serial(z_ser, v_norm_qr[0], itr > 0);
+                        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ser.data(), z_tmp.data());
+                        b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), cils.qam);
+                        z_ser.assign(z_ini.begin(), z_ini.end());
+                        itr++;
+                    } while(b > 0.3 && itr < 100);
                     r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
                     b_ser = b;
                     ser_time = reT.run_time;
@@ -310,7 +304,7 @@ long plot_run(int size, int rank) {
                         cils::program_def::chunk = 1;
                         while (true) {
                             z_omp.assign(z_ini.begin(), z_ini.end());
-                            reT = cils.cils_scp_block_optimal_omp(z_omp, v_norm_qr[0], n_proc);
+                            reT = cils.cils_scp_block_optimal_omp(z_omp, v_norm_qr[0], n_proc, _ll > 0);
                             z_tmp.assign(n, 0);
                             helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_omp.data(), z_tmp.data());
                             t = reT.run_time;
@@ -323,14 +317,13 @@ long plot_run(int size, int rank) {
                             b2 = min(b, b2);
                             _ll++;
 
-                            if (prev_t > t && b - b_ser < 0.1) break;
+                            if (prev_t > t && b - b_ser < 0.1) break; //
                             if (_ll == 100) {
                                 r = r2;
                                 b = b2;
                                 t = t2;
                                 break; //
                             }
-                            cils::program_def::chunk = _ll;
                         }
 
                         res[init + 1][l][count] += r;

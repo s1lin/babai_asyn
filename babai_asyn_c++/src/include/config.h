@@ -8,8 +8,8 @@
 #include <climits>
 #include "helper.h"
 
-const static int M = 4;
-const static int N = 6;
+const static int M = 12;
+const static int N = 18;
 
 using namespace std;
 
@@ -24,8 +24,8 @@ namespace cils::program_def {
      */
     index qam = 3;
     index SNR = 35;
-    index max_iter = 100;
-    index search_iter = (int) 1000;
+    index max_iter = 500;
+    index search_iter = (int) 1e5;
     index stop = 3;
     index schedule = 2;
     index chunk_size = 1;
