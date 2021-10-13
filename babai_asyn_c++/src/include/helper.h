@@ -281,6 +281,17 @@ namespace helper {
             }
         }
     }
+    
+    template<typename scalar, typename index>
+    void mtimes_AP(index m, index n, const scalar *A, const scalar *P, scalar *A_t) {
+        for (index j = 0; j < n; j++) {
+            for (index k = 0; k < n; k++) {
+                for (index i = 0; i < m; i++) {
+                    A_t[j * m + i] += A[k * m + i] * P[j * n + k];
+                }
+            }
+        }
+    }
 
     template<typename scalar, typename index>
     void inv(const index K, const index N, const vector<scalar> &x, vector<scalar> &y) {
@@ -620,7 +631,7 @@ namespace helper {
      * @param name: display name of the matrix
      */
     template<typename scalar, typename index>
-    void display_matrix(index m, index n, const scalar *x, string name) {
+    void display_matrix(index m, index n, const scalar *x, const string& name) {
         cout << name << ": \n";
         for (index i = 0; i < m; i++) {
             for (index j = 0; j < n; j++) {

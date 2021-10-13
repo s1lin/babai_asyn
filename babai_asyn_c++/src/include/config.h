@@ -8,8 +8,8 @@
 #include <climits>
 #include "helper.h"
 
-const static int M = 12;
-const static int N = 18;
+const static int M = 4;
+const static int N = 6;
 
 using namespace std;
 

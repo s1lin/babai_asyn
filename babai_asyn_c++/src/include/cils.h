@@ -236,9 +236,44 @@ namespace cils {
         returnType<scalar, index>
         cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
 
+        returnType<scalar, index>
+        cils_scp_block_babai_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
+
+        returnType<scalar, index>
+        cils_scp_block_babai_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);
+
+        /**
+         *  Corresponds to Algorithm 5 (Partition Strategy) in Report 10
+         *  [H_A, P, z, Q_tilde, R_tilde, indicator] =
+         *  partition_H(A, z_B, m, n) permutes and partitions H_A so
+         *  that the submatrices H_i are full-column rank
+         *
+         *  Inputs:
+         *      A - m-by-n real matrix
+         *      z_B - n-dimensional integer vector
+         *      m - integer scalar
+         *      n - integer scalar
+         *
+         *  Outputs:
+         *      P - n-by-n real matrix, permutation such that
+         *      H_A*P=A z - n-dimensional integer vector
+         *      (z_B permuted to correspond to H_A) Q_tilde - m-by-n real matrix
+         *      (Q factors) R_tilde - m-by-n real matrix (R factors) indicator -
+         *      2-by-q integer matrix (indicates submatrices of H_A)
+         * @param z_B
+         * @param Q_tilde
+         * @param R_tilde
+         * @param H_A
+         * @param Piv_cum
+         * @return
+         */
+        returnType<scalar, index>
+        cils_partition_deficient(scalar *z_B, scalar *Q_tilde, scalar *R_tilde, scalar *H_A, scalar *Piv_cum);
+
         returnType <scalar, index>
         cils_block_search_serial(const index init, const scalar *R_R, const scalar *y_r, const vector<index> *d,
                                  vector<scalar> *z_B);
+
 
         returnType <scalar, index>
         cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);

@@ -9,7 +9,437 @@ namespace cils {
     class cils_reduction {
     private:
         index m, n, upper, lower;
-        bool verbose, eval;
+        bool verbose{}, eval{};
+
+        static scalar rt_hypotd_snf(scalar u0, scalar u1) {
+            scalar a;
+            scalar y;
+            a = std::abs(u0);
+            y = std::abs(u1);
+            if (a < y) {
+                a /= y;
+                y *= std::sqrt(a * a + 1.0);
+            } else if (a > y) {
+                y /= a;
+                y = a * std::sqrt(y * y + 1.0);
+            } else if (!std::isnan(y)) {
+                y = a * 1.4142135623730951;
+            }
+            return y;
+        }
+
+        static scalar xnrm2(index size_n, const scalar *x, index ix0) {
+            scalar y = 0.0;
+            if (size_n >= 1) {
+                if (size_n == 1) {
+                    y = std::abs(x[ix0 - 1]);
+                } else {
+                    scalar scale = 3.3121686421112381E-170;
+                    index kend = (ix0 + size_n) - 1;
+                    for (index k = ix0; k <= kend; k++) {
+                        scalar absxk;
+                        absxk = std::abs(x[k - 1]);
+                        if (absxk > scale) {
+                            scalar t;
+                            t = scale / absxk;
+                            y = y * t * t + 1.0;
+                            scale = absxk;
+                        } else {
+                            scalar t;
+                            t = absxk / scale;
+                            y += t * t;
+                        }
+                    }
+                    y = scale * std::sqrt(y);
+                }
+            }
+            return y;
+        }
+
+        void xgerc(index size_m, index size_n, scalar alpha1, index ix0, const scalar *y, scalar *B, index ia0, index lda) {
+            if (!(alpha1 == 0.0)) {
+                int jA;
+                jA = ia0;
+                for (int j{0}; j < size_n; j++) {
+                    if (y[j] != 0.0) {
+                        double temp;
+                        int i;
+                        temp = y[j] * alpha1;
+                        i = size_m + jA;
+                        for (int ijA{jA}; ijA < i; ijA++) {
+                            B[ijA - 1] = B[ijA - 1] + B[((ix0 + ijA) - jA) - 1] * temp;
+                        }
+                    }
+                    jA += lda;
+                }
+            }
+        }
+
+        void xgeqp3(index size_m, index size_n, scalar *B, vector<scalar> &tau, vector<index> &jpvt) {
+            vector<scalar> vn1, vn2, work;
+            int i;
+            int knt;
+            int minmana;
+            bool guard1{false};
+            knt = size_m;
+            minmana = size_n;
+            if (knt < minmana) {
+                minmana = knt;
+            }
+            tau.resize(minmana);
+            for (i = 0; i < minmana; i++) {
+                tau[i] = 0.0;
+            }
+            guard1 = false;
+            if ((size_m == 0) || (size_n == 0)) {
+                guard1 = true;
+            } else {
+                knt = size_m;
+                minmana = size_n;
+                if (knt < minmana) {
+                    minmana = knt;
+                }
+                if (minmana < 1) {
+                    guard1 = true;
+                } else {
+                    double smax;
+                    int k;
+                    int ma;
+                    int minmn;
+                    jpvt.resize(size_n);
+                    minmana = size_n;
+                    for (i = 0; i < minmana; i++) {
+                        jpvt[i] = 0;
+                    }
+                    for (k = 0; k < size_n; k++) {
+                        jpvt[k] = k + 1;
+                    }
+                    ma = size_m;
+                    knt = size_m;
+                    minmn = size_n;
+                    if (knt < minmn) {
+                        minmn = knt;
+                    }
+                    work.resize(size_n);
+                    minmana = size_n;
+                    for (i = 0; i < minmana; i++) {
+                        work[i] = 0.0;
+                    }
+                    vn1.resize(size_n);
+                    minmana = size_n;
+                    for (i = 0; i < minmana; i++) {
+                        vn1[i] = 0.0;
+                    }
+                    vn2.resize(size_n);
+                    minmana = size_n;
+                    for (i = 0; i < minmana; i++) {
+                        vn2[i] = 0.0;
+                    }
+                    for (knt = 0; knt < size_n; knt++) {
+                        smax = xnrm2(size_m, B, knt * ma + 1);
+                        vn1[knt] = smax;
+                        vn2[knt] = smax;
+                    }
+                    for (int b_i{0}; b_i < minmn; b_i++) {
+                        double s;
+                        double temp2;
+                        int ii;
+                        int ii_tmp;
+                        int ip1;
+                        int mmi;
+                        int nmi;
+                        int pvt;
+                        ip1 = b_i + 2;
+                        ii_tmp = b_i * ma;
+                        ii = ii_tmp + b_i;
+                        nmi = size_n - b_i;
+                        mmi = size_m - b_i;
+                        if (nmi < 1) {
+                            minmana = -1;
+                        } else {
+                            minmana = 0;
+                            if (nmi > 1) {
+                                smax = std::abs(vn1[b_i]);
+                                for (k = 2; k <= nmi; k++) {
+                                    s = std::abs(vn1[(b_i + k) - 1]);
+                                    if (s > smax) {
+                                        minmana = k - 1;
+                                        smax = s;
+                                    }
+                                }
+                            }
+                        }
+                        pvt = b_i + minmana;
+                        if (pvt + 1 != b_i + 1) {
+                            minmana = pvt * ma;
+                            for (k = 0; k < size_m; k++) {
+                                knt = minmana + k;
+                                smax = B[knt];
+                                i = ii_tmp + k;
+                                B[knt] = B[i];
+                                B[i] = smax;
+                            }
+                            minmana = jpvt[pvt];
+                            jpvt[pvt] = jpvt[b_i];
+                            jpvt[b_i] = minmana;
+                            vn1[pvt] = vn1[b_i];
+                            vn2[pvt] = vn2[b_i];
+                        }
+                        if (b_i + 1 < size_m) {
+                            temp2 = B[ii];
+                            minmana = ii + 2;
+                            tau[b_i] = 0.0;
+                            if (mmi > 0) {
+                                smax = xnrm2(mmi - 1, B, ii + 2);
+                                if (smax != 0.0) {
+                                    s = rt_hypotd_snf(B[ii], smax);
+                                    if (B[ii] >= 0.0) {
+                                        s = -s;
+                                    }
+                                    if (std::abs(s) < 1.0020841800044864E-292) {
+                                        knt = -1;
+                                        i = ii + mmi;
+                                        do {
+                                            knt++;
+                                            for (k = minmana; k <= i; k++) {
+                                                B[k - 1] = 9.9792015476736E+291 * B[k - 1];
+                                            }
+                                            s *= 9.9792015476736E+291;
+                                            temp2 *= 9.9792015476736E+291;
+                                        } while (!(std::abs(s) >= 1.0020841800044864E-292));
+                                        s = rt_hypotd_snf(temp2, xnrm2(mmi - 1, B, ii + 2));
+                                        if (temp2 >= 0.0) {
+                                            s = -s;
+                                        }
+                                        tau[b_i] = (s - temp2) / s;
+                                        smax = 1.0 / (temp2 - s);
+                                        for (k = minmana; k <= i; k++) {
+                                            B[k - 1] = smax * B[k - 1];
+                                        }
+                                        for (k = 0; k <= knt; k++) {
+                                            s *= 1.0020841800044864E-292;
+                                        }
+                                        temp2 = s;
+                                    } else {
+                                        tau[b_i] = (s - B[ii]) / s;
+                                        smax = 1.0 / (B[ii] - s);
+                                        i = ii + mmi;
+                                        for (k = minmana; k <= i; k++) {
+                                            B[k - 1] = smax * B[k - 1];
+                                        }
+                                        temp2 = s;
+                                    }
+                                }
+                            }
+                            B[ii] = temp2;
+                        } else {
+                            tau[b_i] = 0.0;
+                        }
+                        if (b_i + 1 < size_n) {
+                            int ia;
+                            temp2 = B[ii];
+                            B[ii] = 1.0;
+                            ii_tmp = (ii + ma) + 1;
+                            if (tau[b_i] != 0.0) {
+                                bool exitg2;
+                                pvt = mmi;
+                                minmana = (ii + mmi) - 1;
+                                while ((pvt > 0) && (B[minmana] == 0.0)) {
+                                    pvt--;
+                                    minmana--;
+                                }
+                                knt = nmi - 1;
+                                exitg2 = false;
+                                while ((!exitg2) && (knt > 0)) {
+                                    int exitg1;
+                                    minmana = ii_tmp + (knt - 1) * ma;
+                                    ia = minmana;
+                                    do {
+                                        exitg1 = 0;
+                                        if (ia <= (minmana + pvt) - 1) {
+                                            if (B[ia - 1] != 0.0) {
+                                                exitg1 = 1;
+                                            } else {
+                                                ia++;
+                                            }
+                                        } else {
+                                            knt--;
+                                            exitg1 = 2;
+                                        }
+                                    } while (exitg1 == 0);
+                                    if (exitg1 == 1) {
+                                        exitg2 = true;
+                                    }
+                                }
+                            } else {
+                                pvt = 0;
+                                knt = 0;
+                            }
+                            if (pvt > 0) {
+                                if (knt != 0) {
+                                    for (k = 0; k < knt; k++) {
+                                        work[k] = 0.0;
+                                    }
+                                    k = 0;
+                                    i = ii_tmp + ma * (knt - 1);
+                                    for (nmi = ii_tmp; ma < 0 ? nmi >= i : nmi <= i; nmi += ma) {
+                                        smax = 0.0;
+                                        minmana = (nmi + pvt) - 1;
+                                        for (ia = nmi; ia <= minmana; ia++) {
+                                            smax += B[ia - 1] * B[(ii + ia) - nmi];
+                                        }
+                                        work[k] = work[k] + smax;
+                                        k++;
+                                    }
+                                }
+                                xgerc(pvt, knt, -tau[b_i], ii + 1, work.data(), B, ii_tmp, ma);
+                            }
+                            B[ii] = temp2;
+                        }
+                        for (knt = ip1; knt <= size_n; knt++) {
+                            minmana = b_i + (knt - 1) * ma;
+                            smax = vn1[knt - 1];
+                            if (smax != 0.0) {
+                                s = std::abs(B[minmana]) / smax;
+                                s = 1.0 - s * s;
+                                if (s < 0.0) {
+                                    s = 0.0;
+                                }
+                                temp2 = smax / vn2[knt - 1];
+                                temp2 = s * (temp2 * temp2);
+                                if (temp2 <= 1.4901161193847656E-8) {
+                                    if (b_i + 1 < size_m) {
+                                        smax = xnrm2(mmi - 1, B, minmana + 2);
+                                        vn1[knt - 1] = smax;
+                                        vn2[knt - 1] = smax;
+                                    } else {
+                                        vn1[knt - 1] = 0.0;
+                                        vn2[knt - 1] = 0.0;
+                                    }
+                                } else {
+                                    vn1[knt - 1] = smax * std::sqrt(s);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (guard1) {
+                jpvt.resize(size_n);
+                minmana = size_n;
+                for (i = 0; i < minmana; i++) {
+                    jpvt[i] = 0;
+                }
+                for (knt = 0; knt < size_n; knt++) {
+                    jpvt[knt] = knt + 1;
+                }
+            }
+        }
+
+        void xorgqr(index size_m, index size_n, index k, scalar *B, index lda, scalar *tau) {
+            vector<scalar> work;
+            if (size_n >= 1) {
+                int b_i;
+                int b_k;
+                int c_i;
+                int i;
+                int ia;
+                int itau;
+                i = size_n - 1;
+                for (b_i = k; b_i <= i; b_i++) {
+                    ia = b_i * lda;
+                    b_k = size_m - 1;
+                    for (c_i = 0; c_i <= b_k; c_i++) {
+                        B[ia + c_i] = 0.0;
+                    }
+                    B[ia + b_i] = 1.0;
+                }
+                itau = k - 1;
+                b_i = size_n;
+                work.resize(b_i);
+                for (i = 0; i < b_i; i++) {
+                    work[i] = 0.0;
+                }
+                for (c_i = k; c_i >= 1; c_i--) {
+                    int iaii;
+                    iaii = c_i + (c_i - 1) * lda;
+                    if (c_i < size_n) {
+                        int ic0;
+                        int lastc;
+                        int lastv;
+                        B[iaii - 1] = 1.0;
+                        ic0 = iaii + lda;
+                        if (tau[itau] != 0.0) {
+                            bool exitg2;
+                            lastv = (size_m - c_i) + 1;
+                            b_i = (iaii + size_m) - c_i;
+                            while ((lastv > 0) && (B[b_i - 1] == 0.0)) {
+                                lastv--;
+                                b_i--;
+                            }
+                            lastc = size_n - c_i;
+                            exitg2 = false;
+                            while ((!exitg2) && (lastc > 0)) {
+                                int exitg1;
+                                b_i = ic0 + (lastc - 1) * lda;
+                                ia = b_i;
+                                do {
+                                    exitg1 = 0;
+                                    if (ia <= (b_i + lastv) - 1) {
+                                        if (B[ia - 1] != 0.0) {
+                                            exitg1 = 1;
+                                        } else {
+                                            ia++;
+                                        }
+                                    } else {
+                                        lastc--;
+                                        exitg1 = 2;
+                                    }
+                                } while (exitg1 == 0);
+                                if (exitg1 == 1) {
+                                    exitg2 = true;
+                                }
+                            }
+                        } else {
+                            lastv = 0;
+                            lastc = 0;
+                        }
+                        if (lastv > 0) {
+                            if (lastc != 0) {
+                                for (b_i = 0; b_i < lastc; b_i++) {
+                                    work[b_i] = 0.0;
+                                }
+                                b_i = 0;
+                                i = ic0 + lda * (lastc - 1);
+                                for (int iac{ic0}; lda < 0 ? iac >= i : iac <= i; iac += lda) {
+                                    double c;
+                                    c = 0.0;
+                                    b_k = (iac + lastv) - 1;
+                                    for (ia = iac; ia <= b_k; ia++) {
+                                        c += B[ia - 1] * B[((iaii + ia) - iac) - 1];
+                                    }
+                                    work[b_i] = work[b_i] + c;
+                                    b_i++;
+                                }
+                            }
+                            xgerc(lastv, lastc, -tau[itau], iaii, work.data(), B, ic0, lda);
+                        }
+                    }
+                    if (c_i < size_m) {
+                        b_i = iaii + 1;
+                        i = (iaii + size_m) - c_i;
+                        for (b_k = b_i; b_k <= i; b_k++) {
+                            B[b_k - 1] = -tau[itau] * B[b_k - 1];
+                        }
+                    }
+                    B[iaii - 1] = 1.0 - tau[itau];
+                    for (b_i = 0; b_i <= c_i - 2; b_i++) {
+                        B[(iaii - b_i) - 2] = 0.0;
+                    }
+                    itau--;
+                }
+            }
+        }
 
         /**
          * Evaluating the LLL decomposition
@@ -127,6 +557,52 @@ namespace cils {
             return error;
         }
 
+        /**
+        * Evaluating the QRP decomposition
+        * @tparam scalar
+        * @tparam index
+        * @tparam n
+        * @param A
+        * @param Q
+        * @param R
+        * @param P
+        * @param eval
+        * @return
+        */
+        scalar qrp_validation() {
+            index i, j, k;
+            scalar sum, error = 0;
+
+            if (eval == 1) {
+                vector<scalar> A_T(m * n, 0);
+                helper::mtimes_v<scalar, index>(m, n, Q, R_Q, A_T);
+
+                vector<scalar> A_P(m * n, 0);
+                helper::mtimes_AP<scalar, index>(m, n, A.data(), P.data(), A_P.data());
+
+                if (verbose) {
+                    printf("\n[ Print Q:]\n");
+                    helper::display_matrix<scalar, index>(m, m, Q.data(), "Q");
+                    printf("\n[ Print R:]\n");
+                    helper::display_matrix<scalar, index>(m, n, R_Q.data(), "R_Q");
+                    printf("\n[ Print P:]\n");
+                    helper::display_matrix<scalar, index>(n, n, P.data(), "P");
+                    printf("\n[ Print A:]\n");
+                    helper::display_matrix<scalar, index>(m, n, A.data(), "A");
+                    printf("\n[ Print A_P:]\n");
+                    helper::display_matrix<scalar, index>(m, n, A_P.data(), "A*P");
+                    printf("\n[ Print Q*R:]\n");
+                    helper::display_matrix<scalar, index>(m, n, A_T.data(), "Q*R");
+                }
+
+                for (i = 0; i < m * n; i++) {
+                    error += fabs(A_T[i] - A_P[i]);
+                }
+            }
+
+            return error;
+        }
+
 
         /**
          * Evaluating the QR decomposition for column orientation
@@ -168,7 +644,7 @@ namespace cils {
 
     public:
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
-        vector<scalar> A, R_Q, R_R, Q, G;
+        vector<scalar> A, R_Q, R_R, Q, G, P;
         vector<scalar> Z, p;
         vector<scalar> y_a, y_q, y_r;
 
@@ -191,7 +667,99 @@ namespace cils {
         }
 
         /**
-         * Serial version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
+         * Serial version of QR-factorization with column pivoting
+         * Results are stored in the class object.
+         * @param B : m-by-n input matrix
+         */
+        returnType <scalar, index>
+        cils_eml_qr(const scalar *B) {
+            vector<scalar> A_t, tau;
+            vector<index> jpvt, jpvt1;
+            index i, j;
+            scalar error = -1, time, sum;
+
+            Q.resize(m * m);
+            R_Q.resize(m * n);
+            Q.assign(m * m, 0);
+            R_Q.resize(m * n, 0);
+
+            index size_m = m - 1;
+            index size_n = n - 1;
+            if (m > n) {
+                for (i = 0; i <= size_n; i++) {
+                    for (j = 0; j <= size_m; j++) {
+                        Q[j + m * i] = B[j + m * i];
+                    }
+                }
+                for (i = n + 1; i <= size_m + 1; i++) {
+                    for (j = 0; j <= size_m; j++) {
+                        Q[j + m * (i - 1)] = 0.0;
+                    }
+                }
+                xgeqp3(m, m, Q.data(), tau, jpvt1);
+                jpvt.resize(n);
+                for (i = 0; i <= size_n; i++) {
+                    jpvt[i] = jpvt1[i];
+                    for (j = 0; j <= i; j++) {
+                        R_Q[j + m * i] = Q[j + m * i];
+                    }
+                    for (j = i + 2; j <= size_m + 1; j++) {
+                        R_Q[(j + m * i) - 1] = 0.0;
+                    }
+                }
+                xorgqr(m, m, n, Q.data(), m, tau.data());
+            } else {
+                A_t.resize(m * n);
+                A_t.assign(m * n, 0);
+                for (i = 0; i < m * n; i++) {
+                    A_t[i] = B[i];
+                }
+                xgeqp3(m, n, A_t.data(), tau, jpvt);
+                for (i = 0; i <= size_m; i++) {
+                    for (j = 0; j <= i; j++) {
+                        R_Q[j + m * i] = A_t[j + m * i];
+                    }
+                    for (j = i + 2; j <= size_m + 1; j++) {
+                        R_Q[(j + m * i) - 1] = 0.0;
+                    }
+                }
+
+                for (i = m + 1; i <= size_n + 1; i++) {
+                    for (j = 0; j <= size_m; j++) {
+                        R_Q[j + m * (i - 1)] = A_t[j + m * (i - 1)];
+                    }
+                }
+                
+                xorgqr(m, m, m, A_t.data(), m, tau.data());
+                for (i = 0; i <= size_m; i++) {
+                    for (j = 0; j <= size_m; j++) {
+                        Q[j + m * i] = A_t[j + m * i];
+                    }
+                }
+            }
+            
+            for (i = 0; i < m * n; i++) {
+                A[i] = B[i];
+            }
+            
+            //Permutation matrix
+            P.resize(n * n);
+            P.assign(n * n, 0);
+            for (i = 0; i < n; i++) {
+                P[(jpvt[i] + n * i) - 1] = 1;
+            }
+
+            if (eval) {
+                error = qrp_validation();
+                if (verbose)
+                    cout << "[  QR ERROR SER:]" << error << endl;
+            }
+
+            return {{}, time, error};
+        }
+
+        /**
+         * Serial version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          * @param B : m-by-n input matrix
          * @param y : m-by-1 input right hand vector
@@ -261,7 +829,7 @@ namespace cils {
         }
 
         /**
-         * Serial version of QR-factorization using modified Gram-Schmidt algorithm, col-oriented
+         * Serial version of REDUCED QR-factorization using modified Gram-Schmidt algorithm, col-oriented
          * Results are stored in the class object.
          * @param B : m-by-n input matrix
          * @param y : m-by-1 input right hand vector
@@ -352,6 +920,12 @@ namespace cils {
         }
 
 
+        /**
+         * Matlab Caller of obils.
+         * Results are stored in the class object.
+         * @param B : m-by-n input matrix
+         * @param y : m-by-1 input right hand vector
+         */
         returnType <scalar, index>
         cils_obils_matlab(const vector<scalar> &B, const vector<scalar> &y) {
             using namespace matlab::engine;
@@ -1837,7 +2411,7 @@ namespace cils {
             scalar *b_R = new scalar[n * n];
             vector<scalar> A_t(A);
             //Clear Variables:
-//        b_R.set_size(n, n);
+//        b_R.resize(n, n);
             for (index i = 0; i < n; i++) {
                 for (index j = 0; j < n; j++) {
                     Q[i * n + j] = 0;
@@ -2319,7 +2893,7 @@ namespace cils {
         scalar G[4], low_tmp[2], zeta;
         index c_result[2], sizes[2], b_loop_ub, i, i1, input_sizes_idx_1 = n, loop_ub, result;
 
-        vi.set_size(n);
+        vi.resize(n);
         for (i = 0; i < n; i++) {
             vi[i] = 0.0;
         }
@@ -2360,7 +2934,7 @@ namespace cils {
                     } else {
                         b_loop_ub = static_cast<int>(c_i) - 2;
                     }
-                    vr.set_size(b_loop_ub);
+                    vr.resize(b_loop_ub);
                     for (i1 = 0; i1 < b_loop_ub; i1++) {
                         vr[i1] = R_R[i1 + n * (static_cast<int>(c_i) - 1)] -
                                  zeta * R_R[i1 + n * (static_cast<int>(c_i) - 2)];
@@ -2371,7 +2945,7 @@ namespace cils {
                     }
                     // 'eo_sils_reduction:60' Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
                     input_sizes_idx_1 = n - 1;
-                    vr.set_size(n);
+                    vr.resize(n);
                     for (i1 = 0; i1 <= input_sizes_idx_1; i1++) {
                         vr[i1] = Z[i1 + n * (static_cast<int>(c_i) - 1)] -
                                  zeta * Z[i1 + n * (static_cast<int>(c_i) - 2)];
@@ -2387,7 +2961,7 @@ namespace cils {
                     c_result[0] = static_cast<int>(c_i) - 1;
                     c_result[1] = static_cast<int>(c_i) - 2;
                     b_loop_ub = static_cast<int>(c_i);
-                    b_R.set_size(static_cast<int>(c_i), 2);
+                    b_R.resize(static_cast<int>(c_i), 2);
                     for (i1 = 0; i1 < 2; i1++) {
                         for (i2 = 0; i2 < b_loop_ub; i2++) { b_R[i2 + b_n * i1] = R_R[i2 + n * c_result[i1]]; }
                     }
@@ -2401,7 +2975,7 @@ namespace cils {
                     input_sizes_idx_1 = n - 1;
                     c_result[0] = static_cast<int>(c_i) - 1;
                     c_result[1] = static_cast<int>(c_i) - 2;
-                    b_R.set_size(n, 2);
+                    b_R.resize(n, 2);
                     for (i1 = 0; i1 < 2; i1++) {
                         for (i2 = 0; i2 <= input_sizes_idx_1; i2++) {
                             b_R[i2 + b_n * i1] = Z[i2 + n * c_result[i1]];
@@ -2438,7 +3012,7 @@ namespace cils {
                         result = static_cast<int>(c_i);
                     }
                     b_loop_ub = i2 - i1;
-                    b.set_size(2, b_loop_ub);
+                    b.resize(2, b_loop_ub);
                     for (i2 = 0; i2 < b_loop_ub; i2++) {
                         input_sizes_idx_1 = i1 + i2;
                         b[2 * i2] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 2];
@@ -2485,7 +3059,7 @@ namespace cils {
                     // 'eo_sils_reduction:86' R_R(i1,i) = alpha;
                     R_R[(static_cast<int>(c_i) + n * (static_cast<int>(c_i) - 1)) - 2] = alpha;
                     // 'eo_sils_reduction:87' R_R(1:i-2,i) = R_R(1:i-2,i) - zeta * R_R(1:i-2,i-1);
-                    vr.set_size(input_sizes_idx_1);
+                    vr.resize(input_sizes_idx_1);
                     for (i1 = 0; i1 < input_sizes_idx_1; i1++) {
                         vr[i1] = R_R[i1 + n * (static_cast<int>(c_i) - 1)] -
                                  zeta * R_R[i1 + n * (static_cast<int>(c_i) - 2)];
@@ -2496,7 +3070,7 @@ namespace cils {
                     }
                     // 'eo_sils_reduction:88' Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
                     input_sizes_idx_1 = n - 1;
-                    vr.set_size(n);
+                    vr.resize(n);
                     for (i1 = 0; i1 <= input_sizes_idx_1; i1++) {
                         vr[i1] = Z[i1 + n * (static_cast<int>(c_i) - 1)] -
                                  zeta * Z[i1 + n * (static_cast<int>(c_i) - 2)];
@@ -2512,7 +3086,7 @@ namespace cils {
                     c_result[0] = static_cast<int>(c_i) - 1;
                     c_result[1] = static_cast<int>(c_i) - 2;
                     b_loop_ub = static_cast<int>(c_i);
-                    b_R.set_size(static_cast<int>(c_i), 2);
+                    b_R.resize(static_cast<int>(c_i), 2);
                     for (i1 = 0; i1 < 2; i1++) {
                         for (i2 = 0; i2 < b_loop_ub; i2++) { b_R[i2 + b_n * i1] = R_R[i2 + n * c_result[i1]]; }
                     }
@@ -2526,7 +3100,7 @@ namespace cils {
                     input_sizes_idx_1 = n - 1;
                     c_result[0] = static_cast<int>(c_i) - 1;
                     c_result[1] = static_cast<int>(c_i) - 2;
-                    b_R.set_size(n, 2);
+                    b_R.resize(n, 2);
                     for (i1 = 0; i1 < 2; i1++) {
                         for (i2 = 0; i2 <= input_sizes_idx_1; i2++) {
                             b_R[i2 + b_n * i1] = Z[i2 + n * c_result[i1]];
@@ -2564,7 +3138,7 @@ namespace cils {
                         result = static_cast<int>(c_i);
                     }
                     b_loop_ub = i2 - i1;
-                    b.set_size(2, b_loop_ub);
+                    b.resize(2, b_loop_ub);
                     for (i2 = 0; i2 < b_loop_ub; i2++) {
                         input_sizes_idx_1 = i1 + i2;
                         b[2 * i2] = R_R[(static_cast<int>(c_i) + n * input_sizes_idx_1) - 2];

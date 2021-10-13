@@ -247,7 +247,7 @@ namespace cils {
         for (i = 0; i < m; i++) {
             reduction.y_q[i] = reduction.y_q[i] - b_y_q[i];
         }
-//        scalar v_norm = helper::find_residual(m, n, H.data(), x.data(), reduction.y_q.data());
+
         scalar v_norm = helper::norm<scalar, index>(m, reduction.y_q.data());
         time = omp_get_wtime() - time;
         return {{}, time, v_norm};
