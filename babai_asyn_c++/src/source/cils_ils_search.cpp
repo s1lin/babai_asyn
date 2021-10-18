@@ -98,7 +98,7 @@ namespace cils {
             this->u.assign(n, this->upper);
         }
 
-        inline bool obils_search_matlab(const index n_dx_q_0, const index n_dx_q_1, const bool check,
+        inline void obils_search_matlab(const index n_dx_q_0, const index n_dx_q_1, const bool check,
                                         vector<scalar> &R_R, vector<scalar> &y_B, vector<scalar> &z_x) {
             index t = n_dx_q_1;
             using namespace matlab::engine;

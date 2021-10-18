@@ -328,6 +328,7 @@ namespace cils {
             b_i++;
             lastCol -= r;
         }
+        return {{}, 0, 0};
     }
 
 } // namespace cils

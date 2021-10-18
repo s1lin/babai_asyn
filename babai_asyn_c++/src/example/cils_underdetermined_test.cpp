@@ -91,7 +91,7 @@
 template<typename scalar, typename index, index m, index n>
 void block_optimal_test(int size, int rank) {
     vector<scalar> x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
-    double *v_norm_qr = (double *) calloc(1, sizeof(double));
+    auto *v_norm_qr = (double *) calloc(1, sizeof(double));
 
     scalar v_norm;
     cils::returnType<scalar, index> reT3;
@@ -120,7 +120,7 @@ void block_optimal_test(int size, int rank) {
         cils::returnType<scalar, index> reT, reT2;
         //----------------------INIT POINT (OPTIONAL)--------------------------------//
         //STEP 1: init point by QRP
-        reT = cils.cils_qrp_serial(x_q);
+        reT = cils.cils_grad_proj(x_q, search_iter);
         helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
         v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
                                                                      cils.y_a.data());
@@ -193,7 +193,7 @@ void block_optimal_test(int size, int rank) {
 
     }
 
-    //STEP 2: MPI-Block SCP:
+//    //STEP 2: MPI-Block SCP:
 //    MPI_Bcast(&x_mpi[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 //    MPI_Bcast(&v_norm_qr[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 //    MPI_Bcast(&cils.y_a[0], m, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -215,7 +215,7 @@ void block_optimal_test(int size, int rank) {
 //        printf("MPI: ber: %8.5f, stopping: %1.1f, %1.1f, %1.1f, v_norm: %8.4f, time: %8.4f, rank:%d\n",
 //               ber, reT3.x[0], reT3.x[1], reT3.x[2], v_norm, reT3.run_time, rank);
 //    }
-    //MPI_Barrier(MPI_COMM_WORLD);
+//    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 template<typename scalar, typename index, index m, index n>
@@ -228,7 +228,7 @@ long plot_run(int size, int rank) {
             lt->tm_hour, lt->tm_min, lt->tm_sec
     );
     printf("====================[ TEST | ILS | %s ]==================================\n", time_str);
-    for (SNR = 35; SNR <= 35; SNR += 30) {
+    for (SNR = 35; SNR >= 5; SNR -= 20) {
         index d_s_size = d_s.size();
         scalar res[4][200][2] = {}, ber[4][200][2] = {}, tim[5][200][2] = {}, spu[5][200][2] = {};//, t_spu[4][200][2] = {};
         //scalar stm[3][200][2] = {};
@@ -316,7 +316,7 @@ long plot_run(int size, int rank) {
                         b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), cils.qam);
                         z_ser.assign(z_ini.begin(), z_ini.end());
                         itr++;
-                    } while (b > 0.3 && itr < 100);
+                    } while (b > 0.3 && itr < 20);
                     r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
                     b_ser_block = b;
                     t_ser_block = reT.run_time;
@@ -343,7 +343,7 @@ long plot_run(int size, int rank) {
                         b = helper::find_bit_error_rate<scalar, index>(n, z_tmp.data(), cils.x_t.data(), cils.qam);
                         z_ser.assign(z_ini.begin(), z_ini.end());
                         itr++;
-                    } while (b > 0.3 && itr < 100);
+                    } while (b > 0.3 && itr < 20);
                     r = helper::find_residual<scalar, index>(m, n, cils.A.data(), z_tmp.data(), cils.y_a.data());
                     b_ser_babai = b;
                     t_ser_babai = reT.run_time;
@@ -385,7 +385,7 @@ long plot_run(int size, int rank) {
                             _ll++;
 
                             if (prev_t_block > t && b - b_ser_block < 0.1) break; //
-                            if (_ll == 100) {
+                            if (_ll == 20) {
                                 r = r2;
                                 b = b2;
                                 t = t2;

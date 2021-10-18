@@ -24,8 +24,8 @@ namespace cils::program_def {
      */
     index qam = 3;
     index SNR = 35;
-    index max_iter = 500;
-    index search_iter = (int) 1e5;
+    index max_iter = 1;
+    index search_iter = 6 * 5 * 4 * 3 * 2 * 1;
     index stop = 3;
     index schedule = 2;
     index chunk_size = 1;
