@@ -45,6 +45,7 @@ H_cur = H;
 v_norm = v_norm_cur;
 %P = Piv;
 I = eye(N);
+best_Piv = eye(N);
 best_per = 1;
 x_per = x_cur;
 

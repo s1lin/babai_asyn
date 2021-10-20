@@ -37,13 +37,15 @@ Piv = eye(N);
 % for kk=1:length(SNR_loop)
     %kk = 1;
     %SNR=35;
-    loop_times = 1;
+    %loop_times = 1;
     %error_bits=zeros(loop_times,5);
     times=zeros(loop_times,10);
     %mm = 1;
     e1 = 0;
     e2 = 0;
-    for mm=1:1
+    e3 = 0;
+    e4 = 0;
+    for mm=1:loop_times
         
         %Generate system
         [H, s, v, y, sigma, res, permutation] = gen_problem(k, K, N, SNR, max_Babai);%getSystem(SNR, Htype, K, N, condNum);
@@ -133,8 +135,10 @@ Piv = eye(N);
         s_bar_BBabai2 = s_bar4'
         s_bar_BBabai3 = s_bar6'
         s_bar_Optimal = s_bar5'
-        e1 = e1 + norm(s - s_bar4)
-        e2 = e2 + norm(s - s_bar5)
+        e1 = e1 + norm(s - s_bar_BBabai1)
+        e2 = e2 + norm(s - s_bar_BBabai2)
+        e3 = e3 + norm(s - s_bar_BBabai3)
+        e4 = e4 + norm(s - s_bar_Optimal)
 %       
 %         %BCP-Block Optimal
 %         tic;
@@ -164,4 +168,6 @@ Piv = eye(N);
     end
     e1/100
     e2/100
+    e3/100
+    e4/100
 end

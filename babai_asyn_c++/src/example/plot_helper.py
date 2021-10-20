@@ -9,8 +9,9 @@ import random
 def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
                     max_proc, min_proc, is_constrained, m):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (12, 24)
-    fig, axes = plt.subplots(4, 2, constrained_layout=False)
+    # plt.rcParams["figure.figsize"] = (12, 24)
+    plt.rcParams["figure.figsize"] = (20, 8)
+    fig, axes = plt.subplots(2, 4, constrained_layout=True)
     print(min_proc, max_proc)
     color = ['r', 'g', 'b', 'm']
     marker = ['o', '+', 'x', '*']
@@ -18,15 +19,15 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
 
     for j in range(0, 2):
         qam = 4 if j == 0 else 64
-        axes[0, j].set_title('Residual ' + str(qam) + '-QAM', fontsize=13)
-        axes[1, j].set_title('BER ' + str(qam) + '-QAM', fontsize=13)
-        axes[2, j].set_title('Avg Solve Time ' + str(qam) + '-QAM', fontsize=13)
-        axes[3, j].set_title('Solver Speed Up ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 0].set_title('Residual ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 1].set_title('BER ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 2].set_title('Avg Solve Time ' + str(qam) + '-QAM', fontsize=13)
+        axes[j, 3].set_title('Solver Speed Up ' + str(qam) + '-QAM', fontsize=13)
 
-        axes[0, j].set_ylabel('Avg. Residual', fontsize=13)
-        axes[1, j].set_ylabel('Avg. BER', fontsize=13)
-        axes[2, j].set_ylabel('Avg. Solve Time (s)', fontsize=13)
-        axes[3, j].set_ylabel('Solver Speed Up x times', fontsize=13)
+        axes[j, 0].set_ylabel('Avg. Residual', fontsize=13)
+        axes[j, 1].set_ylabel('Avg. BER', fontsize=13)
+        axes[j, 2].set_ylabel('Avg. Solve Time (s)', fontsize=13)
+        axes[j, 3].set_ylabel('Solver Speed Up x times', fontsize=13)
 
         labels = [['BILS $x_{init} = QRP$', 'BILS $x_{init} = SIC$', 'BILS $x_{init} = GRAD$', 'BILS $x_{init} = 0$'],
                   ['GSD $x_{init} = QRP$', 'GSD $x_{init} = SIC$', 'GSD $x_{init} = GRAD$', 'GSD $x_{init} = 0$']]
@@ -59,7 +60,7 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
                         if spu[x][l][j] / max_iter > proc[t]:
                             tmp = proc[t] - random.uniform(0, 1)
                             omp_spu.append(tmp * max_iter)
-                            omp_stm.append(tim[x][l][j] / tmp)
+                            omp_stm.append(tim[x][l][j])
                         else:
                             omp_spu.append(spu[x][l][j])
                             omp_stm.append(tim[x][l][j])
@@ -68,27 +69,24 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
                 proc_num = proc_num.astype(int)
 
                 if j == 0:
-                    axes[0, j].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
+                    axes[j, 0].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
                                     marker=marker[x], label=labels[style][x], linestyle=linestyle[style])
                 else:
-                    axes[0, j].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
+                    axes[j, 0].plot(res_label, np.array(omp_res[0:len(res_label)]) / max_iter, color=color[x],
                                     marker=marker[x], linestyle=linestyle[style])
-                axes[1, j].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x],
-                                marker=marker[x], linestyle=linestyle[style])
-                axes[2, j].semilogy(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x],
-                                    marker=marker[x], linestyle=linestyle[style])
-                axes[3, j].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x],
-                                marker=marker[x], linestyle=linestyle[style])
+                axes[j, 1].plot(res_label, np.array(omp_ber[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x], linestyle=linestyle[style])
+                axes[j, 2].semilogy(res_label, np.array(omp_stm[0:len(res_label)]) / max_iter, color=color[x], marker=marker[x], linestyle=linestyle[style])
+                axes[j, 3].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[x], marker=marker[x], linestyle=linestyle[style])
 
-        axes[0, j].set_xticklabels(res_label, rotation=45)
-        axes[1, j].set_xticklabels(res_label, rotation=45)
-        axes[2, j].set_xticklabels(res_label, rotation=45)
-        axes[3, j].set_xticklabels(spu_label, rotation=45)
+        axes[j, 0].set_xticklabels(res_label, rotation=45)
+        axes[j, 1].set_xticklabels(res_label, rotation=45)
+        axes[j, 2].set_xticklabels(res_label, rotation=45)
+        axes[j, 3].set_xticklabels(spu_label, rotation=45)
 
-        axes[0, j].grid(color='b', ls='-.', lw=0.25)
-        axes[1, j].grid(color='b', ls='-.', lw=0.25)
-        axes[2, j].grid(color='b', ls='-.', lw=0.25)
-        axes[3, j].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 0].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 1].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 2].grid(color='b', ls='-.', lw=0.25)
+        axes[j, 3].grid(color='b', ls='-.', lw=0.25)
 
     title1 = 'Box-constrained'
     if not is_constrained:
@@ -100,7 +98,8 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
     title = f'Test Results for {title1} {title3} problem with {str(SNR)}-SNR, 4 and 64-QAM, and problem size {str(m)} x {str(n)}'
 
     fig.suptitle("\n".join(wrap(title, len(title) / 3)), fontsize=15)
-    fig.legend(bbox_to_anchor=(0.8, 0.94), title="Legend", ncol=4)
+    # fig.legend(bbox_to_anchor=(0.8, 0.94), title="Legend", ncol=4)
+    fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=4)
 
     plt.savefig(f'./{n}_report_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}.eps', format='eps', dpi=1200)
     plt.savefig(f'./{n}_report_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}.png')
@@ -410,7 +409,12 @@ def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, i
 def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s):
     print("\n----------PLOT BLOCK TIME--------------\n")
     plt2.rcParams["figure.figsize"] = (18, 8)
+
+
     fig, axes = plt2.subplots(2, 2, constrained_layout=True)
+
+
+
     color = ['r', 'g', 'b', 'y']
     marker = ['o', '+', 'x', '.']
     print(d_s)
@@ -456,3 +460,28 @@ def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s):
     plt2.savefig('./' + str(n) + '_block_time_' + str(SNR) + '_' + str(block_size) + '_' + str(is_qr))
     plt2.close()
     print("\n----------END PLOT BLOCK TIME--------------\n")
+
+
+if __name__ == "__main__":
+    n = 40
+    SNR = 15
+    title3 = 'underdetermined'
+    max_iter = 1
+    title1 = 'Box-constrained'
+    a = np.load(f'./{n}_report_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}.npz')
+
+    n = a['n']
+    m = a['m']
+    k = a['k']
+    l_max = a['l_max']
+    max_iter = a['max_iter']
+    res = a['res']
+    ber = a['ber']
+    tim = a['tim']
+    spu = a['spu']
+    proc_num = a['proc_num']
+    max_proc = a['max_proc']
+    min_proc = a['min_proc']
+    is_constrained = a['is_constrained']
+
+    plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,max_proc, min_proc, is_constrained, m)
