@@ -371,7 +371,7 @@ namespace cils {
 
         inline bool obils_search(const index n_dx_q_0, const index n_dx_q_1, const bool check,
                                  const scalar *R_R, const scalar *y_B, vector<scalar> &z_x) {
-            this->z.assign(m, 0);
+            this->z.assign(n, 0);
             // Variables
             scalar sum, newprsd, gamma, beta = INFINITY;
 
@@ -477,7 +477,7 @@ namespace cils {
                     }
                 }
             }
-            return count;
+            return diff;
         }
 
         inline bool obils_search_omp(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,

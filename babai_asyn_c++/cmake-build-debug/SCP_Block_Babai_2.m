@@ -50,12 +50,13 @@ best_per = 1;
 x_per = x_cur;
 
 for i = 1:max_Babai 
-
+    
     H_P = H_cur(:,permutation(:, i));
     x_tmp = x_per(permutation(:, i));
     [H_P, Piv, x_tmp, Q_tilde, R_tilde, indicator] = partition_H(H_P, x_tmp, K, N);
     
     per = i;
+    
     for j = 1:q
         %Get the QR factorization corresponding to block j
         R = R_tilde(:, indicator(1, j):indicator(2, j));
@@ -85,14 +86,14 @@ for i = 1:max_Babai
             end
             x_tmp(h+cur_end-t)=round_int(s_temp, 0, 2^k-1);
         end
-
+        
     end
-    
+
     v_norm_cur = norm(y - H_P * x_tmp);
     
     if v_norm_cur < v_norm
         x_per = x_tmp;
-        %v_norm_cur = v_norm_temp;
+        %H_cur = H_P;
         best_per = per;
         per = -1;
         best_Piv = Piv;   
@@ -115,6 +116,6 @@ end
 % if i == n_perms
 %     stopping(4) = 1;
 % end
-x_cur = I(:, permutation(:, best_per)) * best_Piv * x_per;
+x_cur = I(:, permutation(:, best_per)) * (best_Piv * x_per);
 %x_cur = Piv * x_tmp; %
 end

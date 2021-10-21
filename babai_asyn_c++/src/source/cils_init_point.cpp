@@ -601,6 +601,7 @@ namespace cils {
             }
             x[i] = x_est;
         }
+
         scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y_a.data());
         time = omp_get_wtime() - time;
         return {{}, time, v_norm};

@@ -237,10 +237,17 @@ namespace cils {
         cils_scp_block_optimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
 
         returnType<scalar, index>
+        cils_scp_block_suboptimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
+
+        returnType<scalar, index>
+        cils_scp_block_suboptimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);
+
+        returnType<scalar, index>
         cils_scp_block_babai_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode);
 
         returnType<scalar, index>
         cils_scp_block_babai_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);
+
 
         /**
          *  Corresponds to Algorithm 5 (Partition Strategy) in Report 10

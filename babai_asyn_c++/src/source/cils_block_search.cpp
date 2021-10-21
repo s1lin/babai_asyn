@@ -26,6 +26,9 @@ namespace cils {
     returnType<scalar, index>
     cils<scalar, index, m, n>::cils_block_search_serial(const index init, const scalar *R_R, const scalar *y_r,
                                                         const vector<index> *d, vector<scalar> *z_B) {
+//    cils<scalar, index, m, n>::cils_block_search_serial(const index init, const index size_m, const index size_n,
+//                                                        const scalar *R_R, const scalar *y_r,
+//                                                        const vector<index> *d, vector<scalar> *z_B) {
 
         index ds = d->size(), n_dx_q_0, n_dx_q_1;
         array<scalar, n> y_b;
@@ -37,6 +40,7 @@ namespace cils {
 
         scalar sum = 0;
         cils_search<scalar, index> ils(m, n, this->qam);
+        //        cils_search<scalar, index> ils(size_m, size_n, this->qam);
         scalar start = omp_get_wtime();
 
         if (init == -1) {
@@ -353,7 +357,7 @@ namespace cils {
 //        helper::eye<scalar, index>(n, P_cur.data());
 //        helper::eye<scalar, index>(n, I.data());
 
-        vector<scalar> z, z_z; //z_z = Z * z;
+        vector<scalar> z(n, 0), z_z(n, 0); //z_z = Z * z;
         if (verbose) {
             helper::display_matrix<scalar, index>(m, n, H_P.data(), "H");
             helper::display_matrix<scalar, index>(n, 1, x_tmp.data(), "x_tmp");
@@ -436,30 +440,22 @@ namespace cils {
                     }
                     helper::display_vector<scalar, index>(m, y_bar.data(), "y_bar");
                 }
-                //                }
+
                 //  Compute optimal solution
-                // 'SCP_Block_Optimal_2:73' e_vec = repelem(1, cur_end-cur_1st+1)';
-                // 'SCP_Block_Optimal_2:74' y_bar = y_bar - H_P(:, cur_1st:cur_end) * e_vec;
-                // 'SCP_Block_Optimal_2:75' H_adj = 2 * H_P(:, cur_1st:cur_end);
-                // 'SCP_Block_Optimal_2:76' l = repelem(-1, cur_end-cur_1st+1)';
-                // 'SCP_Block_Optimal_2:77' u = repelem(0, cur_end-cur_1st+1)';
                 t = cur_end - cur_1st + 1;
                 H_A.resize(m * t);
                 for (k1 = 0; k1 < t; k1++) {
                     for (i = 0; i < m; i++) {
-                        H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)]; //2.0 *
+                        H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)];
                     }
                 }
                 // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
-                z.resize(t);
-                z_z.resize(t);
                 z.assign(t, 0);
                 z_z.assign(t, 0);
 
-
-//                reduction.cils_qr_serial_col(H_A.data(), y_bar.data());
-//                cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
                 if (verbose) {
+                    //z.assign(t, 0);
+                    //z_z.assign(t, 0);
                     cils_reduction<scalar, index> reduction2(m, t, 0, upper, 0, 0);
                     cils_search<scalar, index> ils2(t, t, this->qam);
                     reduction2.cils_obils_reduction_matlab(H_A, y_bar);
@@ -468,24 +464,20 @@ namespace cils {
                     helper::display_matrix<scalar, index>(1, t, reduction2.y_q.data(), "Mz_z");
                 }
 
-                z.resize(t);
-                z_z.resize(t);
                 z.assign(t, 0);
                 z_z.assign(t, 0);
                 cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
-                cils_search<scalar, index> ils(t, t, this->qam);
                 reduction.cils_obils_reduction(H_A, y_bar);
 
+                cils_search<scalar, index> ils(t, t, this->qam);
                 ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 
                 // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
                 for (i = 0; i < t; i++) {
                     z[reduction.p[i] - 1] = z_z[i];
-                    //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
                 }
                 for (i = 0; i < t; i++) {
                     x_tmp[cur_1st + i - 1] = z[i];
-                    //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
                 }
                 if (verbose) {
                     helper::display_matrix<scalar, index>(t, t, reduction.R_Q.data(), "R_Q");
@@ -546,24 +538,209 @@ namespace cils {
 
     template<typename scalar, typename index, index m, index n>
     returnType<scalar, index>
+    cils<scalar, index, m, n>::cils_scp_block_suboptimal_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode) {
+        vector<scalar> H_A, x_tmp(x_cur), x_per(x_cur), y_bar(m, 0), y(m, 0);
+        // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
+        vector<scalar> stopping(3, 0);
+        array<scalar, m * n> H_P(H);
+        vector<scalar> z(n, 0), z_z(n, 0);
+        if (verbose) {
+            helper::display_matrix<scalar, index>(m, n, H_P.data(), "H");
+            helper::display_matrix<scalar, index>(n, 1, x_tmp.data(), "x_tmp");
+        }
+        scalar time = omp_get_wtime();
+        //  Subfunctions: SCP_opt
+
+        // 'SCP_Block_Optimal_2:25' b_count = 0;
+        index b_count = 0;
+        // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+        if (v_norm_cur <= tolerance) {
+            // 'SCP_Block_Optimal_2:28' stopping(1)=1;
+            stopping[0] = 1;
+            time = omp_get_wtime() - time;
+            return {stopping, time, v_norm_cur};
+        }
+        index cur_1st, cur_end, i, t, k1, per = -1, best_per = -1;
+        scalar v_norm = v_norm_cur;
+        index iter = 0;
+
+        time = omp_get_wtime();
+        for (index itr = 0; itr < search_iter; itr++) {
+            iter = mode ? rand() % search_iter : itr;
+            //            cout << iter << " ";
+            // H_Apply permutation strategy to update x_cur and v_norm_cur
+            // [x_tmp, v_norm_temp] = block_opt(H_P, y_a, x_tmp, n, indicator);
+            // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
+            for (k1 = 0; k1 < n; k1++) {
+                for (i = 0; i < m; i++) {
+                    H_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
+                }
+                x_tmp[k1] = x_per[permutation[iter][k1] - 1];
+            }
+            // 'SCP_Block_Optimal_2:104' per = true;
+            per = iter;
+
+            // 'SCP_Block_Optimal_2:56' for j = 1:q
+            for (index j = 0; j < q; j++) {
+                // cur_1st refers to the column of H_C where the current block starts
+                // cur_end refers to the column of H_C where the current block ends
+                // 'SCP_Block_Optimal_2:60' cur_1st = indicator(1, j);
+                cur_1st = indicator[2 * j];
+                // 'SCP_Block_Optimal_2:61' cur_end = indicator(2, j);
+                cur_end = indicator[2 * j + 1];
+
+                y_bar.assign(m, 0);
+                for (k1 = 0; k1 <= cur_1st - 2; k1++) {
+                    for (i = 0; i < m; i++) {
+                        t = k1 * m + i;
+                        y_bar[i] += H_P[i + m * (t / m)] * x_tmp[k1];
+                    }
+                }
+                for (k1 = 0; k1 < n - cur_end; k1++) {
+                    for (i = 0; i < m; i++) {
+                        t = k1 * m + i;
+                        y_bar[i] += H_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
+                    }
+                }
+                for (t = 0; t < m; t++) {
+                    y_bar[t] = y_a[t] - y_bar[t];
+                }
+
+                if (verbose) {
+                    for (k1 = 0; k1 <= cur_1st - 2; k1++) {
+                        for (i = 0; i < m; i++) {
+                            t = k1 * m + i;
+                            printf("%8.5f ", H_P[i + m * (t / m)]);
+                        }
+                        cout << endl;
+                    }
+                    helper::display_vector<scalar, index>(m, y_bar.data(), "y_bar");
+                }
+
+                t = cur_end - cur_1st + 1;
+                H_A.resize(m * t);
+                for (k1 = 0; k1 < t; k1++) {
+                    for (i = 0; i < m; i++) {
+                        H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)]; //2.0 *
+                    }
+                }
+                // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
+
+                z.assign(t, 0);
+                z_z.assign(t, 0);
+                cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
+                reduction.cils_obils_reduction(H_A, y_bar);
+
+
+                cils_search<scalar, index> ils(t, t, this->qam);
+                index ds = t / block_size;
+                if (t % block_size != 0) {
+                    ds = 1;
+                    block_size = t;
+                }
+                vector<index> d(ds, block_size);
+                vector<scalar> y_b(reduction.y_q);
+                for (index s = d.size() - 2; s >= 0; s--) {
+                    d[s] += d[s + 1];
+                }
+
+                for (index s = 0; s < ds; s++) {
+                    index n_dx_q_1 = d[s];
+                    index n_dx_q_0 = s == ds - 1 ? 0 : d[s + 1];
+
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        scalar sum = 0;
+                        for (index col = n_dx_q_1; col < t; col++) {
+                            sum += reduction.R_Q[col * t + row] * z_z[col];
+                        }
+                        y_b[row] = reduction.y_q[row] - sum;
+                    }
+
+                    if (verbose)
+                        printf("n_dx_q_0:%d, n_dx_q_1:%d\n", n_dx_q_0, n_dx_q_1);
+
+                    ils.obils_search(n_dx_q_0, n_dx_q_1, 1, reduction.R_Q.data(), y_b.data(), z_z);
+                }
+                // helper::display_vector(n, z_z.data(), "z_z");
+                // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
+                for (i = 0; i < t; i++) {
+                    z[reduction.p[i] - 1] = z_z[i];
+                }
+                for (i = 0; i < t; i++) {
+                    x_tmp[cur_1st + i - 1] = z[i];
+                }
+                if (verbose) {
+                    helper::display_matrix<scalar, index>(t, t, reduction.R_Q.data(), "R_Q");
+                    helper::display_matrix<scalar, index>(1, t, z.data(), "z");
+                }
+            }
+
+            if (verbose) {
+                helper::display_vector<scalar, index>(n, x_tmp.data(), "x_tmp_" + std::to_string(iter));
+            }
+            // x_tmp
+            // 'SCP_Block_Optimal_2:84' v_norm_temp = norm(y_a - H_P * x_tmp);
+            v_norm_cur = helper::find_residual(m, n, H_P.data(), x_tmp.data(), y_a.data());
+            // 'SCP_Block_Optimal_2:86' if v_norm_temp < v_norm
+            //            printf("v_t:%8.5f, v_n:%8.5f\n", v_norm_temp, v_norm);
+            if (v_norm_cur < v_norm) {
+                // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
+                for (t = 0; t < n; t++) {
+                    x_per[t] = x_tmp[t];
+                }
+                // 'SCP_Block_Optimal_2:88' v_norm_cur = v_norm_temp;
+                //  v_norm_cur = v_norm_temp;
+                // 'SCP_Block_Optimal_2:89' if per
+                best_per = per;
+                // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+                if (v_norm_cur <= tolerance) {
+                    // 'SCP_Block_Optimal_2:95' stopping(2)=1;
+                    stopping[1] = 1;
+                    if (this->qam == 3)
+                        iter = search_iter;
+                }
+                // 'SCP_Block_Optimal_2:99' v_norm = v_norm_cur;
+                v_norm = v_norm_cur;
+            }
+            // If we don't decrease the residual, keep trying permutations
+        }
+        // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
+        vector<scalar> P_cur(n * n, 0), P_tmp(n * n, 0);//, I(n * n, 0);
+        helper::eye<scalar, index>(n, P_tmp.data());
+        helper::eye<scalar, index>(n, P_cur.data());
+
+        if (best_per >= 0) {
+            for (k1 = 0; k1 < n; k1++) {
+                for (i = 0; i < n; i++) {
+                    P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per][k1] - 1)];
+                }
+            }
+        }
+        // 'SCP_Block_Optimal_2:115' x_cur = P_cur * x_cur;
+        helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x_per.data(), x_tmp.data());
+        for (i = 0; i < n; i++) {
+            x_cur[i] = x_tmp[i];
+        }
+        //        helper::display_vector<scalar, index>(n, x_tmp.data(), "x_tmp");
+        time = omp_get_wtime() - time;
+        return {stopping, time, v_norm_cur};
+    }
+
+    template<typename scalar, typename index, index m, index n>
+    returnType<scalar, index>
     cils<scalar, index, m, n>::cils_scp_block_babai_serial(vector<scalar> &x_cur, scalar v_norm_cur, index mode) {
         vector<scalar> R_t(m * n, 0), Q_t(m * n, 0), Piv_cum(n * n, 0), best_piv(n * n, 0);
         helper::eye(n, best_piv.data());
-
-        // Partition H into columns with full rank.
-        if (verbose) {
-            helper::display_matrix<scalar, index>(m, n, H.data(), "H");
-            helper::display_matrix<scalar, index>(1, n, x_cur.data(), "x_cur");
-        }
+//        verbose = true;
 
         // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
         vector<scalar> y_bar(m, 0), y(m, 0);
         vector<scalar> stopping(3, 0);
         vector<scalar> H_P(m * n, 0);//, H_H(H);
-        vector<scalar> z, z_z, x_tmp(x_cur), x_per(x_cur); //z_z = Z * z;
+        vector<scalar> z, z_z, x_tmp(n, 0), x_per(x_cur); //z_z = Z * z;
 
         if (verbose) {
-            helper::display_matrix<scalar, index>(m, n, H_P.data(), "H");
+            helper::display_matrix<scalar, index>(m, n, H.data(), "H");
             helper::display_matrix<scalar, index>(n, 1, x_tmp.data(), "x_tmp");
         }
 
@@ -594,11 +771,23 @@ namespace cils {
                 }
                 x_tmp[k1] = x_per[permutation[iter][k1] - 1];
             }
+            if (verbose) {
+                helper::display_matrix<scalar, index>(m, n, H_P.data(), "H_P");
+                helper::display_matrix<scalar, index>(n, 1, x_tmp.data(), "x_tmp");
+            }
+
             R_t.assign(m * n, 0);
             Q_t.assign(m * n, 0);
             Piv_cum.assign(n * n, 0);
             cils_partition_deficient(x_tmp.data(), Q_t.data(), R_t.data(), H_P.data(), Piv_cum.data());
 
+            if (verbose) {
+                helper::display_matrix<scalar, index>(m, n, H_P.data(), "H_P");
+                helper::display_matrix<scalar, index>(m, n, Q_t.data(), "Q_t");
+                helper::display_matrix<scalar, index>(m, n, R_t.data(), "R_t");
+                helper::display_matrix<scalar, index>(n, n, Piv_cum.data(), "Piv_cum");
+                helper::display_matrix<scalar, index>(n, 1, x_tmp.data(), "x_tmp");
+            }
             // 'SCP_Block_Optimal_2:104' per = true;
             per = iter;
 
@@ -716,14 +905,14 @@ namespace cils {
         if (verbose)
             helper::display_matrix<scalar, index>(n, 1, x_per.data(), "x_per");
 
-        P_tmp.assign(n * n, 0);
-        helper::mtimes_AP<scalar, index>(n, n, P_cur.data(), best_piv.data(), P_tmp.data());
-
         x_tmp.assign(n, 0);
-        helper::mtimes_Axy<scalar, index>(n, n, P_tmp.data(), x_per.data(), x_tmp.data());
+        helper::mtimes_Axy<scalar, index>(n, n, best_piv.data(), x_per.data(), x_tmp.data());
+
+        x_per.assign(n, 0);
+        helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x_tmp.data(), x_per.data());
 
         for (i = 0; i < n; i++) {
-            x_cur[i] = x_tmp[i];
+            x_cur[i] = x_per[i];
         }
 
         time = omp_get_wtime() - time;
@@ -736,28 +925,15 @@ namespace cils {
     returnType<scalar, index>
     cils<scalar, index, m, n>::cils_scp_block_babai_omp(vector<scalar> &x_cur, scalar v_norm_cur,
                                                         index n_proc, index mode) {
-        vector<scalar> R_t(m * n, 0), Q_t(m * n, 0), H_A(m * n, 0), Piv_cum(n * n, 0);
-
-        // Partition H into columns with full rank.
-        if (verbose) {
-            helper::display_matrix<scalar, index>(m, n, H.data(), "H");
-            helper::display_matrix<scalar, index>(1, n, x_cur.data(), "x_cur");
-        }
-
-        cils_partition_deficient(x_cur.data(), Q_t.data(), R_t.data(), H_A.data(), Piv_cum.data());
-
-        if (verbose) {
-            helper::display_matrix<scalar, index>(m, n, H_A.data(), "P_H");
-            helper::display_matrix<scalar, index>(1, n, x_cur.data(), "P_x_cur");
-        }
-
+        vector<scalar> R_t(m * n, 0), Q_t(m * n, 0), Piv_cum(n * n, 0);
+        helper::eye(n, Piv_cum.data());
 
         // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
         vector<scalar> stopping(3, 0);
         scalar v_norm = v_norm_cur;
         // 'SCP_Block_Optimal_2:50' per = false;
-        vector<vector<scalar>> x(n_proc, vector<scalar>(x_cur));
-        vector<scalar> v_norm_cur_proc(n_proc, v_norm), x_per(x_cur);
+        vector<vector<scalar>> x(n_proc, vector<scalar>(x_cur)), best_piv(n_proc, vector<scalar>(Piv_cum));
+        vector<scalar> v_norm_cur_proc(n_proc, v_norm);
         vector<index> best_per_proc(n_proc, 0);
 
         scalar time = omp_get_wtime();
@@ -773,12 +949,13 @@ namespace cils {
             time = omp_get_wtime() - time;
             return {stopping, time, v_norm_cur};
         }
+
         index cur_1st, cur_end, t, i, j, k1, best_per = -1;
         vector<scalar> z, z_z; //z_z = Z * z;
-        vector<scalar> H_P(H_A), x_tmp(x_cur), y_bar(m, 0), y(m, 0);
+        vector<scalar> H_P(m * n, 0), x_tmp(x_cur), x_per(x_cur), y_bar(m, 0), y(m, 0);
 
         time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_proc) private(z, z_z, cur_1st, cur_end, i, j, t, k1) firstprivate(H_P, x_tmp, v_norm, y_bar, y)
+#pragma omp parallel default(shared) num_threads(n_proc) private(z, z_z, cur_1st, cur_end, i, j, t, k1) firstprivate(R_t, Q_t, Piv_cum, H_P, x_tmp, v_norm, y_bar, y)
         {
             index t_num = omp_get_thread_num(), per = -1;
             index start = omp_get_thread_num() * search_iter / n_proc;
@@ -791,11 +968,16 @@ namespace cils {
                 // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
                 for (i = 0; i < n; i++) {
                     for (j = 0; j < m; j++) {
-                        H_P[j + m * i] = H_A[j + m * (permutation[iter][i] - 1)];
+                        H_P[j + m * i] = H[j + m * (permutation[iter][i] - 1)];
                     }
                     x_tmp[i] = x_per[permutation[iter][i] - 1];
                 }
-                // 'SCP_Block_Optimal_2:104' per = true;
+
+                R_t.assign(m * n, 0);
+                Q_t.assign(m * n, 0);
+                Piv_cum.assign(n * n, 0);
+                cils_partition_deficient(x_tmp.data(), Q_t.data(), R_t.data(), H_P.data(), Piv_cum.data());
+
                 per = iter;
                 // 'SCP_Block_Optimal_2:56' for j = 1:q
                 for (j = 0; j < q; j++) {
@@ -886,6 +1068,7 @@ namespace cils {
                     }
                     // 'SCP_Block_Optimal_2:89' if per
                     best_per_proc[t_num] = per;
+                    best_piv[t_num].assign(Piv_cum.begin(), Piv_cum.end());
                     per = -1;
                     // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
                     if (v_norm_cur_proc[t_num] <= tolerance) {
@@ -905,7 +1088,7 @@ namespace cils {
 
         // 'SCP_Block_Optimal_2:44' P_tmp = P;
         vector<scalar> P_cur(Piv_cum), P_tmp(Piv_cum);
-        vector<scalar> x_a(n, 0);
+
 
         if (best_proc < 0) {
             scalar v_min = INFINITY;
@@ -924,9 +1107,13 @@ namespace cils {
         }
 
         // 'SCP_Block_Optimal_2:115' x_cur = P_cur * x_cur;
-        helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x[best_proc].data(), x_a.data());
+        vector<scalar> x_a(n, 0), x_b(n, 0);
+        helper::mtimes_Axy<scalar, index>(n, n, best_piv[best_proc].data(), x[best_proc].data(), x_a.data());
+
+        helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x_a.data(), x_b.data());
+
         for (i = 0; i < n; i++) {
-            x_cur[i] = x_a[i];
+            x_cur[i] = x_b[i];
         }
 
         time = omp_get_wtime() - time;
@@ -989,55 +1176,52 @@ namespace cils {
                 // 'SCP_Block_Optimal_2:104' per = true;
                 per = iter;
 
-                for (index p = 0; p < 4; p++) {
-#pragma omp for schedule(dynamic) nowait
-                    for (index j = 0; j < q; j++) {
-                        cur_1st = indicator[2 * j];
-                        cur_end = indicator[2 * j + 1];
-                        y_bar.assign(m, 0);
-                        for (k1 = 0; k1 <= cur_1st - 2; k1++) {
-                            for (i = 0; i < m; i++) {
-                                t = k1 * m + i;
-                                y_bar[i] += H_P[i + m * (t / m)] * x_tmp[k1];
-                            }
+                for (index j = 0; j < q; j++) {
+                    cur_1st = indicator[2 * j];
+                    cur_end = indicator[2 * j + 1];
+                    y_bar.assign(m, 0);
+                    for (k1 = 0; k1 <= cur_1st - 2; k1++) {
+                        for (i = 0; i < m; i++) {
+                            t = k1 * m + i;
+                            y_bar[i] += H_P[i + m * (t / m)] * x_tmp[k1];
                         }
-                        for (k1 = 0; k1 < n - cur_end; k1++) {
-                            for (i = 0; i < m; i++) {
-                                t = k1 * m + i;
-                                y_bar[i] += H_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
-                            }
+                    }
+                    for (k1 = 0; k1 < n - cur_end; k1++) {
+                        for (i = 0; i < m; i++) {
+                            t = k1 * m + i;
+                            y_bar[i] += H_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
                         }
-                        for (t = 0; t < m; t++) {
-                            y_bar[t] = y_a[t] - y_bar[t];
+                    }
+                    for (t = 0; t < m; t++) {
+                        y_bar[t] = y_a[t] - y_bar[t];
+                    }
+                    t = cur_end - cur_1st + 1;
+                    H_A.resize(m * t);
+                    for (k1 = 0; k1 < t; k1++) {
+                        for (i = 0; i < m; i++) {
+                            H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)];
                         }
-                        t = cur_end - cur_1st + 1;
-                        H_A.resize(m * t);
-                        for (k1 = 0; k1 < t; k1++) {
-                            for (i = 0; i < m; i++) {
-                                H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)];
-                            }
-                        }
-                        // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
-                        z.resize(t);
-                        z_z.resize(t);
-                        z.assign(t, 0);
-                        z_z.assign(t, 0);
+                    }
+                    // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
+                    z.resize(t);
+                    z_z.resize(t);
+                    z.assign(t, 0);
+                    z_z.assign(t, 0);
 
-                        cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
-                        reduction.cils_obils_reduction(H_A, y_bar);
+                    cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
+                    reduction.cils_obils_reduction(H_A, y_bar);
 
-                        cils_search<scalar, index> ils(t, t, this->qam);
-                        ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
+                    cils_search<scalar, index> ils(t, t, this->qam);
+                    ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 
-                        // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
-                        for (i = 0; i < t; i++) {
-                            z[reduction.p[i] - 1] = z_z[i];
-                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-                        }
-                        for (i = 0; i < t; i++) {
-                            x_tmp[cur_1st + i - 1] = z[i];
-                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-                        }
+                    // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
+                    for (i = 0; i < t; i++) {
+                        z[reduction.p[i] - 1] = z_z[i];
+                        //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
+                    }
+                    for (i = 0; i < t; i++) {
+                        x_tmp[cur_1st + i - 1] = z[i];
+                        //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
                     }
                 }
 
@@ -1082,8 +1266,209 @@ namespace cils {
                 }
             }
         }
-//        cout << best_proc << " " << stopping[1] << " ";
-//        helper::display_vector<scalar, index>(n_proc, v_norm_cur_proc.data(), "v_norm_cur_proc");
+
+        for (k1 = 0; k1 < n; k1++) {
+            for (i = 0; i < n; i++) {
+                P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];
+            }
+        }
+
+        // 'SCP_Block_Optimal_2:115' x_cur = P_cur * x_cur;
+        helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x[best_proc].data(), x_a.data());
+        for (i = 0; i < n; i++) {
+            x_cur[i] = x_a[i];
+        }
+
+        time = omp_get_wtime() - time;
+        return {stopping, time, v_norm};
+    }
+
+    template<typename scalar, typename index, index m, index n>
+    returnType<scalar, index>
+    cils<scalar, index, m, n>::cils_scp_block_suboptimal_omp(vector<scalar> &x_cur, scalar v_norm_cur,
+                                                             index n_proc, index mode) {
+        // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
+        vector<scalar> stopping(3, 0);
+
+        scalar time = omp_get_wtime();
+        //  Subfunctions: SCP_opt
+
+        // 'SCP_Block_Optimal_2:25' b_count = 0;
+        index b_count = 0;
+        index best_proc = -1;
+        // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+        if (v_norm_cur <= tolerance) {
+            // 'SCP_Block_Optimal_2:28' stopping(1)=1;
+            stopping[0] = 1;
+            time = omp_get_wtime() - time;
+            return {{}, time, v_norm_cur};
+        }
+        index cur_1st, cur_end, i, t, k1, n_dx_q_2, n_dx_q_0, check = 0;
+        index diff = 0, num_iter = 0, flag = 0, temp;
+
+        // 'SCP_Block_Optimal_2:32' q = ceil(n/m);
+        // 'SCP_Block_Optimal_2:33' indicator = zeros(2, q);
+
+        scalar v_norm = v_norm_cur, sum;
+        // 'SCP_Block_Optimal_2:50' per = false;
+        vector<vector<scalar>> x(n_proc, vector<scalar>(x_cur));
+        vector<scalar> v_norm_cur_proc(n_proc, v_norm), x_per(x_cur);
+        vector<index> best_per_proc(n_proc, 0), R_S_1(n, 0);
+
+        // private variables
+        vector<scalar> z(n, 0), z_z(n, 0); //z_z = Z * z;
+        vector<scalar> H_A, H_P(m * n, 0), x_tmp(x_cur), y_bar(m, 0), y(m, 0);
+
+        time = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, n_dx_q_2, n_dx_q_0, H_A, cur_1st, cur_end, i, t, k1) firstprivate(check, z, z_z, H_P, x_tmp, v_norm, y_bar, y)
+        {
+            index t_num = omp_get_thread_num(), per = -1;
+            index start = omp_get_thread_num() * search_iter / n_proc;
+            index end = (omp_get_thread_num() + 1) * search_iter / n_proc;
+            //#pragma omp for schedule(static, program_def::chunk)
+            for (index itr = start; itr < end; itr++) {
+//            for (index itr = 0; itr < search_iter; itr++) {
+                index iter = mode ? rand() % search_iter : itr;
+                // H_Apply permutation strategy to update x_cur and v_norm_cur
+                // [x_tmp, v_norm_temp] = block_opt(H_P, y_a, x_tmp, n, indicator);
+                // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
+                // 'SCP_Block_Optimal_2:56' for j = 1:q
+                for (k1 = 0; k1 < n; k1++) {
+                    for (i = 0; i < m; i++) {
+                        H_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
+                    }
+                    x_tmp[k1] = x[t_num][permutation[iter][k1] - 1];
+                }
+                // 'SCP_Block_Optimal_2:104' per = true;
+                per = iter;
+
+                for (index j = 0; j < q; j++) {
+                    cur_1st = indicator[2 * j];
+                    cur_end = indicator[2 * j + 1];
+                    y_bar.assign(m, 0);
+                    for (k1 = 0; k1 <= cur_1st - 2; k1++) {
+                        for (i = 0; i < m; i++) {
+                            t = k1 * m + i;
+                            y_bar[i] += H_P[i + m * (t / m)] * x_tmp[k1];
+                        }
+                    }
+                    for (k1 = 0; k1 < n - cur_end; k1++) {
+                        for (i = 0; i < m; i++) {
+                            t = k1 * m + i;
+                            y_bar[i] += H_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
+                        }
+                    }
+                    for (t = 0; t < m; t++) {
+                        y_bar[t] = y_a[t] - y_bar[t];
+                    }
+                    t = cur_end - cur_1st + 1;
+                    H_A.resize(m * t);
+                    for (k1 = 0; k1 < t; k1++) {
+                        for (i = 0; i < m; i++) {
+                            H_A[i + m * k1] = H_P[i + m * (cur_1st - 1 + k1)];
+                        }
+                    }
+                    // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
+                    z.assign(t, 0);
+                    z_z.assign(t, 0);
+
+                    cils_reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
+                    reduction.cils_obils_reduction(H_A, y_bar);
+
+                    cils_search<scalar, index> ils(t, t, this->qam);
+
+                    index ds = t / block_size;
+                    if (t % block_size != 0 || ds == 1) {
+                        ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
+                    } else {
+                        vector<index> d(ds, block_size);
+                        vector<scalar> y_b(reduction.y_q);
+                        for (index s = d.size() - 2; s >= 0; s--) {
+                            d[s] += d[s + 1];
+                        }
+                        R_S_1.assign(n, 0);
+                        diff = flag = 0;
+
+//                        #pragma omp barrier
+                        for (index jj = 0; jj < 10; jj++) {
+#pragma omp for schedule(dynamic) nowait
+                            for (index s = 0; s < ds; s++) {
+//                                if (!flag) {
+                                    n_dx_q_2 = d[s];
+                                    n_dx_q_0 = s == ds - 1 ? 0 : d[s + 1];
+
+                                    for (index row = n_dx_q_0; row < n_dx_q_2; row++) {
+                                        sum = 0;
+                                        for (index col = n_dx_q_2; col < t; col++) {
+                                            sum += reduction.R_Q[col * t + row] * z_z[col];
+                                        }
+                                        y_b[row] = reduction.y_q[row] - sum;
+                                    }
+
+                                    R_S_1[s] = ils.obils_search(n_dx_q_0, n_dx_q_2, 1, reduction.R_Q.data(), y_b.data(),
+                                                                z_z);
+#pragma omp atomic
+                                    diff += R_S_1[s];
+                                    flag = ((diff) >= ds) && jj > 0;
+//                                }
+                            }
+                        }
+                    }
+                    // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
+                    for (i = 0; i < t; i++) {
+                        z[reduction.p[i] - 1] = z_z[i];
+                        //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
+                    }
+                    for (i = 0; i < t; i++) {
+                        x_tmp[cur_1st + i - 1] = z[i];
+                        //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
+                    }
+                }
+
+
+                // 'SCP_Block_Optimal_2:84' v_norm_temp = norm(y_a - H_P * x_tmp);
+                v_norm_cur_proc[t_num] = helper::find_residual(m, n, H_P.data(), x_tmp.data(), y_a.data());
+                // 'SCP_Block_Optimal_2:86' if v_norm_temp < v_norm
+                if (v_norm_cur_proc[t_num] < v_norm) {
+                    // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
+                    for (t = 0; t < n; t++) {
+                        x_per[t] = x_tmp[t];
+                        x[t_num][t] = x_tmp[t];
+                    }
+                    // 'SCP_Block_Optimal_2:89' if per
+                    best_per_proc[t_num] = per;
+                    per = -1;
+                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+                    if (v_norm_cur_proc[t_num] <= tolerance) {
+                        // 'SCP_Block_Optimal_2:95' stopping(2)=1;
+                        stopping[1] = 1;
+                        iter = search_iter;
+                        best_proc = t_num;
+                    }
+                    v_norm = v_norm_cur_proc[t_num];
+                }
+                if (stopping[1])
+                    iter = search_iter;
+            }
+        }
+
+        vector<scalar> P_cur(n * n, 0), P_tmp(n * n, 0);
+        // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
+        helper::eye<scalar, index>(n, P_tmp.data());
+        helper::eye<scalar, index>(n, P_cur.data());
+        vector<scalar> x_a(n, 0);
+
+        if (best_proc < 0) {
+            scalar v_min = INFINITY;
+            for (k1 = 0; k1 < n_proc; k1++) {
+                if (v_norm_cur_proc[k1] < v_min) {
+                    v_min = v_norm_cur_proc[k1];
+                    best_proc = k1;
+                }
+            }
+        }
+        //        cout << best_proc << " " << stopping[1] << " ";
+        //        helper::display_vector<scalar, index>(n_proc, v_norm_cur_proc.data(), "v_norm_cur_proc");
         for (k1 = 0; k1 < n; k1++) {
             for (i = 0; i < n; i++) {
                 P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];

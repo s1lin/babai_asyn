@@ -11,9 +11,9 @@ namespace cils {
         index lastCol, t, b_i, i, k, nx, vlen;
 
         // 'partition_H_2:23' H_A = H;
-        for (i = 0; i < m * n; i++) {
-            H_A[i] = H[i];
-        }
+        // for (i = 0; i < m * n; i++) {
+        //     H_A[i] = H[i];
+        // }
         // 'partition_H_2:24' z = z_B;
         // 'partition_H_2:25' lastCol = n;
         lastCol = n;

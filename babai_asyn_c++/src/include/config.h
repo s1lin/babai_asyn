@@ -8,8 +8,8 @@
 #include <climits>
 #include "helper.h"
 
-const static int M = 4;
-const static int N = 6;
+const static int M = 20;
+const static int N = 30;
 
 using namespace std;
 
@@ -22,14 +22,14 @@ namespace cils::program_def {
      *   omp_sched_guided = 0x3,
      *   omp_sched_auto = 0x4,
      */
-    index qam = 3;
-    index SNR = 35;
-    index max_iter = 1;
-    index search_iter = 6 * 5 * 4 * 3 * 2 * 1;
+    index qam = 1;
+    index SNR = 15;
+    index max_iter = 100;
+    index search_iter = 1e5;//6 * 5 * 4 * 3 * 2 * 1;
     index stop = 3;
     index schedule = 2;
     index chunk_size = 1;
-    index block_size = 32;
+    index block_size = 2;
     index spilt_size = 2;
     index offset = 2;
     index is_constrained = true;
@@ -85,12 +85,13 @@ namespace cils::program_def {
         }
 //            max_proc = is_local ? 17 : 30;
         printf("[ INFO: The program settings are:]\n"
-               "1. QAM: %d, SNR: %d, epoch: %d, block size: %d;\n"
-               "2. ILS-Max number of interger search points: %d;\n"
-               "3. Chaotic stop minimum: %d, chatoic number of iteratios(nswp): %d;\n"
-               "4. ILS-Max of integer search iterations:%d;\n"
-               "5. qr: %d, constrained: %d, matlab for qr/LLL: %d.\n",
-               (int) pow(4, qam), SNR, max_iter, block_size,
+               "1. M: %d, N:%d; \n"
+               "2. QAM: %d, SNR: %d, epoch: %d, block size: %d;\n"
+               "3. ILS-Max number of interger search points: %d;\n"
+               "4. Chaotic stop minimum: %d, chatoic number of iteratios(nswp): %d;\n"
+               "5. ILS-Max of integer search iterations:%d;\n"
+               "6. qr: %d, constrained: %d, matlab for qr/LLL: %d.\n",
+               M, N, (int) pow(4, qam), SNR, max_iter, block_size,
                search_iter, stop, num_trials, max_search,
                is_local, is_constrained, is_matlab);
 //        permutation[0] = vector<scalar>(N);

@@ -69,12 +69,12 @@ end
 
 [size_perm, ~] = size(permutation);
 
-if m == 6
+if m == 4
     val = 1;
     times=zeros(val,10);
 
     e1 = 0;
-    e2 = 0;
+    %e2 = 0;
     for mm=1:val
 
         %Generate system
@@ -84,33 +84,34 @@ if m == 6
 
         %init_res = norm(y - H * s)
         % Initial Point Method: QRP
-%         HH = A;
-%         Piv = eye(n);
-%         v_norm1 = 100;
-%         s_bar_IP = zeros(n, 1);
+        HH = A;
+        Piv = eye(n);
+        v_norm1 = 100;
+        s_bar_IP = zeros(n, 1);
         %tic;
-        [s_bar_IP, v_norm1, HH, Piv] = gradproj(A, y, 0, 2^k-1, s_bar_IP, 1e5);
+        s_bar_IP = gradproj(A, y, zeros(n, 1), ones(n, 1) * 2^k-1, s_bar_IP, 100);
+        s_bar_IP = round_int(s_bar_IP, 0, 2^k-1); 
         %times(mm,1)=toc;
         s_bar1 = Piv*s_bar_IP               
 
         tic;
-        [s_bar_cur, v_norm_cur, stopping] = SCP_Block_Babai_3(s_bar_IP, v_norm1, HH, tolerance, 1e5, 0, y, m, n, permutation, 3);
+        [s_bar_cur, v_norm_cur, stopping] = SCP_Block_Babai_2(s_bar_IP, v_norm1, HH, tolerance, factorial(n), 0, y, m, n, permutation', 3);
         s_bar_babai = Piv*s_bar_cur;
 
-        tic;
-        [s_bar_cur, v_norm_cur, stopping] = SCP_Block_Optimal_3(s_bar_IP, v_norm1, HH, tolerance, 1e5, 0, y, m, n, permutation, 3);
-        s_bar_optim = Piv*s_bar_cur;
+        %tic;
+        %[s_bar_cur, v_norm_cur, stopping] = SCP_Block_Optimal_3(s_bar_IP, v_norm1, HH, tolerance, 1e5, 0, y, m, n, permutation, 3);
+        %s_bar_optim = Piv*s_bar_cur;
 
 
         s = x_t';
         s_bar_babai = s_bar_babai'
-        s_bar_optim = s_bar_optim'
+        %s_bar_optim = s_bar_optim'
         e1 = e1 + norm(s - s_bar_babai);
-        e2 = e2 + norm(s - s_bar_optim);
+        %e2 = e2 + norm(s - s_bar_optim);
 
     end
     e1/100
-    e2/100
+    %e2/100
 end
 permutation = permutation';
 
