@@ -1,0 +1,89 @@
+\hypertarget{helper_8h}{}\doxysection{src/include/helper.h File Reference}
+\label{helper_8h}\index{src/include/helper.h@{src/include/helper.h}}
+
+
+Computation of integer least square problem.  
+
+
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+Include dependency graph for helper.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespacehelper}{helper}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}{helper\+::b\+\_\+rand}} (const int n, double $\ast$r)
+\item 
+void \mbox{\hyperlink{namespacehelper_a38339329189a88e7529f6267d2640ca5}{helper\+::randperm}} (int n, double $\ast$p)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{helper\+::eye}} (index n, scalar $\ast$A)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n, index mb$>$ }\\void \mbox{\hyperlink{namespacehelper_a001e915bf035136f793b0d709bfa00bb}{helper\+::b\+\_\+mtimes}} (const array$<$ scalar, m $\ast$n $>$ \&A\+\_\+C, const array$<$ scalar, n $\ast$mb $>$ \&B, array$<$ scalar, m $\ast$mb $>$ \&C)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\void \mbox{\hyperlink{namespacehelper_afc7cf1deb54e87ddd16e7df7978f3be9}{helper\+::mtimes}} (const scalar A\+\_\+C\mbox{[}4\mbox{]}, const array$<$ scalar, m $\ast$n $>$ \&B, array$<$ scalar, 2 $\ast$n $>$ \&C)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\void \mbox{\hyperlink{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}{helper\+::mtimes}} (const array$<$ scalar, m $\ast$m $>$ \&Q, const array$<$ scalar, m $\ast$n $>$ \&R, array$<$ scalar, m $\ast$n $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aea72c28e2b9c90023834eac74f25b271}{helper\+::mtimes\+\_\+v}} (index m, index n, const vector$<$ scalar $>$ \&Q, const vector$<$ scalar $>$ \&R, vector$<$ scalar $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aa7430cecf7974509c8376223379df15d}{helper\+::mtimes\+\_\+col}} (index m, index n, const vector$<$ scalar $>$ \&Q, const vector$<$ scalar $>$ \&R, vector$<$ scalar $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{helper\+::mtimes\+\_\+\+AP}} (index m, index n, const scalar $\ast$A, const scalar $\ast$P, scalar $\ast$A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}{helper\+::inv}} (const index K, const index N, const vector$<$ scalar $>$ \&x, vector$<$ scalar $>$ \&y)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a034619a8252a7108ebd92468a18e91f1}{helper\+::mtimes\+\_\+\+Axy}} (const index m, const index n, const scalar $\ast$A, const scalar $\ast$x, scalar $\ast$y)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index n$>$ }\\index \mbox{\hyperlink{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}{helper\+::length\+\_\+nonzeros}} (const scalar $\ast$x, const scalar $\ast$y)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}{helper\+::planerot}} (scalar x\mbox{[}2\mbox{]}, scalar G\mbox{[}4\mbox{]})
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}{helper\+::norm}} (const index n, const scalar $\ast$v)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}{helper\+::find\+\_\+bit\+\_\+error\+\_\+rate}} (const index n, const scalar $\ast$x\+\_\+b, const scalar $\ast$x\+\_\+t, const index k)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a248365cbe2a99e7437c2367d465a3865}{helper\+::display\+\_\+matrix}} (index m, index n, const scalar $\ast$x, const string \&name)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}{helper\+::display\+\_\+vector}} (const index n, const scalar $\ast$x, const string \&name)
+\item 
+{\footnotesize template$<$typename index $>$ }\\bool \mbox{\hyperlink{namespacehelper_af919eeff753500758928614a000457d0}{helper\+::if\+\_\+all\+\_\+x\+\_\+true}} (const vector$<$ bool $>$ \&x)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}{helper\+::unique\+\_\+vector}} (const vector$<$ scalar $>$ \&a, vector$<$ scalar $>$ \&b)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}{helper\+::find\+\_\+residual}} (const index m, const index n, const scalar $\ast$A, const scalar $\ast$x, const scalar $\ast$y)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const double \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{Z\+E\+RO}} = 3.\+3121686421112381E-\/170
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Computation of integer least square problem. 
+
+\begin{DoxyAuthor}{Author}
+Shilei Lin This file is part of C\+I\+LS. C\+I\+LS is free software\+: you can redistribute it and/or modify it under the terms of the G\+NU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+\end{DoxyAuthor}
+C\+I\+LS is distributed in the hope that it will be useful, but W\+I\+T\+H\+O\+UT A\+NY W\+A\+R\+R\+A\+N\+TY; without even the implied warranty of M\+E\+R\+C\+H\+A\+N\+T\+A\+B\+I\+L\+I\+TY or F\+I\+T\+N\+E\+SS F\+OR A P\+A\+R\+T\+I\+C\+U\+L\+AR P\+U\+R\+P\+O\+SE. See the G\+NU General Public License for more details.
+
+You should have received a copy of the G\+NU General Public License along with C\+I\+LS. If not, see \href{http://www.gnu.org/licenses/}{\texttt{ http\+://www.\+gnu.\+org/licenses/}}. 
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}\label{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}} 
+\index{helper.h@{helper.h}!ZERO@{ZERO}}
+\index{ZERO@{ZERO}!helper.h@{helper.h}}
+\doxysubsubsection{\texorpdfstring{ZERO}{ZERO}}
+{\footnotesize\ttfamily const double Z\+E\+RO = 3.\+3121686421112381E-\/170}
+
+
+
+Definition at line 27 of file helper.\+h.
+

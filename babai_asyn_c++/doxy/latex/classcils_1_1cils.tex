@@ -1,0 +1,754 @@
+\hypertarget{classcils_1_1cils}{}\doxysection{cils\+::cils$<$ scalar, index, m, n $>$ Class Template Reference}
+\label{classcils_1_1cils}\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+
+
+{\ttfamily \#include $<$cils.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcils_1_1cils_ae26847ae341a2ca889420ed7e4f4a2ec}{cils}} (index \mbox{\hyperlink{classcils_1_1cils_a6816461b2e0da7369cfbb41a623dc8ef}{qam}}, index \mbox{\hyperlink{classcils_1_1cils_af06a809127e1789f54c7a52c8d9c469b}{snr}})
+\item 
+\mbox{\hyperlink{classcils_1_1cils_ab8ce11663cfe32ba5aa592a83c12a4df}{$\sim$cils}} ()
+\item 
+void \mbox{\hyperlink{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}{init}} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} rank)
+\item 
+void \mbox{\hyperlink{classcils_1_1cils_a870974552a559e7ac83935efc1ad7390}{init\+\_\+ud}} ()
+\item 
+void \mbox{\hyperlink{classcils_1_1cils_a60dd1adfff1f208d29749fec7b346225}{init\+\_\+y}} ()
+\item 
+void \mbox{\hyperlink{classcils_1_1cils_a3a48648e7acefe70e683b32db990ca43}{init\+\_\+R}} ()
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a166f627bd33d9579c7039b5fd0d58812}{cils\+\_\+back\+\_\+solve}} (array$<$ scalar, n $>$ \&z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a6ebba0bc8411c5fc76923aa5ebfe2cf3}{cils\+\_\+babai\+\_\+search\+\_\+serial}} (vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a406c5f15a5b09546976733be9ea804de}{cils\+\_\+block\+\_\+search\+\_\+serial\+\_\+\+C\+P\+U\+T\+E\+ST}} (const scalar $\ast$R\+\_\+R, const scalar y\+\_\+r, const vector$<$ index $>$ $\ast$d, vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a816b186d62d3c77b653835f570d27682}{cils\+\_\+babai\+\_\+search\+\_\+omp}} (const index n\+\_\+proc, const index nswp, vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_ae7761c08fb8cc5fd4bf674ccfcb2f08d}{cils\+\_\+back\+\_\+solve\+\_\+omp}} (const index n\+\_\+proc, const index nswp, vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a99bcdc878c2f7c06ef605b5654852a26}{cils\+\_\+block\+\_\+search\+\_\+omp}} (const index n\+\_\+proc, const index nswp, const index \mbox{\hyperlink{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}{init}}, const scalar $\ast$y\+\_\+r, const vector$<$ index $>$ $\ast$d, vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a0163f7c9f5992472803d5231f80ba63b}{cils\+\_\+sic\+\_\+serial}} (vector$<$ scalar $>$ \&x)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a80eeb29e71c75f217f57ab232740dacd}{cils\+\_\+qrp\+\_\+serial}} (vector$<$ scalar $>$ \&x)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_ad567df2b0d97514c2ca252d82168ebb4}{cils\+\_\+grad\+\_\+proj}} (vector$<$ scalar $>$ \&x, const index max\+\_\+iter)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_abf61d0f89f19c87175ce43c99caf06be}{cils\+\_\+sic\+\_\+subopt}} (vector$<$ scalar $>$ \&z, array$<$ scalar, m $>$ \&v\+\_\+cur, array$<$ scalar, m $\ast$n $>$ A\+\_\+t, scalar v\+\_\+norm\+\_\+cur, scalar \mbox{\hyperlink{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}{tolerance}}, index method)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_ad430b7313ce137f2308b08511753bc37}{cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+serial}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_ade3c2c0ebcefcfd91d92bb1dec6e1aa9}{cils\+\_\+scp\+\_\+block\+\_\+suboptimal\+\_\+serial}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a6f9f36385927e536ee2137ba66d14eef}{cils\+\_\+scp\+\_\+block\+\_\+suboptimal\+\_\+omp}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index n\+\_\+proc, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a5978b0af1d63b415748590b8b518ce13}{cils\+\_\+scp\+\_\+block\+\_\+babai\+\_\+serial}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a1bbc8793e2ee929d1b04dc4d9302994f}{cils\+\_\+scp\+\_\+block\+\_\+babai\+\_\+omp}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index n\+\_\+proc, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a615631392b02675f6d6e81683e31f43d}{cils\+\_\+partition\+\_\+deficient}} (scalar $\ast$z\+\_\+B, scalar $\ast$Q\+\_\+tilde, scalar $\ast$R\+\_\+tilde, scalar $\ast$H\+\_\+A, scalar $\ast$Piv\+\_\+cum)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a43617a04926b844c063b47bbdee01f0a}{cils\+\_\+block\+\_\+search\+\_\+serial}} (const index \mbox{\hyperlink{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}{init}}, const scalar $\ast$R\+\_\+R, const scalar $\ast$y\+\_\+r, const vector$<$ index $>$ $\ast$d, vector$<$ scalar $>$ $\ast$z\+\_\+B)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_a304045d8f9ab3657d4fc5e5c54571226}{cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+omp}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar v\+\_\+norm\+\_\+cur, index n\+\_\+proc, index mode)
+\item 
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils_aae9968bb8c29a427b736449e309fb0bb}{cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+mpi}} (vector$<$ scalar $>$ \&x\+\_\+cur, scalar $\ast$v\+\_\+norm\+\_\+cur, index size, index rank)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+index \mbox{\hyperlink{classcils_1_1cils_a6816461b2e0da7369cfbb41a623dc8ef}{qam}}
+\item 
+index \mbox{\hyperlink{classcils_1_1cils_af06a809127e1789f54c7a52c8d9c469b}{snr}}
+\item 
+index \mbox{\hyperlink{classcils_1_1cils_a8e22fa0d8171faff2be3065d599a5876}{upper}}
+\item 
+index \mbox{\hyperlink{classcils_1_1cils_a355cbe96a655e6373d49558fcb912361}{lower}}
+\item 
+scalar \mbox{\hyperlink{classcils_1_1cils_a4f9a14e8e6c4521ba390c065bda04ebe}{init\+\_\+res}}
+\item 
+scalar \mbox{\hyperlink{classcils_1_1cils_aa82a2a8f329b3b26c405538b6e465079}{sigma}}
+\item 
+scalar \mbox{\hyperlink{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}{tolerance}}
+\item 
+array$<$ scalar, m $\ast$(n+1)/2 $>$ \mbox{\hyperlink{classcils_1_1cils_a11e59cc2de84fb6b4a8688b8d9301658}{R\+\_\+A}}
+\item 
+array$<$ scalar, m $\ast$n $>$ \mbox{\hyperlink{classcils_1_1cils_a8ec2f3897111f6ca67592f79996d72bf}{A}}
+\item 
+array$<$ scalar, m $\ast$n $>$ \mbox{\hyperlink{classcils_1_1cils_adce8e87a6e2e4b36259d7019244554b6}{H}}
+\item 
+array$<$ scalar, n $\ast$n $>$ \mbox{\hyperlink{classcils_1_1cils_aee4c9683ccc1717370622b86b69b27d5}{Z}}
+\item 
+array$<$ scalar, n $\ast$n $>$ \mbox{\hyperlink{classcils_1_1cils_a1446e7f01b234e946822a8901fc69d09}{P}}
+\item 
+array$<$ scalar, n $>$ \mbox{\hyperlink{classcils_1_1cils_a65ae609da759de9afd466469e1a8369c}{x\+\_\+r}}
+\item 
+array$<$ scalar, n $>$ \mbox{\hyperlink{classcils_1_1cils_ab86bc62925bcf4016a09a9e761592c51}{x\+\_\+t}}
+\item 
+array$<$ scalar, n $>$ \mbox{\hyperlink{classcils_1_1cils_a61ff607e9bf85082fdbd03172684a567}{l}}
+\item 
+array$<$ scalar, n $>$ \mbox{\hyperlink{classcils_1_1cils_a1f7c26a7138d180a77055da11418acf3}{u}}
+\item 
+array$<$ scalar, m $>$ \mbox{\hyperlink{classcils_1_1cils_ae4fb009905197734638a9327d3123cd3}{y\+\_\+a}}
+\item 
+array$<$ scalar, m $>$ \mbox{\hyperlink{classcils_1_1cils_a482a0a8ac5406e81c8c07f14162d3efe}{v\+\_\+a}}
+\item 
+array$<$ scalar, m $>$ \mbox{\hyperlink{classcils_1_1cils_a20b4cfcdbbd84051815c6e84e1bd09d5}{v\+\_\+q}}
+\item 
+std\+::unique\+\_\+ptr$<$ matlab\+::engine\+::\+M\+A\+T\+L\+A\+B\+Engine $>$ \mbox{\hyperlink{classcils_1_1cils_a5aa7b250b8034173d2dabe5f705532e6}{matlab\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename scalar, typename index, index m, index n$>$\newline
+class cils\+::cils$<$ scalar, index, m, n $>$}
+
+
+
+Definition at line 64 of file cils.\+h.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classcils_1_1cils_ae26847ae341a2ca889420ed7e4f4a2ec}\label{classcils_1_1cils_ae26847ae341a2ca889420ed7e4f4a2ec}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils@{cils}}
+\index{cils@{cils}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils()}{cils()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::\mbox{\hyperlink{classcils_1_1cils}{cils}} (\begin{DoxyParamCaption}\item[{index}]{qam,  }\item[{index}]{snr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 79 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_ab8ce11663cfe32ba5aa592a83c12a4df}\label{classcils_1_1cils_ab8ce11663cfe32ba5aa592a83c12a4df}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!````~cils@{$\sim$cils}}
+\index{````~cils@{$\sim$cils}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{$\sim$cils()}{~cils()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::$\sim$\mbox{\hyperlink{classcils_1_1cils}{cils}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 107 of file cils.\+h.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classcils_1_1cils_a816b186d62d3c77b653835f570d27682}\label{classcils_1_1cils_a816b186d62d3c77b653835f570d27682}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_babai\_search\_omp@{cils\_babai\_search\_omp}}
+\index{cils\_babai\_search\_omp@{cils\_babai\_search\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_babai\_search\_omp()}{cils\_babai\_search\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+babai\+\_\+search\+\_\+omp (\begin{DoxyParamCaption}\item[{const index}]{n\+\_\+proc,  }\item[{const index}]{nswp,  }\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Parallel Babai solver 
+\begin{DoxyParams}{Parameters}
+{\em n\+\_\+proc} & number of Processors/\+Threads \\
+\hline
+{\em nswp} & maximum number of iterations \\
+\hline
+{\em z\+\_\+B} & estimation of the true parameter \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 23 of file cils\+\_\+babai\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a6ebba0bc8411c5fc76923aa5ebfe2cf3}\label{classcils_1_1cils_a6ebba0bc8411c5fc76923aa5ebfe2cf3}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_babai\_search\_serial@{cils\_babai\_search\_serial}}
+\index{cils\_babai\_search\_serial@{cils\_babai\_search\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_babai\_search\_serial()}{cils\_babai\_search\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+babai\+\_\+search\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Serial Babai solver 
+\begin{DoxyParams}{Parameters}
+{\em z\+\_\+B} & \\
+\hline
+{\em is\+\_\+constrained} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 85 of file cils\+\_\+babai\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a166f627bd33d9579c7039b5fd0d58812}\label{classcils_1_1cils_a166f627bd33d9579c7039b5fd0d58812}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_back\_solve@{cils\_back\_solve}}
+\index{cils\_back\_solve@{cils\_back\_solve}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_back\_solve()}{cils\_back\_solve()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+back\+\_\+solve (\begin{DoxyParamCaption}\item[{array$<$ scalar, n $>$ \&}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Parallel version of Q\+R-\/factorization using modified Gram-\/\+Schmidt algorithm, row-\/oriented 
+\begin{DoxyParams}{Parameters}
+{\em eval} & \\
+\hline
+{\em verbose} & \\
+\hline
+{\em n\+\_\+proc} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Usage Caution\+: If L\+LL reduction is applied, please do permutation after getting the result. 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em n\+\_\+proc} & \\
+\hline
+{\em nswp} & \\
+\hline
+{\em update} & \\
+\hline
+{\em z\+\_\+B} & \\
+\hline
+{\em z\+\_\+\+B\+\_\+p} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 112 of file cils\+\_\+babai\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_ae7761c08fb8cc5fd4bf674ccfcb2f08d}\label{classcils_1_1cils_ae7761c08fb8cc5fd4bf674ccfcb2f08d}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_back\_solve\_omp@{cils\_back\_solve\_omp}}
+\index{cils\_back\_solve\_omp@{cils\_back\_solve\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_back\_solve\_omp()}{cils\_back\_solve\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+back\+\_\+solve\+\_\+omp (\begin{DoxyParamCaption}\item[{const index}]{n\+\_\+proc,  }\item[{const index}]{nswp,  }\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Parallel Babai solver 
+\begin{DoxyParams}{Parameters}
+{\em n\+\_\+proc} & number of Processors/\+Threads \\
+\hline
+{\em nswp} & maximum number of iterations \\
+\hline
+{\em z\+\_\+B} & estimation of the true parameter \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 138 of file cils\+\_\+babai\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a99bcdc878c2f7c06ef605b5654852a26}\label{classcils_1_1cils_a99bcdc878c2f7c06ef605b5654852a26}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_omp@{cils\_block\_search\_omp}}
+\index{cils\_block\_search\_omp@{cils\_block\_search\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_block\_search\_omp()}{cils\_block\_search\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+block\+\_\+search\+\_\+omp (\begin{DoxyParamCaption}\item[{const index}]{n\+\_\+proc,  }\item[{const index}]{nswp,  }\item[{const index}]{init,  }\item[{const scalar $\ast$}]{y\+\_\+r,  }\item[{const vector$<$ index $>$ $\ast$}]{d,  }\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Parallel version of Block Babai solver 
+\begin{DoxyParams}{Parameters}
+{\em n\+\_\+proc} & \\
+\hline
+{\em nswp} & \\
+\hline
+{\em stop} & \\
+\hline
+{\em init} & \\
+\hline
+{\em d} & \\
+\hline
+{\em z\+\_\+B} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+R\+\_\+\+S\+\_\+1\mbox{[}i\mbox{]} \&\&
+
+Definition at line 167 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a43617a04926b844c063b47bbdee01f0a}\label{classcils_1_1cils_a43617a04926b844c063b47bbdee01f0a}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_serial@{cils\_block\_search\_serial}}
+\index{cils\_block\_search\_serial@{cils\_block\_search\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_block\_search\_serial()}{cils\_block\_search\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+block\+\_\+search\+\_\+serial (\begin{DoxyParamCaption}\item[{const index}]{init,  }\item[{const scalar $\ast$}]{R\+\_\+R,  }\item[{const scalar $\ast$}]{y\+\_\+r,  }\item[{const vector$<$ index $>$ $\ast$}]{d,  }\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+
+
+Definition at line 27 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a406c5f15a5b09546976733be9ea804de}\label{classcils_1_1cils_a406c5f15a5b09546976733be9ea804de}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_serial\_CPUTEST@{cils\_block\_search\_serial\_CPUTEST}}
+\index{cils\_block\_search\_serial\_CPUTEST@{cils\_block\_search\_serial\_CPUTEST}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_block\_search\_serial\_CPUTEST()}{cils\_block\_search\_serial\_CPUTEST()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+block\+\_\+search\+\_\+serial\+\_\+\+C\+P\+U\+T\+E\+ST (\begin{DoxyParamCaption}\item[{const scalar $\ast$}]{R\+\_\+R,  }\item[{const scalar}]{y\+\_\+r,  }\item[{const vector$<$ index $>$ $\ast$}]{d,  }\item[{vector$<$ scalar $>$ $\ast$}]{z\+\_\+B }\end{DoxyParamCaption})}
+
+Serial Babai solver 
+\begin{DoxyParams}{Parameters}
+{\em z\+\_\+B} & \\
+\hline
+{\em is\+\_\+constrained} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 96 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_ad567df2b0d97514c2ca252d82168ebb4}\label{classcils_1_1cils_ad567df2b0d97514c2ca252d82168ebb4}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_grad\_proj@{cils\_grad\_proj}}
+\index{cils\_grad\_proj@{cils\_grad\_proj}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_grad\_proj()}{cils\_grad\_proj()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+grad\+\_\+proj (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x,  }\item[{const index}]{max\+\_\+iter }\end{DoxyParamCaption})}
+
+
+
+Definition at line 258 of file cils\+\_\+init\+\_\+point.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a615631392b02675f6d6e81683e31f43d}\label{classcils_1_1cils_a615631392b02675f6d6e81683e31f43d}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_partition\_deficient@{cils\_partition\_deficient}}
+\index{cils\_partition\_deficient@{cils\_partition\_deficient}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_partition\_deficient()}{cils\_partition\_deficient()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+partition\+\_\+deficient (\begin{DoxyParamCaption}\item[{scalar $\ast$}]{z\+\_\+B,  }\item[{scalar $\ast$}]{Q\+\_\+tilde,  }\item[{scalar $\ast$}]{R\+\_\+tilde,  }\item[{scalar $\ast$}]{H\+\_\+A,  }\item[{scalar $\ast$}]{Piv\+\_\+cum }\end{DoxyParamCaption})}
+
+Corresponds to Algorithm 5 (Partition Strategy) in Report 10 \mbox{[}H\+\_\+A, P, z, Q\+\_\+tilde, R\+\_\+tilde, indicator\mbox{]} = partition\+\_\+\+H(\+A, z\+\_\+\+B, m, n) permutes and partitions H\+\_\+A so that the submatrices H\+\_\+i are full-\/column rank
+
+Inputs\+: A -\/ m-\/by-\/n real matrix z\+\_\+B -\/ n-\/dimensional integer vector m -\/ integer scalar n -\/ integer scalar
+
+Outputs\+: P -\/ n-\/by-\/n real matrix, permutation such that H\+\_\+\+A$\ast$P=A z -\/ n-\/dimensional integer vector (z\+\_\+B permuted to correspond to H\+\_\+A) Q\+\_\+tilde -\/ m-\/by-\/n real matrix (Q factors) R\+\_\+tilde -\/ m-\/by-\/n real matrix (R factors) indicator -\/ 2-\/by-\/q integer matrix (indicates submatrices of H\+\_\+A) 
+\begin{DoxyParams}{Parameters}
+{\em z\+\_\+B} & \\
+\hline
+{\em Q\+\_\+tilde} & \\
+\hline
+{\em R\+\_\+tilde} & \\
+\hline
+{\em H\+\_\+A} & \\
+\hline
+{\em Piv\+\_\+cum} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 7 of file cils\+\_\+partition\+\_\+deficient.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a80eeb29e71c75f217f57ab232740dacd}\label{classcils_1_1cils_a80eeb29e71c75f217f57ab232740dacd}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_qrp\_serial@{cils\_qrp\_serial}}
+\index{cils\_qrp\_serial@{cils\_qrp\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_qrp\_serial()}{cils\_qrp\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+qrp\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 116 of file cils\+\_\+init\+\_\+point.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a1bbc8793e2ee929d1b04dc4d9302994f}\label{classcils_1_1cils_a1bbc8793e2ee929d1b04dc4d9302994f}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_babai\_omp@{cils\_scp\_block\_babai\_omp}}
+\index{cils\_scp\_block\_babai\_omp@{cils\_scp\_block\_babai\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_babai\_omp()}{cils\_scp\_block\_babai\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+babai\+\_\+omp (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{n\+\_\+proc,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 926 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a5978b0af1d63b415748590b8b518ce13}\label{classcils_1_1cils_a5978b0af1d63b415748590b8b518ce13}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_babai\_serial@{cils\_scp\_block\_babai\_serial}}
+\index{cils\_scp\_block\_babai\_serial@{cils\_scp\_block\_babai\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_babai\_serial()}{cils\_scp\_block\_babai\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+babai\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 731 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_aae9968bb8c29a427b736449e309fb0bb}\label{classcils_1_1cils_aae9968bb8c29a427b736449e309fb0bb}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_mpi@{cils\_scp\_block\_optimal\_mpi}}
+\index{cils\_scp\_block\_optimal\_mpi@{cils\_scp\_block\_optimal\_mpi}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_optimal\_mpi()}{cils\_scp\_block\_optimal\_mpi()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+mpi (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar $\ast$}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{size,  }\item[{index}]{rank }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1490 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a304045d8f9ab3657d4fc5e5c54571226}\label{classcils_1_1cils_a304045d8f9ab3657d4fc5e5c54571226}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_omp@{cils\_scp\_block\_optimal\_omp}}
+\index{cils\_scp\_block\_optimal\_omp@{cils\_scp\_block\_optimal\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_optimal\_omp()}{cils\_scp\_block\_optimal\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+omp (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{n\+\_\+proc,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1125 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_ad430b7313ce137f2308b08511753bc37}\label{classcils_1_1cils_ad430b7313ce137f2308b08511753bc37}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_serial@{cils\_scp\_block\_optimal\_serial}}
+\index{cils\_scp\_block\_optimal\_serial@{cils\_scp\_block\_optimal\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_optimal\_serial()}{cils\_scp\_block\_optimal\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+optimal\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+Applies the S\+C\+P-\/\+Block Optimal method to obtain a sub-\/optimal solution 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \\
+\hline
+{\em index} & \\
+\hline
+{\em m} & -\/ integer scalar \\
+\hline
+{\em n} & -\/ integer scalar \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em x\+\_\+cur} & -\/ n-\/dimensional integer vector for the sub-\/optimal solution \\
+\hline
+{\em v\+\_\+norm\+\_\+cur} & -\/ real scalar for the norm of the residual vector \\
+\hline
+{\em max\+\_\+\+Babai} & -\/ integer scalar, maximum number of calls to block\+\_\+opt \\
+\hline
+{\em stopping} & -\/ 1-\/by-\/3 boolean vector, indicates stopping criterion used \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\{\} 
+\end{DoxyReturn}
+
+
+Definition at line 349 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a6f9f36385927e536ee2137ba66d14eef}\label{classcils_1_1cils_a6f9f36385927e536ee2137ba66d14eef}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_suboptimal\_omp@{cils\_scp\_block\_suboptimal\_omp}}
+\index{cils\_scp\_block\_suboptimal\_omp@{cils\_scp\_block\_suboptimal\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_suboptimal\_omp()}{cils\_scp\_block\_suboptimal\_omp()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+suboptimal\+\_\+omp (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{n\+\_\+proc,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1288 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_ade3c2c0ebcefcfd91d92bb1dec6e1aa9}\label{classcils_1_1cils_ade3c2c0ebcefcfd91d92bb1dec6e1aa9}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_suboptimal\_serial@{cils\_scp\_block\_suboptimal\_serial}}
+\index{cils\_scp\_block\_suboptimal\_serial@{cils\_scp\_block\_suboptimal\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_scp\_block\_suboptimal\_serial()}{cils\_scp\_block\_suboptimal\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+scp\+\_\+block\+\_\+suboptimal\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x\+\_\+cur,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{index}]{mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 541 of file cils\+\_\+block\+\_\+search.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a0163f7c9f5992472803d5231f80ba63b}\label{classcils_1_1cils_a0163f7c9f5992472803d5231f80ba63b}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_sic\_serial@{cils\_sic\_serial}}
+\index{cils\_sic\_serial@{cils\_sic\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_sic\_serial()}{cils\_sic\_serial()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+sic\+\_\+serial (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 23 of file cils\+\_\+init\+\_\+point.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_abf61d0f89f19c87175ce43c99caf06be}\label{classcils_1_1cils_abf61d0f89f19c87175ce43c99caf06be}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_sic\_subopt@{cils\_sic\_subopt}}
+\index{cils\_sic\_subopt@{cils\_sic\_subopt}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{cils\_sic\_subopt()}{cils\_sic\_subopt()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+\mbox{\hyperlink{structcils_1_1return_type}{return\+Type}}$<$ scalar, index $>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::cils\+\_\+sic\+\_\+subopt (\begin{DoxyParamCaption}\item[{vector$<$ scalar $>$ \&}]{z,  }\item[{array$<$ scalar, m $>$ \&}]{v\+\_\+cur,  }\item[{array$<$ scalar, m $\ast$n $>$}]{A\+\_\+t,  }\item[{scalar}]{v\+\_\+norm\+\_\+cur,  }\item[{scalar}]{tolerance,  }\item[{index}]{method }\end{DoxyParamCaption})}
+
+
+
+Definition at line 22 of file cils\+\_\+sic\+\_\+opt.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}\label{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init@{init}}
+\index{init@{init}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}, m, n $>$\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}}]{rank }\end{DoxyParamCaption})}
+
+Initialize the problem either reading from files (.csv or .nc) or generating the problem 
+
+Definition at line 9 of file cils.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a3a48648e7acefe70e683b32db990ca43}\label{classcils_1_1cils_a3a48648e7acefe70e683b32db990ca43}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_R@{init\_R}}
+\index{init\_R@{init\_R}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{init\_R()}{init\_R()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::init\+\_\+R (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classcils_1_1cils_a870974552a559e7ac83935efc1ad7390}\label{classcils_1_1cils_a870974552a559e7ac83935efc1ad7390}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_ud@{init\_ud}}
+\index{init\_ud@{init\_ud}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{init\_ud()}{init\_ud()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}, m, n $>$\+::init\+\_\+ud}
+
+
+
+Definition at line 108 of file cils.\+cpp.
+
+\mbox{\Hypertarget{classcils_1_1cils_a60dd1adfff1f208d29749fec7b346225}\label{classcils_1_1cils_a60dd1adfff1f208d29749fec7b346225}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_y@{init\_y}}
+\index{init\_y@{init\_y}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{init\_y()}{init\_y()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::init\+\_\+y (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Only invoke is function when it is not reading from files and after completed qr! 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classcils_1_1cils_a8ec2f3897111f6ca67592f79996d72bf}\label{classcils_1_1cils_a8ec2f3897111f6ca67592f79996d72bf}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!A@{A}}
+\index{A@{A}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{A}{A}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m $\ast$ n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::A}
+
+
+
+Definition at line 71 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_adce8e87a6e2e4b36259d7019244554b6}\label{classcils_1_1cils_adce8e87a6e2e4b36259d7019244554b6}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!H@{H}}
+\index{H@{H}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{H}{H}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m $\ast$ n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::H}
+
+
+
+Definition at line 71 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a4f9a14e8e6c4521ba390c065bda04ebe}\label{classcils_1_1cils_a4f9a14e8e6c4521ba390c065bda04ebe}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_res@{init\_res}}
+\index{init\_res@{init\_res}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{init\_res}{init\_res}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+scalar \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::init\+\_\+res}
+
+
+
+Definition at line 68 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a61ff607e9bf85082fdbd03172684a567}\label{classcils_1_1cils_a61ff607e9bf85082fdbd03172684a567}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!l@{l}}
+\index{l@{l}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{l}{l}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::l}
+
+
+
+Definition at line 74 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a355cbe96a655e6373d49558fcb912361}\label{classcils_1_1cils_a355cbe96a655e6373d49558fcb912361}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!lower@{lower}}
+\index{lower@{lower}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{lower}{lower}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+index \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::lower}
+
+
+
+Definition at line 67 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a5aa7b250b8034173d2dabe5f705532e6}\label{classcils_1_1cils_a5aa7b250b8034173d2dabe5f705532e6}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!matlabPtr@{matlabPtr}}
+\index{matlabPtr@{matlabPtr}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{matlabPtr}{matlabPtr}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+std\+::unique\+\_\+ptr$<$matlab\+::engine\+::\+M\+A\+T\+L\+A\+B\+Engine$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::matlab\+Ptr}
+
+
+
+Definition at line 77 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a1446e7f01b234e946822a8901fc69d09}\label{classcils_1_1cils_a1446e7f01b234e946822a8901fc69d09}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!P@{P}}
+\index{P@{P}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{P}{P}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n $\ast$ n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::P}
+
+
+
+Definition at line 72 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a6816461b2e0da7369cfbb41a623dc8ef}\label{classcils_1_1cils_a6816461b2e0da7369cfbb41a623dc8ef}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!qam@{qam}}
+\index{qam@{qam}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{qam}{qam}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+index \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::qam}
+
+
+
+Definition at line 67 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a11e59cc2de84fb6b4a8688b8d9301658}\label{classcils_1_1cils_a11e59cc2de84fb6b4a8688b8d9301658}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!R\_A@{R\_A}}
+\index{R\_A@{R\_A}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{R\_A}{R\_A}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m $\ast$ (n + 1) / 2$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::R\+\_\+A}
+
+
+
+Definition at line 69 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_aa82a2a8f329b3b26c405538b6e465079}\label{classcils_1_1cils_aa82a2a8f329b3b26c405538b6e465079}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!sigma@{sigma}}
+\index{sigma@{sigma}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{sigma}{sigma}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+scalar \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::sigma}
+
+
+
+Definition at line 68 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_af06a809127e1789f54c7a52c8d9c469b}\label{classcils_1_1cils_af06a809127e1789f54c7a52c8d9c469b}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!snr@{snr}}
+\index{snr@{snr}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{snr}{snr}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+index \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::snr}
+
+
+
+Definition at line 67 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}\label{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!tolerance@{tolerance}}
+\index{tolerance@{tolerance}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{tolerance}{tolerance}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+scalar \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::tolerance}
+
+
+
+Definition at line 68 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a1f7c26a7138d180a77055da11418acf3}\label{classcils_1_1cils_a1f7c26a7138d180a77055da11418acf3}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!u@{u}}
+\index{u@{u}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{u}{u}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::u}
+
+
+
+Definition at line 74 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a8e22fa0d8171faff2be3065d599a5876}\label{classcils_1_1cils_a8e22fa0d8171faff2be3065d599a5876}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!upper@{upper}}
+\index{upper@{upper}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{upper}{upper}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+index \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::upper}
+
+
+
+Definition at line 67 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a482a0a8ac5406e81c8c07f14162d3efe}\label{classcils_1_1cils_a482a0a8ac5406e81c8c07f14162d3efe}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!v\_a@{v\_a}}
+\index{v\_a@{v\_a}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{v\_a}{v\_a}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::v\+\_\+a}
+
+
+
+Definition at line 75 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a20b4cfcdbbd84051815c6e84e1bd09d5}\label{classcils_1_1cils_a20b4cfcdbbd84051815c6e84e1bd09d5}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!v\_q@{v\_q}}
+\index{v\_q@{v\_q}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{v\_q}{v\_q}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::v\+\_\+q}
+
+
+
+Definition at line 75 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_a65ae609da759de9afd466469e1a8369c}\label{classcils_1_1cils_a65ae609da759de9afd466469e1a8369c}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!x\_r@{x\_r}}
+\index{x\_r@{x\_r}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{x\_r}{x\_r}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::x\+\_\+r}
+
+
+
+Definition at line 74 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_ab86bc62925bcf4016a09a9e761592c51}\label{classcils_1_1cils_ab86bc62925bcf4016a09a9e761592c51}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!x\_t@{x\_t}}
+\index{x\_t@{x\_t}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{x\_t}{x\_t}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::x\+\_\+t}
+
+
+
+Definition at line 74 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_ae4fb009905197734638a9327d3123cd3}\label{classcils_1_1cils_ae4fb009905197734638a9327d3123cd3}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!y\_a@{y\_a}}
+\index{y\_a@{y\_a}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{y\_a}{y\_a}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, m$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::y\+\_\+a}
+
+
+
+Definition at line 75 of file cils.\+h.
+
+\mbox{\Hypertarget{classcils_1_1cils_aee4c9683ccc1717370622b86b69b27d5}\label{classcils_1_1cils_aee4c9683ccc1717370622b86b69b27d5}} 
+\index{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!Z@{Z}}
+\index{Z@{Z}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}}
+\doxysubsubsection{\texorpdfstring{Z}{Z}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+array$<$scalar, n $\ast$ n$>$ \mbox{\hyperlink{classcils_1_1cils}{cils\+::cils}}$<$ scalar, index, m, n $>$\+::Z}
+
+
+
+Definition at line 72 of file cils.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/include/\mbox{\hyperlink{cils_8h}{cils.\+h}}\item 
+src/source/\mbox{\hyperlink{cils_8cpp}{cils.\+cpp}}\item 
+src/source/\mbox{\hyperlink{cils__babai__search_8cpp}{cils\+\_\+babai\+\_\+search.\+cpp}}\item 
+src/source/\mbox{\hyperlink{cils__block__search_8cpp}{cils\+\_\+block\+\_\+search.\+cpp}}\item 
+src/source/\mbox{\hyperlink{cils__init__point_8cpp}{cils\+\_\+init\+\_\+point.\+cpp}}\item 
+src/source/\mbox{\hyperlink{cils__partition__deficient_8cpp}{cils\+\_\+partition\+\_\+deficient.\+cpp}}\item 
+src/source/\mbox{\hyperlink{cils__sic__opt_8cpp}{cils\+\_\+sic\+\_\+opt.\+cpp}}\end{DoxyCompactItemize}

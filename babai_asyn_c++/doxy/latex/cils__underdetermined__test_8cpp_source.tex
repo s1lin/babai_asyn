@@ -1,0 +1,614 @@
+\hypertarget{cils__underdetermined__test_8cpp_source}{}\doxysection{cils\+\_\+underdetermined\+\_\+test.\+cpp}
+\label{cils__underdetermined__test_8cpp_source}\index{src/example/cils\_underdetermined\_test.cpp@{src/example/cils\_underdetermined\_test.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{//}}
+\DoxyCodeLine{00002 \textcolor{comment}{// Created by shilei on 7/27/21.}}
+\DoxyCodeLine{00003 \textcolor{comment}{//}}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005 \textcolor{preprocessor}{\#include "../source/cils.cpp"}}
+\DoxyCodeLine{00006 }
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#include "../source/cils\_block\_search.cpp"}}
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#include "../source/cils\_init\_point.cpp"}}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#include "../source/cils\_sic\_opt.cpp"}}
+\DoxyCodeLine{00010 \textcolor{preprocessor}{\#include "../source/cils\_partition\_deficient.cpp"}}
+\DoxyCodeLine{00011 }
+\DoxyCodeLine{00012 \textcolor{preprocessor}{\#include <ctime>}}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{comment}{//template<typename scalar, typename index, index m, index n>}}
+\DoxyCodeLine{00015 \textcolor{comment}{//void init\_point\_test() \{}}
+\DoxyCodeLine{00016 \textcolor{comment}{//    time\_t t0 = time(nullptr);}}
+\DoxyCodeLine{00017 \textcolor{comment}{//    struct tm *lt = localtime(\&t0);}}
+\DoxyCodeLine{00018 \textcolor{comment}{//    char time\_str[20];}}
+\DoxyCodeLine{00019 \textcolor{comment}{//    sprintf(time\_str, "\%04d/\%02d/\%02d \%02d:\%02d:\%02d",}}
+\DoxyCodeLine{00020 \textcolor{comment}{//            lt-\/>tm\_year + 1900, lt-\/>tm\_mon + 1, lt-\/>tm\_mday,}}
+\DoxyCodeLine{00021 \textcolor{comment}{//            lt-\/>tm\_hour, lt-\/>tm\_min, lt-\/>tm\_sec}}
+\DoxyCodeLine{00022 \textcolor{comment}{//    );}}
+\DoxyCodeLine{00023 \textcolor{comment}{//    printf("====================[ TEST | INIT\_POINT | \%s ]==================================\(\backslash\)n", time\_str);}}
+\DoxyCodeLine{00024 \textcolor{comment}{//}}
+\DoxyCodeLine{00025 \textcolor{comment}{//}}
+\DoxyCodeLine{00026 \textcolor{comment}{//    cils::cils<scalar, index, m, n> cils(k, 35);}}
+\DoxyCodeLine{00027 \textcolor{comment}{//    cils.init\_ud();}}
+\DoxyCodeLine{00032 \textcolor{comment}{}\textcolor{comment}{//}}
+\DoxyCodeLine{00033 \textcolor{comment}{//    vector<scalar> x(n, 0);}}
+\DoxyCodeLine{00034 \textcolor{comment}{//    scalar v\_norm;}}
+\DoxyCodeLine{00035 \textcolor{comment}{//    array<scalar, m * n> A\_t;}}
+\DoxyCodeLine{00036 \textcolor{comment}{//    array<scalar, n * n> P;}}
+\DoxyCodeLine{00037 \textcolor{comment}{//    cils::returnType<scalar, index> reT;}}
+\DoxyCodeLine{00038 \textcolor{comment}{//}}
+\DoxyCodeLine{00039 \textcolor{comment}{//    reT = cils.cils\_sic\_serial(x, A\_t, P);}}
+\DoxyCodeLine{00042 \textcolor{comment}{}\textcolor{comment}{//}}
+\DoxyCodeLine{00048 \textcolor{comment}{}\textcolor{comment}{//}}
+\DoxyCodeLine{00049 \textcolor{comment}{//}}
+\DoxyCodeLine{00050 \textcolor{comment}{//    reT = cils.cils\_grad\_proj(x, 100);}}
+\DoxyCodeLine{00051 \textcolor{comment}{//    cout << "x" << endl;}}
+\DoxyCodeLine{00052 \textcolor{comment}{//    helper::display\_vector<scalar, index>(n, x.data(), "s\_bar");}}
+\DoxyCodeLine{00053 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00054 \textcolor{comment}{//}}
+\DoxyCodeLine{00055 \textcolor{comment}{//template<typename scalar, typename index, index m, index n>}}
+\DoxyCodeLine{00056 \textcolor{comment}{//void sic\_opt\_test() \{}}
+\DoxyCodeLine{00057 \textcolor{comment}{//    time\_t t0 = time(nullptr);}}
+\DoxyCodeLine{00058 \textcolor{comment}{//    struct tm *lt = localtime(\&t0);}}
+\DoxyCodeLine{00059 \textcolor{comment}{//    char time\_str[20];}}
+\DoxyCodeLine{00060 \textcolor{comment}{//    sprintf(time\_str, "\%04d/\%02d/\%02d \%02d:\%02d:\%02d",}}
+\DoxyCodeLine{00061 \textcolor{comment}{//            lt-\/>tm\_year + 1900, lt-\/>tm\_mon + 1, lt-\/>tm\_mday,}}
+\DoxyCodeLine{00062 \textcolor{comment}{//            lt-\/>tm\_hour, lt-\/>tm\_min, lt-\/>tm\_sec}}
+\DoxyCodeLine{00063 \textcolor{comment}{//    );}}
+\DoxyCodeLine{00064 \textcolor{comment}{//    printf("====================[ TEST | SIC\_OPT | \%s ]==================================\(\backslash\)n", time\_str);}}
+\DoxyCodeLine{00065 \textcolor{comment}{//}}
+\DoxyCodeLine{00066 \textcolor{comment}{//}}
+\DoxyCodeLine{00067 \textcolor{comment}{//    cils::cils<scalar, index, m, n> cils(k, 35);}}
+\DoxyCodeLine{00068 \textcolor{comment}{//    cils.init\_ud();}}
+\DoxyCodeLine{00069 \textcolor{comment}{//}}
+\DoxyCodeLine{00070 \textcolor{comment}{//    vector<scalar> x(n, 0), x\_p(n, 0), Ax(m, 0);}}
+\DoxyCodeLine{00071 \textcolor{comment}{//    scalar v\_norm;}}
+\DoxyCodeLine{00072 \textcolor{comment}{//    array<scalar, m * n> A\_t;}}
+\DoxyCodeLine{00073 \textcolor{comment}{//    array<scalar, n * n> P;}}
+\DoxyCodeLine{00074 \textcolor{comment}{//    array<scalar, m> v\_ip;}}
+\DoxyCodeLine{00075 \textcolor{comment}{//    cils::returnType<scalar, index> reT;}}
+\DoxyCodeLine{00076 \textcolor{comment}{//}}
+\DoxyCodeLine{00077 \textcolor{comment}{//    reT = cils.cils\_sic\_serial(x, A\_t, P);}}
+\DoxyCodeLine{00078 \textcolor{comment}{//    helper::display\_vector<scalar, index>(n, x.data(), "x\_z");}}
+\DoxyCodeLine{00079 \textcolor{comment}{//}}
+\DoxyCodeLine{00080 \textcolor{comment}{//    cils::matrix\_vector\_mult<scalar, index, m, n>(A\_t, x, Ax);}}
+\DoxyCodeLine{00081 \textcolor{comment}{//    helper::vsubtract<scalar, index, m>(cils.y\_a, Ax.data(), v\_ip);}}
+\DoxyCodeLine{00082 \textcolor{comment}{//    scalar v\_norm1 = reT.info;}}
+\DoxyCodeLine{00083 \textcolor{comment}{//    helper::display\_vector<scalar, index, m>(v\_ip);}}
+\DoxyCodeLine{00084 \textcolor{comment}{//}}
+\DoxyCodeLine{00085 \textcolor{comment}{//    reT = cils.cils\_sic\_subopt(x, v\_ip, A\_t, v\_norm1, 0, 2);}}
+\DoxyCodeLine{00086 \textcolor{comment}{//    helper::display\_vector<scalar, index>(n, x.data(), "x\_z");}}
+\DoxyCodeLine{00087 \textcolor{comment}{//    helper::display\_vector<scalar, index>(reT.x);}}
+\DoxyCodeLine{00088 \textcolor{comment}{//    cout << "v\_norm\_cur: " << reT.info << endl;}}
+\DoxyCodeLine{00089 \textcolor{comment}{//\}}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091 \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils__underdetermined__test_8cpp_source_l00092}\mbox{\hyperlink{cils__underdetermined__test_8cpp_aab88e11b0fdffe9e3b4ef940b04f47a7}{00092}} \textcolor{keywordtype}{void} \mbox{\hyperlink{cils__underdetermined__test_8cpp_aab88e11b0fdffe9e3b4ef940b04f47a7}{block\_optimal\_test}}(\textcolor{keywordtype}{int} size, \textcolor{keywordtype}{int} rank) \{}
+\DoxyCodeLine{00093     vector<scalar> x\_q(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), x\_tmp(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), x\_ser(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), x\_omp(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), x\_mpi(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00094     \textcolor{keyword}{auto} *v\_norm\_qr = (\textcolor{keywordtype}{double} *) calloc(1, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}));}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm;}
+\DoxyCodeLine{00097     \mbox{\hyperlink{structcils_1_1return_type}{cils::returnType<scalar, index>}} reT3;}
+\DoxyCodeLine{00098     \mbox{\hyperlink{classcils_1_1cils}{cils::cils<scalar, index, m, n>}} \mbox{\hyperlink{namespacecils}{cils}}(\mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}, 35);}
+\DoxyCodeLine{00099     \textcolor{comment}{//auto a = (double *)malloc(N * sizeof(double));}}
+\DoxyCodeLine{00100     \mbox{\hyperlink{namespacecils}{cils}}.qam = \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}};}
+\DoxyCodeLine{00101     \mbox{\hyperlink{namespacecils}{cils}}.upper = pow(2, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) -\/ 1;}
+\DoxyCodeLine{00102     \mbox{\hyperlink{namespacecils}{cils}}.u.fill(\mbox{\hyperlink{namespacecils}{cils}}.upper);}
+\DoxyCodeLine{00103     cout.flush();}
+\DoxyCodeLine{00104     \mbox{\hyperlink{namespacecils}{cils}}.init(rank);}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106     \textcolor{keywordflow}{if} (rank == 0) \{}
+\DoxyCodeLine{00107 \textcolor{comment}{//        cils.init\_ud();}}
+\DoxyCodeLine{00108         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00109         printf(\textcolor{stringliteral}{"[ INIT COMPLETE, RES:\%8.5f, RES:\%8.5f]\(\backslash\)n"}, \mbox{\hyperlink{namespacecils}{cils}}.init\_res, r);}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         time\_t t0 = time(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00112         \textcolor{keyword}{struct }tm *lt = localtime(\&t0);}
+\DoxyCodeLine{00113         \textcolor{keywordtype}{char} time\_str[20];}
+\DoxyCodeLine{00114         sprintf(time\_str, \textcolor{stringliteral}{"\%04d/\%02d/\%02d \%02d:\%02d:\%02d"},}
+\DoxyCodeLine{00115                 lt-\/>tm\_year + 1900, lt-\/>tm\_mon + 1, lt-\/>tm\_mday,}
+\DoxyCodeLine{00116                 lt-\/>tm\_hour, lt-\/>tm\_min, lt-\/>tm\_sec}
+\DoxyCodeLine{00117         );}
+\DoxyCodeLine{00118         printf(\textcolor{stringliteral}{"====================[ TEST | SIC\_OPT | \%s ]==================================\(\backslash\)n"}, time\_str);}
+\DoxyCodeLine{00119 }
+\DoxyCodeLine{00120         \mbox{\hyperlink{structcils_1_1return_type}{cils::returnType<scalar, index>}} reT, reT2;}
+\DoxyCodeLine{00121         \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/INIT POINT (OPTIONAL)-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\///}}
+\DoxyCodeLine{00122         \textcolor{comment}{//STEP 1: init point by QRP}}
+\DoxyCodeLine{00123         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_grad\_proj(x\_q, 100);}
+\DoxyCodeLine{00124         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), x\_q.data(), x\_tmp.data());}
+\DoxyCodeLine{00125         v\_norm\_qr[0] = v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), x\_tmp.data(),}
+\DoxyCodeLine{00126                                                                      \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00127         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}} = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00128         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \textcolor{stringliteral}{"x\_q"});}
+\DoxyCodeLine{00129         printf(\textcolor{stringliteral}{"INI: ber: \%8.5f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n"}, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}, v\_norm, reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}});}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132         \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/OPTIMAL-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\///}}
+\DoxyCodeLine{00133         \textcolor{comment}{//STEP 2: Optimal SERIAL SCP:}}
+\DoxyCodeLine{00134 \textcolor{comment}{//        x\_ser.assign(x\_q.begin(), x\_q.end());}}
+\DoxyCodeLine{00135 \textcolor{comment}{//        reT2 = cils.cils\_scp\_block\_optimal\_serial(x\_ser, v\_norm\_qr[0], 0);}}
+\DoxyCodeLine{00136 \textcolor{comment}{//        helper::mtimes\_Axy<scalar, index>(n, n, cils.P.data(), x\_ser.data(), x\_tmp.data());}}
+\DoxyCodeLine{00137 \textcolor{comment}{//        v\_norm = helper::find\_residual<scalar, index>(m, n, cils.A.data(), x\_tmp.data(), cils.y\_a.data());}}
+\DoxyCodeLine{00138 \textcolor{comment}{//}}
+\DoxyCodeLine{00139 \textcolor{comment}{//        //Result Validation:}}
+\DoxyCodeLine{00140 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_ser.data(), "x\_z");}}
+\DoxyCodeLine{00141 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, cils.x\_t.data(), "x\_t");}}
+\DoxyCodeLine{00142 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_tmp.data(), "x\_p");}}
+\DoxyCodeLine{00143 \textcolor{comment}{//        ber = helper::find\_bit\_error\_rate<scalar, index>(n, x\_tmp.data(), cils.x\_t.data(), cils.qam);}}
+\DoxyCodeLine{00144 \textcolor{comment}{//        printf("SER\_BLOCK1: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n",}}
+\DoxyCodeLine{00145 \textcolor{comment}{//               ber, reT2.x[0], reT2.x[1], reT2.x[2], v\_norm, reT2.run\_time);}}
+\DoxyCodeLine{00146 }
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148         \textcolor{comment}{//STEP 3: SUBOptimal SERIAL SCP:}}
+\DoxyCodeLine{00149         x\_ser.assign(x\_q.begin(), x\_q.end());}
+\DoxyCodeLine{00150         reT2 = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_suboptimal\_serial(x\_ser, v\_norm\_qr[0], 0);}
+\DoxyCodeLine{00151         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), x\_ser.data(), x\_tmp.data());}
+\DoxyCodeLine{00152         v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00153 }
+\DoxyCodeLine{00154         \textcolor{comment}{//Result Validation:}}
+\DoxyCodeLine{00155         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_ser.data(), \textcolor{stringliteral}{"x\_z"});}
+\DoxyCodeLine{00156         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \textcolor{stringliteral}{"x\_t"});}
+\DoxyCodeLine{00157         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \textcolor{stringliteral}{"x\_p"});}
+\DoxyCodeLine{00158         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}} = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00159         printf(\textcolor{stringliteral}{"SER\_BLOCK2: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n"},}
+\DoxyCodeLine{00160                \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}, reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[0], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[1], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[2], v\_norm, reT2.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}});}
+\DoxyCodeLine{00161         \textcolor{comment}{//}}
+\DoxyCodeLine{00162 }
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164         \textcolor{comment}{//STEP 3: Optimal OMP SCP:}}
+\DoxyCodeLine{00165         x\_omp.assign(x\_q.begin(), x\_q.end());}
+\DoxyCodeLine{00166         reT2 = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_optimal\_omp(x\_omp, v\_norm\_qr[0], 5, \textcolor{keyword}{false});}
+\DoxyCodeLine{00167         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), x\_omp.data(), x\_tmp.data());}
+\DoxyCodeLine{00168         v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170         \textcolor{comment}{//Result Validation:}}
+\DoxyCodeLine{00171         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_omp.data(), \textcolor{stringliteral}{"x\_z"});}
+\DoxyCodeLine{00172         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \textcolor{stringliteral}{"x\_t"});}
+\DoxyCodeLine{00173         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \textcolor{stringliteral}{"x\_p"});}
+\DoxyCodeLine{00174         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}} = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00175         printf(\textcolor{stringliteral}{"OMP\_BLOCK1: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n"},}
+\DoxyCodeLine{00176                \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}, reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[0], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[1], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[2], v\_norm, reT2.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}});}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{00179         \textcolor{comment}{//STEP 3: Optimal OMP SCP:}}
+\DoxyCodeLine{00180         x\_omp.assign(x\_q.begin(), x\_q.end());}
+\DoxyCodeLine{00181         reT2 = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_suboptimal\_omp(x\_omp, v\_norm\_qr[0], 5, \textcolor{keyword}{false});}
+\DoxyCodeLine{00182         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), x\_omp.data(), x\_tmp.data());}
+\DoxyCodeLine{00183         v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00185         \textcolor{comment}{//Result Validation:}}
+\DoxyCodeLine{00186         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_omp.data(), \textcolor{stringliteral}{"x\_z"});}
+\DoxyCodeLine{00187         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \textcolor{stringliteral}{"x\_t"});}
+\DoxyCodeLine{00188         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \textcolor{stringliteral}{"x\_p"});}
+\DoxyCodeLine{00189         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}} = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00190         printf(\textcolor{stringliteral}{"OMP\_BLOCK2: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n"},}
+\DoxyCodeLine{00191                \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}, reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[0], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[1], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[2], v\_norm, reT2.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}});}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193 }
+\DoxyCodeLine{00194         \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/BABAI-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\///}}
+\DoxyCodeLine{00195         \textcolor{comment}{//STEP 4: Babai Serial SCP:}}
+\DoxyCodeLine{00196         x\_ser.assign(x\_q.begin(), x\_q.end());}
+\DoxyCodeLine{00197         reT2 = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_babai\_serial(x\_ser, v\_norm\_qr[0], 0);}
+\DoxyCodeLine{00198         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), x\_ser.data(), x\_tmp.data());}
+\DoxyCodeLine{00199         v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00200 }
+\DoxyCodeLine{00201         \textcolor{comment}{//Result Validation:}}
+\DoxyCodeLine{00202         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_ser.data(), \textcolor{stringliteral}{"x\_z"});}
+\DoxyCodeLine{00203         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \textcolor{stringliteral}{"x\_t"});}
+\DoxyCodeLine{00204         helper::display\_vector<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \textcolor{stringliteral}{"x\_p"});}
+\DoxyCodeLine{00205         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}} = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, x\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00206         printf(\textcolor{stringliteral}{"SER\_BABAI: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n"},}
+\DoxyCodeLine{00207                \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}, reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[0], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[1], reT2.\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}}[2], v\_norm, reT2.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}});}
+\DoxyCodeLine{00208 \textcolor{comment}{//}}
+\DoxyCodeLine{00209 \textcolor{comment}{//}}
+\DoxyCodeLine{00210 \textcolor{comment}{//        //STEP 5: Babai OMP SCP:}}
+\DoxyCodeLine{00211 \textcolor{comment}{//        x\_omp.assign(x\_q.begin(), x\_q.end());}}
+\DoxyCodeLine{00212 \textcolor{comment}{//        reT2 = cils.cils\_scp\_block\_babai\_omp(x\_omp, v\_norm\_qr[0], 5, false);}}
+\DoxyCodeLine{00213 \textcolor{comment}{//        helper::mtimes\_Axy<scalar, index>(n, n, cils.P.data(), x\_omp.data(), x\_tmp.data());}}
+\DoxyCodeLine{00214 \textcolor{comment}{//        v\_norm = helper::find\_residual<scalar, index>(m, n, cils.A.data(), x\_tmp.data(), cils.y\_a.data());}}
+\DoxyCodeLine{00215 \textcolor{comment}{//}}
+\DoxyCodeLine{00216 \textcolor{comment}{//        //Result Validation:}}
+\DoxyCodeLine{00217 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_omp.data(), "x\_z");}}
+\DoxyCodeLine{00218 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, cils.x\_t.data(), "x\_t");}}
+\DoxyCodeLine{00219 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_tmp.data(), "x\_p");}}
+\DoxyCodeLine{00220 \textcolor{comment}{//        ber = helper::find\_bit\_error\_rate<scalar, index>(n, x\_tmp.data(), cils.x\_t.data(), cils.qam);}}
+\DoxyCodeLine{00221 \textcolor{comment}{//        printf("OMP\_BABAI: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f\(\backslash\)n",}}
+\DoxyCodeLine{00222 \textcolor{comment}{//               ber, reT2.x[0], reT2.x[1], reT2.x[2], v\_norm, reT2.run\_time);}}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225     \}}
+\DoxyCodeLine{00226 }
+\DoxyCodeLine{00227 \textcolor{comment}{//    //STEP 2: MPI-\/Block SCP:}}
+\DoxyCodeLine{00228 \textcolor{comment}{//    MPI\_Bcast(\&x\_mpi[0], n, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00229 \textcolor{comment}{//    MPI\_Bcast(\&v\_norm\_qr[0], 1, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00230 \textcolor{comment}{//    MPI\_Bcast(\&cils.y\_a[0], m, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00231 \textcolor{comment}{//    MPI\_Bcast(\&cils.H[0], m * n, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00232 \textcolor{comment}{//    MPI\_Barrier(MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00233 \textcolor{comment}{//    reT3 = \{\{0, 0, 0\}, 0, 0\};}}
+\DoxyCodeLine{00234 \textcolor{comment}{//    reT3 = cils.cils\_scp\_block\_optimal\_mpi(x\_mpi, v\_norm\_qr, size, rank);}}
+\DoxyCodeLine{00235 \textcolor{comment}{//}}
+\DoxyCodeLine{00236 \textcolor{comment}{//    if (rank == 0) \{}}
+\DoxyCodeLine{00238 \textcolor{comment}{}\textcolor{comment}{//        x\_tmp.assign(n, 0);}}
+\DoxyCodeLine{00239 \textcolor{comment}{//        helper::mtimes\_Axy<scalar, index>(n, n, cils.P.data(), x\_mpi.data(), x\_tmp.data());}}
+\DoxyCodeLine{00240 \textcolor{comment}{//}}
+\DoxyCodeLine{00241 \textcolor{comment}{//        //Result Validation:}}
+\DoxyCodeLine{00242 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_mpi.data(), "x\_z");}}
+\DoxyCodeLine{00243 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, cils.x\_t.data(), "x\_t");}}
+\DoxyCodeLine{00244 \textcolor{comment}{//        helper::display\_vector<scalar, index>(n, x\_tmp.data(), "x\_p");}}
+\DoxyCodeLine{00245 \textcolor{comment}{//        scalar ber = helper::find\_bit\_error\_rate<scalar, index>(n, x\_tmp.data(), cils.x\_t.data(), cils.qam);}}
+\DoxyCodeLine{00246 \textcolor{comment}{//        printf("MPI: ber: \%8.5f, stopping: \%1.1f, \%1.1f, \%1.1f, v\_norm: \%8.4f, time: \%8.4f, rank:\%d\(\backslash\)n",}}
+\DoxyCodeLine{00247 \textcolor{comment}{//               ber, reT3.x[0], reT3.x[1], reT3.x[2], v\_norm, reT3.run\_time, rank);}}
+\DoxyCodeLine{00248 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00249 \textcolor{comment}{//    MPI\_Barrier(MPI\_COMM\_WORLD);}}
+\DoxyCodeLine{00250 \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils__underdetermined__test_8cpp_source_l00253}\mbox{\hyperlink{cils__underdetermined__test_8cpp_a2d0d0bdfb75572fd1014c4a6b14d8de6}{00253}} \textcolor{keywordtype}{long} \mbox{\hyperlink{cils__underdetermined__test_8cpp_a2d0d0bdfb75572fd1014c4a6b14d8de6}{plot\_run}}(\textcolor{keywordtype}{int} size, \textcolor{keywordtype}{int} rank) \{}
+\DoxyCodeLine{00254     time\_t t0 = time(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00255     \textcolor{keyword}{struct }tm *lt = localtime(\&t0);}
+\DoxyCodeLine{00256     \textcolor{keywordtype}{char} time\_str[20];}
+\DoxyCodeLine{00257     sprintf(time\_str, \textcolor{stringliteral}{"\%04d/\%02d/\%02d \%02d:\%02d:\%02d"},}
+\DoxyCodeLine{00258             lt-\/>tm\_year + 1900, lt-\/>tm\_mon + 1, lt-\/>tm\_mday,}
+\DoxyCodeLine{00259             lt-\/>tm\_hour, lt-\/>tm\_min, lt-\/>tm\_sec}
+\DoxyCodeLine{00260     );}
+\DoxyCodeLine{00261     printf(\textcolor{stringliteral}{"====================[ TEST | ILS | \%s ]==================================\(\backslash\)n"}, time\_str);}
+\DoxyCodeLine{00262 \textcolor{comment}{//    for (SNR = 35; SNR >= 5; SNR -\/= 20) \{}}
+\DoxyCodeLine{00263         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} d\_s\_size = \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}.size();}
+\DoxyCodeLine{00264         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[4][200][2] = \{\}, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[4][200][2] = \{\}, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[5][200][2] = \{\}, \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}}[5][200][2] = \{\};\textcolor{comment}{//, t\_spu[4][200][2] = \{\};}}
+\DoxyCodeLine{00265         \textcolor{comment}{//scalar stm[3][200][2] = \{\};}}
+\DoxyCodeLine{00266         \textcolor{comment}{//scalar all\_time[7][1000][3][2] = \{\}; //Method, iter, init, qam}}
+\DoxyCodeLine{00267 }
+\DoxyCodeLine{00268         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} count = 0;}
+\DoxyCodeLine{00269         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} run\_time;}
+\DoxyCodeLine{00270         \mbox{\hyperlink{structcils_1_1return_type}{cils::returnType<scalar, index>}} reT;}
+\DoxyCodeLine{00271         \textcolor{keyword}{auto} *v\_norm\_qr = (\textcolor{keywordtype}{double} *) calloc(1, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}));}
+\DoxyCodeLine{00272 }
+\DoxyCodeLine{00273         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} r, t, b, iter, t2, r2, b2, iter2, prev\_t\_block, prev\_t\_babai;}
+\DoxyCodeLine{00274         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} b\_ser\_block, b\_ser\_babai, t\_ser\_block, t\_ser\_babai, t\_init\_pt, t\_omp;}
+\DoxyCodeLine{00275         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} l = 0; \textcolor{comment}{//count for qam.}}
+\DoxyCodeLine{00276 }
+\DoxyCodeLine{00277         vector<scalar> z\_omp(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), z\_ser(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), z\_ini(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), z\_tmp(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00278         \mbox{\hyperlink{classcils_1_1cils}{cils::cils<scalar, index, m, n>}} \mbox{\hyperlink{namespacecils}{cils}}(\mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}, \mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}});}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 1; i <= \mbox{\hyperlink{namespaceplot__helper_aa0321aaecbece6ae6cd4ea9ba49cedbe}{max\_iter}}; i++) \{}
+\DoxyCodeLine{00281 \textcolor{comment}{//            for (index k = 1; k <= 3; k += 2) \{}}
+\DoxyCodeLine{00282             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 3; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} >= 1; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/= 2) \{}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284                 count = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == 1 ? 0 : 1;}
+\DoxyCodeLine{00285                 run\_time = omp\_get\_wtime();}
+\DoxyCodeLine{00286                 \mbox{\hyperlink{namespacecils}{cils}}.qam = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00287                 \mbox{\hyperlink{namespacecils}{cils}}.upper = pow(2, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ 1;}
+\DoxyCodeLine{00288                 \mbox{\hyperlink{namespacecils}{cils}}.u.fill(\mbox{\hyperlink{namespacecils}{cils}}.upper);}
+\DoxyCodeLine{00289                 \mbox{\hyperlink{namespacecils}{cils}}.init(0);}
+\DoxyCodeLine{00290                 r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00291                 printf(\textcolor{stringliteral}{"[ INIT COMPLETE, RES:\%8.5f, RES:\%8.5f]\(\backslash\)n"}, \mbox{\hyperlink{namespacecils}{cils}}.init\_res, r);}
+\DoxyCodeLine{00292 }
+\DoxyCodeLine{00293                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} init = -\/1; init <= 2; init++) \{}
+\DoxyCodeLine{00294                     l = 0;}
+\DoxyCodeLine{00295                     printf(\textcolor{stringliteral}{"[ TRIAL PHASE]\(\backslash\)n"});}
+\DoxyCodeLine{00296                     \textcolor{comment}{/*}}
+\DoxyCodeLine{00297 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00298 \textcolor{comment}{                     * 1. INIT POINT (OPTIONAL) : a. SIC, b.QRP, c.GRAD, d.0}}
+\DoxyCodeLine{00299 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00300 \textcolor{comment}{                     */}}
+\DoxyCodeLine{00301                     z\_ini.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00302                     \textcolor{keywordflow}{if} (init == -\/1) \{}
+\DoxyCodeLine{00303                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_qrp\_serial(z\_ini);}
+\DoxyCodeLine{00304                         cout << \textcolor{stringliteral}{"1a. Method: INIT\_QRP, "};}
+\DoxyCodeLine{00305                     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (init == 0) \{}
+\DoxyCodeLine{00306                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_sic\_serial(z\_ini);}
+\DoxyCodeLine{00307                         cout << \textcolor{stringliteral}{"1b. Method: INIT\_SIC, "};}
+\DoxyCodeLine{00308                     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (init == 1) \{}
+\DoxyCodeLine{00309                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_grad\_proj(z\_ini, \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}});}
+\DoxyCodeLine{00310                         cout << \textcolor{stringliteral}{"1c. Method: INIT\_GRD, "};}
+\DoxyCodeLine{00311                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00312                         cout << \textcolor{stringliteral}{"1d. Method: INIT\_VT0, "};}
+\DoxyCodeLine{00313                         \mbox{\hyperlink{namespacecils}{cils}}.H.fill(0);}
+\DoxyCodeLine{00314                         helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data());}
+\DoxyCodeLine{00315                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i1++) \{}
+\DoxyCodeLine{00316                             \mbox{\hyperlink{namespacecils}{cils}}.H[i1] = \mbox{\hyperlink{namespacecils}{cils}}.A[i1];}
+\DoxyCodeLine{00317                         \}}
+\DoxyCodeLine{00318                         reT = \{\{\}, 0, 0\};}
+\DoxyCodeLine{00319                     \}}
+\DoxyCodeLine{00320 }
+\DoxyCodeLine{00321                     helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_ini.data(), z\_tmp.data());}
+\DoxyCodeLine{00322                     b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00323                     r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00324                     v\_norm\_qr[0] = r;}
+\DoxyCodeLine{00325                     t\_init\_pt = reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}};}
+\DoxyCodeLine{00326                     \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] += r;}
+\DoxyCodeLine{00327                     \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] += b;}
+\DoxyCodeLine{00328                     \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] += t\_init\_pt;}
+\DoxyCodeLine{00329                     l++;}
+\DoxyCodeLine{00330                     printf(\textcolor{stringliteral}{"AVG RES: \%.5f, AVG BER: \%.5f, AVG TIME: \%.5fs, RES: \%.5f, BER: \%.5f, SOLVE TIME: \%.5fs\(\backslash\)n"},}
+\DoxyCodeLine{00331                            \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00332                            r, b, t\_init\_pt);}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00334 }
+\DoxyCodeLine{00335                     \textcolor{comment}{/*}}
+\DoxyCodeLine{00336 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00337 \textcolor{comment}{                     * 2. Block Optimal Serial-\/SCP}}
+\DoxyCodeLine{00338 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00339 \textcolor{comment}{                     */}}
+\DoxyCodeLine{00340                     z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00341                     z\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00342                     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} itr = 0;}
+\DoxyCodeLine{00343                     \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{00344                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_suboptimal\_serial(z\_ser, v\_norm\_qr[0], itr > 0);}
+\DoxyCodeLine{00345                         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_ser.data(), z\_tmp.data());}
+\DoxyCodeLine{00346                         b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00347                         z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00348                         itr++;}
+\DoxyCodeLine{00349                     \} \textcolor{keywordflow}{while} (b > 0.3 \&\& itr < 5);}
+\DoxyCodeLine{00350                     r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00351                     b\_ser\_block = b;}
+\DoxyCodeLine{00352                     t\_ser\_block = reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}} + t\_init\_pt;}
+\DoxyCodeLine{00353                     \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] += r;}
+\DoxyCodeLine{00354                     \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] += b;}
+\DoxyCodeLine{00355                     \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] += t\_ser\_block;}
+\DoxyCodeLine{00356                     l++;}
+\DoxyCodeLine{00357                     printf(\textcolor{stringliteral}{"2a. Method: SUBOP\_SER, AVG RES: \%.5f, AVG BER: \%.5f, AVG TIME: \%.5fs, "}}
+\DoxyCodeLine{00358                            \textcolor{stringliteral}{"RES: \%.5f, BER: \%.5f, SOLVE TIME: \%.5fs\(\backslash\)n"},}
+\DoxyCodeLine{00359                            \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00360                            r, b, t\_ser\_block);}
+\DoxyCodeLine{00361 }
+\DoxyCodeLine{00362                     \textcolor{comment}{/*}}
+\DoxyCodeLine{00363 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00364 \textcolor{comment}{                     * 2b. Block subOptimal Serial-\/SCP}}
+\DoxyCodeLine{00365 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00366 \textcolor{comment}{                     */}}
+\DoxyCodeLine{00367                     z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00368                     z\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00369                     itr = 0;}
+\DoxyCodeLine{00370                     \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{00371                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_optimal\_serial(z\_ser, v\_norm\_qr[0], itr > 0);}
+\DoxyCodeLine{00372                         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_ser.data(), z\_tmp.data());}
+\DoxyCodeLine{00373                         b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00374                         z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00375                         itr++;}
+\DoxyCodeLine{00376                     \} \textcolor{keywordflow}{while} (b > 0.3 \&\& itr < 5);}
+\DoxyCodeLine{00377                     r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00378                     printf(\textcolor{stringliteral}{"2b. Method: BLOPT\_SER, AVG RES: \%.5f, AVG BER: \%.5f, AVG TIME: \%.5fs, "}}
+\DoxyCodeLine{00379                            \textcolor{stringliteral}{"RES: \%.5f, BER: \%.5f, SOLVE TIME: \%.5fs\(\backslash\)n"},}
+\DoxyCodeLine{00380                            \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00381                            r, b, reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}} + t\_init\_pt);}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383                     \textcolor{comment}{/*}}
+\DoxyCodeLine{00384 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00385 \textcolor{comment}{                     * 3. Block Babai Serial-\/SCP}}
+\DoxyCodeLine{00386 \textcolor{comment}{                     * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00387 \textcolor{comment}{                     */}}
+\DoxyCodeLine{00388                     z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00389                     z\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00390                     itr = 0;}
+\DoxyCodeLine{00391                     \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{00392                         reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_babai\_serial(z\_ser, v\_norm\_qr[0], itr > 0);}
+\DoxyCodeLine{00393                         helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_ser.data(), z\_tmp.data());}
+\DoxyCodeLine{00394                         b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespacecils}{cils}}.qam);}
+\DoxyCodeLine{00395                         z\_ser.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00396                         itr++;}
+\DoxyCodeLine{00397                     \} \textcolor{keywordflow}{while} (b > 0.3 \&\& itr < 5);}
+\DoxyCodeLine{00398                     r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00399                     b\_ser\_babai = b;}
+\DoxyCodeLine{00400                     t\_ser\_babai = reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}} + t\_init\_pt;}
+\DoxyCodeLine{00401                     \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] += r;}
+\DoxyCodeLine{00402                     \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] += b;}
+\DoxyCodeLine{00403                     \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] += t\_ser\_babai;}
+\DoxyCodeLine{00404                     l++;}
+\DoxyCodeLine{00405                     printf(\textcolor{stringliteral}{"3. Method: BABAI\_SER, AVG RES: \%.5f, AVG BER: \%.5f, AVG TIME: \%.5fs, "}}
+\DoxyCodeLine{00406                            \textcolor{stringliteral}{"RES: \%.5f, BER: \%.5f, SOLVE TIME: \%.5fs\(\backslash\)n"},}
+\DoxyCodeLine{00407                            \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00408                            r, b, t\_ser\_babai);}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{00411                     prev\_t\_babai = prev\_t\_block = INFINITY;}
+\DoxyCodeLine{00412                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc = \mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{min\_proc}}; n\_proc <= \mbox{\hyperlink{namespaceplot__helper_aef211e9d2ccf0cc7eeb603decf0c1d6b}{max\_proc}}; n\_proc += \mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{min\_proc}}) \{}
+\DoxyCodeLine{00413 }
+\DoxyCodeLine{00414                         \textcolor{comment}{/*}}
+\DoxyCodeLine{00415 \textcolor{comment}{                         * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00416 \textcolor{comment}{                         * 4. Block Optimal Parallel-\/SCP}}
+\DoxyCodeLine{00417 \textcolor{comment}{                         * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00418 \textcolor{comment}{                         */}}
+\DoxyCodeLine{00419                         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \_ll = 0;}
+\DoxyCodeLine{00420                         t = r = b = 0;}
+\DoxyCodeLine{00421                         t2 = r2 = b2 = INFINITY;}
+\DoxyCodeLine{00422                         \mbox{\hyperlink{namespacecils_1_1program__def_a6ad0f2daac421fe7fd06ba37342ef110}{cils::program\_def::chunk}} = 1;}
+\DoxyCodeLine{00423                         \textcolor{keywordflow}{while} (\textcolor{keyword}{true}) \{}
+\DoxyCodeLine{00424                             z\_omp.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00425                             reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_suboptimal\_omp(z\_omp, v\_norm\_qr[0], n\_proc, \_ll > 0);}
+\DoxyCodeLine{00426                             z\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00427                             helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_omp.data(), z\_tmp.data());}
+\DoxyCodeLine{00428                             t = reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}};}
+\DoxyCodeLine{00429                             b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00430                             r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(),}
+\DoxyCodeLine{00431                                                                      \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00432 }
+\DoxyCodeLine{00433                             t2 = min(t, t2);}
+\DoxyCodeLine{00434                             r2 = min(r, r2);}
+\DoxyCodeLine{00435                             b2 = min(b, b2);}
+\DoxyCodeLine{00436                             \_ll++;}
+\DoxyCodeLine{00437 }
+\DoxyCodeLine{00438                             \textcolor{keywordflow}{if} (prev\_t\_block > t \&\& b -\/ b\_ser\_block < 0.1) \textcolor{keywordflow}{break}; \textcolor{comment}{//}}
+\DoxyCodeLine{00439                             \textcolor{keywordflow}{if} (\_ll == 5) \{}
+\DoxyCodeLine{00440                                 r = r2;}
+\DoxyCodeLine{00441                                 b = b2;}
+\DoxyCodeLine{00442                                 t = t2;}
+\DoxyCodeLine{00443                                 \textcolor{keywordflow}{break}; \textcolor{comment}{//}}
+\DoxyCodeLine{00444                             \}}
+\DoxyCodeLine{00445                         \}}
+\DoxyCodeLine{00446                         t\_omp = t + t\_init\_pt;}
+\DoxyCodeLine{00447                         \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] += r;}
+\DoxyCodeLine{00448                         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] += b;}
+\DoxyCodeLine{00449                         \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] += t\_omp;}
+\DoxyCodeLine{00450                         \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}}[init + 1][l][count] += t\_ser\_block / t\_omp;}
+\DoxyCodeLine{00451 }
+\DoxyCodeLine{00452                         printf(\textcolor{stringliteral}{"4. Method: BLOCK\_OMP, N\_PROC: \%2d, AVG RES: \%8.5f, AVG BER: \%8.5f, "}}
+\DoxyCodeLine{00453                                \textcolor{stringliteral}{"AVG TIME: \%8.5fs, RES: \%8.5f, BER: \%8.5f, SER TIME: \%8.5f, OMP TIME: \%8.5fs, "}}
+\DoxyCodeLine{00454                                \textcolor{stringliteral}{"SPEEDUP:\%7.3f, AVG SPEEDUP: \%7.3f.\(\backslash\)n"},}
+\DoxyCodeLine{00455                                n\_proc, \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00456                                \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i, r, b, t\_ser\_block, t\_omp,}
+\DoxyCodeLine{00457                                t\_ser\_block / t\_omp, \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}}[init + 1][l][count] / i);}
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00459                         l++;}
+\DoxyCodeLine{00460                         prev\_t\_block = t;}
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462 }
+\DoxyCodeLine{00463                         \textcolor{comment}{/* -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00464 \textcolor{comment}{                         * 5. Block Babai Parallel-\/SCP}}
+\DoxyCodeLine{00465 \textcolor{comment}{                         * -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00466 \textcolor{comment}{                         */}}
+\DoxyCodeLine{00467 }
+\DoxyCodeLine{00468                         \_ll = 0;}
+\DoxyCodeLine{00469                         t = r = b = 0;}
+\DoxyCodeLine{00470                         t2 = r2 = b2 = INFINITY;}
+\DoxyCodeLine{00471                         \mbox{\hyperlink{namespacecils_1_1program__def_a6ad0f2daac421fe7fd06ba37342ef110}{cils::program\_def::chunk}} = 1;}
+\DoxyCodeLine{00472                         \textcolor{keywordflow}{while} (\textcolor{keyword}{true}) \{}
+\DoxyCodeLine{00473                             z\_omp.assign(z\_ini.begin(), z\_ini.end());}
+\DoxyCodeLine{00474                             reT = \mbox{\hyperlink{namespacecils}{cils}}.cils\_scp\_block\_babai\_omp(z\_omp, v\_norm\_qr[0], n\_proc, \_ll > 0);}
+\DoxyCodeLine{00475                             z\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00476                             helper::mtimes\_Axy<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.P.data(), z\_omp.data(), z\_tmp.data());}
+\DoxyCodeLine{00477                             t = reT.\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}};}
+\DoxyCodeLine{00478                             b = helper::find\_bit\_error\_rate<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, z\_tmp.data(), \mbox{\hyperlink{namespacecils}{cils}}.x\_t.data(), \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00479                             r = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils}{cils}}.A.data(), z\_tmp.data(),}
+\DoxyCodeLine{00480                                                                      \mbox{\hyperlink{namespacecils}{cils}}.y\_a.data());}
+\DoxyCodeLine{00481 }
+\DoxyCodeLine{00482                             t2 = min(t, t2);}
+\DoxyCodeLine{00483                             r2 = min(r, r2);}
+\DoxyCodeLine{00484                             b2 = min(b, b2);}
+\DoxyCodeLine{00485                             \_ll++;}
+\DoxyCodeLine{00486 }
+\DoxyCodeLine{00487                             \textcolor{keywordflow}{if} (prev\_t\_babai > t \&\& b -\/ b\_ser\_babai < 0.1) \textcolor{keywordflow}{break}; \textcolor{comment}{//}}
+\DoxyCodeLine{00488                             \textcolor{keywordflow}{if} (\_ll == 5) \{}
+\DoxyCodeLine{00489                                 r = r2;}
+\DoxyCodeLine{00490                                 b = b2;}
+\DoxyCodeLine{00491                                 t = t2;}
+\DoxyCodeLine{00492                                 \textcolor{keywordflow}{break}; \textcolor{comment}{//}}
+\DoxyCodeLine{00493                             \}}
+\DoxyCodeLine{00494                         \}}
+\DoxyCodeLine{00495                         t\_omp = t + t\_init\_pt;}
+\DoxyCodeLine{00496                         \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] += r;}
+\DoxyCodeLine{00497                         \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] += b;}
+\DoxyCodeLine{00498                         \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] += t\_omp;}
+\DoxyCodeLine{00499                         \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}}[init + 1][l][count] += t\_ser\_babai / t\_omp;}
+\DoxyCodeLine{00500 }
+\DoxyCodeLine{00501                         printf(\textcolor{stringliteral}{"5. Method: BABAI\_OMP, N\_PROC: \%2d, AVG RES: \%8.5f, AVG BER: \%8.5f, "}}
+\DoxyCodeLine{00502                                \textcolor{stringliteral}{"AVG TIME: \%8.5fs, RES: \%8.5f, BER: \%8.5f, SER TIME: \%8.5f, OMP TIME: \%8.5fs, "}}
+\DoxyCodeLine{00503                                \textcolor{stringliteral}{"SPEEDUP:\%7.3f, AVG SPEEDUP: \%7.3f.\(\backslash\)n"},}
+\DoxyCodeLine{00504                                n\_proc, \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}[init + 1][l][count] / i, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}}[init + 1][l][count] / i,}
+\DoxyCodeLine{00505                                \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}}[init + 1][l][count] / i, r, b, t\_ser\_babai, t\_omp,}
+\DoxyCodeLine{00506                                t\_ser\_babai / t\_omp, \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}}[init + 1][l][count] / i);}
+\DoxyCodeLine{00507 }
+\DoxyCodeLine{00508                         l++;}
+\DoxyCodeLine{00509                         prev\_t\_babai = t;}
+\DoxyCodeLine{00510                     \}}
+\DoxyCodeLine{00511                 \}}
+\DoxyCodeLine{00512                 run\_time = omp\_get\_wtime() -\/ run\_time;}
+\DoxyCodeLine{00513                 printf(\textcolor{stringliteral}{"++++++++++++++++++++++++++++++++++++++\(\backslash\)n Trial \%d, Elapsed Time: \%.5fs. \(\backslash\)n"}}
+\DoxyCodeLine{00514                        \textcolor{stringliteral}{"++++++++++++++++++++++++++++++++++++++\(\backslash\)n"}, i, run\_time);}
+\DoxyCodeLine{00515                 cout.flush();}
+\DoxyCodeLine{00516             \}}
+\DoxyCodeLine{00517             printf(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)nITER:\%d\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"}, i);}
+\DoxyCodeLine{00518             \textcolor{keywordflow}{if} (i \% \mbox{\hyperlink{namespacecils_1_1program__def_acb6c383e8aa99ae0593bac5dd252b981}{plot\_itr}} == 0) \{\textcolor{comment}{//i \% 50 == 0 \&\&}}
+\DoxyCodeLine{00519                 PyObject *pName, *pModule, *pFunc;}
+\DoxyCodeLine{00520 }
+\DoxyCodeLine{00521                 Py\_Initialize();}
+\DoxyCodeLine{00522                 \textcolor{keywordflow}{if} (\_import\_array() < 0)}
+\DoxyCodeLine{00523                     PyErr\_Print();}
+\DoxyCodeLine{00524                 npy\_intp dim[3] = \{4, 200, 2\};}
+\DoxyCodeLine{00525                 npy\_intp di4[3] = \{5, 200, 2\};}
+\DoxyCodeLine{00526 }
+\DoxyCodeLine{00527                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} proc\_nums[l -\/ 2] = \{\};}
+\DoxyCodeLine{00528                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} ll = 0;}
+\DoxyCodeLine{00529 }
+\DoxyCodeLine{00530                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc = \mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{min\_proc}}; n\_proc <= \mbox{\hyperlink{namespaceplot__helper_aef211e9d2ccf0cc7eeb603decf0c1d6b}{max\_proc}}; n\_proc += \mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{min\_proc}}) \{}
+\DoxyCodeLine{00531                     proc\_nums[ll] = n\_proc;}
+\DoxyCodeLine{00532                     ll++;}
+\DoxyCodeLine{00533                 \}}
+\DoxyCodeLine{00534                 npy\_intp dpc[1] = \{ll\};}
+\DoxyCodeLine{00535 }
+\DoxyCodeLine{00536                 PyObject *pRes = PyArray\_SimpleNewFromData(3, dim, NPY\_DOUBLE, \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}});}
+\DoxyCodeLine{00537                 PyObject *pBer = PyArray\_SimpleNewFromData(3, dim, NPY\_DOUBLE, \mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{ber}});}
+\DoxyCodeLine{00538                 PyObject *pTim = PyArray\_SimpleNewFromData(3, di4, NPY\_DOUBLE, \mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{tim}});}
+\DoxyCodeLine{00539                 PyObject *pSpu = PyArray\_SimpleNewFromData(3, dim, NPY\_DOUBLE, \mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{spu}});}
+\DoxyCodeLine{00540                 PyObject *pPrc = PyArray\_SimpleNewFromData(1, dpc, NPY\_DOUBLE, proc\_nums);}
+\DoxyCodeLine{00541 }
+\DoxyCodeLine{00542                 \textcolor{keywordflow}{if} (pRes == \textcolor{keyword}{nullptr}) printf(\textcolor{stringliteral}{"[ ERROR] pRes has a problem.\(\backslash\)n"});}
+\DoxyCodeLine{00543                 \textcolor{keywordflow}{if} (pBer == \textcolor{keyword}{nullptr}) printf(\textcolor{stringliteral}{"[ ERROR] pBer has a problem.\(\backslash\)n"});}
+\DoxyCodeLine{00544                 \textcolor{keywordflow}{if} (pTim == \textcolor{keyword}{nullptr}) printf(\textcolor{stringliteral}{"[ ERROR] pTim has a problem.\(\backslash\)n"});}
+\DoxyCodeLine{00545                 \textcolor{keywordflow}{if} (pPrc == \textcolor{keyword}{nullptr}) printf(\textcolor{stringliteral}{"[ ERROR] pPrc has a problem.\(\backslash\)n"});}
+\DoxyCodeLine{00546                 \textcolor{keywordflow}{if} (pSpu == \textcolor{keyword}{nullptr}) printf(\textcolor{stringliteral}{"[ ERROR] pSpu has a problem.\(\backslash\)n"});}
+\DoxyCodeLine{00547 }
+\DoxyCodeLine{00548                 PyObject *sys\_path = PySys\_GetObject(\textcolor{stringliteral}{"path"});}
+\DoxyCodeLine{00549                 PyList\_Append(sys\_path, PyUnicode\_FromString(}
+\DoxyCodeLine{00550                         \textcolor{stringliteral}{"/home/shilei/CLionProjects/babai\_asyn/babai\_asyn\_c++/src/example"}));}
+\DoxyCodeLine{00551                 pName = PyUnicode\_FromString(\textcolor{stringliteral}{"plot\_helper"});}
+\DoxyCodeLine{00552                 pModule = PyImport\_Import(pName);}
+\DoxyCodeLine{00553 }
+\DoxyCodeLine{00554                 \textcolor{keywordflow}{if} (pModule != \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{00555                     pFunc = PyObject\_GetAttrString(pModule, \textcolor{stringliteral}{"plot\_runtime\_ud"});}
+\DoxyCodeLine{00556                     \textcolor{keywordflow}{if} (pFunc \&\& PyCallable\_Check(pFunc)) \{}
+\DoxyCodeLine{00557                         PyObject *pArgs = PyTuple\_New(14);}
+\DoxyCodeLine{00558                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 0, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}})) != 0) \{}
+\DoxyCodeLine{00559                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00560                         \}}
+\DoxyCodeLine{00561                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 1, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}})) != 0) \{}
+\DoxyCodeLine{00562                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00563                         \}}
+\DoxyCodeLine{00564                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 2, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}})) != 0) \{}
+\DoxyCodeLine{00565                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00566                         \}}
+\DoxyCodeLine{00567                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 3, Py\_BuildValue(\textcolor{stringliteral}{"i"}, l)) != 0) \{}
+\DoxyCodeLine{00568                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00569                         \}}
+\DoxyCodeLine{00570                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 4, Py\_BuildValue(\textcolor{stringliteral}{"i"}, i)) != 0) \{}
+\DoxyCodeLine{00571                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00572                         \}}
+\DoxyCodeLine{00573                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 5, pRes) != 0) \{}
+\DoxyCodeLine{00574                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00575                         \}}
+\DoxyCodeLine{00576                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 6, pBer) != 0) \{}
+\DoxyCodeLine{00577                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00578                         \}}
+\DoxyCodeLine{00579                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 7, pTim) != 0) \{}
+\DoxyCodeLine{00580                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00581                         \}}
+\DoxyCodeLine{00582                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 8, pPrc) != 0) \{}
+\DoxyCodeLine{00583                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00584                         \}}
+\DoxyCodeLine{00585                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 9, pSpu) != 0) \{}
+\DoxyCodeLine{00586                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00587                         \}}
+\DoxyCodeLine{00588                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 10, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_aef211e9d2ccf0cc7eeb603decf0c1d6b}{max\_proc}})) != 0) \{}
+\DoxyCodeLine{00589                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00590                         \}}
+\DoxyCodeLine{00591                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 11, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{min\_proc}})) != 0) \{}
+\DoxyCodeLine{00592                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00593                         \}}
+\DoxyCodeLine{00594                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 12, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_a42a9284c68a72e08f1ba88f8fd2ac20d}{is\_constrained}})) != 0) \{}
+\DoxyCodeLine{00595                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00596                         \}}
+\DoxyCodeLine{00597                         \textcolor{keywordflow}{if} (PyTuple\_SetItem(pArgs, 13, Py\_BuildValue(\textcolor{stringliteral}{"i"}, \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}})) != 0) \{}
+\DoxyCodeLine{00598                             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{00599                         \}}
+\DoxyCodeLine{00600 }
+\DoxyCodeLine{00601                         PyObject *pValue = PyObject\_CallObject(pFunc, pArgs);}
+\DoxyCodeLine{00602 }
+\DoxyCodeLine{00603                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00604                         \textcolor{keywordflow}{if} (PyErr\_Occurred())}
+\DoxyCodeLine{00605                             PyErr\_Print();}
+\DoxyCodeLine{00606                         fprintf(stderr, \textcolor{stringliteral}{"Cannot find function qr\(\backslash\)n"});}
+\DoxyCodeLine{00607                     \}}
+\DoxyCodeLine{00608                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00609                     PyErr\_Print();}
+\DoxyCodeLine{00610                     fprintf(stderr, \textcolor{stringliteral}{"Failed to load file\(\backslash\)n"});}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612                 \}}
+\DoxyCodeLine{00613             \}}
+\DoxyCodeLine{00614         \}}
+\DoxyCodeLine{00615 }
+\DoxyCodeLine{00616         printf(\textcolor{stringliteral}{"End of current TASK.\(\backslash\)n"});}
+\DoxyCodeLine{00617         printf(\textcolor{stringliteral}{"-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"});}
+\DoxyCodeLine{00618 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00619     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00620 \}}
+
+\end{DoxyCode}

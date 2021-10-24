@@ -1,0 +1,77 @@
+\hypertarget{cils__block__search___g_p_u_8cpp}{}\doxysection{src/source/cils\+\_\+block\+\_\+search\+\_\+\+G\+PU.cpp File Reference}
+\label{cils__block__search___g_p_u_8cpp}\index{src/source/cils\_block\_search\_GPU.cpp@{src/source/cils\_block\_search\_GPU.cpp}}
+{\ttfamily \#include $<$Open\+C\+L/cl.\+hpp$>$}\newline
+Include dependency graph for cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp\+:
+% FIG 0
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}{N\+U\+M\+\_\+\+G\+L\+O\+B\+A\+L\+\_\+\+W\+I\+T\+E\+MS}}~1024
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}{compare\+Results}} (double C\+P\+Utime, double G\+P\+Utime, int trial)
+\item 
+double \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}{time\+Add\+Vectors\+C\+PU}} (int n, int k)
+\item 
+void \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}{warmup}} (cl\+::\+Context \&context, cl\+::\+Command\+Queue \&queue, cl\+::\+Kernel \&add, int A\mbox{[}$\,$\mbox{]}, int B\mbox{[}$\,$\mbox{]}, int n)
+\item 
+int \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a6123b1bea689dc6d6068ac45017cef54}{run}} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}\label{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}} 
+\index{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!NUM\_GLOBAL\_WITEMS@{NUM\_GLOBAL\_WITEMS}}
+\index{NUM\_GLOBAL\_WITEMS@{NUM\_GLOBAL\_WITEMS}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}}
+\doxysubsubsection{\texorpdfstring{NUM\_GLOBAL\_WITEMS}{NUM\_GLOBAL\_WITEMS}}
+{\footnotesize\ttfamily \#define N\+U\+M\+\_\+\+G\+L\+O\+B\+A\+L\+\_\+\+W\+I\+T\+E\+MS~1024}
+
+
+
+Definition at line 6 of file cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp.
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}\label{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}} 
+\index{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!compareResults@{compareResults}}
+\index{compareResults@{compareResults}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}}
+\doxysubsubsection{\texorpdfstring{compareResults()}{compareResults()}}
+{\footnotesize\ttfamily void compare\+Results (\begin{DoxyParamCaption}\item[{double}]{C\+P\+Utime,  }\item[{double}]{G\+P\+Utime,  }\item[{int}]{trial }\end{DoxyParamCaption})}
+
+
+
+Definition at line 8 of file cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp.
+
+\mbox{\Hypertarget{cils__block__search___g_p_u_8cpp_a6123b1bea689dc6d6068ac45017cef54}\label{cils__block__search___g_p_u_8cpp_a6123b1bea689dc6d6068ac45017cef54}} 
+\index{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!run@{run}}
+\index{run@{run}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily int run (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 68 of file cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp.
+
+\mbox{\Hypertarget{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}\label{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}} 
+\index{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!timeAddVectorsCPU@{timeAddVectorsCPU}}
+\index{timeAddVectorsCPU@{timeAddVectorsCPU}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}}
+\doxysubsubsection{\texorpdfstring{timeAddVectorsCPU()}{timeAddVectorsCPU()}}
+{\footnotesize\ttfamily double time\+Add\+Vectors\+C\+PU (\begin{DoxyParamCaption}\item[{int}]{n,  }\item[{int}]{k }\end{DoxyParamCaption})}
+
+
+
+Definition at line 21 of file cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp.
+
+\mbox{\Hypertarget{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}\label{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}} 
+\index{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!warmup@{warmup}}
+\index{warmup@{warmup}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}}
+\doxysubsubsection{\texorpdfstring{warmup()}{warmup()}}
+{\footnotesize\ttfamily void warmup (\begin{DoxyParamCaption}\item[{cl\+::\+Context \&}]{context,  }\item[{cl\+::\+Command\+Queue \&}]{queue,  }\item[{cl\+::\+Kernel \&}]{add,  }\item[{int}]{A\mbox{[}$\,$\mbox{]},  }\item[{int}]{B\mbox{[}$\,$\mbox{]},  }\item[{int}]{n }\end{DoxyParamCaption})}
+
+
+
+Definition at line 44 of file cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp.
+

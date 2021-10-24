@@ -1,0 +1,69 @@
+\hypertarget{cils__standard__test_8cpp}{}\doxysection{src/example/cils\+\_\+standard\+\_\+test.cpp File Reference}
+\label{cils__standard__test_8cpp}\index{src/example/cils\_standard\_test.cpp@{src/example/cils\_standard\_test.cpp}}
+{\ttfamily \#include \char`\"{}../source/cils.\+cpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../source/cils\+\_\+ils\+\_\+search.\+cpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../source/cils\+\_\+block\+\_\+search.\+cpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../source/cils\+\_\+babai\+\_\+search.\+cpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../source/cils\+\_\+reduction.\+cpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../source/cils\+\_\+init\+\_\+point.\+cpp\char`\"{}}\newline
+{\ttfamily \#include $<$ctime$>$}\newline
+Include dependency graph for cils\+\_\+standard\+\_\+test.\+cpp\+:
+% FIG 0
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\long \mbox{\hyperlink{cils__standard__test_8cpp_ab5c8ec4fd87e0783bb57df486c94d2f9}{plot\+\_\+run}} ()
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\long \mbox{\hyperlink{cils__standard__test_8cpp_af68dc084a1373d1d9ec96a2d39f55829}{plot\+\_\+\+L\+LL}} ()
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\long \mbox{\hyperlink{cils__standard__test_8cpp_ae86e9baccbf9942e2324a7660d43bb0b}{test\+\_\+ils\+\_\+search}} ()
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\void \mbox{\hyperlink{cils__standard__test_8cpp_a052ff1f6b503cd4efec01cf27c21350c}{plot\+\_\+res}} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{cils__standard__test_8cpp_af68dc084a1373d1d9ec96a2d39f55829}\label{cils__standard__test_8cpp_af68dc084a1373d1d9ec96a2d39f55829}} 
+\index{cils\_standard\_test.cpp@{cils\_standard\_test.cpp}!plot\_LLL@{plot\_LLL}}
+\index{plot\_LLL@{plot\_LLL}!cils\_standard\_test.cpp@{cils\_standard\_test.cpp}}
+\doxysubsubsection{\texorpdfstring{plot\_LLL()}{plot\_LLL()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+long plot\+\_\+\+L\+LL (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 509 of file cils\+\_\+standard\+\_\+test.\+cpp.
+
+\mbox{\Hypertarget{cils__standard__test_8cpp_a052ff1f6b503cd4efec01cf27c21350c}\label{cils__standard__test_8cpp_a052ff1f6b503cd4efec01cf27c21350c}} 
+\index{cils\_standard\_test.cpp@{cils\_standard\_test.cpp}!plot\_res@{plot\_res}}
+\index{plot\_res@{plot\_res}!cils\_standard\_test.cpp@{cils\_standard\_test.cpp}}
+\doxysubsubsection{\texorpdfstring{plot\_res()}{plot\_res()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void plot\+\_\+res (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 828 of file cils\+\_\+standard\+\_\+test.\+cpp.
+
+\mbox{\Hypertarget{cils__standard__test_8cpp_ab5c8ec4fd87e0783bb57df486c94d2f9}\label{cils__standard__test_8cpp_ab5c8ec4fd87e0783bb57df486c94d2f9}} 
+\index{cils\_standard\_test.cpp@{cils\_standard\_test.cpp}!plot\_run@{plot\_run}}
+\index{plot\_run@{plot\_run}!cils\_standard\_test.cpp@{cils\_standard\_test.cpp}}
+\doxysubsubsection{\texorpdfstring{plot\_run()}{plot\_run()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+long plot\+\_\+run (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 11 of file cils\+\_\+standard\+\_\+test.\+cpp.
+
+\mbox{\Hypertarget{cils__standard__test_8cpp_ae86e9baccbf9942e2324a7660d43bb0b}\label{cils__standard__test_8cpp_ae86e9baccbf9942e2324a7660d43bb0b}} 
+\index{cils\_standard\_test.cpp@{cils\_standard\_test.cpp}!test\_ils\_search@{test\_ils\_search}}
+\index{test\_ils\_search@{test\_ils\_search}!cils\_standard\_test.cpp@{cils\_standard\_test.cpp}}
+\doxysubsubsection{\texorpdfstring{test\_ils\_search()}{test\_ils\_search()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+long test\+\_\+ils\+\_\+search (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 726 of file cils\+\_\+standard\+\_\+test.\+cpp.
+

@@ -1,0 +1,244 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {chapter}{\numberline {1}Namespace Index}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Namespace List}{1}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Class Index}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Class List}{3}{section.2.1}%
+\contentsline {chapter}{\numberline {3}File Index}{5}{chapter.3}%
+\contentsline {section}{\numberline {3.1}File List}{5}{section.3.1}%
+\contentsline {chapter}{\numberline {4}Namespace Documentation}{7}{chapter.4}%
+\contentsline {section}{\numberline {4.1}cils Namespace Reference}{7}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Detailed Description}{7}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Function Documentation}{7}{subsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.2.1}matrix\_vector\_mult()\hspace {0.1cm}{\footnotesize \ttfamily [1/2]}}{8}{subsubsection.4.1.2.1}%
+\contentsline {subsubsection}{\numberline {4.1.2.2}matrix\_vector\_mult()\hspace {0.1cm}{\footnotesize \ttfamily [2/2]}}{8}{subsubsection.4.1.2.2}%
+\contentsline {section}{\numberline {4.2}cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}::program\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}def Namespace Reference}{8}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Typedef Documentation}{9}{subsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.1.1}index}{9}{subsubsection.4.2.1.1}%
+\contentsline {subsubsection}{\numberline {4.2.1.2}scalar}{9}{subsubsection.4.2.1.2}%
+\contentsline {subsection}{\numberline {4.2.2}Function Documentation}{9}{subsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.2.1}d\_s()}{9}{subsubsection.4.2.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2.2}indicator()}{10}{subsubsection.4.2.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.2.3}init\_guess()}{10}{subsubsection.4.2.2.3}%
+\contentsline {subsubsection}{\numberline {4.2.2.4}init\_program\_def()}{10}{subsubsection.4.2.2.4}%
+\contentsline {subsubsection}{\numberline {4.2.2.5}permutation()}{10}{subsubsection.4.2.2.5}%
+\contentsline {subsection}{\numberline {4.2.3}Variable Documentation}{10}{subsection.4.2.3}%
+\contentsline {subsubsection}{\numberline {4.2.3.1}block\_size}{10}{subsubsection.4.2.3.1}%
+\contentsline {subsubsection}{\numberline {4.2.3.2}chunk}{11}{subsubsection.4.2.3.2}%
+\contentsline {subsubsection}{\numberline {4.2.3.3}chunk\_size}{11}{subsubsection.4.2.3.3}%
+\contentsline {subsubsection}{\numberline {4.2.3.4}coeff}{11}{subsubsection.4.2.3.4}%
+\contentsline {subsubsection}{\numberline {4.2.3.5}is\_constrained}{11}{subsubsection.4.2.3.5}%
+\contentsline {subsubsection}{\numberline {4.2.3.6}is\_local}{11}{subsubsection.4.2.3.6}%
+\contentsline {subsubsection}{\numberline {4.2.3.7}is\_matlab}{11}{subsubsection.4.2.3.7}%
+\contentsline {subsubsection}{\numberline {4.2.3.8}is\_nc}{12}{subsubsection.4.2.3.8}%
+\contentsline {subsubsection}{\numberline {4.2.3.9}is\_qr}{12}{subsubsection.4.2.3.9}%
+\contentsline {subsubsection}{\numberline {4.2.3.10}max\_iter}{12}{subsubsection.4.2.3.10}%
+\contentsline {subsubsection}{\numberline {4.2.3.11}max\_proc}{12}{subsubsection.4.2.3.11}%
+\contentsline {subsubsection}{\numberline {4.2.3.12}max\_search}{12}{subsubsection.4.2.3.12}%
+\contentsline {subsubsection}{\numberline {4.2.3.13}max\_thre}{12}{subsubsection.4.2.3.13}%
+\contentsline {subsubsection}{\numberline {4.2.3.14}min\_proc}{13}{subsubsection.4.2.3.14}%
+\contentsline {subsubsection}{\numberline {4.2.3.15}mode}{13}{subsubsection.4.2.3.15}%
+\contentsline {subsubsection}{\numberline {4.2.3.16}num\_trials}{13}{subsubsection.4.2.3.16}%
+\contentsline {subsubsection}{\numberline {4.2.3.17}offset}{13}{subsubsection.4.2.3.17}%
+\contentsline {subsubsection}{\numberline {4.2.3.18}plot\_itr}{13}{subsubsection.4.2.3.18}%
+\contentsline {subsubsection}{\numberline {4.2.3.19}q}{13}{subsubsection.4.2.3.19}%
+\contentsline {subsubsection}{\numberline {4.2.3.20}qam}{14}{subsubsection.4.2.3.20}%
+\contentsline {subsubsection}{\numberline {4.2.3.21}schedule}{14}{subsubsection.4.2.3.21}%
+\contentsline {subsubsection}{\numberline {4.2.3.22}search\_iter}{14}{subsubsection.4.2.3.22}%
+\contentsline {subsubsection}{\numberline {4.2.3.23}SNR}{14}{subsubsection.4.2.3.23}%
+\contentsline {subsubsection}{\numberline {4.2.3.24}spilt\_size}{14}{subsubsection.4.2.3.24}%
+\contentsline {subsubsection}{\numberline {4.2.3.25}stop}{14}{subsubsection.4.2.3.25}%
+\contentsline {subsubsection}{\numberline {4.2.3.26}verbose}{15}{subsubsection.4.2.3.26}%
+\contentsline {section}{\numberline {4.3}helper Namespace Reference}{15}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Function Documentation}{16}{subsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.1.1}b\_mtimes()}{16}{subsubsection.4.3.1.1}%
+\contentsline {subsubsection}{\numberline {4.3.1.2}b\_rand()}{16}{subsubsection.4.3.1.2}%
+\contentsline {subsubsection}{\numberline {4.3.1.3}display\_matrix()}{16}{subsubsection.4.3.1.3}%
+\contentsline {subsubsection}{\numberline {4.3.1.4}display\_vector()}{17}{subsubsection.4.3.1.4}%
+\contentsline {subsubsection}{\numberline {4.3.1.5}eye()}{17}{subsubsection.4.3.1.5}%
+\contentsline {subsubsection}{\numberline {4.3.1.6}find\_bit\_error\_rate()}{17}{subsubsection.4.3.1.6}%
+\contentsline {subsubsection}{\numberline {4.3.1.7}find\_residual()}{18}{subsubsection.4.3.1.7}%
+\contentsline {subsubsection}{\numberline {4.3.1.8}if\_all\_x\_true()}{19}{subsubsection.4.3.1.8}%
+\contentsline {subsubsection}{\numberline {4.3.1.9}inv()}{19}{subsubsection.4.3.1.9}%
+\contentsline {subsubsection}{\numberline {4.3.1.10}length\_nonzeros()}{19}{subsubsection.4.3.1.10}%
+\contentsline {subsubsection}{\numberline {4.3.1.11}mtimes()\hspace {0.1cm}{\footnotesize \ttfamily [1/2]}}{20}{subsubsection.4.3.1.11}%
+\contentsline {subsubsection}{\numberline {4.3.1.12}mtimes()\hspace {0.1cm}{\footnotesize \ttfamily [2/2]}}{20}{subsubsection.4.3.1.12}%
+\contentsline {subsubsection}{\numberline {4.3.1.13}mtimes\_AP()}{20}{subsubsection.4.3.1.13}%
+\contentsline {subsubsection}{\numberline {4.3.1.14}mtimes\_Axy()}{21}{subsubsection.4.3.1.14}%
+\contentsline {subsubsection}{\numberline {4.3.1.15}mtimes\_col()}{21}{subsubsection.4.3.1.15}%
+\contentsline {subsubsection}{\numberline {4.3.1.16}mtimes\_v()}{21}{subsubsection.4.3.1.16}%
+\contentsline {subsubsection}{\numberline {4.3.1.17}norm()}{22}{subsubsection.4.3.1.17}%
+\contentsline {subsubsection}{\numberline {4.3.1.18}planerot()}{22}{subsubsection.4.3.1.18}%
+\contentsline {subsubsection}{\numberline {4.3.1.19}randperm()}{23}{subsubsection.4.3.1.19}%
+\contentsline {subsubsection}{\numberline {4.3.1.20}unique\_vector()}{23}{subsubsection.4.3.1.20}%
+\contentsline {section}{\numberline {4.4}plot\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}helper Namespace Reference}{23}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Function Documentation}{24}{subsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.1.1}plot\_first\_block()}{24}{subsubsection.4.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.4.1.2}plot\_runtime()}{24}{subsubsection.4.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.4.1.3}plot\_runtime\_lll()}{25}{subsubsection.4.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.4.1.4}plot\_runtime\_ud()}{25}{subsubsection.4.4.1.4}%
+\contentsline {subsection}{\numberline {4.4.2}Variable Documentation}{26}{subsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.2.1}a}{26}{subsubsection.4.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.4.2.2}ber}{26}{subsubsection.4.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.4.2.3}is\_constrained}{26}{subsubsection.4.4.2.3}%
+\contentsline {subsubsection}{\numberline {4.4.2.4}k}{26}{subsubsection.4.4.2.4}%
+\contentsline {subsubsection}{\numberline {4.4.2.5}l\_max}{26}{subsubsection.4.4.2.5}%
+\contentsline {subsubsection}{\numberline {4.4.2.6}m}{27}{subsubsection.4.4.2.6}%
+\contentsline {subsubsection}{\numberline {4.4.2.7}max\_iter}{27}{subsubsection.4.4.2.7}%
+\contentsline {subsubsection}{\numberline {4.4.2.8}max\_proc}{27}{subsubsection.4.4.2.8}%
+\contentsline {subsubsection}{\numberline {4.4.2.9}min\_proc}{27}{subsubsection.4.4.2.9}%
+\contentsline {subsubsection}{\numberline {4.4.2.10}n}{27}{subsubsection.4.4.2.10}%
+\contentsline {subsubsection}{\numberline {4.4.2.11}proc\_num}{27}{subsubsection.4.4.2.11}%
+\contentsline {subsubsection}{\numberline {4.4.2.12}res}{28}{subsubsection.4.4.2.12}%
+\contentsline {subsubsection}{\numberline {4.4.2.13}SNR}{28}{subsubsection.4.4.2.13}%
+\contentsline {subsubsection}{\numberline {4.4.2.14}spu}{28}{subsubsection.4.4.2.14}%
+\contentsline {subsubsection}{\numberline {4.4.2.15}tim}{28}{subsubsection.4.4.2.15}%
+\contentsline {subsubsection}{\numberline {4.4.2.16}title1}{28}{subsubsection.4.4.2.16}%
+\contentsline {subsubsection}{\numberline {4.4.2.17}title3}{28}{subsubsection.4.4.2.17}%
+\contentsline {section}{\numberline {4.5}py\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}qr Namespace Reference}{29}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Function Documentation}{29}{subsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.1.1}check\_mem()}{29}{subsubsection.4.5.1.1}%
+\contentsline {subsection}{\numberline {4.5.2}Variable Documentation}{29}{subsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.2.1}block\_mem}{29}{subsubsection.4.5.2.1}%
+\contentsline {subsubsection}{\numberline {4.5.2.2}max\_mem}{29}{subsubsection.4.5.2.2}%
+\contentsline {subsubsection}{\numberline {4.5.2.3}total}{30}{subsubsection.4.5.2.3}%
+\contentsline {subsubsection}{\numberline {4.5.2.4}used}{30}{subsubsection.4.5.2.4}%
+\contentsline {subsubsection}{\numberline {4.5.2.5}x}{30}{subsubsection.4.5.2.5}%
+\contentsline {chapter}{\numberline {5}Class Documentation}{31}{chapter.5}%
+\contentsline {section}{\numberline {5.1}cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}::cils$<$ scalar, index, m, n $>$ Class Template Reference}{31}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Detailed Description}{32}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Constructor \& Destructor Documentation}{32}{subsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.2.1}cils()}{32}{subsubsection.5.1.2.1}%
+\contentsline {subsubsection}{\numberline {5.1.2.2}$\sim $cils()}{33}{subsubsection.5.1.2.2}%
+\contentsline {subsection}{\numberline {5.1.3}Member Function Documentation}{33}{subsection.5.1.3}%
+\contentsline {subsubsection}{\numberline {5.1.3.1}cils\_babai\_search\_omp()}{33}{subsubsection.5.1.3.1}%
+\contentsline {subsubsection}{\numberline {5.1.3.2}cils\_babai\_search\_serial()}{33}{subsubsection.5.1.3.2}%
+\contentsline {subsubsection}{\numberline {5.1.3.3}cils\_back\_solve()}{34}{subsubsection.5.1.3.3}%
+\contentsline {subsubsection}{\numberline {5.1.3.4}cils\_back\_solve\_omp()}{34}{subsubsection.5.1.3.4}%
+\contentsline {subsubsection}{\numberline {5.1.3.5}cils\_block\_search\_omp()}{35}{subsubsection.5.1.3.5}%
+\contentsline {subsubsection}{\numberline {5.1.3.6}cils\_block\_search\_serial()}{35}{subsubsection.5.1.3.6}%
+\contentsline {subsubsection}{\numberline {5.1.3.7}cils\_block\_search\_serial\_CPUTEST()}{36}{subsubsection.5.1.3.7}%
+\contentsline {subsubsection}{\numberline {5.1.3.8}cils\_grad\_proj()}{36}{subsubsection.5.1.3.8}%
+\contentsline {subsubsection}{\numberline {5.1.3.9}cils\_partition\_deficient()}{37}{subsubsection.5.1.3.9}%
+\contentsline {subsubsection}{\numberline {5.1.3.10}cils\_qrp\_serial()}{37}{subsubsection.5.1.3.10}%
+\contentsline {subsubsection}{\numberline {5.1.3.11}cils\_scp\_block\_babai\_omp()}{37}{subsubsection.5.1.3.11}%
+\contentsline {subsubsection}{\numberline {5.1.3.12}cils\_scp\_block\_babai\_serial()}{38}{subsubsection.5.1.3.12}%
+\contentsline {subsubsection}{\numberline {5.1.3.13}cils\_scp\_block\_optimal\_mpi()}{38}{subsubsection.5.1.3.13}%
+\contentsline {subsubsection}{\numberline {5.1.3.14}cils\_scp\_block\_optimal\_omp()}{38}{subsubsection.5.1.3.14}%
+\contentsline {subsubsection}{\numberline {5.1.3.15}cils\_scp\_block\_optimal\_serial()}{38}{subsubsection.5.1.3.15}%
+\contentsline {subsubsection}{\numberline {5.1.3.16}cils\_scp\_block\_suboptimal\_omp()}{39}{subsubsection.5.1.3.16}%
+\contentsline {subsubsection}{\numberline {5.1.3.17}cils\_scp\_block\_suboptimal\_serial()}{39}{subsubsection.5.1.3.17}%
+\contentsline {subsubsection}{\numberline {5.1.3.18}cils\_sic\_serial()}{39}{subsubsection.5.1.3.18}%
+\contentsline {subsubsection}{\numberline {5.1.3.19}cils\_sic\_subopt()}{40}{subsubsection.5.1.3.19}%
+\contentsline {subsubsection}{\numberline {5.1.3.20}init()}{40}{subsubsection.5.1.3.20}%
+\contentsline {subsubsection}{\numberline {5.1.3.21}init\_R()}{40}{subsubsection.5.1.3.21}%
+\contentsline {subsubsection}{\numberline {5.1.3.22}init\_ud()}{40}{subsubsection.5.1.3.22}%
+\contentsline {subsubsection}{\numberline {5.1.3.23}init\_y()}{40}{subsubsection.5.1.3.23}%
+\contentsline {subsection}{\numberline {5.1.4}Member Data Documentation}{41}{subsection.5.1.4}%
+\contentsline {subsubsection}{\numberline {5.1.4.1}A}{41}{subsubsection.5.1.4.1}%
+\contentsline {subsubsection}{\numberline {5.1.4.2}H}{41}{subsubsection.5.1.4.2}%
+\contentsline {subsubsection}{\numberline {5.1.4.3}init\_res}{41}{subsubsection.5.1.4.3}%
+\contentsline {subsubsection}{\numberline {5.1.4.4}l}{41}{subsubsection.5.1.4.4}%
+\contentsline {subsubsection}{\numberline {5.1.4.5}lower}{41}{subsubsection.5.1.4.5}%
+\contentsline {subsubsection}{\numberline {5.1.4.6}matlabPtr}{42}{subsubsection.5.1.4.6}%
+\contentsline {subsubsection}{\numberline {5.1.4.7}P}{42}{subsubsection.5.1.4.7}%
+\contentsline {subsubsection}{\numberline {5.1.4.8}qam}{42}{subsubsection.5.1.4.8}%
+\contentsline {subsubsection}{\numberline {5.1.4.9}R\_A}{42}{subsubsection.5.1.4.9}%
+\contentsline {subsubsection}{\numberline {5.1.4.10}sigma}{42}{subsubsection.5.1.4.10}%
+\contentsline {subsubsection}{\numberline {5.1.4.11}snr}{42}{subsubsection.5.1.4.11}%
+\contentsline {subsubsection}{\numberline {5.1.4.12}tolerance}{43}{subsubsection.5.1.4.12}%
+\contentsline {subsubsection}{\numberline {5.1.4.13}u}{43}{subsubsection.5.1.4.13}%
+\contentsline {subsubsection}{\numberline {5.1.4.14}upper}{43}{subsubsection.5.1.4.14}%
+\contentsline {subsubsection}{\numberline {5.1.4.15}v\_a}{43}{subsubsection.5.1.4.15}%
+\contentsline {subsubsection}{\numberline {5.1.4.16}v\_q}{43}{subsubsection.5.1.4.16}%
+\contentsline {subsubsection}{\numberline {5.1.4.17}x\_r}{43}{subsubsection.5.1.4.17}%
+\contentsline {subsubsection}{\numberline {5.1.4.18}x\_t}{44}{subsubsection.5.1.4.18}%
+\contentsline {subsubsection}{\numberline {5.1.4.19}y\_a}{44}{subsubsection.5.1.4.19}%
+\contentsline {subsubsection}{\numberline {5.1.4.20}Z}{44}{subsubsection.5.1.4.20}%
+\contentsline {section}{\numberline {5.2}cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}::cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}reduction$<$ scalar, index $>$ Class Template Reference}{44}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Detailed Description}{45}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Constructor \& Destructor Documentation}{45}{subsection.5.2.2}%
+\contentsline {subsubsection}{\numberline {5.2.2.1}cils\_reduction()}{45}{subsubsection.5.2.2.1}%
+\contentsline {subsection}{\numberline {5.2.3}Member Function Documentation}{45}{subsection.5.2.3}%
+\contentsline {subsubsection}{\numberline {5.2.3.1}cils\_eml\_qr()}{45}{subsubsection.5.2.3.1}%
+\contentsline {subsubsection}{\numberline {5.2.3.2}cils\_LLL\_omp()}{46}{subsubsection.5.2.3.2}%
+\contentsline {subsubsection}{\numberline {5.2.3.3}cils\_LLL\_qr\_omp()}{46}{subsubsection.5.2.3.3}%
+\contentsline {subsubsection}{\numberline {5.2.3.4}cils\_LLL\_qr\_reduction()}{46}{subsubsection.5.2.3.4}%
+\contentsline {subsubsection}{\numberline {5.2.3.5}cils\_LLL\_qr\_serial()}{46}{subsubsection.5.2.3.5}%
+\contentsline {subsubsection}{\numberline {5.2.3.6}cils\_LLL\_reduction()}{47}{subsubsection.5.2.3.6}%
+\contentsline {subsubsection}{\numberline {5.2.3.7}cils\_LLL\_serial()}{47}{subsubsection.5.2.3.7}%
+\contentsline {subsubsection}{\numberline {5.2.3.8}cils\_obils\_matlab()}{47}{subsubsection.5.2.3.8}%
+\contentsline {subsubsection}{\numberline {5.2.3.9}cils\_obils\_reduction()}{47}{subsubsection.5.2.3.9}%
+\contentsline {subsubsection}{\numberline {5.2.3.10}cils\_obils\_reduction\_matlab()}{48}{subsubsection.5.2.3.10}%
+\contentsline {subsubsection}{\numberline {5.2.3.11}cils\_qr\_omp()}{48}{subsubsection.5.2.3.11}%
+\contentsline {subsubsection}{\numberline {5.2.3.12}cils\_qr\_py()}{48}{subsubsection.5.2.3.12}%
+\contentsline {subsubsection}{\numberline {5.2.3.13}cils\_qr\_py\_helper()}{48}{subsubsection.5.2.3.13}%
+\contentsline {subsubsection}{\numberline {5.2.3.14}cils\_qr\_serial()}{48}{subsubsection.5.2.3.14}%
+\contentsline {subsubsection}{\numberline {5.2.3.15}cils\_qr\_serial\_col()}{49}{subsubsection.5.2.3.15}%
+\contentsline {subsection}{\numberline {5.2.4}Member Data Documentation}{49}{subsection.5.2.4}%
+\contentsline {subsubsection}{\numberline {5.2.4.1}A}{49}{subsubsection.5.2.4.1}%
+\contentsline {subsubsection}{\numberline {5.2.4.2}G}{49}{subsubsection.5.2.4.2}%
+\contentsline {subsubsection}{\numberline {5.2.4.3}P}{50}{subsubsection.5.2.4.3}%
+\contentsline {subsubsection}{\numberline {5.2.4.4}p}{50}{subsubsection.5.2.4.4}%
+\contentsline {subsubsection}{\numberline {5.2.4.5}Q}{50}{subsubsection.5.2.4.5}%
+\contentsline {subsubsection}{\numberline {5.2.4.6}R\_Q}{50}{subsubsection.5.2.4.6}%
+\contentsline {subsubsection}{\numberline {5.2.4.7}R\_R}{50}{subsubsection.5.2.4.7}%
+\contentsline {subsubsection}{\numberline {5.2.4.8}y\_a}{50}{subsubsection.5.2.4.8}%
+\contentsline {subsubsection}{\numberline {5.2.4.9}y\_q}{51}{subsubsection.5.2.4.9}%
+\contentsline {subsubsection}{\numberline {5.2.4.10}y\_r}{51}{subsubsection.5.2.4.10}%
+\contentsline {subsubsection}{\numberline {5.2.4.11}Z}{51}{subsubsection.5.2.4.11}%
+\contentsline {section}{\numberline {5.3}cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}::cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}search$<$ scalar, index $>$ Class Template Reference}{51}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Detailed Description}{52}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Constructor \& Destructor Documentation}{52}{subsection.5.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.2.1}cils\_search()}{52}{subsubsection.5.3.2.1}%
+\contentsline {subsection}{\numberline {5.3.3}Member Function Documentation}{52}{subsection.5.3.3}%
+\contentsline {subsubsection}{\numberline {5.3.3.1}bound()}{52}{subsubsection.5.3.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.3.2}ils\_search()}{52}{subsubsection.5.3.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.3.3}ils\_search\_omp()}{53}{subsubsection.5.3.3.3}%
+\contentsline {subsubsection}{\numberline {5.3.3.4}obils\_search()}{53}{subsubsection.5.3.3.4}%
+\contentsline {subsubsection}{\numberline {5.3.3.5}obils\_search2()}{53}{subsubsection.5.3.3.5}%
+\contentsline {subsubsection}{\numberline {5.3.3.6}obils\_search\_matlab()}{53}{subsubsection.5.3.3.6}%
+\contentsline {subsubsection}{\numberline {5.3.3.7}obils\_search\_omp()}{54}{subsubsection.5.3.3.7}%
+\contentsline {subsubsection}{\numberline {5.3.3.8}ubils\_search()}{54}{subsubsection.5.3.3.8}%
+\contentsline {section}{\numberline {5.4}cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}::return\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Type$<$ scalar, index $>$ Struct Template Reference}{54}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Detailed Description}{54}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Member Data Documentation}{55}{subsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.2.1}info}{55}{subsubsection.5.4.2.1}%
+\contentsline {subsubsection}{\numberline {5.4.2.2}run\_time}{55}{subsubsection.5.4.2.2}%
+\contentsline {subsubsection}{\numberline {5.4.2.3}x}{55}{subsubsection.5.4.2.3}%
+\contentsline {chapter}{\numberline {6}File Documentation}{57}{chapter.6}%
+\contentsline {section}{\numberline {6.1}src/example/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}standard\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}test.cpp File Reference}{57}{section.6.1}%
+\contentsline {section}{\numberline {6.2}src/example/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}underdetermined\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}test.cpp File Reference}{57}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Function Documentation}{57}{subsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.1.1}block\_optimal\_test()}{58}{subsubsection.6.2.1.1}%
+\contentsline {subsubsection}{\numberline {6.2.1.2}plot\_run()}{58}{subsubsection.6.2.1.2}%
+\contentsline {section}{\numberline {6.3}src/example/plot\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}helper.py File Reference}{58}{section.6.3}%
+\contentsline {section}{\numberline {6.4}src/example/py\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}qr.py File Reference}{59}{section.6.4}%
+\contentsline {section}{\numberline {6.5}src/include/cils.h File Reference}{59}{section.6.5}%
+\contentsline {subsection}{\numberline {6.5.1}Detailed Description}{60}{subsection.6.5.1}%
+\contentsline {section}{\numberline {6.6}src/include/config.h File Reference}{60}{section.6.6}%
+\contentsline {section}{\numberline {6.7}src/include/helper.h File Reference}{61}{section.6.7}%
+\contentsline {subsection}{\numberline {6.7.1}Detailed Description}{62}{subsection.6.7.1}%
+\contentsline {subsection}{\numberline {6.7.2}Variable Documentation}{63}{subsection.6.7.2}%
+\contentsline {subsubsection}{\numberline {6.7.2.1}ZERO}{63}{subsubsection.6.7.2.1}%
+\contentsline {section}{\numberline {6.8}src/source/cils.cpp File Reference}{63}{section.6.8}%
+\contentsline {section}{\numberline {6.9}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}babai\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}search.cpp File Reference}{63}{section.6.9}%
+\contentsline {subsection}{\numberline {6.9.1}Detailed Description}{64}{subsection.6.9.1}%
+\contentsline {section}{\numberline {6.10}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}block\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}search.cpp File Reference}{64}{section.6.10}%
+\contentsline {subsection}{\numberline {6.10.1}Detailed Description}{64}{subsection.6.10.1}%
+\contentsline {section}{\numberline {6.11}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}block\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}search\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}G\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}PU.cpp File Reference}{65}{section.6.11}%
+\contentsline {subsection}{\numberline {6.11.1}Macro Definition Documentation}{65}{subsection.6.11.1}%
+\contentsline {subsubsection}{\numberline {6.11.1.1}NUM\_GLOBAL\_WITEMS}{65}{subsubsection.6.11.1.1}%
+\contentsline {subsection}{\numberline {6.11.2}Function Documentation}{65}{subsection.6.11.2}%
+\contentsline {subsubsection}{\numberline {6.11.2.1}compareResults()}{65}{subsubsection.6.11.2.1}%
+\contentsline {subsubsection}{\numberline {6.11.2.2}run()}{66}{subsubsection.6.11.2.2}%
+\contentsline {subsubsection}{\numberline {6.11.2.3}timeAddVectorsCPU()}{66}{subsubsection.6.11.2.3}%
+\contentsline {subsubsection}{\numberline {6.11.2.4}warmup()}{66}{subsubsection.6.11.2.4}%
+\contentsline {section}{\numberline {6.12}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}ils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}search.cpp File Reference}{66}{section.6.12}%
+\contentsline {subsection}{\numberline {6.12.1}Detailed Description}{67}{subsection.6.12.1}%
+\contentsline {section}{\numberline {6.13}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}init\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}point.cpp File Reference}{67}{section.6.13}%
+\contentsline {subsection}{\numberline {6.13.1}Detailed Description}{67}{subsection.6.13.1}%
+\contentsline {section}{\numberline {6.14}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}partition\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}deficient.cpp File Reference}{67}{section.6.14}%
+\contentsline {section}{\numberline {6.15}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}reduction.cpp File Reference}{68}{section.6.15}%
+\contentsline {section}{\numberline {6.16}src/source/cils\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sic\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}opt.cpp File Reference}{68}{section.6.16}%
+\contentsline {subsection}{\numberline {6.16.1}Detailed Description}{68}{subsection.6.16.1}%
+\contentsline {chapter}{Index}{69}{section*.51}%

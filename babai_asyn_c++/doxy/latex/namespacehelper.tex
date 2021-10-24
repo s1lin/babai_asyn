@@ -1,0 +1,441 @@
+\hypertarget{namespacehelper}{}\doxysection{helper Namespace Reference}
+\label{namespacehelper}\index{helper@{helper}}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}{b\+\_\+rand}} (const int n, double $\ast$r)
+\item 
+void \mbox{\hyperlink{namespacehelper_a38339329189a88e7529f6267d2640ca5}{randperm}} (int n, double $\ast$p)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{eye}} (index n, scalar $\ast$A)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n, index mb$>$ }\\void \mbox{\hyperlink{namespacehelper_a001e915bf035136f793b0d709bfa00bb}{b\+\_\+mtimes}} (const array$<$ scalar, m $\ast$n $>$ \&A\+\_\+C, const array$<$ scalar, n $\ast$mb $>$ \&B, array$<$ scalar, m $\ast$mb $>$ \&C)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\void \mbox{\hyperlink{namespacehelper_afc7cf1deb54e87ddd16e7df7978f3be9}{mtimes}} (const scalar A\+\_\+C\mbox{[}4\mbox{]}, const array$<$ scalar, m $\ast$n $>$ \&B, array$<$ scalar, 2 $\ast$n $>$ \&C)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index m, index n$>$ }\\void \mbox{\hyperlink{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}{mtimes}} (const array$<$ scalar, m $\ast$m $>$ \&Q, const array$<$ scalar, m $\ast$n $>$ \&R, array$<$ scalar, m $\ast$n $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aea72c28e2b9c90023834eac74f25b271}{mtimes\+\_\+v}} (index m, index n, const vector$<$ scalar $>$ \&Q, const vector$<$ scalar $>$ \&R, vector$<$ scalar $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aa7430cecf7974509c8376223379df15d}{mtimes\+\_\+col}} (index m, index n, const vector$<$ scalar $>$ \&Q, const vector$<$ scalar $>$ \&R, vector$<$ scalar $>$ \&A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{mtimes\+\_\+\+AP}} (index m, index n, const scalar $\ast$A, const scalar $\ast$P, scalar $\ast$A\+\_\+t)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}{inv}} (const index K, const index N, const vector$<$ scalar $>$ \&x, vector$<$ scalar $>$ \&y)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a034619a8252a7108ebd92468a18e91f1}{mtimes\+\_\+\+Axy}} (const index m, const index n, const scalar $\ast$A, const scalar $\ast$x, scalar $\ast$y)
+\item 
+{\footnotesize template$<$typename scalar , typename index , index n$>$ }\\index \mbox{\hyperlink{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}{length\+\_\+nonzeros}} (const scalar $\ast$x, const scalar $\ast$y)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}{planerot}} (scalar x\mbox{[}2\mbox{]}, scalar G\mbox{[}4\mbox{]})
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}{norm}} (const index n, const scalar $\ast$v)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}{find\+\_\+bit\+\_\+error\+\_\+rate}} (const index n, const scalar $\ast$x\+\_\+b, const scalar $\ast$x\+\_\+t, const index k)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_a248365cbe2a99e7437c2367d465a3865}{display\+\_\+matrix}} (index m, index n, const scalar $\ast$x, const string \&name)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}{display\+\_\+vector}} (const index n, const scalar $\ast$x, const string \&name)
+\item 
+{\footnotesize template$<$typename index $>$ }\\bool \mbox{\hyperlink{namespacehelper_af919eeff753500758928614a000457d0}{if\+\_\+all\+\_\+x\+\_\+true}} (const vector$<$ bool $>$ \&x)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\void \mbox{\hyperlink{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}{unique\+\_\+vector}} (const vector$<$ scalar $>$ \&a, vector$<$ scalar $>$ \&b)
+\item 
+{\footnotesize template$<$typename scalar , typename index $>$ }\\scalar \mbox{\hyperlink{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}{find\+\_\+residual}} (const index m, const index n, const scalar $\ast$A, const scalar $\ast$x, const scalar $\ast$y)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespacehelper_a001e915bf035136f793b0d709bfa00bb}\label{namespacehelper_a001e915bf035136f793b0d709bfa00bb}} 
+\index{helper@{helper}!b\_mtimes@{b\_mtimes}}
+\index{b\_mtimes@{b\_mtimes}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{b\_mtimes()}{b\_mtimes()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n, index mb$>$ \\
+void helper\+::b\+\_\+mtimes (\begin{DoxyParamCaption}\item[{const array$<$ scalar, m $\ast$n $>$ \&}]{A\+\_\+C,  }\item[{const array$<$ scalar, n $\ast$mb $>$ \&}]{B,  }\item[{array$<$ scalar, m $\ast$mb $>$ \&}]{C }\end{DoxyParamCaption})}
+
+
+
+Definition at line 226 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}\label{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}} 
+\index{helper@{helper}!b\_rand@{b\_rand}}
+\index{b\_rand@{b\_rand}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{b\_rand()}{b\_rand()}}
+{\footnotesize\ttfamily void helper\+::b\+\_\+rand (\begin{DoxyParamCaption}\item[{const int}]{n,  }\item[{double $\ast$}]{r }\end{DoxyParamCaption})}
+
+
+
+Definition at line 31 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a248365cbe2a99e7437c2367d465a3865}\label{namespacehelper_a248365cbe2a99e7437c2367d465a3865}} 
+\index{helper@{helper}!display\_matrix@{display\_matrix}}
+\index{display\_matrix@{display\_matrix}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{display\_matrix()}{display\_matrix()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::display\+\_\+matrix (\begin{DoxyParamCaption}\item[{index}]{m,  }\item[{index}]{n,  }\item[{const scalar $\ast$}]{x,  }\item[{const string \&}]{name }\end{DoxyParamCaption})}
+
+Simple function for displaying a m-\/by-\/n matrix with name 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em m} & \+: integer scalar, size of the matrix \\
+\hline
+{\em n} & \+: integer scalar, size of the matrix \\
+\hline
+{\em x} & \+: matrix, in pointer \\
+\hline
+{\em name} & display name of the matrix \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 634 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}\label{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}} 
+\index{helper@{helper}!display\_vector@{display\_vector}}
+\index{display\_vector@{display\_vector}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{display\_vector()}{display\_vector()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::display\+\_\+vector (\begin{DoxyParamCaption}\item[{const index}]{n,  }\item[{const scalar $\ast$}]{x,  }\item[{const string \&}]{name }\end{DoxyParamCaption})}
+
+Simple function for displaying the a vector with name 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & \+: integer scalar, size of the vector \\
+\hline
+{\em x} & \+: vector, in pointer \\
+\hline
+{\em name} & display name of the vector \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 654 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}\label{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}} 
+\index{helper@{helper}!eye@{eye}}
+\index{eye@{eye}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{eye()}{eye()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::eye (\begin{DoxyParamCaption}\item[{index}]{n,  }\item[{scalar $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+Definition at line 216 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}\label{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}} 
+\index{helper@{helper}!find\_bit\_error\_rate@{find\_bit\_error\_rate}}
+\index{find\_bit\_error\_rate@{find\_bit\_error\_rate}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{find\_bit\_error\_rate()}{find\_bit\_error\_rate()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+scalar helper\+::find\+\_\+bit\+\_\+error\+\_\+rate (\begin{DoxyParamCaption}\item[{const index}]{n,  }\item[{const scalar $\ast$}]{x\+\_\+b,  }\item[{const scalar $\ast$}]{x\+\_\+t,  }\item[{const index}]{k }\end{DoxyParamCaption})}
+
+Find B\+ER with given two vectors 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & \+: integer scalar, size of the vector \\
+\hline
+{\em x\+\_\+b} & \+: input vector 1 \\
+\hline
+{\em x\+\_\+t} & \+: input vector 2 \\
+\hline
+{\em k} & \+: log\+\_\+4(qam) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 597 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}\label{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}} 
+\index{helper@{helper}!find\_residual@{find\_residual}}
+\index{find\_residual@{find\_residual}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{find\_residual()}{find\_residual()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+scalar helper\+::find\+\_\+residual (\begin{DoxyParamCaption}\item[{const index}]{m,  }\item[{const index}]{n,  }\item[{const scalar $\ast$}]{A,  }\item[{const scalar $\ast$}]{x,  }\item[{const scalar $\ast$}]{y }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Return the result of $\vert$$\vert$y-\/\+A$\ast$x$\vert$$\vert$. 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em m} & \+: integer scalar, size of the matrix \\
+\hline
+{\em n} & \+: integer scalar, size of the matrix \\
+\hline
+{\em A} & \+: matrix, m-\/by-\/n in pointer \\
+\hline
+{\em x} & \+: vector, n-\/by-\/1 in pointer \\
+\hline
+{\em y} & \+: vector, m-\/by-\/1 in pointer, storing result. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+residual \+: l2 norm 
+\end{DoxyReturn}
+
+
+Definition at line 842 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_af919eeff753500758928614a000457d0}\label{namespacehelper_af919eeff753500758928614a000457d0}} 
+\index{helper@{helper}!if\_all\_x\_true@{if\_all\_x\_true}}
+\index{if\_all\_x\_true@{if\_all\_x\_true}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{if\_all\_x\_true()}{if\_all\_x\_true()}}
+{\footnotesize\ttfamily template$<$typename index $>$ \\
+bool helper\+::if\+\_\+all\+\_\+x\+\_\+true (\begin{DoxyParamCaption}\item[{const vector$<$ bool $>$ \&}]{x }\end{DoxyParamCaption})}
+
+Determine whether all values of x are true by lambda expression. 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em index} & \+: integer type \+: integer required \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em x} & \+: Testing vector \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true/false 
+\end{DoxyReturn}
+
+
+Definition at line 671 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}\label{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}} 
+\index{helper@{helper}!inv@{inv}}
+\index{inv@{inv}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{inv()}{inv()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::inv (\begin{DoxyParamCaption}\item[{const index}]{K,  }\item[{const index}]{N,  }\item[{const vector$<$ scalar $>$ \&}]{x,  }\item[{vector$<$ scalar $>$ \&}]{y }\end{DoxyParamCaption})}
+
+
+
+Definition at line 297 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}\label{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}} 
+\index{helper@{helper}!length\_nonzeros@{length\_nonzeros}}
+\index{length\_nonzeros@{length\_nonzeros}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{length\_nonzeros()}{length\_nonzeros()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index n$>$ \\
+index helper\+::length\+\_\+nonzeros (\begin{DoxyParamCaption}\item[{const scalar $\ast$}]{x,  }\item[{const scalar $\ast$}]{y }\end{DoxyParamCaption})}
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \\
+\hline
+{\em index} & \\
+\hline
+{\em n} & \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em x} & \\
+\hline
+{\em y} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 469 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}\label{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}} 
+\index{helper@{helper}!mtimes@{mtimes}}
+\index{mtimes@{mtimes}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes()}{mtimes()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void helper\+::mtimes (\begin{DoxyParamCaption}\item[{const array$<$ scalar, m $\ast$m $>$ \&}]{Q,  }\item[{const array$<$ scalar, m $\ast$n $>$ \&}]{R,  }\item[{array$<$ scalar, m $\ast$n $>$ \&}]{A\+\_\+t }\end{DoxyParamCaption})}
+
+
+
+Definition at line 253 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_afc7cf1deb54e87ddd16e7df7978f3be9}\label{namespacehelper_afc7cf1deb54e87ddd16e7df7978f3be9}} 
+\index{helper@{helper}!mtimes@{mtimes}}
+\index{mtimes@{mtimes}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes()}{mtimes()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index , index m, index n$>$ \\
+void helper\+::mtimes (\begin{DoxyParamCaption}\item[{const scalar}]{A\+\_\+C\mbox{[}4\mbox{]},  }\item[{const array$<$ scalar, m $\ast$n $>$ \&}]{B,  }\item[{array$<$ scalar, 2 $\ast$n $>$ \&}]{C }\end{DoxyParamCaption})}
+
+
+
+Definition at line 243 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}\label{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}} 
+\index{helper@{helper}!mtimes\_AP@{mtimes\_AP}}
+\index{mtimes\_AP@{mtimes\_AP}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes\_AP()}{mtimes\_AP()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::mtimes\+\_\+\+AP (\begin{DoxyParamCaption}\item[{index}]{m,  }\item[{index}]{n,  }\item[{const scalar $\ast$}]{A,  }\item[{const scalar $\ast$}]{P,  }\item[{scalar $\ast$}]{A\+\_\+t }\end{DoxyParamCaption})}
+
+
+
+Definition at line 286 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a034619a8252a7108ebd92468a18e91f1}\label{namespacehelper_a034619a8252a7108ebd92468a18e91f1}} 
+\index{helper@{helper}!mtimes\_Axy@{mtimes\_Axy}}
+\index{mtimes\_Axy@{mtimes\_Axy}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes\_Axy()}{mtimes\_Axy()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::mtimes\+\_\+\+Axy (\begin{DoxyParamCaption}\item[{const index}]{m,  }\item[{const index}]{n,  }\item[{const scalar $\ast$}]{A,  }\item[{const scalar $\ast$}]{x,  }\item[{scalar $\ast$}]{y }\end{DoxyParamCaption})}
+
+Matrix-\/vector multiplication\+: Ax=y, where A is m-\/by-\/n matrix 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em m} & \+: integer scalar, size of the matrix \\
+\hline
+{\em n} & \+: integer scalar, size of the matrix \\
+\hline
+{\em A} & \+: matrix, m-\/by-\/n in pointer \\
+\hline
+{\em x} & \+: vector, n-\/by-\/1 in pointer \\
+\hline
+{\em y} & \+: vector, m-\/by-\/1 in pointer, storing result. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 447 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_aa7430cecf7974509c8376223379df15d}\label{namespacehelper_aa7430cecf7974509c8376223379df15d}} 
+\index{helper@{helper}!mtimes\_col@{mtimes\_col}}
+\index{mtimes\_col@{mtimes\_col}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes\_col()}{mtimes\_col()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::mtimes\+\_\+col (\begin{DoxyParamCaption}\item[{index}]{m,  }\item[{index}]{n,  }\item[{const vector$<$ scalar $>$ \&}]{Q,  }\item[{const vector$<$ scalar $>$ \&}]{R,  }\item[{vector$<$ scalar $>$ \&}]{A\+\_\+t }\end{DoxyParamCaption})}
+
+
+
+Definition at line 275 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_aea72c28e2b9c90023834eac74f25b271}\label{namespacehelper_aea72c28e2b9c90023834eac74f25b271}} 
+\index{helper@{helper}!mtimes\_v@{mtimes\_v}}
+\index{mtimes\_v@{mtimes\_v}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{mtimes\_v()}{mtimes\_v()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::mtimes\+\_\+v (\begin{DoxyParamCaption}\item[{index}]{m,  }\item[{index}]{n,  }\item[{const vector$<$ scalar $>$ \&}]{Q,  }\item[{const vector$<$ scalar $>$ \&}]{R,  }\item[{vector$<$ scalar $>$ \&}]{A\+\_\+t }\end{DoxyParamCaption})}
+
+
+
+Definition at line 264 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}\label{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}} 
+\index{helper@{helper}!norm@{norm}}
+\index{norm@{norm}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{norm()}{norm()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+scalar helper\+::norm (\begin{DoxyParamCaption}\item[{const index}]{n,  }\item[{const scalar $\ast$}]{v }\end{DoxyParamCaption})}
+
+The Euclidean norm of vector v. This norm is also called the 2-\/norm, vector magnitude, or Euclidean length. 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & \+: the size of the vector \\
+\hline
+{\em v} & \+: input vector \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 560 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}\label{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}} 
+\index{helper@{helper}!planerot@{planerot}}
+\index{planerot@{planerot}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{planerot()}{planerot()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::planerot (\begin{DoxyParamCaption}\item[{scalar}]{x\mbox{[}2\mbox{]},  }\item[{scalar}]{G\mbox{[}4\mbox{]} }\end{DoxyParamCaption})}
+
+Givens plane rotation 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em x} & \+: A 2-\/component column vector. \\
+\hline
+{\em G} & \+: A 2-\/by-\/2 orthogonal matrix G so that y = G$\ast$x has y(2) = 0. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 514 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_a38339329189a88e7529f6267d2640ca5}\label{namespacehelper_a38339329189a88e7529f6267d2640ca5}} 
+\index{helper@{helper}!randperm@{randperm}}
+\index{randperm@{randperm}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{randperm()}{randperm()}}
+{\footnotesize\ttfamily void helper\+::randperm (\begin{DoxyParamCaption}\item[{int}]{n,  }\item[{double $\ast$}]{p }\end{DoxyParamCaption})}
+
+
+
+Definition at line 126 of file helper.\+h.
+
+\mbox{\Hypertarget{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}\label{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}} 
+\index{helper@{helper}!unique\_vector@{unique\_vector}}
+\index{unique\_vector@{unique\_vector}!helper@{helper}}
+\doxysubsubsection{\texorpdfstring{unique\_vector()}{unique\_vector()}}
+{\footnotesize\ttfamily template$<$typename scalar , typename index $>$ \\
+void helper\+::unique\+\_\+vector (\begin{DoxyParamCaption}\item[{const vector$<$ scalar $>$ \&}]{a,  }\item[{vector$<$ scalar $>$ \&}]{b }\end{DoxyParamCaption})}
+
+Returns the same data as in a, but with no repetitions. b is in sorted order. 
+\begin{DoxyTemplParams}{Template Parameters}
+{\em scalar} & \+: real number type \\
+\hline
+{\em index} & \+: integer type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em a} & \+: input vector to be processed \\
+\hline
+{\em b} & \+: output vector to store the results \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 693 of file helper.\+h.
+

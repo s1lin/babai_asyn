@@ -1,0 +1,166 @@
+\hypertarget{config_8h_source}{}\doxysection{config.\+h}
+\label{config_8h_source}\index{src/include/config.h@{src/include/config.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{preprocessor}{\#ifndef CILS\_CONFIG\_H}}
+\DoxyCodeLine{00002 \textcolor{preprocessor}{\#define CILS\_CONFIG\_H}}
+\DoxyCodeLine{00003 }
+\DoxyCodeLine{00004 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{00005 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{00006 \textcolor{preprocessor}{\#include <cmath>}}
+\DoxyCodeLine{00007 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{00008 \textcolor{preprocessor}{\#include <climits>}}
+\DoxyCodeLine{00009 \textcolor{preprocessor}{\#include "\mbox{\hyperlink{helper_8h}{helper.h}}"}}
+\DoxyCodeLine{00010 }
+\DoxyCodeLine{00011 \textcolor{keyword}{const} \textcolor{keyword}{static} \textcolor{keywordtype}{int} M = 20;}
+\DoxyCodeLine{00012 \textcolor{keyword}{const} \textcolor{keyword}{static} \textcolor{keywordtype}{int} N = 30;}
+\DoxyCodeLine{00013 }
+\DoxyCodeLine{00014 \textcolor{keyword}{using namespace }std;}
+\DoxyCodeLine{00015 }
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00016}\mbox{\hyperlink{namespacecils_1_1program__def}{00016}} \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils_1_1program__def}{cils::program\_def}} \{}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00017}\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{00017}}     \textcolor{keyword}{typedef} \textcolor{keywordtype}{int} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00018}\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{00018}}     \textcolor{keyword}{typedef} \textcolor{keywordtype}{double} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00025}\mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{00025}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}} = 1;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00026}\mbox{\hyperlink{namespacecils_1_1program__def_a90e58871826ff546328e208ba2319f1c}{00026}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a90e58871826ff546328e208ba2319f1c}{SNR}} = 15;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00027}\mbox{\hyperlink{namespacecils_1_1program__def_a250da599401f9c63425225ae841e28b9}{00027}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a250da599401f9c63425225ae841e28b9}{max\_iter}} = 100;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00028}\mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{00028}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}} = 1e5;\textcolor{comment}{//6 * 5 * 4 * 3 * 2 * 1;}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00029}\mbox{\hyperlink{namespacecils_1_1program__def_abbc3bbdcc623be9d3c0e11f108526404}{00029}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_abbc3bbdcc623be9d3c0e11f108526404}{stop}} = 3;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00030}\mbox{\hyperlink{namespacecils_1_1program__def_a5317e618a5bb00f0cd69b6b3b5c9c72a}{00030}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a5317e618a5bb00f0cd69b6b3b5c9c72a}{schedule}} = 2;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00031}\mbox{\hyperlink{namespacecils_1_1program__def_aa0d284cb0d13f48463cb69dc837bdf9b}{00031}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_aa0d284cb0d13f48463cb69dc837bdf9b}{chunk\_size}} = 1;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00032}\mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{00032}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{block\_size}} = 2;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00033}\mbox{\hyperlink{namespacecils_1_1program__def_a110ae8c4ff08a7255ccb9c39427630d2}{00033}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a110ae8c4ff08a7255ccb9c39427630d2}{spilt\_size}} = 2;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00034}\mbox{\hyperlink{namespacecils_1_1program__def_ac14c6fad9b337b2306c598aa23d9baa7}{00034}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_ac14c6fad9b337b2306c598aa23d9baa7}{offset}} = 2;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00035}\mbox{\hyperlink{namespacecils_1_1program__def_a797560e6a2d89233bac5c09b8c103902}{00035}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a797560e6a2d89233bac5c09b8c103902}{is\_constrained}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00036}\mbox{\hyperlink{namespacecils_1_1program__def_a523de7328f8c9aa4898fb197acd454b1}{00036}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a523de7328f8c9aa4898fb197acd454b1}{is\_nc}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00037}\mbox{\hyperlink{namespacecils_1_1program__def_ab90b464a2d2436101bc6197ea97ce04c}{00037}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_ab90b464a2d2436101bc6197ea97ce04c}{is\_matlab}} = \textcolor{keyword}{false}; \textcolor{comment}{//Means LLL reduction}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00038}\mbox{\hyperlink{namespacecils_1_1program__def_a07bb3b73faf80a032858a55525e5c7ae}{00038}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a07bb3b73faf80a032858a55525e5c7ae}{is\_qr}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00039}\mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{00039}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}} = 1; \textcolor{comment}{//test mode 3: c++ gen}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00040}\mbox{\hyperlink{namespacecils_1_1program__def_a61f40ae0c1ec9139c3160c08f3c3f1b0}{00040}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a61f40ae0c1ec9139c3160c08f3c3f1b0}{num\_trials}} = 10; \textcolor{comment}{//nswp}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00041}\mbox{\hyperlink{namespacecils_1_1program__def_a13d4656ef220bbd8075cccf1eeed9471}{00041}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a13d4656ef220bbd8075cccf1eeed9471}{is\_local}} = 1;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00042}\mbox{\hyperlink{namespacecils_1_1program__def_a7f6a1246867f6245ba1bcff17ba993e5}{00042}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a7f6a1246867f6245ba1bcff17ba993e5}{max\_search}} = 400000;\textcolor{comment}{//INT\_MAX;}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00043}\mbox{\hyperlink{namespacecils_1_1program__def_abd7ea775bebe2742a1617f1f03f59d0f}{00043}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_abd7ea775bebe2742a1617f1f03f59d0f}{min\_proc}} = 2;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00044}\mbox{\hyperlink{namespacecils_1_1program__def_acb6c383e8aa99ae0593bac5dd252b981}{00044}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_acb6c383e8aa99ae0593bac5dd252b981}{plot\_itr}} = 1;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00045}\mbox{\hyperlink{namespacecils_1_1program__def_a680c550b6eb893843c394058528c9dee}{00045}}     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacecils_1_1program__def_a680c550b6eb893843c394058528c9dee}{coeff}} = 17.5;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00046}\mbox{\hyperlink{namespacecils_1_1program__def_af98b5915f273e1913edd4519638a44ee}{00046}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_af98b5915f273e1913edd4519638a44ee}{max\_proc}} = 10;}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00047}\mbox{\hyperlink{namespacecils_1_1program__def_a02176941627c9e890f5d830941ccae76}{00047}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a02176941627c9e890f5d830941ccae76}{max\_thre}} = 400000;\textcolor{comment}{//maximum search allowed for serial ils.}}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00048}\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{00048}}     \textcolor{keyword}{auto} \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} = \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}\textcolor{keyword}{>}(std::ceil((\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}) N / (\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}) M));}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00049}\mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{00049}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{verbose}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00050}\mbox{\hyperlink{namespacecils_1_1program__def_a6ad0f2daac421fe7fd06ba37342ef110}{00050}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a6ad0f2daac421fe7fd06ba37342ef110}{chunk}} = 1;}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052     \textcolor{comment}{/*   Parameters for block size 64}}
+\DoxyCodeLine{00053 \textcolor{comment}{     *   index k = 3;}}
+\DoxyCodeLine{00054 \textcolor{comment}{         index SNR = 35;}}
+\DoxyCodeLine{00055 \textcolor{comment}{         index max\_iter = 1000;}}
+\DoxyCodeLine{00056 \textcolor{comment}{         index search\_iter = 100;}}
+\DoxyCodeLine{00057 \textcolor{comment}{         index stop = 2;}}
+\DoxyCodeLine{00058 \textcolor{comment}{         index schedule = 2;}}
+\DoxyCodeLine{00059 \textcolor{comment}{         index chunk\_size = 1;}}
+\DoxyCodeLine{00060 \textcolor{comment}{         index block\_size = 64;}}
+\DoxyCodeLine{00061 \textcolor{comment}{         index spilt\_size = 2;}}
+\DoxyCodeLine{00062 \textcolor{comment}{         index is\_constrained = true;}}
+\DoxyCodeLine{00063 \textcolor{comment}{         index is\_read = false;}}
+\DoxyCodeLine{00064 \textcolor{comment}{         index is\_matlab = true; //Means LLL reduction}}
+\DoxyCodeLine{00065 \textcolor{comment}{         index is\_qr = false;}}
+\DoxyCodeLine{00066 \textcolor{comment}{         index mode = 1; //test mode 3: c++ gen}}
+\DoxyCodeLine{00067 \textcolor{comment}{         index num\_trials = 10; //nswp}}
+\DoxyCodeLine{00068 \textcolor{comment}{         index is\_local = 1;}}
+\DoxyCodeLine{00069 \textcolor{comment}{         index max\_search = 1000000;//INT\_MAX;}}
+\DoxyCodeLine{00070 \textcolor{comment}{         index min\_proc = 2;}}
+\DoxyCodeLine{00071 \textcolor{comment}{         index plot\_itr = 2;}}
+\DoxyCodeLine{00072 \textcolor{comment}{}}
+\DoxyCodeLine{00073 \textcolor{comment}{         index max\_proc = min(omp\_get\_max\_threads(), N / block\_size);}}
+\DoxyCodeLine{00074 \textcolor{comment}{         index max\_thre = 1000000;//maximum search allowed for serial ils.}}
+\DoxyCodeLine{00075 \textcolor{comment}{     */}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077     std::vector<index> \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}(N / \mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{block\_size}} + \mbox{\hyperlink{namespacecils_1_1program__def_a110ae8c4ff08a7255ccb9c39427630d2}{spilt\_size}} -\/ 1, \mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{block\_size}});}
+\DoxyCodeLine{00078     std::vector<index> \mbox{\hyperlink{namespacecils_1_1program__def_ad90e6aae649723e9be8ab64efc945a42}{indicator}}(2 * \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}, 0);}
+\DoxyCodeLine{00079 \textcolor{comment}{//        std::vector<index> d\_s(N / block\_size, block\_size);}}
+\DoxyCodeLine{00080     vector<vector<scalar>> \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}(\mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}} + 3);}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00082}\mbox{\hyperlink{namespacecils_1_1program__def_a8e38f008a4c17142ade620ef07c7d8f9}{00082}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacecils_1_1program__def_a8e38f008a4c17142ade620ef07c7d8f9}{init\_program\_def}}(\textcolor{keywordtype}{int} argc, \textcolor{keywordtype}{char} *argv[]) \{}
+\DoxyCodeLine{00083         \textcolor{keywordflow}{if} (argc != 1) \{}
+\DoxyCodeLine{00084             \mbox{\hyperlink{namespacecils_1_1program__def_a13d4656ef220bbd8075cccf1eeed9471}{is\_local}} = stoi(argv[1]);}
+\DoxyCodeLine{00085         \}}
+\DoxyCodeLine{00086 \textcolor{comment}{//            max\_proc = is\_local ? 17 : 30;}}
+\DoxyCodeLine{00087         printf(\textcolor{stringliteral}{"[ INFO: The program settings are:]\(\backslash\)n"}}
+\DoxyCodeLine{00088                \textcolor{stringliteral}{"1. M: \%d, N:\%d; \(\backslash\)n"}}
+\DoxyCodeLine{00089                \textcolor{stringliteral}{"2. QAM: \%d, SNR: \%d, epoch: \%d, block size: \%d;\(\backslash\)n"}}
+\DoxyCodeLine{00090                \textcolor{stringliteral}{"3. ILS-\/Max number of interger search points: \%d;\(\backslash\)n"}}
+\DoxyCodeLine{00091                \textcolor{stringliteral}{"4. Chaotic stop minimum: \%d, chatoic number of iteratios(nswp): \%d;\(\backslash\)n"}}
+\DoxyCodeLine{00092                \textcolor{stringliteral}{"5. ILS-\/Max of integer search iterations:\%d;\(\backslash\)n"}}
+\DoxyCodeLine{00093                \textcolor{stringliteral}{"6. qr: \%d, constrained: \%d, matlab for qr/LLL: \%d.\(\backslash\)n"},}
+\DoxyCodeLine{00094                M, N, (\textcolor{keywordtype}{int}) pow(4, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}), \mbox{\hyperlink{namespacecils_1_1program__def_a90e58871826ff546328e208ba2319f1c}{SNR}}, \mbox{\hyperlink{namespacecils_1_1program__def_a250da599401f9c63425225ae841e28b9}{max\_iter}}, \mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{block\_size}},}
+\DoxyCodeLine{00095                \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}}, \mbox{\hyperlink{namespacecils_1_1program__def_abbc3bbdcc623be9d3c0e11f108526404}{stop}}, \mbox{\hyperlink{namespacecils_1_1program__def_a61f40ae0c1ec9139c3160c08f3c3f1b0}{num\_trials}}, \mbox{\hyperlink{namespacecils_1_1program__def_a7f6a1246867f6245ba1bcff17ba993e5}{max\_search}},}
+\DoxyCodeLine{00096                \mbox{\hyperlink{namespacecils_1_1program__def_a13d4656ef220bbd8075cccf1eeed9471}{is\_local}}, \mbox{\hyperlink{namespacecils_1_1program__def_a797560e6a2d89233bac5c09b8c103902}{is\_constrained}}, \mbox{\hyperlink{namespacecils_1_1program__def_ab90b464a2d2436101bc6197ea97ce04c}{is\_matlab}});}
+\DoxyCodeLine{00097 \textcolor{comment}{//        permutation[0] = vector<scalar>(N);}}
+\DoxyCodeLine{00098 \textcolor{comment}{//        for (index k1 = 0; k1 < N; k1++) \{}}
+\DoxyCodeLine{00099 \textcolor{comment}{//            permutation[0][k1] = k1 + 1;}}
+\DoxyCodeLine{00100 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00101 \textcolor{comment}{//        vector<scalar> p\_6 = \{1, 3, 4, 5, 6, 2\};}}
+\DoxyCodeLine{00102 \textcolor{comment}{//        permutation[1] = p\_6;}}
+\DoxyCodeLine{00103 \textcolor{comment}{//        for (index k1 = 0; k1 < N; k1++) \{}}
+\DoxyCodeLine{00104 \textcolor{comment}{//            cout<<permutation[1][k1]<<" ";}}
+\DoxyCodeLine{00105 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00106 \textcolor{comment}{//        for (index k1 = 0; k1 < N; k1++) \{}}
+\DoxyCodeLine{00107 \textcolor{comment}{//            permutation[0][k1] = k1 + 1;}}
+\DoxyCodeLine{00108 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00109 \textcolor{comment}{//}}
+\DoxyCodeLine{00110 \textcolor{comment}{//        for (index k1 = 0; k1 <= search\_iter; k1++) \{}}
+\DoxyCodeLine{00111 \textcolor{comment}{//            permutation[k1] = vector<scalar>(N);}}
+\DoxyCodeLine{00112 \textcolor{comment}{//            permutation[k1].assign(N, 0);}}
+\DoxyCodeLine{00114 \textcolor{comment}{}\textcolor{comment}{//        \}}}
+\DoxyCodeLine{00115         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < \mbox{\hyperlink{namespacecils_1_1program__def_a110ae8c4ff08a7255ccb9c39427630d2}{spilt\_size}}; i++) \{}
+\DoxyCodeLine{00116             \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}[i] = \mbox{\hyperlink{namespacecils_1_1program__def_a3a17b570cfa1a83160e8e2edb02c1e68}{block\_size}} / \mbox{\hyperlink{namespacecils_1_1program__def_a110ae8c4ff08a7255ccb9c39427630d2}{spilt\_size}};}
+\DoxyCodeLine{00117         \}}
+\DoxyCodeLine{00118         \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}[0] -\/= \mbox{\hyperlink{namespacecils_1_1program__def_ac14c6fad9b337b2306c598aa23d9baa7}{offset}};}
+\DoxyCodeLine{00119         \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}[1] += \mbox{\hyperlink{namespacecils_1_1program__def_ac14c6fad9b337b2306c598aa23d9baa7}{offset}};}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}.size() -\/ 2; i >= 0; i-\/-\/) \{}
+\DoxyCodeLine{00122             \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}[i] += \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}[i + 1];}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124 }
+\DoxyCodeLine{00125         \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:34' cur\_end = n;}}
+\DoxyCodeLine{00126         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} cur\_end = N;}
+\DoxyCodeLine{00127         \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:35' i = 1;}}
+\DoxyCodeLine{00128         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} b\_i = 1;}
+\DoxyCodeLine{00129         \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:36' while cur\_end > 0}}
+\DoxyCodeLine{00130         \textcolor{keywordflow}{while} (cur\_end > 0) \{}
+\DoxyCodeLine{00131             \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:37' cur\_1st = max(1, cur\_end-\/m+1);}}
+\DoxyCodeLine{00132             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} cur\_1st = std::fmax(1, (cur\_end -\/ M) + 1);}
+\DoxyCodeLine{00133             \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:38' indicator(1,i) = cur\_1st;}}
+\DoxyCodeLine{00134             \mbox{\hyperlink{namespacecils_1_1program__def_ad90e6aae649723e9be8ab64efc945a42}{indicator}}[2 * (b\_i -\/ 1)] = cur\_1st;}
+\DoxyCodeLine{00135             \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:39' indicator(2,i) = cur\_end;}}
+\DoxyCodeLine{00136             \mbox{\hyperlink{namespacecils_1_1program__def_ad90e6aae649723e9be8ab64efc945a42}{indicator}}[2 * (b\_i -\/ 1) + 1] = cur\_end;}
+\DoxyCodeLine{00137             \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:40' cur\_end = cur\_1st -\/ 1;}}
+\DoxyCodeLine{00138             cur\_end = cur\_1st -\/ 1;}
+\DoxyCodeLine{00139             \textcolor{comment}{// 'SCP\_Block\_Optimal\_2:41' i = i + 1;}}
+\DoxyCodeLine{00140             b\_i++;}
+\DoxyCodeLine{00141         \}}
+\DoxyCodeLine{00142 }
+\DoxyCodeLine{00143         cout << \textcolor{stringliteral}{"6. Block Construction: "};}
+\DoxyCodeLine{00144         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} d\_ : \mbox{\hyperlink{namespacecils_1_1program__def_ac246260c8733c511118a9964ce636c6e}{d\_s}}) \{}
+\DoxyCodeLine{00145             cout << d\_ << \textcolor{stringliteral}{", "};}
+\DoxyCodeLine{00146         \}}
+\DoxyCodeLine{00147         cout << \textcolor{stringliteral}{"\(\backslash\)n"};}
+\DoxyCodeLine{00148     \}}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150 }
+\DoxyCodeLine{00151     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{config_8h_source_l00152}\mbox{\hyperlink{namespacecils_1_1program__def_a2dc39e1e54a002c48fe1b3dc9f65011c}{00152}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacecils_1_1program__def_a2dc39e1e54a002c48fe1b3dc9f65011c}{init\_guess}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} init\_value, vector<scalar> *z\_B, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *x\_R) \{}
+\DoxyCodeLine{00153         \textcolor{keywordflow}{if} (init\_value == 0) \{}
+\DoxyCodeLine{00154             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++)}
+\DoxyCodeLine{00155                 z\_B-\/>at(i) = 0;}
+\DoxyCodeLine{00156         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (init\_value == 2) \{}
+\DoxyCodeLine{00157             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++)}
+\DoxyCodeLine{00158                 z\_B-\/>at(i) = x\_R[i];}
+\DoxyCodeLine{00159         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (init\_value == 1) \{}
+\DoxyCodeLine{00160             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++)}
+\DoxyCodeLine{00161                 z\_B-\/>at(i) = round(std::pow(2, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) / 2);}
+\DoxyCodeLine{00162         \}}
+\DoxyCodeLine{00163 }
+\DoxyCodeLine{00164     \}}
+\DoxyCodeLine{00165 \}}
+\DoxyCodeLine{00166 }
+\DoxyCodeLine{00167 \textcolor{preprocessor}{\#endif //CILS\_CONFIG\_H}}
+
+\end{DoxyCode}

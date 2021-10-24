@@ -1,0 +1,172 @@
+\hypertarget{cils_8h_source}{}\doxysection{cils.\+h}
+\label{cils_8h_source}\index{src/include/cils.h@{src/include/cils.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#ifndef CILS\_H}}
+\DoxyCodeLine{00020 \textcolor{preprocessor}{\#define CILS\_H}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{00023 \textcolor{preprocessor}{\#include <omp.h>}}
+\DoxyCodeLine{00024 \textcolor{preprocessor}{\#include <cstdio>}}
+\DoxyCodeLine{00025 \textcolor{preprocessor}{\#include <cstdlib>}}
+\DoxyCodeLine{00026 \textcolor{preprocessor}{\#include <fstream>}}
+\DoxyCodeLine{00027 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{00028 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{00029 \textcolor{preprocessor}{\#include <random>}}
+\DoxyCodeLine{00030 \textcolor{preprocessor}{\#include <ctime>}}
+\DoxyCodeLine{00031 \textcolor{preprocessor}{\#include <iomanip>}}
+\DoxyCodeLine{00032 \textcolor{preprocessor}{\#include <algorithm>}}
+\DoxyCodeLine{00033 \textcolor{preprocessor}{\#include <netcdf.h>}}
+\DoxyCodeLine{00034 \textcolor{preprocessor}{\#include <bitset>}}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#include <cmath>}}
+\DoxyCodeLine{00036 \textcolor{preprocessor}{\#include "\mbox{\hyperlink{config_8h}{config.h}}"}}
+\DoxyCodeLine{00037 \textcolor{preprocessor}{\#include "MatlabDataArray.hpp"}}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#include "MatlabEngine.hpp"}}
+\DoxyCodeLine{00039 \textcolor{preprocessor}{\#include <numeric>}}
+\DoxyCodeLine{00040 \textcolor{preprocessor}{\#include "mpi.h"}}
+\DoxyCodeLine{00041 }
+\DoxyCodeLine{00042 \textcolor{keyword}{using namespace }std;}
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00047}\mbox{\hyperlink{namespacecils}{00047}} \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00048 }
+\DoxyCodeLine{00054     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00055}\mbox{\hyperlink{structcils_1_1return_type}{00055}}     \textcolor{keyword}{struct }\mbox{\hyperlink{structcils_1_1return_type}{returnType}} \{}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00056}\mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{00056}}         vector<scalar> \mbox{\hyperlink{structcils_1_1return_type_a8022e26bf2d33aa3641ae27e1c84f773}{x}};}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00057}\mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{00057}}         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{structcils_1_1return_type_ac3fb8c26a3d9699c053c5dccd2de0ec5}{run\_time}};}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00058}\mbox{\hyperlink{structcils_1_1return_type_aa942ae632c77d117d3d4323917acc4f2}{00058}}         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{structcils_1_1return_type_aa942ae632c77d117d3d4323917acc4f2}{info}}; \textcolor{comment}{//true\_res, error}}
+\DoxyCodeLine{00059     \};}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061 }
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00064}\mbox{\hyperlink{classcils_1_1cils}{00064}}     \textcolor{keyword}{class }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066     \textcolor{keyword}{public}:}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00067}\mbox{\hyperlink{classcils_1_1cils_a8e22fa0d8171faff2be3065d599a5876}{00067}}         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}, snr, \mbox{\hyperlink{classcils_1_1cils_a8e22fa0d8171faff2be3065d599a5876}{upper}}, lower;}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00068}\mbox{\hyperlink{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}{00068}}         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} init\_res, sigma, \mbox{\hyperlink{classcils_1_1cils_ace2a43cf172fe5ed07b3bbcd33099079}{tolerance}};}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00069}\mbox{\hyperlink{classcils_1_1cils_a11e59cc2de84fb6b4a8688b8d9301658}{00069}}         array<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}, \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + 1) / 2> R\_A;}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00071}\mbox{\hyperlink{classcils_1_1cils_adce8e87a6e2e4b36259d7019244554b6}{00071}}         array<scalar, m * n> A, \mbox{\hyperlink{classcils_1_1cils_adce8e87a6e2e4b36259d7019244554b6}{H}};}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00072}\mbox{\hyperlink{classcils_1_1cils_aee4c9683ccc1717370622b86b69b27d5}{00072}}         array<scalar, n * n> \mbox{\hyperlink{classcils_1_1cils_aee4c9683ccc1717370622b86b69b27d5}{Z}}, P;}
+\DoxyCodeLine{00073         \textcolor{comment}{//x\_r: real solution, x\_t: true parameter, y\_a: original y, y\_r: reduced, y\_q: QR}}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00074}\mbox{\hyperlink{classcils_1_1cils_ab86bc62925bcf4016a09a9e761592c51}{00074}}         array<scalar, n> x\_r, \mbox{\hyperlink{classcils_1_1cils_ab86bc62925bcf4016a09a9e761592c51}{x\_t}}, l, u;}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00075}\mbox{\hyperlink{classcils_1_1cils_ae4fb009905197734638a9327d3123cd3}{00075}}         array<scalar, m> \mbox{\hyperlink{classcils_1_1cils_ae4fb009905197734638a9327d3123cd3}{y\_a}}, v\_a, v\_q;}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00077}\mbox{\hyperlink{classcils_1_1cils_a5aa7b250b8034173d2dabe5f705532e6}{00077}}         std::unique\_ptr<matlab::engine::MATLABEngine> \mbox{\hyperlink{classcils_1_1cils_a5aa7b250b8034173d2dabe5f705532e6}{matlabPtr}};}
+\DoxyCodeLine{00078     \textcolor{keyword}{public}:}
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00079}\mbox{\hyperlink{classcils_1_1cils_ae26847ae341a2ca889420ed7e4f4a2ec}{00079}}         \mbox{\hyperlink{classcils_1_1cils_ae26847ae341a2ca889420ed7e4f4a2ec}{cils}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} snr) \{}
+\DoxyCodeLine{00080 }
+\DoxyCodeLine{00081             \textcolor{comment}{// Start MATLAB engine synchronously}}
+\DoxyCodeLine{00082             this-\/>matlabPtr = matlab::engine::startMATLAB();}
+\DoxyCodeLine{00083             this-\/>init\_res = INFINITY;}
+\DoxyCodeLine{00084             this-\/>qam = \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}};}
+\DoxyCodeLine{00085             this-\/>snr = snr;}
+\DoxyCodeLine{00086             this-\/>sigma = (\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}) sqrt(((pow(4, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) -\/ 1) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}) / (6 * pow(10, ((\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}) snr / 10.0))));}
+\DoxyCodeLine{00087             this-\/>tolerance = sqrt(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}) * this-\/>sigma;}
+\DoxyCodeLine{00088             this-\/>upper = pow(2, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) -\/ 1;}
+\DoxyCodeLine{00089             helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P.data());}
+\DoxyCodeLine{00090             helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, Z.data());}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092             this-\/>R\_A.fill(0);\textcolor{comment}{// = new scalar[n * (n + 1) / 2];}}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094             this-\/>A.fill(0);\textcolor{comment}{//.resize(n * n, 0);}}
+\DoxyCodeLine{00095             this-\/>H.fill(0);\textcolor{comment}{//.resize(n * n, 0);}}
+\DoxyCodeLine{00096 }
+\DoxyCodeLine{00097             this-\/>x\_r.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00098             this-\/>x\_t.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00099             this-\/>y\_a.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00100             this-\/>v\_a.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00101             this-\/>v\_q.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103             this-\/>l.fill(0);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00104             this-\/>u.fill(this-\/>upper);\textcolor{comment}{//.resize(n, 0);}}
+\DoxyCodeLine{00105         \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{\Hypertarget{cils_8h_source_l00107}\mbox{\hyperlink{classcils_1_1cils_ab8ce11663cfe32ba5aa592a83c12a4df}{00107}}         \mbox{\hyperlink{classcils_1_1cils_ab8ce11663cfe32ba5aa592a83c12a4df}{\string~cils}}() \{}
+\DoxyCodeLine{00108 \textcolor{comment}{//            delete[] R\_A;}}
+\DoxyCodeLine{00109             matlabPtr.get\_deleter();}
+\DoxyCodeLine{00110 \textcolor{comment}{//            matlab::engine::terminateEngineClient();}}
+\DoxyCodeLine{00111         \}}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00116         \textcolor{keywordtype}{void} init(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} rank);}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00121         \textcolor{keywordtype}{void} init\_ud();}
+\DoxyCodeLine{00122 }
+\DoxyCodeLine{00126         \textcolor{keywordtype}{void} init\_y();}
+\DoxyCodeLine{00127 }
+\DoxyCodeLine{00131         \textcolor{keywordtype}{void} init\_R();}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133 }
+\DoxyCodeLine{00141 \textcolor{comment}{//        returnType<scalar, index>}}
+\DoxyCodeLine{00142 \textcolor{comment}{//        cils\_qr\_omp(const index eval, const index verbose, const index n\_proc);}}
+\DoxyCodeLine{00143 }
+\DoxyCodeLine{00153         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00154         cils\_back\_solve(array<scalar, n> \&z\_B);}
+\DoxyCodeLine{00155 }
+\DoxyCodeLine{00162         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00163         cils\_babai\_search\_serial(vector<scalar> *z\_B);}
+\DoxyCodeLine{00164 }
+\DoxyCodeLine{00171         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00172         cils\_block\_search\_serial\_CPUTEST(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} y\_r,}
+\DoxyCodeLine{00173                                          \textcolor{keyword}{const} vector<index> *d, vector<scalar> *z\_B);}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00182         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00183         cils\_babai\_search\_omp(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} nswp, vector<scalar> *z\_B);}
+\DoxyCodeLine{00184 }
+\DoxyCodeLine{00192         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00193         cils\_back\_solve\_omp(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} nswp, vector<scalar> *z\_B);}
+\DoxyCodeLine{00194 }
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00206         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00207         cils\_block\_search\_omp(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} nswp, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} init, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_r,}
+\DoxyCodeLine{00208                               \textcolor{keyword}{const} vector<index> *d, vector<scalar> *z\_B);}
+\DoxyCodeLine{00209 }
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00212         cils\_sic\_serial(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}});}
+\DoxyCodeLine{00213 }
+\DoxyCodeLine{00214         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00215         cils\_qrp\_serial(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}});}
+\DoxyCodeLine{00216 }
+\DoxyCodeLine{00217         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00218         cils\_grad\_proj(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aa0321aaecbece6ae6cd4ea9ba49cedbe}{max\_iter}});}
+\DoxyCodeLine{00219 }
+\DoxyCodeLine{00220         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00221         cils\_sic\_subopt(vector<scalar> \&z, array<scalar, m> \&v\_cur, array<scalar, m * n> A\_t, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur,}
+\DoxyCodeLine{00222                         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} tolerance, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} method);}
+\DoxyCodeLine{00223 }
+\DoxyCodeLine{00236         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00237         cils\_scp\_block\_optimal\_serial(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00238 }
+\DoxyCodeLine{00239         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00240         cils\_scp\_block\_suboptimal\_serial(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00243         cils\_scp\_block\_suboptimal\_omp(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00244 }
+\DoxyCodeLine{00245         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00246         cils\_scp\_block\_babai\_serial(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00249         cils\_scp\_block\_babai\_omp(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00277         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}}}
+\DoxyCodeLine{00278         cils\_partition\_deficient(\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *z\_B, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *Q\_tilde, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_tilde, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *H\_A, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *Piv\_cum);}
+\DoxyCodeLine{00279 }
+\DoxyCodeLine{00280         \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{00281         cils\_block\_search\_serial(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} init, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_r, \textcolor{keyword}{const} vector<index> *d,}
+\DoxyCodeLine{00282                                  vector<scalar> *z\_B);}
+\DoxyCodeLine{00283 }
+\DoxyCodeLine{00284 }
+\DoxyCodeLine{00285         \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{00286         cils\_scp\_block\_optimal\_omp(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a08664218f897245e14e3712203e03854}{mode}});}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288         \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{00289         cils\_scp\_block\_optimal\_mpi(vector<scalar> \&x\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} size, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} rank);}
+\DoxyCodeLine{00290     \};}
+\DoxyCodeLine{00291 \}}
+\DoxyCodeLine{00292 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

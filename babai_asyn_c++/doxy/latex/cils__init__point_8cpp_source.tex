@@ -1,0 +1,600 @@
+\hypertarget{cils__init__point_8cpp_source}{}\doxysection{cils\+\_\+init\+\_\+point.\+cpp}
+\label{cils__init__point_8cpp_source}\index{src/source/cils\_init\_point.cpp@{src/source/cils\_init\_point.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00022     returnType <scalar, index>}
+\DoxyCodeLine{\Hypertarget{cils__init__point_8cpp_source_l00023}\mbox{\hyperlink{classcils_1_1cils_a0163f7c9f5992472803d5231f80ba63b}{00023}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_sic\_serial}}(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}) \{}
+\DoxyCodeLine{00024         array<scalar, m * 2> b\_A\_t;}
+\DoxyCodeLine{00025         array<scalar, n * 2> b\_P\_t;}
+\DoxyCodeLine{00026         array<scalar, m> y\_1, y\_2;}
+\DoxyCodeLine{00027         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} s\_est = 0.0, \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}, s\_temp, max\_res;}
+\DoxyCodeLine{00028         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} ij[2], ji[2], i1, i2, b\_j, i, t = 0;\textcolor{comment}{//pow(2, qam) -\/ 1, t = 0;}}
+\DoxyCodeLine{00029 }
+\DoxyCodeLine{00030         \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00031         H.fill(0);}
+\DoxyCodeLine{00032         helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P.data());}
+\DoxyCodeLine{00033         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00034             y\_2[i] = y\_a[i];}
+\DoxyCodeLine{00035         \}}
+\DoxyCodeLine{00036         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00037             H[i] = A[i];}
+\DoxyCodeLine{00038         \}}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} time = omp\_get\_wtime();}
+\DoxyCodeLine{00041         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00042             b\_j = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ j;}
+\DoxyCodeLine{00043             max\_res = INFINITY;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045             \textcolor{comment}{//  Determine the j-\/th column}}
+\DoxyCodeLine{00046             \textcolor{keywordflow}{for} (i = 0; i < b\_j; i++) \{}
+\DoxyCodeLine{00047                 s\_temp = \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = 0.0;}
+\DoxyCodeLine{00048                 \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00049                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} d;}
+\DoxyCodeLine{00050                     d = H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i];}
+\DoxyCodeLine{00051                     s\_temp += d * y\_2[i2];}
+\DoxyCodeLine{00052                     \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} += d * d;}
+\DoxyCodeLine{00053                 \}}
+\DoxyCodeLine{00054                 s\_temp = round(s\_temp / \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}});\textcolor{comment}{//2.0 * std::floor(s\_temp / res / 2.0) + 1.0;}}
+\DoxyCodeLine{00055                 \textcolor{keywordflow}{if} (s\_temp < 0) \{}
+\DoxyCodeLine{00056                     s\_temp = 0;}
+\DoxyCodeLine{00057                 \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (s\_temp > upper) \{}
+\DoxyCodeLine{00058                     s\_temp = upper;}
+\DoxyCodeLine{00059                 \}}
+\DoxyCodeLine{00060 }
+\DoxyCodeLine{00061                 \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00062                     y\_1[i2] = y\_2[i2] -\/ s\_temp * H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i];}
+\DoxyCodeLine{00063                 \}}
+\DoxyCodeLine{00064                 \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = helper::norm<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, y\_1.data());}
+\DoxyCodeLine{00065 }
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} < max\_res) \{}
+\DoxyCodeLine{00067                     t = i + 1;}
+\DoxyCodeLine{00068                     s\_est = s\_temp;}
+\DoxyCodeLine{00069                     max\_res = \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}};}
+\DoxyCodeLine{00070                 \}}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072             \textcolor{keywordflow}{if} (t != 0) \{}
+\DoxyCodeLine{00073                 ji[0] = t -\/ 1;}
+\DoxyCodeLine{00074                 ji[1] = b\_j -\/ 1;}
+\DoxyCodeLine{00075                 ij[0] = b\_j -\/ 1;}
+\DoxyCodeLine{00076                 ij[1] = t -\/ 1;}
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00079                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00080                         b\_A\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1] = H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ij[i1]];}
+\DoxyCodeLine{00081                     \}}
+\DoxyCodeLine{00082                 \}}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00085                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00086                         H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ji[i1]] = b\_A\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00087                     \}}
+\DoxyCodeLine{00088                 \}}
+\DoxyCodeLine{00089 }
+\DoxyCodeLine{00090                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00091                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i2++) \{}
+\DoxyCodeLine{00092                         b\_P\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * i1] = P[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ij[i1]];}
+\DoxyCodeLine{00093                     \}}
+\DoxyCodeLine{00094                 \}}
+\DoxyCodeLine{00095 }
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00097                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i2++) \{}
+\DoxyCodeLine{00098                         P[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ji[i1]] = b\_P\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * i1];}
+\DoxyCodeLine{00099                     \}}
+\DoxyCodeLine{00100                 \}}
+\DoxyCodeLine{00101                 \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[b\_j -\/ 1] = s\_est;}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103 }
+\DoxyCodeLine{00104             \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00105                 y\_2[i1] = y\_2[i1] -\/ \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[b\_j -\/ 1] * H[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (b\_j -\/ 1)];}
+\DoxyCodeLine{00106             \}}
+\DoxyCodeLine{00107         \}}
+\DoxyCodeLine{00108         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm = helper::norm<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, y\_2.data());}
+\DoxyCodeLine{00109         time = omp\_get\_wtime() -\/ time;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111         \textcolor{keywordflow}{return} \{\{\}, time, v\_norm\};}
+\DoxyCodeLine{00112     \}}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00115     \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{\Hypertarget{cils__init__point_8cpp_source_l00116}\mbox{\hyperlink{classcils_1_1cils_a80eeb29e71c75f217f57ab232740dacd}{00116}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_qrp\_serial}}(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}) \{}
+\DoxyCodeLine{00117         array<scalar, 2 * m> b\_A\_t, b\_R\_t;}
+\DoxyCodeLine{00118         array<scalar, 2 * n> b\_P\_t;}
+\DoxyCodeLine{00119         array<scalar, m> b\_y\_q;}
+\DoxyCodeLine{00120         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} ij[2], ji[2], t = -\/1, i1, i2, i, j;}
+\DoxyCodeLine{00121         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} c\_i, x\_est = 0, b\_i, b\_m, loop\_ub, max\_res;}
+\DoxyCodeLine{00122         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} time = omp\_get\_wtime();}
+\DoxyCodeLine{00123         \textcolor{comment}{//QR:}}
+\DoxyCodeLine{00124         \mbox{\hyperlink{classcils_1_1cils__reduction}{cils\_reduction<scalar, index>}} reduction(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0, upper, 0, 0);}
+\DoxyCodeLine{00125         reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_af5eec0856477ca14bbc80ae3255700d3}{cils\_qr\_serial}}(A.data(), y\_a.data());}
+\DoxyCodeLine{00126         \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00127         H.fill(0);}
+\DoxyCodeLine{00128         helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P.data());}
+\DoxyCodeLine{00129         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00130             H[i] = A[i];}
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{00133         \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; j++) \{}
+\DoxyCodeLine{00134             b\_m = (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ j) -\/ 1;}
+\DoxyCodeLine{00135             max\_res = INFINITY;}
+\DoxyCodeLine{00136             i1 = b\_m -\/ \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00137             \textcolor{keywordflow}{for} (i = 0; i <= i1; i++) \{}
+\DoxyCodeLine{00138                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}, x\_temp;}
+\DoxyCodeLine{00139                 c\_i = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i + 1;}
+\DoxyCodeLine{00140                 x\_temp = round(reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} -\/ 1] / reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (c\_i -\/ 1)) -\/ 1]);}
+\DoxyCodeLine{00141                 \textcolor{comment}{//2.0 * std::floor(reduction.y\_q[m -\/ 1] / reduction.R\_Q[(m + m * (c\_i -\/ 1)) -\/ 1] / 2.0) + 1.0;}}
+\DoxyCodeLine{00142                 \textcolor{keywordflow}{if} (x\_temp < 0) \{}
+\DoxyCodeLine{00143                     x\_temp = 0;}
+\DoxyCodeLine{00144                 \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (x\_temp > upper) \{}
+\DoxyCodeLine{00145                     x\_temp = upper;}
+\DoxyCodeLine{00146                 \}}
+\DoxyCodeLine{00147 }
+\DoxyCodeLine{00148                 \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00149                     b\_y\_q[i2] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[i2] -\/ x\_temp * reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (c\_i -\/ 1)];}
+\DoxyCodeLine{00150                 \}}
+\DoxyCodeLine{00151                 \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = helper::norm<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, b\_y\_q.data());}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153                 \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} < max\_res) \{}
+\DoxyCodeLine{00154                     t = c\_i -\/ 1;}
+\DoxyCodeLine{00155                     x\_est = x\_temp;}
+\DoxyCodeLine{00156                     max\_res = \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}};}
+\DoxyCodeLine{00157                 \}}
+\DoxyCodeLine{00158             \}}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{if} (t + 1 != 0) \{}
+\DoxyCodeLine{00160                 ji[0] = t;}
+\DoxyCodeLine{00161                 ji[1] = b\_m;}
+\DoxyCodeLine{00162                 ij[0] = b\_m;}
+\DoxyCodeLine{00163                 ij[1] = t;}
+\DoxyCodeLine{00164                 b\_A\_t.fill(0);}
+\DoxyCodeLine{00165                 b\_R\_t.fill(0);}
+\DoxyCodeLine{00166                 b\_P\_t.fill(0);}
+\DoxyCodeLine{00167                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00168                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00169                         b\_A\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1] = H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ij[i1]];}
+\DoxyCodeLine{00170                         b\_R\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ij[i1]];}
+\DoxyCodeLine{00171                     \}}
+\DoxyCodeLine{00172                 \}}
+\DoxyCodeLine{00173 }
+\DoxyCodeLine{00174                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00175                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00176                         H[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ji[i1]] = b\_A\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00177                         reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ji[i1]] = b\_R\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00178                     \}}
+\DoxyCodeLine{00179                 \}}
+\DoxyCodeLine{00180 }
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00183                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i2++) \{}
+\DoxyCodeLine{00184                         b\_P\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * i1] = P[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ij[i1]];}
+\DoxyCodeLine{00185                     \}}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188                 \textcolor{keywordflow}{for} (i1 = 0; i1 < 2; i1++) \{}
+\DoxyCodeLine{00189                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i2++) \{}
+\DoxyCodeLine{00190                         P[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ji[i1]] = b\_P\_t[i2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * i1];}
+\DoxyCodeLine{00191                     \}}
+\DoxyCodeLine{00192                 \}}
+\DoxyCodeLine{00193                 \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[b\_m] = x\_est;}
+\DoxyCodeLine{00194                 \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00195                     reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[i1] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[i1] -\/ x\_est * reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * b\_m];}
+\DoxyCodeLine{00196                 \}}
+\DoxyCodeLine{00197             \}}
+\DoxyCodeLine{00198         \}}
+\DoxyCodeLine{00199 }
+\DoxyCodeLine{00200         \textcolor{comment}{// Compute the Babai point to get the first 1:m entries of x}}
+\DoxyCodeLine{00201         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00202             c\_i = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} -\/ i;}
+\DoxyCodeLine{00203             \textcolor{keywordflow}{if} (c\_i == \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}) \{}
+\DoxyCodeLine{00204                 x\_est = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[c\_i -\/ 1] / reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[(c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (c\_i -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00205             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00206                 \textcolor{keywordflow}{if} (c\_i + 1.0 > \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}) \{}
+\DoxyCodeLine{00207                     i1 = i2 = 0;}
+\DoxyCodeLine{00208                     b\_i = 1;}
+\DoxyCodeLine{00209                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00210                     i1 = c\_i;}
+\DoxyCodeLine{00211                     i2 = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00212                     b\_i = i1 + 1;}
+\DoxyCodeLine{00213                 \}}
+\DoxyCodeLine{00214                 x\_est = 0.0;}
+\DoxyCodeLine{00215                 loop\_ub = i2 -\/ i1;}
+\DoxyCodeLine{00216                 \textcolor{keywordflow}{for} (i2 = 0; i2 < loop\_ub; i2++) \{}
+\DoxyCodeLine{00217                     x\_est += reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[(c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i1 + i2)) -\/ 1] * \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[(b\_i + i2) -\/ 1];}
+\DoxyCodeLine{00218                 \}}
+\DoxyCodeLine{00219                 x\_est = (reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[c\_i -\/ 1] -\/ x\_est) / reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[(c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (c\_i -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00220             \}}
+\DoxyCodeLine{00221             x\_est = round(x\_est); \textcolor{comment}{//2.0 * std::floor(x\_est / 2.0) + 1.0;}}
+\DoxyCodeLine{00222             \textcolor{keywordflow}{if} (x\_est < 0) \{}
+\DoxyCodeLine{00223                 x\_est = 0;}
+\DoxyCodeLine{00224             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (x\_est > upper) \{}
+\DoxyCodeLine{00225                 x\_est = upper;}
+\DoxyCodeLine{00226             \}}
+\DoxyCodeLine{00227             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[c\_i -\/ 1] = x\_est;}
+\DoxyCodeLine{00228         \}}
+\DoxyCodeLine{00229         b\_m = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} -\/ 1;}
+\DoxyCodeLine{00230         \textcolor{keywordflow}{if} (1 > \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}) \{}
+\DoxyCodeLine{00231             i = 0;}
+\DoxyCodeLine{00232         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00233             i = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00234         \}}
+\DoxyCodeLine{00235         loop\_ub = i -\/ 1;}
+\DoxyCodeLine{00236         \textcolor{keywordflow}{for} (b\_i = 0; b\_i <= b\_m; b\_i++) \{}
+\DoxyCodeLine{00237             b\_y\_q[b\_i] = 0.0;}
+\DoxyCodeLine{00238         \}}
+\DoxyCodeLine{00239         \textcolor{keywordflow}{for} (t = 0; t <= loop\_ub; t++) \{}
+\DoxyCodeLine{00240             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} b = t * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00241             \textcolor{keywordflow}{for} (b\_i = 0; b\_i <= b\_m; b\_i++) \{}
+\DoxyCodeLine{00242                 i = b + b\_i;}
+\DoxyCodeLine{00243                 b\_y\_q[b\_i] = b\_y\_q[b\_i] + reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i \% \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i / \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}})] * \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[t];}
+\DoxyCodeLine{00244             \}}
+\DoxyCodeLine{00245         \}}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00248             reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[i] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}[i] -\/ b\_y\_q[i];}
+\DoxyCodeLine{00249         \}}
+\DoxyCodeLine{00250 }
+\DoxyCodeLine{00251         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm = helper::norm<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a866b4360c4e6f432154341330c6a77bb}{y\_q}}.data());}
+\DoxyCodeLine{00252         time = omp\_get\_wtime() -\/ time;}
+\DoxyCodeLine{00253         \textcolor{keywordflow}{return} \{\{\}, time, v\_norm\};}
+\DoxyCodeLine{00254     \}}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00257     \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{\Hypertarget{cils__init__point_8cpp_source_l00258}\mbox{\hyperlink{classcils_1_1cils_ad567df2b0d97514c2ca252d82168ebb4}{00258}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_grad\_proj}}(vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}}) \{}
+\DoxyCodeLine{00259         vector<scalar> r0, ex;}
+\DoxyCodeLine{00260         array<scalar, n> c, g, pj\_1;}
+\DoxyCodeLine{00261         array<scalar, m> \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}};}
+\DoxyCodeLine{00262         vector<scalar> t\_bar, t\_seq;}
+\DoxyCodeLine{00263         vector<index> r1, r2, r3, r4, r5;}
+\DoxyCodeLine{00264         vector<bool> b\_x\_0, b\_x\_1(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00265         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i, j, k1, k2, k3;}
+\DoxyCodeLine{00266         H.fill(0);}
+\DoxyCodeLine{00267         helper::eye<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P.data());}
+\DoxyCodeLine{00268         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00269             H[i] = A[i];}
+\DoxyCodeLine{00270         \}}
+\DoxyCodeLine{00271         \textcolor{comment}{//}}
+\DoxyCodeLine{00272         \textcolor{comment}{//  Find a solution to the box-\/constrained real least squares problem}}
+\DoxyCodeLine{00273         \textcolor{comment}{//  min\_\{l<=x<=u\}||y\_a-\/Bx|| by the gradient projection method}}
+\DoxyCodeLine{00274         \textcolor{comment}{//}}
+\DoxyCodeLine{00275         \textcolor{comment}{//  Inputs:}}
+\DoxyCodeLine{00276         \textcolor{comment}{//     x -\/ n-\/dimensional real vector as an initial point}}
+\DoxyCodeLine{00277         \textcolor{comment}{//     A -\/ m by n real matrix}}
+\DoxyCodeLine{00278         \textcolor{comment}{//     y\_a -\/ m-\/dimensional real vector}}
+\DoxyCodeLine{00279         \textcolor{comment}{//     l -\/ n-\/dimensional integer vector, lower bound}}
+\DoxyCodeLine{00280         \textcolor{comment}{//     u -\/ n-\/dimensional integer vector, upper bound}}
+\DoxyCodeLine{00281         \textcolor{comment}{//}}
+\DoxyCodeLine{00282         \textcolor{comment}{//  Output:}}
+\DoxyCodeLine{00283         \textcolor{comment}{//     x -\/ n-\/dimensional real vector, a solution}}
+\DoxyCodeLine{00284         \textcolor{comment}{// 'ubils\_reduction:221' n = length(x);}}
+\DoxyCodeLine{00285         \textcolor{comment}{// 'ubils\_reduction:223' c = A'*y\_a;}}
+\DoxyCodeLine{00286 }
+\DoxyCodeLine{00287         c.fill(0);}
+\DoxyCodeLine{00288         \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00289         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} time = omp\_get\_wtime();}
+\DoxyCodeLine{00290         \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; j++) \{}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00292                 c[i] += A[i * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + j] * y\_a[j];}
+\DoxyCodeLine{00293             \}}
+\DoxyCodeLine{00294         \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296         \textcolor{comment}{// 'ubils\_reduction:225' for iter = 1:search\_iter}}
+\DoxyCodeLine{00297         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} iter = 0; iter < \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}}; iter++) \{}
+\DoxyCodeLine{00298             \textcolor{comment}{// 'ubils\_reduction:227' g = A'*(A*x-\/y\_a);}}
+\DoxyCodeLine{00299             r0.resize(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}});}
+\DoxyCodeLine{00300             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00301                 r0[i] = -\/y\_a[i];}
+\DoxyCodeLine{00302             \}}
+\DoxyCodeLine{00303             \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00304                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00305                     r0[i] += A[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[j];}
+\DoxyCodeLine{00306                 \}}
+\DoxyCodeLine{00307             \}}
+\DoxyCodeLine{00308             g.fill(0);}
+\DoxyCodeLine{00309             \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; j++) \{}
+\DoxyCodeLine{00310                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00311                     g[i] += A[i * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + j] * r0[j];}
+\DoxyCodeLine{00312                 \}}
+\DoxyCodeLine{00313             \}}
+\DoxyCodeLine{00314             \textcolor{comment}{//  Check KKT conditions}}
+\DoxyCodeLine{00315             \textcolor{comment}{// 'ubils\_reduction:230' if (x==l) == 0}}
+\DoxyCodeLine{00316             b\_x\_0.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00318                 b\_x\_0[i] = !(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == l[i]);}
+\DoxyCodeLine{00319             \}}
+\DoxyCodeLine{00320             \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00321                 \textcolor{comment}{// 'ubils\_reduction:231' k1 = 1;}}
+\DoxyCodeLine{00322                 k1 = 1;}
+\DoxyCodeLine{00323             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00324                 k3 = 0;}
+\DoxyCodeLine{00325                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00326                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == l[i]) \{}
+\DoxyCodeLine{00327                         k3++;}
+\DoxyCodeLine{00328                     \}}
+\DoxyCodeLine{00329                 \}}
+\DoxyCodeLine{00330                 r1.resize(k3, 0);}
+\DoxyCodeLine{00331                 k3 = 0;}
+\DoxyCodeLine{00332                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00333                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == l[i]) \{}
+\DoxyCodeLine{00334                         r1[k3] = i + 1;}
+\DoxyCodeLine{00335                         k3++;}
+\DoxyCodeLine{00336                     \}}
+\DoxyCodeLine{00337                 \}}
+\DoxyCodeLine{00338                 b\_x\_0.resize(r1.size(), 0);}
+\DoxyCodeLine{00339                 k3 = r1.size();}
+\DoxyCodeLine{00340                 \textcolor{keywordflow}{for} (i = 0; i < k3; i++) \{}
+\DoxyCodeLine{00341                     b\_x\_0[i] = (g[r1[i] -\/ 1] > -\/1.0E-\/5);}
+\DoxyCodeLine{00342                 \}}
+\DoxyCodeLine{00343                 \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00344                     \textcolor{comment}{// 'ubils\_reduction:232' elseif (g(x==l) > -\/1.e-\/5) == 1}}
+\DoxyCodeLine{00345                     \textcolor{comment}{// 'ubils\_reduction:233' k1 = 1;}}
+\DoxyCodeLine{00346                     k1 = 1;}
+\DoxyCodeLine{00347                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00348                     \textcolor{comment}{// 'ubils\_reduction:234' else}}
+\DoxyCodeLine{00349                     \textcolor{comment}{// 'ubils\_reduction:234' k1 = 0;}}
+\DoxyCodeLine{00350                     k1 = 0;}
+\DoxyCodeLine{00351                 \}}
+\DoxyCodeLine{00352             \}}
+\DoxyCodeLine{00353             \textcolor{comment}{// 'ubils\_reduction:236' if (x==u) == 0}}
+\DoxyCodeLine{00354             b\_x\_0.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00355             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00356                 b\_x\_0[i] = !(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == u[i]);}
+\DoxyCodeLine{00357             \}}
+\DoxyCodeLine{00358             \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00359                 \textcolor{comment}{// 'ubils\_reduction:237' k2 = 1;}}
+\DoxyCodeLine{00360                 k2 = 1;}
+\DoxyCodeLine{00361             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00362                 k3 = 0;}
+\DoxyCodeLine{00363                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00364                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == u[i]) \{}
+\DoxyCodeLine{00365                         k3++;}
+\DoxyCodeLine{00366                     \}}
+\DoxyCodeLine{00367                 \}}
+\DoxyCodeLine{00368                 r2.resize(k3, 0);}
+\DoxyCodeLine{00369                 k3 = 0;}
+\DoxyCodeLine{00370                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00371                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] == u[i]) \{}
+\DoxyCodeLine{00372                         r2[k3] = i + 1;}
+\DoxyCodeLine{00373                         k3++;}
+\DoxyCodeLine{00374                     \}}
+\DoxyCodeLine{00375                 \}}
+\DoxyCodeLine{00376                 b\_x\_0.resize(r2.size(), 0);}
+\DoxyCodeLine{00377                 k3 = r2.size();}
+\DoxyCodeLine{00378                 \textcolor{keywordflow}{for} (i = 0; i < k3; i++) \{}
+\DoxyCodeLine{00379                     b\_x\_0[i] = (g[r2[i] -\/ 1] < 1.0E-\/5);}
+\DoxyCodeLine{00380                 \}}
+\DoxyCodeLine{00381                 \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00382                     \textcolor{comment}{// 'ubils\_reduction:238' elseif (g(x==u) < 1.e-\/5) == 1}}
+\DoxyCodeLine{00383                     \textcolor{comment}{// 'ubils\_reduction:239' k2 = 1;}}
+\DoxyCodeLine{00384                     k2 = 1;}
+\DoxyCodeLine{00385                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00386                     \textcolor{comment}{// 'ubils\_reduction:240' else}}
+\DoxyCodeLine{00387                     \textcolor{comment}{// 'ubils\_reduction:240' k2 = 0;}}
+\DoxyCodeLine{00388                     k2 = 0;}
+\DoxyCodeLine{00389                 \}}
+\DoxyCodeLine{00390             \}}
+\DoxyCodeLine{00391             \textcolor{comment}{// 'ubils\_reduction:242' if (l<x \& x<u) == 0}}
+\DoxyCodeLine{00392             b\_x\_0.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00393             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00394                 b\_x\_0[i] = ((!(l[i] < \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i])) || (!(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] < u[i])));}
+\DoxyCodeLine{00395             \}}
+\DoxyCodeLine{00396             \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00397                 \textcolor{comment}{// 'ubils\_reduction:243' k3 = 1;}}
+\DoxyCodeLine{00398                 k3 = 1;}
+\DoxyCodeLine{00399             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00400                 b\_x\_0.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00401                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00402                     b\_x\_0[i] = (l[i] < \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i]);}
+\DoxyCodeLine{00403                     b\_x\_1[i] = (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] < u[i]);}
+\DoxyCodeLine{00404                 \}}
+\DoxyCodeLine{00405                 k3 = 0;}
+\DoxyCodeLine{00406                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00407                     \textcolor{keywordflow}{if} (b\_x\_0[i] \&\& b\_x\_1[i]) \{}
+\DoxyCodeLine{00408                         k3++;}
+\DoxyCodeLine{00409                     \}}
+\DoxyCodeLine{00410                 \}}
+\DoxyCodeLine{00411                 r3.resize(k3, 0);}
+\DoxyCodeLine{00412                 k3 = 0;}
+\DoxyCodeLine{00413                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00414                     \textcolor{keywordflow}{if} (b\_x\_0[i] \&\& b\_x\_1[i]) \{}
+\DoxyCodeLine{00415                         r3[k3] = i + 1;}
+\DoxyCodeLine{00416                         k3++;}
+\DoxyCodeLine{00417                     \}}
+\DoxyCodeLine{00418                 \}}
+\DoxyCodeLine{00419                 b\_x\_0.resize(r3.size(), 0);}
+\DoxyCodeLine{00420                 k3 = r3.size();}
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{for} (i = 0; i < k3; i++) \{}
+\DoxyCodeLine{00422                     b\_x\_0[i] = (g[r3[i] -\/ 1] < 1.0E-\/5);}
+\DoxyCodeLine{00423                 \}}
+\DoxyCodeLine{00424                 \textcolor{keywordflow}{if} (helper::if\_all\_x\_true<index>(b\_x\_0)) \{}
+\DoxyCodeLine{00425                     \textcolor{comment}{// 'ubils\_reduction:244' elseif (g(l<x \& x<u) < 1.e-\/5) == 1}}
+\DoxyCodeLine{00426                     \textcolor{comment}{// 'ubils\_reduction:245' k3 = 1;}}
+\DoxyCodeLine{00427                     k3 = 1;}
+\DoxyCodeLine{00428                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00429                     \textcolor{comment}{// 'ubils\_reduction:246' else}}
+\DoxyCodeLine{00430                     \textcolor{comment}{// 'ubils\_reduction:246' k3 = 0;}}
+\DoxyCodeLine{00431                     k3 = 0;}
+\DoxyCodeLine{00432                 \}}
+\DoxyCodeLine{00433             \}}
+\DoxyCodeLine{00434             \textcolor{comment}{// 'ubils\_reduction:248' if (k1 \& k2 \& k3)}}
+\DoxyCodeLine{00435             \textcolor{keywordflow}{if} ((k1 != 0) \&\& (k2 != 0) \&\& (k3 != 0)) \{}
+\DoxyCodeLine{00436                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00437             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00438                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} x\_tmp;}
+\DoxyCodeLine{00439                 \textcolor{comment}{//  Find the Cauchy point}}
+\DoxyCodeLine{00440                 \textcolor{comment}{// 'ubils\_reduction:253' t\_bar = 1.e5*ones(n,1);}}
+\DoxyCodeLine{00441                 t\_bar.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 1e5);}
+\DoxyCodeLine{00442                 \textcolor{comment}{// 'ubils\_reduction:254' t\_bar(g<0) = (x(g<0)-\/u(g<0))./g(g<0);}}
+\DoxyCodeLine{00443                 k3 = 0;}
+\DoxyCodeLine{00444                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00445                     \textcolor{keywordflow}{if} (g[i] < 0.0) \{}
+\DoxyCodeLine{00446                         k3++;}
+\DoxyCodeLine{00447                     \}}
+\DoxyCodeLine{00448                 \}}
+\DoxyCodeLine{00449                 r4.resize(k3, 0);}
+\DoxyCodeLine{00450                 k3 = 0;}
+\DoxyCodeLine{00451                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00452                     \textcolor{keywordflow}{if} (g[i] < 0.0) \{}
+\DoxyCodeLine{00453                         r4[k3] = i + 1;}
+\DoxyCodeLine{00454                         k3++;}
+\DoxyCodeLine{00455                     \}}
+\DoxyCodeLine{00456                 \}}
+\DoxyCodeLine{00457                 r0.resize(r4.size());}
+\DoxyCodeLine{00458                 k3 = r4.size();}
+\DoxyCodeLine{00459                 \textcolor{keywordflow}{for} (i = 0; i < k3; i++) \{}
+\DoxyCodeLine{00460                     r0[i] = (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[r4[i] -\/ 1] -\/ u[r4[i] -\/ 1]) / g[r4[i] -\/ 1];}
+\DoxyCodeLine{00461                 \}}
+\DoxyCodeLine{00462                 k3 = 0;}
+\DoxyCodeLine{00463                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00464                     \textcolor{keywordflow}{if} (g[i] < 0.0) \{}
+\DoxyCodeLine{00465                         t\_bar[i] = r0[k3];}
+\DoxyCodeLine{00466                         k3++;}
+\DoxyCodeLine{00467                     \}}
+\DoxyCodeLine{00468                 \}}
+\DoxyCodeLine{00469                 \textcolor{comment}{// 'ubils\_reduction:255' t\_bar(g>0) = (x(g>0)-\/l(g>0))./g(g>0);}}
+\DoxyCodeLine{00470                 k3 = 0;}
+\DoxyCodeLine{00471                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00472                     \textcolor{keywordflow}{if} (g[i] > 0.0) \{}
+\DoxyCodeLine{00473                         k3++;}
+\DoxyCodeLine{00474                     \}}
+\DoxyCodeLine{00475                 \}}
+\DoxyCodeLine{00476                 r5.resize(k3, 0);}
+\DoxyCodeLine{00477                 k3 = 0;}
+\DoxyCodeLine{00478                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00479                     \textcolor{keywordflow}{if} (g[i] > 0.0) \{}
+\DoxyCodeLine{00480                         r5[k3] = i + 1;}
+\DoxyCodeLine{00481                         k3++;}
+\DoxyCodeLine{00482                     \}}
+\DoxyCodeLine{00483                 \}}
+\DoxyCodeLine{00484                 r0.resize(r5.size());}
+\DoxyCodeLine{00485                 k3 = r5.size();}
+\DoxyCodeLine{00486                 \textcolor{keywordflow}{for} (i = 0; i < k3; i++) \{}
+\DoxyCodeLine{00487                     r0[i] = (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[r5[i] -\/ 1] -\/ l[r5[i] -\/ 1]) / g[r5[i] -\/ 1];}
+\DoxyCodeLine{00488                 \}}
+\DoxyCodeLine{00489                 k3 = 0;}
+\DoxyCodeLine{00490                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00491                     \textcolor{keywordflow}{if} (g[i] > 0.0) \{}
+\DoxyCodeLine{00492                         t\_bar[i] = r0[k3];}
+\DoxyCodeLine{00493                         k3++;}
+\DoxyCodeLine{00494                     \}}
+\DoxyCodeLine{00495                 \}}
+\DoxyCodeLine{00496                 \textcolor{comment}{//  Generate the ordered and non-\/repeated sequence of t\_bar}}
+\DoxyCodeLine{00497                 \textcolor{comment}{// 'ubils\_reduction:258' t\_seq = unique([0;t\_bar]);}}
+\DoxyCodeLine{00498                 r0.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + 1);}
+\DoxyCodeLine{00499                 r0[0] = 0;}
+\DoxyCodeLine{00500                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00501                     r0[i + 1] = t\_bar[i];}
+\DoxyCodeLine{00502                 \}}
+\DoxyCodeLine{00503                 helper::unique\_vector<scalar, index>(r0, t\_seq);}
+\DoxyCodeLine{00504                 \textcolor{comment}{//  Add 0 to make the implementation easier}}
+\DoxyCodeLine{00505                 \textcolor{comment}{// 'ubils\_reduction:259' t = 0;}}
+\DoxyCodeLine{00506                 x\_tmp = 0.0;}
+\DoxyCodeLine{00507                 \textcolor{comment}{//  Search}}
+\DoxyCodeLine{00508                 \textcolor{comment}{// 'ubils\_reduction:261' for j = 2:length(t\_seq)}}
+\DoxyCodeLine{00509                 \textcolor{keywordflow}{for} (k2 = 0; k2 < t\_seq.size() -\/ 1; k2++) \{}
+\DoxyCodeLine{00510                     \textcolor{comment}{// 'ubils\_reduction:262' tj\_1 = t\_seq(j-\/1);}}
+\DoxyCodeLine{00511                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} tj\_1 = t\_seq[k2];}
+\DoxyCodeLine{00512                     \textcolor{comment}{// 'ubils\_reduction:263' tj = t\_seq(j);}}
+\DoxyCodeLine{00513                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} tj = t\_seq[k2 + 1];}
+\DoxyCodeLine{00514                     \textcolor{comment}{//  Compute x(t\_\{j-\/1\})}}
+\DoxyCodeLine{00515                     \textcolor{comment}{// 'ubils\_reduction:265' xt\_j\_1 = x -\/ min(tj\_1,t\_bar).*g;}}
+\DoxyCodeLine{00516                     \textcolor{comment}{//  Compute teh search direction p\_\{j-\/1\}}}
+\DoxyCodeLine{00517                     \textcolor{comment}{// 'ubils\_reduction:267' pj\_1 = zeros(n,1);}}
+\DoxyCodeLine{00518                     pj\_1.fill(0);}
+\DoxyCodeLine{00519                     \textcolor{comment}{// 'ubils\_reduction:268' pj\_1(tj\_1<t\_bar) = -\/g(tj\_1<t\_bar);}}
+\DoxyCodeLine{00520                     \textcolor{keywordflow}{for} (i = 0; i < t\_bar.size(); i++) \{}
+\DoxyCodeLine{00521                         \textcolor{keywordflow}{if} (tj\_1 < t\_bar[i]) \{}
+\DoxyCodeLine{00522                             pj\_1[i] = -\/g[i];}
+\DoxyCodeLine{00523                         \}}
+\DoxyCodeLine{00524                     \}}
+\DoxyCodeLine{00525                     \textcolor{comment}{//  Compute coefficients}}
+\DoxyCodeLine{00526                     \textcolor{comment}{// 'ubils\_reduction:270' q = A*pj\_1;}}
+\DoxyCodeLine{00527                     \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}.fill(0);}
+\DoxyCodeLine{00528                     \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00529                         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00530                             \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}[i] += A[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * pj\_1[j];}
+\DoxyCodeLine{00531                         \}}
+\DoxyCodeLine{00532                     \}}
+\DoxyCodeLine{00533                     \textcolor{comment}{// 'ubils\_reduction:271' fj\_1d = (A*xt\_j\_1)'*q -\/ c'*pj\_1;}}
+\DoxyCodeLine{00534                     ex.resize(t\_bar.size());}
+\DoxyCodeLine{00535                     \textcolor{keywordflow}{for} (j = 0; j < t\_bar.size(); j++) \{}
+\DoxyCodeLine{00536                         ex[j] = std::fmin(tj\_1, t\_bar[j]);}
+\DoxyCodeLine{00537                     \}}
+\DoxyCodeLine{00538                     ex.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00539                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00540                         ex[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] -\/ ex[i] * g[i];}
+\DoxyCodeLine{00541                     \}}
+\DoxyCodeLine{00542                     r0.resize(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}});}
+\DoxyCodeLine{00543                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00544                         r0[i] = 0;}
+\DoxyCodeLine{00545                     \}}
+\DoxyCodeLine{00546                     \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00547                         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00548                             r0[i] += A[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * ex[j];}
+\DoxyCodeLine{00549                         \}}
+\DoxyCodeLine{00550                     \}}
+\DoxyCodeLine{00551                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} delta\_t = 0.0;}
+\DoxyCodeLine{00552                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00553                         delta\_t += r0[i] * \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}[i];}
+\DoxyCodeLine{00554                     \}}
+\DoxyCodeLine{00555                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} fj\_1d = 0.0;}
+\DoxyCodeLine{00556                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00557                         fj\_1d += c[i] * pj\_1[i];}
+\DoxyCodeLine{00558                     \}}
+\DoxyCodeLine{00559                     fj\_1d = delta\_t -\/ fj\_1d;}
+\DoxyCodeLine{00560                     \textcolor{comment}{// 'ubils\_reduction:272' fj\_1dd = q'*q;}}
+\DoxyCodeLine{00561                     \textcolor{comment}{// 'ubils\_reduction:273' t = tj;}}
+\DoxyCodeLine{00562                     x\_tmp = tj;}
+\DoxyCodeLine{00563                     \textcolor{comment}{//  Find a local minimizer}}
+\DoxyCodeLine{00564                     \textcolor{comment}{// 'ubils\_reduction:275' delta\_t = -\/fj\_1d/fj\_1dd;}}
+\DoxyCodeLine{00565                     delta\_t = 0.0;}
+\DoxyCodeLine{00566                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00567                         delta\_t += \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}[i] * \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}[i];}
+\DoxyCodeLine{00568                     \}}
+\DoxyCodeLine{00569                     delta\_t = -\/fj\_1d / delta\_t;}
+\DoxyCodeLine{00570                     \textcolor{comment}{// 'ubils\_reduction:276' if fj\_1d >= 0}}
+\DoxyCodeLine{00571                     \textcolor{keywordflow}{if} (fj\_1d >= 0.0) \{}
+\DoxyCodeLine{00572                         \textcolor{comment}{// 'ubils\_reduction:277' t = tj\_1;}}
+\DoxyCodeLine{00573                         x\_tmp = tj\_1;}
+\DoxyCodeLine{00574                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00575                     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (delta\_t < x\_tmp -\/ tj\_1) \{}
+\DoxyCodeLine{00576                         \textcolor{comment}{// 'ubils\_reduction:279' elseif delta\_t < (tj-\/tj\_1)}}
+\DoxyCodeLine{00577                         \textcolor{comment}{// 'ubils\_reduction:280' t = tj\_1+delta\_t;}}
+\DoxyCodeLine{00578                         x\_tmp = tj\_1 + delta\_t;}
+\DoxyCodeLine{00579                         \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00580                     \}}
+\DoxyCodeLine{00581                 \}}
+\DoxyCodeLine{00582                 \textcolor{comment}{// 'ubils\_reduction:285' x = x -\/ min(t,t\_bar).*g;}}
+\DoxyCodeLine{00583                 ex.resize(t\_bar.size());}
+\DoxyCodeLine{00584                 k3 = t\_bar.size();}
+\DoxyCodeLine{00585                 \textcolor{keywordflow}{for} (j = 0; j < k3; j++) \{}
+\DoxyCodeLine{00586                     ex[j] = std::fmin(x\_tmp, t\_bar[j]);}
+\DoxyCodeLine{00587                 \}}
+\DoxyCodeLine{00588                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00589                     \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] -\/ ex[i] * g[i];}
+\DoxyCodeLine{00590                 \}}
+\DoxyCodeLine{00591             \}}
+\DoxyCodeLine{00592         \}}
+\DoxyCodeLine{00593         \textcolor{comment}{//s\_bar4 = round\_int(s\_bar4\_unrounded, -\/1, 1);}}
+\DoxyCodeLine{00594         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00595             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} x\_est = round(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i]);}
+\DoxyCodeLine{00596             \textcolor{comment}{//x\_est = 2.0 * std::floor(x\_est / 2.0) + 1.0;}}
+\DoxyCodeLine{00597             \textcolor{keywordflow}{if} (x\_est < 0) \{}
+\DoxyCodeLine{00598                 x\_est = 0;}
+\DoxyCodeLine{00599             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (x\_est > upper) \{}
+\DoxyCodeLine{00600                 x\_est = upper;}
+\DoxyCodeLine{00601             \}}
+\DoxyCodeLine{00602             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] = x\_est;}
+\DoxyCodeLine{00603         \}}
+\DoxyCodeLine{00604 }
+\DoxyCodeLine{00605         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm = helper::find\_residual<scalar, index>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, A.data(), \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.data(), y\_a.data());}
+\DoxyCodeLine{00606         time = omp\_get\_wtime() -\/ time;}
+\DoxyCodeLine{00607         \textcolor{keywordflow}{return} \{\{\}, time, v\_norm\};}
+\DoxyCodeLine{00608     \}}
+\DoxyCodeLine{00609 }
+\DoxyCodeLine{00610 }
+\DoxyCodeLine{00611 \}}
+
+\end{DoxyCode}

@@ -1,0 +1,754 @@
+\hypertarget{helper_8h_source}{}\doxysection{helper.\+h}
+\label{helper_8h_source}\index{src/include/helper.h@{src/include/helper.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{preprocessor}{\#ifndef CILS\_HELPER\_H}}
+\DoxyCodeLine{00020 \textcolor{preprocessor}{\#define CILS\_HELPER\_H}}
+\DoxyCodeLine{00021 }
+\DoxyCodeLine{00022 \textcolor{preprocessor}{\#endif //CILS\_HELPER\_H}}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024 \textcolor{preprocessor}{\#include <cmath>}}
+\DoxyCodeLine{00025 \textcolor{preprocessor}{\#include <cstring>}}
+\DoxyCodeLine{00026 }
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00027}\mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{00027}} \textcolor{keyword}{const} \textcolor{keywordtype}{double} \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}} = 3.3121686421112381E-\/170;}
+\DoxyCodeLine{00028 \textcolor{keyword}{using namespace }std;}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00029}\mbox{\hyperlink{namespacehelper}{00029}} \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacehelper}{helper}} \{}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00031}\mbox{\hyperlink{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}{00031}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}{b\_rand}}(\textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keywordtype}{double} *r) \{}
+\DoxyCodeLine{00032         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} state[625];}
+\DoxyCodeLine{00033         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} u[2];}
+\DoxyCodeLine{00034         \textcolor{keywordtype}{int} i = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00035         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}\{0\}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < i; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00036             \textcolor{keywordtype}{double} b\_r;}
+\DoxyCodeLine{00037             \textcolor{comment}{// ========================= COPYRIGHT NOTICE ============================}}
+\DoxyCodeLine{00038             \textcolor{comment}{//  This is a uniform (0,1) pseudorandom number generator based on:}}
+\DoxyCodeLine{00039             \textcolor{comment}{//}}
+\DoxyCodeLine{00040             \textcolor{comment}{//  A C-\/program for MT19937, with initialization improved 2002/1/26.}}
+\DoxyCodeLine{00041             \textcolor{comment}{//  Coded by Takuji Nishimura and Makoto Matsumoto.}}
+\DoxyCodeLine{00042             \textcolor{comment}{//}}
+\DoxyCodeLine{00043             \textcolor{comment}{//  Copyright (C) 1997 -\/ 2002, Makoto Matsumoto and Takuji Nishimura,}}
+\DoxyCodeLine{00044             \textcolor{comment}{//  All rights reserved.}}
+\DoxyCodeLine{00045             \textcolor{comment}{//}}
+\DoxyCodeLine{00046             \textcolor{comment}{//  Redistribution and use in source and binary forms, with or without}}
+\DoxyCodeLine{00047             \textcolor{comment}{//  modification, are permitted provided that the following conditions}}
+\DoxyCodeLine{00048             \textcolor{comment}{//  are met:}}
+\DoxyCodeLine{00049             \textcolor{comment}{//}}
+\DoxyCodeLine{00050             \textcolor{comment}{//    1. Redistributions of source code must retain the above copyright}}
+\DoxyCodeLine{00051             \textcolor{comment}{//       notice, this list of conditions and the following disclaimer.}}
+\DoxyCodeLine{00052             \textcolor{comment}{//}}
+\DoxyCodeLine{00053             \textcolor{comment}{//    2. Redistributions in binary form must reproduce the above copyright}}
+\DoxyCodeLine{00054             \textcolor{comment}{//       notice, this list of conditions and the following disclaimer}}
+\DoxyCodeLine{00055             \textcolor{comment}{//       in the documentation and/or other materials provided with the}}
+\DoxyCodeLine{00056             \textcolor{comment}{//       distribution.}}
+\DoxyCodeLine{00057             \textcolor{comment}{//}}
+\DoxyCodeLine{00058             \textcolor{comment}{//    3. The names of its contributors may not be used to endorse or}}
+\DoxyCodeLine{00059             \textcolor{comment}{//       promote products derived from this software without specific}}
+\DoxyCodeLine{00060             \textcolor{comment}{//       prior written permission.}}
+\DoxyCodeLine{00061             \textcolor{comment}{//}}
+\DoxyCodeLine{00062             \textcolor{comment}{//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS}}
+\DoxyCodeLine{00063             \textcolor{comment}{//  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT}}
+\DoxyCodeLine{00064             \textcolor{comment}{//  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR}}
+\DoxyCodeLine{00065             \textcolor{comment}{//  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT}}
+\DoxyCodeLine{00066             \textcolor{comment}{//  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,}}
+\DoxyCodeLine{00067             \textcolor{comment}{//  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT}}
+\DoxyCodeLine{00068             \textcolor{comment}{//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,}}
+\DoxyCodeLine{00069             \textcolor{comment}{//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY}}
+\DoxyCodeLine{00070             \textcolor{comment}{//  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT}}
+\DoxyCodeLine{00071             \textcolor{comment}{//  (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE}}
+\DoxyCodeLine{00072             \textcolor{comment}{//  OF THIS  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.}}
+\DoxyCodeLine{00073             \textcolor{comment}{//}}
+\DoxyCodeLine{00074             \textcolor{comment}{// =============================   END   =================================}}
+\DoxyCodeLine{00075             \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{00076                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j\{0\}; j < 2; j++) \{}
+\DoxyCodeLine{00077                     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} mti;}
+\DoxyCodeLine{00078                     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} y;}
+\DoxyCodeLine{00079                     mti = state[624] + 1U;}
+\DoxyCodeLine{00080                     \textcolor{keywordflow}{if} (state[624] + 1U >= 625U) \{}
+\DoxyCodeLine{00081                         \textcolor{keywordtype}{int} kk;}
+\DoxyCodeLine{00082                         \textcolor{keywordflow}{for} (kk = 0; kk < 227; kk++) \{}
+\DoxyCodeLine{00083                             y = (state[kk] \& 2147483648U) | (state[kk + 1] \& 2147483647U);}
+\DoxyCodeLine{00084                             \textcolor{keywordflow}{if} ((y \& 1U) == 0U) \{}
+\DoxyCodeLine{00085                                 y >>= 1U;}
+\DoxyCodeLine{00086                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00087                                 y = y >> 1U \string^ 2567483615U;}
+\DoxyCodeLine{00088                             \}}
+\DoxyCodeLine{00089                             state[kk] = state[kk + 397] \string^ y;}
+\DoxyCodeLine{00090                         \}}
+\DoxyCodeLine{00091                         \textcolor{keywordflow}{for} (kk = 0; kk < 396; kk++) \{}
+\DoxyCodeLine{00092                             y = (state[kk + 227] \& 2147483648U) |}
+\DoxyCodeLine{00093                                 (state[kk + 228] \& 2147483647U);}
+\DoxyCodeLine{00094                             \textcolor{keywordflow}{if} ((y \& 1U) == 0U) \{}
+\DoxyCodeLine{00095                                 y >>= 1U;}
+\DoxyCodeLine{00096                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00097                                 y = y >> 1U \string^ 2567483615U;}
+\DoxyCodeLine{00098                             \}}
+\DoxyCodeLine{00099                             state[kk + 227] = state[kk] \string^ y;}
+\DoxyCodeLine{00100                         \}}
+\DoxyCodeLine{00101                         y = (state[623] \& 2147483648U) | (state[0] \& 2147483647U);}
+\DoxyCodeLine{00102                         \textcolor{keywordflow}{if} ((y \& 1U) == 0U) \{}
+\DoxyCodeLine{00103                             y >>= 1U;}
+\DoxyCodeLine{00104                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00105                             y = y >> 1U \string^ 2567483615U;}
+\DoxyCodeLine{00106                         \}}
+\DoxyCodeLine{00107                         state[623] = state[396] \string^ y;}
+\DoxyCodeLine{00108                         mti = 1U;}
+\DoxyCodeLine{00109                     \}}
+\DoxyCodeLine{00110                     y = state[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(mti) -\/ 1];}
+\DoxyCodeLine{00111                     state[624] = mti;}
+\DoxyCodeLine{00112                     y \string^= y >> 11U;}
+\DoxyCodeLine{00113                     y \string^= y << 7U \& 2636928640U;}
+\DoxyCodeLine{00114                     y \string^= y << 15U \& 4022730752U;}
+\DoxyCodeLine{00115                     u[j] = y \string^ y >> 18U;}
+\DoxyCodeLine{00116                 \}}
+\DoxyCodeLine{00117                 u[0] >>= 5U;}
+\DoxyCodeLine{00118                 u[1] >>= 6U;}
+\DoxyCodeLine{00119                 b\_r = 1.1102230246251565E-\/16 * (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(u[0]) * 6.7108864E+7 +}
+\DoxyCodeLine{00120                                                 \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(u[1]));}
+\DoxyCodeLine{00121             \} \textcolor{keywordflow}{while} (b\_r == 0.0);}
+\DoxyCodeLine{00122             r[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = b\_r;}
+\DoxyCodeLine{00123         \}}
+\DoxyCodeLine{00124     \}}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00126}\mbox{\hyperlink{namespacehelper_a38339329189a88e7529f6267d2640ca5}{00126}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a38339329189a88e7529f6267d2640ca5}{randperm}}(\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keywordtype}{double} *p) \{}
+\DoxyCodeLine{00127         std::vector<int> idx;}
+\DoxyCodeLine{00128         std::vector<int> iwork;}
+\DoxyCodeLine{00129         \textcolor{keywordtype}{int} b\_i;}
+\DoxyCodeLine{00130         \textcolor{keywordtype}{int} b\_n;}
+\DoxyCodeLine{00131         \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{00132         \textcolor{keywordtype}{int} qEnd;}
+\DoxyCodeLine{00133         \mbox{\hyperlink{namespacehelper_a82d86c30b6ad5aaac94b8f7206a2bb33}{b\_rand}}(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, p);}
+\DoxyCodeLine{00134         b\_n = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + 1;}
+\DoxyCodeLine{00135         idx.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00136         i = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00137         \textcolor{keywordflow}{for} (b\_i = 0; b\_i < i; b\_i++) \{}
+\DoxyCodeLine{00138             idx[b\_i] = 0;}
+\DoxyCodeLine{00139         \}}
+\DoxyCodeLine{00140         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} != 0) \{}
+\DoxyCodeLine{00141             \textcolor{keywordtype}{double} d;}
+\DoxyCodeLine{00142             \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00143             iwork.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00144             b\_i = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1;}
+\DoxyCodeLine{00145             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 1; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} <= b\_i; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} += 2) \{}
+\DoxyCodeLine{00146                 d = p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00147                 \textcolor{keywordflow}{if} ((p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] <= d) || std::isnan(d)) \{}
+\DoxyCodeLine{00148                     idx[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00149                     idx[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1;}
+\DoxyCodeLine{00150                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00151                     idx[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1;}
+\DoxyCodeLine{00152                     idx[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00153                 \}}
+\DoxyCodeLine{00154             \}}
+\DoxyCodeLine{00155             \textcolor{keywordflow}{if} ((\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} \& 1) != 0) \{}
+\DoxyCodeLine{00156                 idx[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00157             \}}
+\DoxyCodeLine{00158             i = 2;}
+\DoxyCodeLine{00159             \textcolor{keywordflow}{while} (i < b\_n -\/ 1) \{}
+\DoxyCodeLine{00160                 \textcolor{keywordtype}{int} i2;}
+\DoxyCodeLine{00161                 \textcolor{keywordtype}{int} j;}
+\DoxyCodeLine{00162                 i2 = i << 1;}
+\DoxyCodeLine{00163                 j = 1;}
+\DoxyCodeLine{00164                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} pEnd\{i + 1\}; pEnd < b\_n; pEnd = qEnd + i) \{}
+\DoxyCodeLine{00165                     \textcolor{keywordtype}{int} b\_p;}
+\DoxyCodeLine{00166                     \textcolor{keywordtype}{int} kEnd;}
+\DoxyCodeLine{00167                     \textcolor{keywordtype}{int} \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}};}
+\DoxyCodeLine{00168                     b\_p = j;}
+\DoxyCodeLine{00169                     \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} = pEnd -\/ 1;}
+\DoxyCodeLine{00170                     qEnd = j + i2;}
+\DoxyCodeLine{00171                     \textcolor{keywordflow}{if} (qEnd > b\_n) \{}
+\DoxyCodeLine{00172                         qEnd = b\_n;}
+\DoxyCodeLine{00173                     \}}
+\DoxyCodeLine{00174                     \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0;}
+\DoxyCodeLine{00175                     kEnd = qEnd -\/ j;}
+\DoxyCodeLine{00176                     \textcolor{keywordflow}{while} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1 <= kEnd) \{}
+\DoxyCodeLine{00177                         d = p[idx[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}] -\/ 1];}
+\DoxyCodeLine{00178                         b\_i = idx[b\_p -\/ 1];}
+\DoxyCodeLine{00179                         \textcolor{keywordflow}{if} ((p[b\_i -\/ 1] <= d) || std::isnan(d)) \{}
+\DoxyCodeLine{00180                             iwork[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = b\_i;}
+\DoxyCodeLine{00181                             b\_p++;}
+\DoxyCodeLine{00182                             \textcolor{keywordflow}{if} (b\_p == pEnd) \{}
+\DoxyCodeLine{00183                                 \textcolor{keywordflow}{while} (\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} + 1 < qEnd) \{}
+\DoxyCodeLine{00184                                     \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00185                                     iwork[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = idx[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}];}
+\DoxyCodeLine{00186                                     \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}++;}
+\DoxyCodeLine{00187                                 \}}
+\DoxyCodeLine{00188                             \}}
+\DoxyCodeLine{00189                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00190                             iwork[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = idx[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}];}
+\DoxyCodeLine{00191                             \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}++;}
+\DoxyCodeLine{00192                             \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} + 1 == qEnd) \{}
+\DoxyCodeLine{00193                                 \textcolor{keywordflow}{while} (b\_p < pEnd) \{}
+\DoxyCodeLine{00194                                     \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00195                                     iwork[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = idx[b\_p -\/ 1];}
+\DoxyCodeLine{00196                                     b\_p++;}
+\DoxyCodeLine{00197                                 \}}
+\DoxyCodeLine{00198                             \}}
+\DoxyCodeLine{00199                         \}}
+\DoxyCodeLine{00200                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00201                     \}}
+\DoxyCodeLine{00202                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < kEnd; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00203                         idx[(j + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ 1] = iwork[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00204                     \}}
+\DoxyCodeLine{00205                     j = qEnd;}
+\DoxyCodeLine{00206                 \}}
+\DoxyCodeLine{00207                 i = i2;}
+\DoxyCodeLine{00208             \}}
+\DoxyCodeLine{00209         \}}
+\DoxyCodeLine{00210         \textcolor{keywordflow}{for} (b\_i = 0; b\_i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; b\_i++) \{}
+\DoxyCodeLine{00211             p[b\_i] = idx[b\_i];}
+\DoxyCodeLine{00212         \}}
+\DoxyCodeLine{00213     \}}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00216}\mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{00216}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{eye}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *A) \{}
+\DoxyCodeLine{00217         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00218             A[i] = 0;}
+\DoxyCodeLine{00219         \}}
+\DoxyCodeLine{00220         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00221             A[i + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * i] = 1.0;}
+\DoxyCodeLine{00222         \}}
+\DoxyCodeLine{00223     \}}
+\DoxyCodeLine{00224 }
+\DoxyCodeLine{00225     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n, index mb>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00226}\mbox{\hyperlink{namespacehelper_a001e915bf035136f793b0d709bfa00bb}{00226}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a001e915bf035136f793b0d709bfa00bb}{b\_mtimes}}(\textcolor{keyword}{const} array<scalar, m * n> \&A\_C, \textcolor{keyword}{const} array<scalar, n * mb> \&B, array<scalar, m * mb> \&C) \{}
+\DoxyCodeLine{00227         C.fill(0);}
+\DoxyCodeLine{00228         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < mb; j++) \{}
+\DoxyCodeLine{00229             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} coffset = j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00230             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00231                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} bkj = B[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + j];}
+\DoxyCodeLine{00232                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} aoffset = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00233                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00234                     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} t = coffset + i;}
+\DoxyCodeLine{00235                     C[t] = C[t] + A\_C[aoffset + i] * bkj;}
+\DoxyCodeLine{00236                 \}}
+\DoxyCodeLine{00237             \}}
+\DoxyCodeLine{00238         \}}
+\DoxyCodeLine{00239     \}}
+\DoxyCodeLine{00240 }
+\DoxyCodeLine{00241     \textcolor{comment}{//B: m x n}}
+\DoxyCodeLine{00242     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00243}\mbox{\hyperlink{namespacehelper_afc7cf1deb54e87ddd16e7df7978f3be9}{00243}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}{mtimes}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} A\_C[4], \textcolor{keyword}{const} array<scalar, m * n> \&B, array<scalar, 2 * n> \&C) \{}
+\DoxyCodeLine{00244         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00245             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} coffset\_tmp = j << 1;}
+\DoxyCodeLine{00246             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} s\_tmp = B[coffset\_tmp + 1];}
+\DoxyCodeLine{00247             C[coffset\_tmp] = A\_C[0] * B[coffset\_tmp] + A\_C[2] * s\_tmp;}
+\DoxyCodeLine{00248             C[coffset\_tmp + 1] = A\_C[1] * B[coffset\_tmp] + A\_C[3] * s\_tmp;}
+\DoxyCodeLine{00249         \}}
+\DoxyCodeLine{00250     \}}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00253}\mbox{\hyperlink{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}{00253}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a721d33210e0c5da89282fa94cf754e4b}{mtimes}}(\textcolor{keyword}{const} array<scalar, m * m> \&Q, \textcolor{keyword}{const} array<scalar, m * n> \&R, array<scalar, m * n> \&A\_t) \{}
+\DoxyCodeLine{00254         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00255             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00257                     A\_t[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] += Q[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * R[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00258                 \}}
+\DoxyCodeLine{00259             \}}
+\DoxyCodeLine{00260         \}}
+\DoxyCodeLine{00261     \}}
+\DoxyCodeLine{00262 }
+\DoxyCodeLine{00263     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00264}\mbox{\hyperlink{namespacehelper_aea72c28e2b9c90023834eac74f25b271}{00264}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_aea72c28e2b9c90023834eac74f25b271}{mtimes\_v}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} vector<scalar> \&Q, \textcolor{keyword}{const} vector<scalar> \&R, vector<scalar> \&A\_t) \{}
+\DoxyCodeLine{00265         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00266             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00267                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00268                     A\_t[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] += Q[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * R[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00269                 \}}
+\DoxyCodeLine{00270             \}}
+\DoxyCodeLine{00271         \}}
+\DoxyCodeLine{00272     \}}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00275}\mbox{\hyperlink{namespacehelper_aa7430cecf7974509c8376223379df15d}{00275}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_aa7430cecf7974509c8376223379df15d}{mtimes\_col}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} vector<scalar> \&Q, \textcolor{keyword}{const} vector<scalar> \&R, vector<scalar> \&A\_t) \{}
+\DoxyCodeLine{00276         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00277             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00278                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00279                     A\_t[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] += Q[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * R[j * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00280                 \}}
+\DoxyCodeLine{00281             \}}
+\DoxyCodeLine{00282         \}}
+\DoxyCodeLine{00283     \}}
+\DoxyCodeLine{00284     }
+\DoxyCodeLine{00285     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00286}\mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{00286}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{mtimes\_AP}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *A, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *P, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *A\_t) \{}
+\DoxyCodeLine{00287         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00288             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00289                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00290                     A\_t[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] += A[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * P[j * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00291                 \}}
+\DoxyCodeLine{00292             \}}
+\DoxyCodeLine{00293         \}}
+\DoxyCodeLine{00294     \}}
+\DoxyCodeLine{00295 }
+\DoxyCodeLine{00296     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00297}\mbox{\hyperlink{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}{00297}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a02ecf493c0abf469194e9ee9323af7d9}{inv}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} K, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} N, \textcolor{keyword}{const} vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, vector<scalar> \&y) \{}
+\DoxyCodeLine{00298         vector<scalar> b\_x;}
+\DoxyCodeLine{00299         vector<index> ipiv, p;}
+\DoxyCodeLine{00300         \textcolor{keywordflow}{if} ((K == 0) || (N == 0)) \{}
+\DoxyCodeLine{00301             \textcolor{keywordtype}{int} b\_n;}
+\DoxyCodeLine{00302             y.resize(K * N);}
+\DoxyCodeLine{00303             b\_n = K * N;}
+\DoxyCodeLine{00304             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < b\_n; i++) \{}
+\DoxyCodeLine{00305                 y[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i];}
+\DoxyCodeLine{00306             \}}
+\DoxyCodeLine{00307         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00308             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} b\_i, b\_n, i, i1, j, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}, ldap1, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, u1, yk;}
+\DoxyCodeLine{00309             \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} = K;}
+\DoxyCodeLine{00310             y.resize(K * N);}
+\DoxyCodeLine{00311             b\_n = K * N;}
+\DoxyCodeLine{00312             \textcolor{keywordflow}{for} (i = 0; i < b\_n; i++) \{}
+\DoxyCodeLine{00313                 y[i] = 0.0;}
+\DoxyCodeLine{00314             \}}
+\DoxyCodeLine{00315             b\_x.resize(K * N);}
+\DoxyCodeLine{00316             b\_n = K * N;}
+\DoxyCodeLine{00317             \textcolor{keywordflow}{for} (i = 0; i < b\_n; i++) \{}
+\DoxyCodeLine{00318                 b\_x[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i];}
+\DoxyCodeLine{00319             \}}
+\DoxyCodeLine{00320             b\_n = K;}
+\DoxyCodeLine{00321             ipiv.resize(1 * K);}
+\DoxyCodeLine{00322             ipiv[0] = 1;}
+\DoxyCodeLine{00323             yk = 1;}
+\DoxyCodeLine{00324             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 2; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} <= b\_n; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00325                 yk++;}
+\DoxyCodeLine{00326                 ipiv[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = yk;}
+\DoxyCodeLine{00327             \}}
+\DoxyCodeLine{00328             ldap1 = K;}
+\DoxyCodeLine{00329             b\_n = K -\/ 1;}
+\DoxyCodeLine{00330             u1 = K;}
+\DoxyCodeLine{00331             \textcolor{keywordflow}{if} (b\_n < u1) \{}
+\DoxyCodeLine{00332                 u1 = b\_n;}
+\DoxyCodeLine{00333             \}}
+\DoxyCodeLine{00334             \textcolor{keywordflow}{for} (j = 0; j < u1; j++) \{}
+\DoxyCodeLine{00335                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} smax;}
+\DoxyCodeLine{00336                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} jj;}
+\DoxyCodeLine{00337                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} jp1j;}
+\DoxyCodeLine{00338                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} mmj\_tmp = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ j;}
+\DoxyCodeLine{00339                 yk = j * (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + 1);}
+\DoxyCodeLine{00340                 jj = j * (ldap1 + 1);}
+\DoxyCodeLine{00341                 jp1j = yk + 2;}
+\DoxyCodeLine{00342                 \textcolor{keywordflow}{if} (mmj\_tmp < 1) \{}
+\DoxyCodeLine{00343                     b\_n = -\/1;}
+\DoxyCodeLine{00344                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00345                     b\_n = 0;}
+\DoxyCodeLine{00346                     \textcolor{keywordflow}{if} (mmj\_tmp > 1) \{}
+\DoxyCodeLine{00347                         smax = std::abs(b\_x[jj]);}
+\DoxyCodeLine{00348                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 2; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} <= mmj\_tmp; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00349                             \textcolor{keywordtype}{double} s;}
+\DoxyCodeLine{00350                             s = std::abs(b\_x[(yk + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ 1]);}
+\DoxyCodeLine{00351                             \textcolor{keywordflow}{if} (s > smax) \{}
+\DoxyCodeLine{00352                                 b\_n = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1;}
+\DoxyCodeLine{00353                                 smax = s;}
+\DoxyCodeLine{00354                             \}}
+\DoxyCodeLine{00355                         \}}
+\DoxyCodeLine{00356                     \}}
+\DoxyCodeLine{00357                 \}}
+\DoxyCodeLine{00358                 \textcolor{keywordflow}{if} (b\_x[jj + b\_n] != 0.0) \{}
+\DoxyCodeLine{00359                     \textcolor{keywordflow}{if} (b\_n != 0) \{}
+\DoxyCodeLine{00360                         b\_n += j;}
+\DoxyCodeLine{00361                         ipiv[j] = b\_n + 1;}
+\DoxyCodeLine{00362                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00363                             smax = b\_x[j + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00364                             b\_x[j + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}] = b\_x[b\_n + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00365                             b\_x[b\_n + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}] = smax;}
+\DoxyCodeLine{00366                         \}}
+\DoxyCodeLine{00367                     \}}
+\DoxyCodeLine{00368                     i = jj + mmj\_tmp;}
+\DoxyCodeLine{00369                     \textcolor{keywordflow}{for} (b\_i = jp1j; b\_i <= i; b\_i++) \{}
+\DoxyCodeLine{00370                         b\_x[b\_i -\/ 1] = b\_x[b\_i -\/ 1] / b\_x[jj];}
+\DoxyCodeLine{00371                     \}}
+\DoxyCodeLine{00372                 \}}
+\DoxyCodeLine{00373                 b\_n = yk + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00374                 yk = jj + ldap1;}
+\DoxyCodeLine{00375                 \textcolor{keywordflow}{for} (jp1j = 0; jp1j <= mmj\_tmp -\/ 2; jp1j++) \{}
+\DoxyCodeLine{00376                     smax = b\_x[b\_n + jp1j * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00377                     \textcolor{keywordflow}{if} (b\_x[b\_n + jp1j * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}] != 0.0) \{}
+\DoxyCodeLine{00378                         i = yk + 2;}
+\DoxyCodeLine{00379                         i1 = mmj\_tmp + yk;}
+\DoxyCodeLine{00380                         \textcolor{keywordflow}{for} (b\_i = i; b\_i <= i1; b\_i++) \{}
+\DoxyCodeLine{00381                             b\_x[b\_i -\/ 1] = b\_x[b\_i -\/ 1] + b\_x[((jj + b\_i) -\/ yk) -\/ 1] * -\/smax;}
+\DoxyCodeLine{00382                         \}}
+\DoxyCodeLine{00383                     \}}
+\DoxyCodeLine{00384                     yk += \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00385                 \}}
+\DoxyCodeLine{00386             \}}
+\DoxyCodeLine{00387             b\_n = K;}
+\DoxyCodeLine{00388             p.resize(1 * K);}
+\DoxyCodeLine{00389             p[0] = 1;}
+\DoxyCodeLine{00390             yk = 1;}
+\DoxyCodeLine{00391             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 2; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} <= b\_n; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00392                 yk++;}
+\DoxyCodeLine{00393                 p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = yk;}
+\DoxyCodeLine{00394             \}}
+\DoxyCodeLine{00395             i = K;}
+\DoxyCodeLine{00396             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < i; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00397                 i1 = ipiv[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00398                 \textcolor{keywordflow}{if} (i1 > \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1) \{}
+\DoxyCodeLine{00399                     b\_n = p[i1 -\/ 1];}
+\DoxyCodeLine{00400                     p[i1 -\/ 1] = p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00401                     p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = b\_n;}
+\DoxyCodeLine{00402                 \}}
+\DoxyCodeLine{00403             \}}
+\DoxyCodeLine{00404             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00405                 i = p[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00406                 y[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + K * (i -\/ 1)] = 1.0;}
+\DoxyCodeLine{00407                 \textcolor{keywordflow}{for} (j = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1; j <= \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00408                     \textcolor{keywordflow}{if} (y[(j + K * (i -\/ 1)) -\/ 1] != 0.0) \{}
+\DoxyCodeLine{00409                         i1 = j + 1;}
+\DoxyCodeLine{00410                         \textcolor{keywordflow}{for} (b\_i = i1; b\_i <= \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; b\_i++) \{}
+\DoxyCodeLine{00411                             y[(b\_i + K * (i -\/ 1)) -\/ 1] =}
+\DoxyCodeLine{00412                                     y[(b\_i + K * (i -\/ 1)) -\/ 1] -\/}
+\DoxyCodeLine{00413                                     y[(j + K * (i -\/ 1)) -\/ 1] *}
+\DoxyCodeLine{00414                                     b\_x[(b\_i + K * (j -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00415                         \}}
+\DoxyCodeLine{00416                     \}}
+\DoxyCodeLine{00417                 \}}
+\DoxyCodeLine{00418             \}}
+\DoxyCodeLine{00419             \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00420                 b\_n = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * j -\/ 1;}
+\DoxyCodeLine{00421                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} >= 1; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/) \{}
+\DoxyCodeLine{00422                     yk = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1) -\/ 1;}
+\DoxyCodeLine{00423                     i = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + b\_n;}
+\DoxyCodeLine{00424                     \textcolor{keywordflow}{if} (y[i] != 0.0) \{}
+\DoxyCodeLine{00425                         y[i] = y[i] / b\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + yk];}
+\DoxyCodeLine{00426                         \textcolor{keywordflow}{for} (b\_i = 0; b\_i <= \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 2; b\_i++) \{}
+\DoxyCodeLine{00427                             i1 = (b\_i + b\_n) + 1;}
+\DoxyCodeLine{00428                             y[i1] = y[i1] -\/ y[i] * b\_x[(b\_i + yk) + 1];}
+\DoxyCodeLine{00429                         \}}
+\DoxyCodeLine{00430                     \}}
+\DoxyCodeLine{00431                 \}}
+\DoxyCodeLine{00432             \}}
+\DoxyCodeLine{00433         \}}
+\DoxyCodeLine{00434     \}}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00446     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00447}\mbox{\hyperlink{namespacehelper_a034619a8252a7108ebd92468a18e91f1}{00447}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a034619a8252a7108ebd92468a18e91f1}{mtimes\_Axy}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *A, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y) \{}
+\DoxyCodeLine{00448         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0;}
+\DoxyCodeLine{00449         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00450             sum = 0;}
+\DoxyCodeLine{00451             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00452                 sum += A[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i] * \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[j];}
+\DoxyCodeLine{00453             \}}
+\DoxyCodeLine{00454             y[i] = sum;}
+\DoxyCodeLine{00455         \}}
+\DoxyCodeLine{00456     \}}
+\DoxyCodeLine{00457 }
+\DoxyCodeLine{00458 }
+\DoxyCodeLine{00468     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index n>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00469}\mbox{\hyperlink{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}{00469}}     \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacehelper_a82eccad4fad1590f5354a7a6d69733e3}{length\_nonzeros}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y) \{}
+\DoxyCodeLine{00470         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} diff = 0;}
+\DoxyCodeLine{00471         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00472             diff += (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] != y[i]);}
+\DoxyCodeLine{00473         \}}
+\DoxyCodeLine{00474         \textcolor{keywordflow}{return} diff;}
+\DoxyCodeLine{00475     \}}
+\DoxyCodeLine{00476 }
+\DoxyCodeLine{00477 \textcolor{comment}{//    template<typename scalar, typename index, index m, index n, index mb>}}
+\DoxyCodeLine{00478 \textcolor{comment}{//    void mrdiv(array<scalar, m * n> \&B, const array<scalar, n * mb> \&A) \{}}
+\DoxyCodeLine{00479 \textcolor{comment}{//        using namespace matlab::engine;}}
+\DoxyCodeLine{00480 \textcolor{comment}{//}}
+\DoxyCodeLine{00481 \textcolor{comment}{//        // Start MATLAB engine synchronously}}
+\DoxyCodeLine{00482 \textcolor{comment}{//        std::unique\_ptr<MATLABEngine> matlabPtr = startMATLAB();}}
+\DoxyCodeLine{00483 \textcolor{comment}{//}}
+\DoxyCodeLine{00484 \textcolor{comment}{//        //Create MATLAB data array factory}}
+\DoxyCodeLine{00485 \textcolor{comment}{//        matlab::data::ArrayFactory factory;}}
+\DoxyCodeLine{00486 \textcolor{comment}{//}}
+\DoxyCodeLine{00487 \textcolor{comment}{//        // Call the MATLAB movsum function}}
+\DoxyCodeLine{00488 \textcolor{comment}{//        matlab::data::TypedArray<scalar> A\_M = factory.createArray(}}
+\DoxyCodeLine{00489 \textcolor{comment}{//                \{static\_cast<unsigned long>(m), static\_cast<unsigned long>(n)\}, A.begin(), A.end());}}
+\DoxyCodeLine{00490 \textcolor{comment}{//        matlab::data::TypedArray<scalar> B\_M = factory.createArray(}}
+\DoxyCodeLine{00491 \textcolor{comment}{//                \{static\_cast<unsigned long>(n), static\_cast<unsigned long>(mb)\}, B.begin(), B.end());}}
+\DoxyCodeLine{00492 \textcolor{comment}{//        matlabPtr-\/>setVariable(u"A", std::move(A\_M));}}
+\DoxyCodeLine{00493 \textcolor{comment}{//        matlabPtr-\/>setVariable(u"B", std::move(B\_M));}}
+\DoxyCodeLine{00494 \textcolor{comment}{//}}
+\DoxyCodeLine{00495 \textcolor{comment}{//        // Call the MATLAB movsum function}}
+\DoxyCodeLine{00496 \textcolor{comment}{//        matlabPtr-\/>eval(u" R = mldivide(A, B);");}}
+\DoxyCodeLine{00497 \textcolor{comment}{//}}
+\DoxyCodeLine{00498 \textcolor{comment}{//        matlab::data::TypedArray<scalar> const R = matlabPtr-\/>getVariable(u"R");}}
+\DoxyCodeLine{00499 \textcolor{comment}{//        index i = 0;}}
+\DoxyCodeLine{00500 \textcolor{comment}{//        for (auto r : R) \{}}
+\DoxyCodeLine{00501 \textcolor{comment}{//            B[i] = r;}}
+\DoxyCodeLine{00502 \textcolor{comment}{//            ++i;}}
+\DoxyCodeLine{00503 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00504 \textcolor{comment}{//    \}}}
+\DoxyCodeLine{00505 }
+\DoxyCodeLine{00513     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00514}\mbox{\hyperlink{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}{00514}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_aeb2823d11caaf00654bb307407f5b8b9}{planerot}}(\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[2], \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} G[4]) \{}
+\DoxyCodeLine{00515         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[1] != 0.0) \{}
+\DoxyCodeLine{00516             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} absxk, r, scale, t;}
+\DoxyCodeLine{00517             scale = \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}};}
+\DoxyCodeLine{00518             absxk = std::abs(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[0]);}
+\DoxyCodeLine{00519             \textcolor{keywordflow}{if} (absxk > \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}}) \{}
+\DoxyCodeLine{00520                 r = 1.0;}
+\DoxyCodeLine{00521                 scale = absxk;}
+\DoxyCodeLine{00522             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00523                 t = absxk / \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}};}
+\DoxyCodeLine{00524                 r = t * t;}
+\DoxyCodeLine{00525             \}}
+\DoxyCodeLine{00526             absxk = std::abs(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[1]);}
+\DoxyCodeLine{00527             \textcolor{keywordflow}{if} (absxk > scale) \{}
+\DoxyCodeLine{00528                 t = scale / absxk;}
+\DoxyCodeLine{00529                 r = r * t * t + 1.0;}
+\DoxyCodeLine{00530                 scale = absxk;}
+\DoxyCodeLine{00531             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00532                 t = absxk / scale;}
+\DoxyCodeLine{00533                 r += t * t;}
+\DoxyCodeLine{00534             \}}
+\DoxyCodeLine{00535             r = scale * std::sqrt(r);}
+\DoxyCodeLine{00536             scale = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[0] / r;}
+\DoxyCodeLine{00537             G[0] = scale;}
+\DoxyCodeLine{00538             G[2] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[1] / r;}
+\DoxyCodeLine{00539             G[1] = -\/\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[1] / r;}
+\DoxyCodeLine{00540             G[3] = scale;}
+\DoxyCodeLine{00541             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[0] = r;}
+\DoxyCodeLine{00542             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[1] = 0.0;}
+\DoxyCodeLine{00543         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00544             G[1] = 0.0;}
+\DoxyCodeLine{00545             G[2] = 0.0;}
+\DoxyCodeLine{00546             G[0] = 1.0;}
+\DoxyCodeLine{00547             G[3] = 1.0;}
+\DoxyCodeLine{00548         \}}
+\DoxyCodeLine{00549     \}}
+\DoxyCodeLine{00550 }
+\DoxyCodeLine{00559     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00560}\mbox{\hyperlink{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}{00560}}     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}{norm}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *v) \{}
+\DoxyCodeLine{00561         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} y;}
+\DoxyCodeLine{00562         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} == 0) \{}
+\DoxyCodeLine{00563             \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00564         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} == 1) \{}
+\DoxyCodeLine{00565             \textcolor{keywordflow}{return} std::abs(v[0]);}
+\DoxyCodeLine{00566         \}}
+\DoxyCodeLine{00567         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} scale = \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}};}
+\DoxyCodeLine{00568         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00569             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} absxk;}
+\DoxyCodeLine{00570             absxk = std::abs(v[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}]);}
+\DoxyCodeLine{00571             \textcolor{keywordflow}{if} (absxk > scale) \{}
+\DoxyCodeLine{00572                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} t;}
+\DoxyCodeLine{00573                 t = scale / absxk;}
+\DoxyCodeLine{00574                 y = y * t * t + 1.0;}
+\DoxyCodeLine{00575                 scale = absxk;}
+\DoxyCodeLine{00576             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00577                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} t;}
+\DoxyCodeLine{00578                 t = absxk / scale;}
+\DoxyCodeLine{00579                 y += t * t;}
+\DoxyCodeLine{00580             \}}
+\DoxyCodeLine{00581         \}}
+\DoxyCodeLine{00582         y = scale * std::sqrt(y);}
+\DoxyCodeLine{00583         \textcolor{keywordflow}{return} y;}
+\DoxyCodeLine{00584     \}}
+\DoxyCodeLine{00585 }
+\DoxyCodeLine{00596     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00597}\mbox{\hyperlink{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}{00597}}     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacehelper_abe2db8f1863ed7dba7a40201dc3bd632}{find\_bit\_error\_rate}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *x\_b, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *x\_t, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) \{}
+\DoxyCodeLine{00598         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} error = 0;}
+\DoxyCodeLine{00599         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00600             std::string binary\_x\_b, binary\_x\_t;}
+\DoxyCodeLine{00601             \textcolor{keywordflow}{switch} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) \{}
+\DoxyCodeLine{00602                 \textcolor{keywordflow}{case} 1:}
+\DoxyCodeLine{00603                     binary\_x\_b = std::bitset<1>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_b[i]).to\_string(); \textcolor{comment}{//to binary}}
+\DoxyCodeLine{00604                     binary\_x\_t = std::bitset<1>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_t[i]).to\_string();}
+\DoxyCodeLine{00605                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00606                 \textcolor{keywordflow}{case} 2:}
+\DoxyCodeLine{00607                     binary\_x\_b = std::bitset<2>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_b[i]).to\_string(); \textcolor{comment}{//to binary}}
+\DoxyCodeLine{00608                     binary\_x\_t = std::bitset<2>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_t[i]).to\_string();}
+\DoxyCodeLine{00609                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00610                 \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00611                     binary\_x\_b = std::bitset<3>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_b[i]).to\_string(); \textcolor{comment}{//to binary}}
+\DoxyCodeLine{00612                     binary\_x\_t = std::bitset<3>((\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) x\_t[i]).to\_string();}
+\DoxyCodeLine{00613                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00614             \}}
+\DoxyCodeLine{00615 \textcolor{comment}{//            cout << binary\_x\_b << "-\/" << binary\_x\_t << " ";}}
+\DoxyCodeLine{00616             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}; j++) \{}
+\DoxyCodeLine{00617                 \textcolor{keywordflow}{if} (binary\_x\_b[j] != binary\_x\_t[j])}
+\DoxyCodeLine{00618                     error++;}
+\DoxyCodeLine{00619             \}}
+\DoxyCodeLine{00620         \}}
+\DoxyCodeLine{00621         \textcolor{keywordflow}{return} (\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}) error / (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00622     \}}
+\DoxyCodeLine{00623 }
+\DoxyCodeLine{00633     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00634}\mbox{\hyperlink{namespacehelper_a248365cbe2a99e7437c2367d465a3865}{00634}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_a248365cbe2a99e7437c2367d465a3865}{display\_matrix}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \textcolor{keywordtype}{string}\& name) \{}
+\DoxyCodeLine{00635         cout << name << \textcolor{stringliteral}{": \(\backslash\)n"};}
+\DoxyCodeLine{00636         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00637             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00638                 printf(\textcolor{stringliteral}{"\%8.4f "}, \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[j * \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} + i]);}
+\DoxyCodeLine{00639             \}}
+\DoxyCodeLine{00640             cout << \textcolor{stringliteral}{"\(\backslash\)n"};}
+\DoxyCodeLine{00641         \}}
+\DoxyCodeLine{00642         cout << endl;}
+\DoxyCodeLine{00643     \}}
+\DoxyCodeLine{00644 }
+\DoxyCodeLine{00653     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00654}\mbox{\hyperlink{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}{00654}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_aca849a924fa3ac396513505fe1cdfa2b}{display\_vector}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \textcolor{keywordtype}{string} \&name) \{}
+\DoxyCodeLine{00655         cout << name << \textcolor{stringliteral}{": "};}
+\DoxyCodeLine{00656         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0;}
+\DoxyCodeLine{00657         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00658             printf(\textcolor{stringliteral}{"\%8.4f "}, \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i]);}
+\DoxyCodeLine{00659             sum += \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i];}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661         printf(\textcolor{stringliteral}{"SUM = \%8.5f\(\backslash\)n"}, sum);}
+\DoxyCodeLine{00662     \}}
+\DoxyCodeLine{00663 }
+\DoxyCodeLine{00670     \textcolor{keyword}{template}<\textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00671}\mbox{\hyperlink{namespacehelper_af919eeff753500758928614a000457d0}{00671}}     \textcolor{keywordtype}{bool} \mbox{\hyperlink{namespacehelper_af919eeff753500758928614a000457d0}{if\_all\_x\_true}}(\textcolor{keyword}{const} vector<bool> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}) \{}
+\DoxyCodeLine{00672         \textcolor{keywordtype}{bool} y = (!\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.empty());}
+\DoxyCodeLine{00673         \textcolor{keywordflow}{if} (!y) \textcolor{keywordflow}{return} y;}
+\DoxyCodeLine{00674 \textcolor{comment}{//        for(index k = 0; k < x.size(); k++)\{}}
+\DoxyCodeLine{00675 \textcolor{comment}{//            if(!x[k]) \{}}
+\DoxyCodeLine{00676 \textcolor{comment}{//                y = false;}}
+\DoxyCodeLine{00677 \textcolor{comment}{//                break;}}
+\DoxyCodeLine{00678 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00679 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00680         \textcolor{comment}{//If false, which means no false x, then return true.}}
+\DoxyCodeLine{00681         y = std::any\_of(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.begin(), \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.end(), [](\textcolor{keyword}{const} \textcolor{keywordtype}{bool} \&e) \{ return !e; \});}
+\DoxyCodeLine{00682         \textcolor{keywordflow}{return} !y;}
+\DoxyCodeLine{00683     \}}
+\DoxyCodeLine{00684 }
+\DoxyCodeLine{00692     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00693}\mbox{\hyperlink{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}{00693}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacehelper_aaf327acdf99894c75e3dd58450bd104e}{unique\_vector}}(\textcolor{keyword}{const} vector<scalar> \&\mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}, vector<scalar> \&b) \{}
+\DoxyCodeLine{00694         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} t, e, i, l, j, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}, size\_a\_1 = \mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}.size() + 1, size\_a = \mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}.size(), jj, p, r, \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}, r\_j;}
+\DoxyCodeLine{00695         vector<index> i\_x(size\_a, 0), j\_x(size\_a, 0);}
+\DoxyCodeLine{00696         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} absx;}
+\DoxyCodeLine{00697         \textcolor{keywordflow}{for} (i = 1; i < size\_a; i += 2) \{}
+\DoxyCodeLine{00698             \textcolor{keywordflow}{if} ((\mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[i -\/ 1] <= \mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[i]) || std::isnan(\mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[i])) \{}
+\DoxyCodeLine{00699                 i\_x[i -\/ 1] = i;}
+\DoxyCodeLine{00700                 i\_x[i] = i + 1;}
+\DoxyCodeLine{00701             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00702                 i\_x[i -\/ 1] = i + 1;}
+\DoxyCodeLine{00703                 i\_x[i] = i;}
+\DoxyCodeLine{00704             \}}
+\DoxyCodeLine{00705         \}}
+\DoxyCodeLine{00706         \textcolor{keywordflow}{if} ((size\_a \& 1) != 0) \{}
+\DoxyCodeLine{00707             i\_x[size\_a -\/ 1] = size\_a;}
+\DoxyCodeLine{00708         \}}
+\DoxyCodeLine{00709         i = 2;}
+\DoxyCodeLine{00710         \textcolor{keywordflow}{while} (i < size\_a\_1 -\/ 1) \{}
+\DoxyCodeLine{00711             l = i << 1;}
+\DoxyCodeLine{00712             j = 1;}
+\DoxyCodeLine{00713             \textcolor{keywordflow}{for} (p = i + 1; p < size\_a\_1; p = r + i) \{}
+\DoxyCodeLine{00714                 jj = j;}
+\DoxyCodeLine{00715                 \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} = p -\/ 1;}
+\DoxyCodeLine{00716                 r = j + l;}
+\DoxyCodeLine{00717                 \textcolor{keywordflow}{if} (r > size\_a\_1) \{}
+\DoxyCodeLine{00718                     r = size\_a\_1;}
+\DoxyCodeLine{00719                 \}}
+\DoxyCodeLine{00720                 \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0;}
+\DoxyCodeLine{00721                 r\_j = r -\/ j;}
+\DoxyCodeLine{00722                 \textcolor{keywordflow}{while} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1 <= r\_j) \{}
+\DoxyCodeLine{00723                     absx = \mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[i\_x[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}] -\/ 1];}
+\DoxyCodeLine{00724                     t = i\_x[jj -\/ 1];}
+\DoxyCodeLine{00725                     \textcolor{keywordflow}{if} ((\mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[t -\/ 1] <= absx) || std::isnan(absx)) \{}
+\DoxyCodeLine{00726                         j\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = t;}
+\DoxyCodeLine{00727                         jj++;}
+\DoxyCodeLine{00728                         \textcolor{keywordflow}{if} (jj == p) \{}
+\DoxyCodeLine{00729                             \textcolor{keywordflow}{while} (\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} + 1 < r) \{}
+\DoxyCodeLine{00730                                 \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00731                                 j\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = i\_x[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}];}
+\DoxyCodeLine{00732                                 \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}++;}
+\DoxyCodeLine{00733                             \}}
+\DoxyCodeLine{00734                         \}}
+\DoxyCodeLine{00735                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00736                         j\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = i\_x[\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}];}
+\DoxyCodeLine{00737                         \mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}}++;}
+\DoxyCodeLine{00738                         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacecils_1_1program__def_a39e55918a5f7058c3f62ef2e96f26af3}{q}} + 1 == r) \{}
+\DoxyCodeLine{00739                             \textcolor{keywordflow}{while} (jj < p) \{}
+\DoxyCodeLine{00740                                 \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00741                                 j\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = i\_x[jj -\/ 1];}
+\DoxyCodeLine{00742                                 jj++;}
+\DoxyCodeLine{00743                             \}}
+\DoxyCodeLine{00744                         \}}
+\DoxyCodeLine{00745                     \}}
+\DoxyCodeLine{00746                     \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00747                 \}}
+\DoxyCodeLine{00748                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < r\_j; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00749                     i\_x[(j + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ 1] = j\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00750                 \}}
+\DoxyCodeLine{00751                 j = r;}
+\DoxyCodeLine{00752             \}}
+\DoxyCodeLine{00753             i = l;}
+\DoxyCodeLine{00754         \}}
+\DoxyCodeLine{00755         b.resize(size\_a);}
+\DoxyCodeLine{00756         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < size\_a; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00757             b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = \mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{a}}[i\_x[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] -\/ 1];}
+\DoxyCodeLine{00758         \}}
+\DoxyCodeLine{00759         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0;}
+\DoxyCodeLine{00760         \textcolor{keywordflow}{while} ((\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1 <= size\_a) \&\& std::isinf(b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}]) \&\& (b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] < 0.0)) \{}
+\DoxyCodeLine{00761             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00762         \}}
+\DoxyCodeLine{00763         l = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00764         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = size\_a;}
+\DoxyCodeLine{00765         \textcolor{keywordflow}{while} ((\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} >= 1) \&\& std::isnan(b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1])) \{}
+\DoxyCodeLine{00766             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00767         \}}
+\DoxyCodeLine{00768         p = size\_a -\/ \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}};}
+\DoxyCodeLine{00769         \textcolor{keywordtype}{bool} flag = \textcolor{keyword}{false};}
+\DoxyCodeLine{00770         \textcolor{keywordflow}{while} ((!flag) \&\& (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} >= 1)) \{}
+\DoxyCodeLine{00771             \textcolor{keywordflow}{if} (std::isinf(b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1]) \&\& (b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] > 0.0)) \{}
+\DoxyCodeLine{00772                 \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00773             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00774                 flag = \textcolor{keyword}{true};}
+\DoxyCodeLine{00775             \}}
+\DoxyCodeLine{00776         \}}
+\DoxyCodeLine{00777         i = (size\_a -\/ \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ p;}
+\DoxyCodeLine{00778         jj = -\/1;}
+\DoxyCodeLine{00779         \textcolor{keywordflow}{if} (l > 0) \{}
+\DoxyCodeLine{00780             jj = 0;}
+\DoxyCodeLine{00781         \}}
+\DoxyCodeLine{00782         \textcolor{keywordflow}{while} (l + 1 <= \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) \{}
+\DoxyCodeLine{00783             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}};}
+\DoxyCodeLine{00784             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}} = b[l];}
+\DoxyCodeLine{00785             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} exitg2;}
+\DoxyCodeLine{00786             \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{00787                 exitg2 = 0;}
+\DoxyCodeLine{00788                 l++;}
+\DoxyCodeLine{00789                 \textcolor{keywordflow}{if} (l + 1 > \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) \{}
+\DoxyCodeLine{00790                     exitg2 = 1;}
+\DoxyCodeLine{00791                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00792                     absx = std::abs(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}} / 2.0);}
+\DoxyCodeLine{00793                     \textcolor{keywordflow}{if} ((!std::isinf(absx)) \&\& (!std::isnan(absx))) \{}
+\DoxyCodeLine{00794                         \textcolor{keywordflow}{if} (absx <= \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}}) \{}
+\DoxyCodeLine{00795                             absx = \mbox{\hyperlink{helper_8h_acbcd55b11cabe6b839efa09e97098c4f}{ZERO}};}
+\DoxyCodeLine{00796                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00797                             frexp(absx, \&e);}
+\DoxyCodeLine{00798                             absx = std::ldexp(1.0, e -\/ 53);}
+\DoxyCodeLine{00799                         \}}
+\DoxyCodeLine{00800                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00801                         absx = NAN;}
+\DoxyCodeLine{00802                     \}}
+\DoxyCodeLine{00803                     \textcolor{keywordflow}{if} ((!(std::abs(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}} -\/ b[l]) < absx)) \&\&}
+\DoxyCodeLine{00804                         ((!std::isinf(b[l])) || (!std::isinf(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}})) ||}
+\DoxyCodeLine{00805                          ((b[l] > 0.0) != (\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}} > 0.0)))) \{}
+\DoxyCodeLine{00806                         exitg2 = 1;}
+\DoxyCodeLine{00807                     \}}
+\DoxyCodeLine{00808                 \}}
+\DoxyCodeLine{00809             \} \textcolor{keywordflow}{while} (exitg2 == 0);}
+\DoxyCodeLine{00810             jj++;}
+\DoxyCodeLine{00811             b[jj] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}};}
+\DoxyCodeLine{00812         \}}
+\DoxyCodeLine{00813         \textcolor{keywordflow}{if} (i > 0) \{}
+\DoxyCodeLine{00814             jj++;}
+\DoxyCodeLine{00815             b[jj] = b[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00816         \}}
+\DoxyCodeLine{00817         l = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + i;}
+\DoxyCodeLine{00818         \textcolor{keywordflow}{for} (j = 0; j < p; j++) \{}
+\DoxyCodeLine{00819             b[(jj + j) + 1] = b[l + j];}
+\DoxyCodeLine{00820         \}}
+\DoxyCodeLine{00821         jj += p;}
+\DoxyCodeLine{00822         \textcolor{keywordflow}{if} (1 > jj + 1) \{}
+\DoxyCodeLine{00823             t = 0;}
+\DoxyCodeLine{00824         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00825             t = jj + 1;}
+\DoxyCodeLine{00826         \}}
+\DoxyCodeLine{00827         b.resize(t);}
+\DoxyCodeLine{00828     \}}
+\DoxyCodeLine{00829 }
+\DoxyCodeLine{00841     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{helper_8h_source_l00842}\mbox{\hyperlink{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}{00842}}     \textcolor{keyword}{inline} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} \mbox{\hyperlink{namespacehelper_ad26b5d4b9e5c4d32f7de4fe3af8a7327}{find\_residual}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *A, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y) \{}
+\DoxyCodeLine{00843         vector<scalar> Ax(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, 0);}
+\DoxyCodeLine{00844         \mbox{\hyperlink{namespacehelper_a034619a8252a7108ebd92468a18e91f1}{mtimes\_Axy}}(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, A, \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, Ax.data());}
+\DoxyCodeLine{00845         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00846             Ax[i] = y[i] -\/ Ax[i];}
+\DoxyCodeLine{00847         \}}
+\DoxyCodeLine{00848         \textcolor{keywordflow}{return} \mbox{\hyperlink{namespacehelper_acbfd2d7f224f58b650557f9a004871d7}{norm}}(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, Ax.data());}
+\DoxyCodeLine{00849     \}}
+\DoxyCodeLine{00850 \}}
+
+\end{DoxyCode}

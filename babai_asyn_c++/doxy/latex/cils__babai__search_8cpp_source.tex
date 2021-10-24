@@ -1,0 +1,176 @@
+\hypertarget{cils__babai__search_8cpp_source}{}\doxysection{cils\+\_\+babai\+\_\+search.\+cpp}
+\label{cils__babai__search_8cpp_source}\index{src/source/cils\_babai\_search.cpp@{src/source/cils\_babai\_search.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00022     returnType <scalar, index>}
+\DoxyCodeLine{\Hypertarget{cils__babai__search_8cpp_source_l00023}\mbox{\hyperlink{classcils_1_1cils_a816b186d62d3c77b653835f570d27682}{00023}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_babai\_search\_omp}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} nswp, vector<scalar> *z\_B) \{}
+\DoxyCodeLine{00024 }
+\DoxyCodeLine{00025         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} num\_iter = 0, end = 1, x\_min = 0, ni, nj, diff = 0, z\_p[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}] = \{\}, result[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}] = \{\};}
+\DoxyCodeLine{00026         \textcolor{keywordtype}{bool} flag = \textcolor{keyword}{false}, check = \textcolor{keyword}{false};}
+\DoxyCodeLine{00027         \textcolor{keyword}{auto} z\_x = z\_B-\/>data();}
+\DoxyCodeLine{00028         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0, r, run\_time;}
+\DoxyCodeLine{00029         omp\_set\_schedule((omp\_sched\_t) \mbox{\hyperlink{namespacecils_1_1program__def_a5317e618a5bb00f0cd69b6b3b5c9c72a}{schedule}}, \mbox{\hyperlink{namespacecils_1_1program__def_aa0d284cb0d13f48463cb69dc837bdf9b}{chunk\_size}});}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} start = omp\_get\_wtime();}
+\DoxyCodeLine{00032         r = round(y\_r[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] / R\_A[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + 1) / 2 -\/ 1]);}
+\DoxyCodeLine{00033         z\_x[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] = r < 0 ? 0 : r > upper ? upper : r;}
+\DoxyCodeLine{00034         result[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] = 1;}
+\DoxyCodeLine{00035 \textcolor{preprocessor}{\#pragma omp parallel default(shared) num\_threads(n\_proc) private(check, r, sum, ni, nj)}}
+\DoxyCodeLine{00036         \{}
+\DoxyCodeLine{00037             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < nswp \&\& !flag; j++) \{}
+\DoxyCodeLine{00038 \textcolor{preprocessor}{\#pragma omp for schedule(runtime) nowait}}
+\DoxyCodeLine{00039                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 1; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00040                     ni = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1 -\/ i;}
+\DoxyCodeLine{00041                     \textcolor{keywordflow}{if} (!flag) \{}
+\DoxyCodeLine{00042                         sum = 0;}
+\DoxyCodeLine{00043                         nj = ni * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ (ni * (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i)) / 2;}
+\DoxyCodeLine{00044 }
+\DoxyCodeLine{00045 \textcolor{preprocessor}{\#pragma omp simd reduction(+ : sum)}}
+\DoxyCodeLine{00046                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i; col < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; col++) \{}
+\DoxyCodeLine{00047                             sum += R\_A[nj + col] * z\_x[col];}
+\DoxyCodeLine{00048                         \}}
+\DoxyCodeLine{00049                         r = round((y\_r[ni] -\/ sum) / R\_A[nj + ni]);}
+\DoxyCodeLine{00050                         z\_x[ni] = !\mbox{\hyperlink{namespaceplot__helper_a42a9284c68a72e08f1ba88f8fd2ac20d}{is\_constrained}} ? r : r < 0 ? 0 : r > upper ? upper : r;}
+\DoxyCodeLine{00051                         result[ni] = z\_x[ni] == z\_p[ni] \&\& j > 2;}
+\DoxyCodeLine{00052                         diff += result[ni];}
+\DoxyCodeLine{00053                         z\_p[ni] = z\_x[ni];}
+\DoxyCodeLine{00054                     \}}
+\DoxyCodeLine{00055                 \}}
+\DoxyCodeLine{00056                 \textcolor{keywordflow}{if} (j > 2) \{}
+\DoxyCodeLine{00057                     num\_iter = j;}
+\DoxyCodeLine{00058                     diff = 0;}
+\DoxyCodeLine{00059 \textcolor{preprocessor}{\#pragma omp simd reduction(+ : diff)}}
+\DoxyCodeLine{00060                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} l = 0; l < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; l++) \{}
+\DoxyCodeLine{00061                         diff += result[l];}
+\DoxyCodeLine{00062                     \}}
+\DoxyCodeLine{00063                     flag = diff > \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 10;}
+\DoxyCodeLine{00064                 \}}
+\DoxyCodeLine{00065                 \textcolor{keywordflow}{if} (flag) \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00066             \}}
+\DoxyCodeLine{00067 \textcolor{preprocessor}{\#pragma omp single}}
+\DoxyCodeLine{00068             \{}
+\DoxyCodeLine{00069                 run\_time = omp\_get\_wtime() -\/ start;}
+\DoxyCodeLine{00070             \};}
+\DoxyCodeLine{00071         \}}
+\DoxyCodeLine{00072         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} run\_time2 = omp\_get\_wtime() -\/ start;}
+\DoxyCodeLine{00073 \textcolor{preprocessor}{\#pragma parallel omp cancellation point}}
+\DoxyCodeLine{00074 \textcolor{preprocessor}{\#pragma omp flush}}
+\DoxyCodeLine{00075         \textcolor{comment}{//Matlab Partial Reduction needs to do the permutation}}
+\DoxyCodeLine{00076 \textcolor{comment}{//        if (is\_matlab)}}
+\DoxyCodeLine{00077 \textcolor{comment}{//        vector\_permutation<scalar, index, m,  n>(Z, z\_B);}}
+\DoxyCodeLine{00078         cout << end << \textcolor{stringliteral}{","} << diff << \textcolor{stringliteral}{","} << (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}) run\_time2 / run\_time << \textcolor{stringliteral}{","};}
+\DoxyCodeLine{00079         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}} reT = \{\{\}, run\_time, num\_iter\};}
+\DoxyCodeLine{00080         \textcolor{keywordflow}{return} reT;}
+\DoxyCodeLine{00081     \}}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00084     \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{\Hypertarget{cils__babai__search_8cpp_source_l00085}\mbox{\hyperlink{classcils_1_1cils_a6ebba0bc8411c5fc76923aa5ebfe2cf3}{00085}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_babai\_search\_serial}}(vector<scalar> *z\_B) \{}
+\DoxyCodeLine{00086         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0;}
+\DoxyCodeLine{00087         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} start = omp\_get\_wtime();}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} result = round(y\_r[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] / R\_R[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1]);}
+\DoxyCodeLine{00090         z\_B-\/>at(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1) = result < 0 ? 0 : result > upper ? upper : result;}
+\DoxyCodeLine{00091 }
+\DoxyCodeLine{00092         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 1; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00093             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i -\/ 1;}
+\DoxyCodeLine{00094             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i; col < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; col++) \{}
+\DoxyCodeLine{00095                 sum += R\_R[col * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] * z\_B-\/>at(col);}
+\DoxyCodeLine{00096 \textcolor{comment}{//                sum += R\_R[col * n + k] * z\_B[col);}}
+\DoxyCodeLine{00097             \}}
+\DoxyCodeLine{00098             result = round((y\_r[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] -\/ sum) / R\_R[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}]);}
+\DoxyCodeLine{00099             z\_B-\/>at(\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) = !\mbox{\hyperlink{namespaceplot__helper_a42a9284c68a72e08f1ba88f8fd2ac20d}{is\_constrained}} ? result : result < 0 ? 0 : result > upper ? upper : result;}
+\DoxyCodeLine{00100             sum = 0;}
+\DoxyCodeLine{00101         \}}
+\DoxyCodeLine{00102         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} run\_time = omp\_get\_wtime() -\/ start;}
+\DoxyCodeLine{00103         \textcolor{comment}{//Matlab Partial Reduction needs to do the permutation}}
+\DoxyCodeLine{00104 \textcolor{comment}{//        if (is\_matlab)}}
+\DoxyCodeLine{00105         vector\_permutation<scalar, index, m, n>(Z, z\_B);}
+\DoxyCodeLine{00106         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}} reT = \{\{\}, run\_time, 0\};}
+\DoxyCodeLine{00107         \textcolor{keywordflow}{return} reT;}
+\DoxyCodeLine{00108     \}}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00111     \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{\Hypertarget{cils__babai__search_8cpp_source_l00112}\mbox{\hyperlink{classcils_1_1cils_a166f627bd33d9579c7039b5fd0d58812}{00112}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_back\_solve}}(array<scalar, n> \&z\_B) \{}
+\DoxyCodeLine{00113         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0;}
+\DoxyCodeLine{00114 }
+\DoxyCodeLine{00115         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} start = omp\_get\_wtime();}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117         z\_B[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] = y\_r[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] / R\_A[((\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}) / 2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1];}
+\DoxyCodeLine{00118         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 1; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00119             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i -\/ 1;}
+\DoxyCodeLine{00120             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i; col < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; col++) \{}
+\DoxyCodeLine{00121                 sum += R\_R[col * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] * z\_B[col];}
+\DoxyCodeLine{00122             \}}
+\DoxyCodeLine{00123             z\_B[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = (y\_r[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] -\/ sum) / R\_R[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00124             sum = 0;}
+\DoxyCodeLine{00125         \}}
+\DoxyCodeLine{00126 }
+\DoxyCodeLine{00127 \textcolor{comment}{//        for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00128 \textcolor{comment}{//            z\_B[i) = round(z\_B\_tmp[i]) < 0 ? 0 : round(z\_B\_tmp[i]) > upper ? upper : round(z\_B\_tmp[i]);}}
+\DoxyCodeLine{00129 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} run\_time = omp\_get\_wtime() -\/ start;}
+\DoxyCodeLine{00132         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}} reT = \{\{\}, run\_time, 0\};}
+\DoxyCodeLine{00133         \textcolor{keywordflow}{return} reT;}
+\DoxyCodeLine{00134     \}}
+\DoxyCodeLine{00135 }
+\DoxyCodeLine{00136     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00137     \mbox{\hyperlink{structcils_1_1return_type}{returnType <scalar, index>}}}
+\DoxyCodeLine{\Hypertarget{cils__babai__search_8cpp_source_l00138}\mbox{\hyperlink{classcils_1_1cils_ae7761c08fb8cc5fd4bf674ccfcb2f08d}{00138}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_back\_solve\_omp}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_proc, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} nswp,}
+\DoxyCodeLine{00139                                                    vector<scalar> *z\_B) \{}
+\DoxyCodeLine{00140 }
+\DoxyCodeLine{00141         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} s = n\_proc, x\_min = 0, ni, nj, diff;}
+\DoxyCodeLine{00142         \textcolor{keywordtype}{bool} flag = \textcolor{keyword}{false}, check = \textcolor{keyword}{false};}
+\DoxyCodeLine{00143         \textcolor{keyword}{auto} z\_x = z\_B-\/>data();}
+\DoxyCodeLine{00144         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} z\_p[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}], sum = 0, result, num\_iter = 0;}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} start = omp\_get\_wtime();}
+\DoxyCodeLine{00147         z\_x[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] = y\_r[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1] / R\_A[((\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}) / 2 + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1];}
+\DoxyCodeLine{00148 \textcolor{preprocessor}{\#pragma omp parallel default(shared) num\_threads(n\_proc) private(check, result, sum, diff, ni, nj)}}
+\DoxyCodeLine{00149         \{}
+\DoxyCodeLine{00150             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} j = 0; j < nswp; j++) \{ \textcolor{comment}{// \&\& !flag}}
+\DoxyCodeLine{00151 \textcolor{preprocessor}{\#pragma omp for schedule(dynamic) nowait}}
+\DoxyCodeLine{00152                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 1; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00153 \textcolor{comment}{//                    if (flag) continue; //}}
+\DoxyCodeLine{00154                     sum = 0;}
+\DoxyCodeLine{00155                     ni = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ 1 -\/ i;}
+\DoxyCodeLine{00156                     nj = ni * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ (ni * (\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i)) / 2;}
+\DoxyCodeLine{00157 }
+\DoxyCodeLine{00158 \textcolor{preprocessor}{\#pragma omp simd reduction(+ : sum)}}
+\DoxyCodeLine{00159                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i; col < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; col++) \{}
+\DoxyCodeLine{00160                         sum += R\_A[nj + col] * z\_x[col];}
+\DoxyCodeLine{00161                     \}}
+\DoxyCodeLine{00162                     z\_x[ni] = (y\_r[ni] -\/ sum) / R\_A[nj + ni];}
+\DoxyCodeLine{00163 \textcolor{comment}{//                    if (i == n -\/ 1)}}
+\DoxyCodeLine{00164 \textcolor{comment}{//                        check = true;}}
+\DoxyCodeLine{00165                 \}}
+\DoxyCodeLine{00166 \textcolor{comment}{//                if (j > 0 \&\& check) \{}}
+\DoxyCodeLine{00167 \textcolor{comment}{//                    num\_iter = j;}}
+\DoxyCodeLine{00168 \textcolor{comment}{//                    check = false;}}
+\DoxyCodeLine{00169 \textcolor{comment}{//                    diff = 0;}}
+\DoxyCodeLine{00170 \textcolor{comment}{//\#pragma omp simd reduction(+ : diff)}}
+\DoxyCodeLine{00171 \textcolor{comment}{//                    for (index l = 0; l < n; l++) \{}}
+\DoxyCodeLine{00172 \textcolor{comment}{//                        diff += z\_x[l] == z\_p[l];}}
+\DoxyCodeLine{00173 \textcolor{comment}{//                        z\_p[l] = z\_x[l];}}
+\DoxyCodeLine{00174 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00175 \textcolor{comment}{//                    flag = diff > n -\/ stop;}}
+\DoxyCodeLine{00176 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00177             \}}
+\DoxyCodeLine{00178         \}}
+\DoxyCodeLine{00179         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} run\_time = omp\_get\_wtime() -\/ start;}
+\DoxyCodeLine{00180 \textcolor{preprocessor}{\#pragma parallel omp cancellation point}}
+\DoxyCodeLine{00181 \textcolor{preprocessor}{\#pragma omp flush}}
+\DoxyCodeLine{00182         vector\_permutation<scalar, index, m, n>(Z, z\_B);}
+\DoxyCodeLine{00183         \mbox{\hyperlink{structcils_1_1return_type}{returnType<scalar, index>}} reT = \{\{\}, run\_time, num\_iter\};}
+\DoxyCodeLine{00184         \textcolor{keywordflow}{return} reT;}
+\DoxyCodeLine{00185     \}}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187 \}}
+
+\end{DoxyCode}

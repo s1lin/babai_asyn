@@ -1,0 +1,342 @@
+\hypertarget{cils__partition__deficient_8cpp_source}{}\doxysection{cils\+\_\+partition\+\_\+deficient.\+cpp}
+\label{cils__partition__deficient_8cpp_source}\index{src/source/cils\_partition\_deficient.cpp@{src/source/cils\_partition\_deficient.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00002 \textcolor{comment}{// Created by shilei on 10/6/21.}}
+\DoxyCodeLine{00003 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00004 }
+\DoxyCodeLine{00005     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00006     returnType <scalar, index>}
+\DoxyCodeLine{\Hypertarget{cils__partition__deficient_8cpp_source_l00007}\mbox{\hyperlink{classcils_1_1cils_a615631392b02675f6d6e81683e31f43d}{00007}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_partition\_deficient}}(\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *z, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *Q\_tilde,}
+\DoxyCodeLine{00008                                                         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_tilde, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *H\_A, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *P\_cum) \{}
+\DoxyCodeLine{00009         vector<scalar> H\_P, I\_K, P\_tmp(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0), Piv, b\_H, y, z\_p;}
+\DoxyCodeLine{00010         vector<index> \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}};}
+\DoxyCodeLine{00011         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} lastCol, t, b\_i, i, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}, nx, vlen;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013         \textcolor{comment}{// 'partition\_H\_2:23' H\_A = H;}}
+\DoxyCodeLine{00014         \textcolor{comment}{// for (i = 0; i < m * n; i++) \{}}
+\DoxyCodeLine{00015         \textcolor{comment}{//     H\_A[i] = H[i];}}
+\DoxyCodeLine{00016         \textcolor{comment}{// \}}}
+\DoxyCodeLine{00017         \textcolor{comment}{// 'partition\_H\_2:24' z = z\_B;}}
+\DoxyCodeLine{00018         \textcolor{comment}{// 'partition\_H\_2:25' lastCol = n;}}
+\DoxyCodeLine{00019         lastCol = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}};}
+\DoxyCodeLine{00020         \textcolor{comment}{// 'partition\_H\_2:26' P\_cum = eye(n);}}
+\DoxyCodeLine{00021         \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{helper::eye}}(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P\_cum);}
+\DoxyCodeLine{00022         \textcolor{comment}{// 'partition\_H\_2:27' R\_tilde = zeros(m,n);}}
+\DoxyCodeLine{00023         \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00024             R\_tilde[i] = 0.0;}
+\DoxyCodeLine{00025             Q\_tilde[i] = 0.0;}
+\DoxyCodeLine{00026         \}}
+\DoxyCodeLine{00027         \textcolor{comment}{// 'partition\_H\_2:29' indicator\_tmp = zeros(2, n);}}
+\DoxyCodeLine{00028         \textcolor{comment}{// 'partition\_H\_2:30' i = 0;}}
+\DoxyCodeLine{00029         b\_i = 0U;}
+\DoxyCodeLine{00030         \textcolor{comment}{// 'partition\_H\_2:32' while lastCol >= 1}}
+\DoxyCodeLine{00031         \textcolor{keywordflow}{while} (lastCol >= 1.0) \{}
+\DoxyCodeLine{00032             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} size\_H, c\_i, i1, i2, i3, r;}
+\DoxyCodeLine{00033             \textcolor{comment}{// 'partition\_H\_2:33' firstCol = max(1, lastCol-\/m+1);}}
+\DoxyCodeLine{00034             t = std::fmax(1.0, (lastCol -\/ \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}) + 1.0);}
+\DoxyCodeLine{00035             \textcolor{comment}{// 'partition\_H\_2:34' H\_cur = H\_A(:, firstCol:lastCol);}}
+\DoxyCodeLine{00036             \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00037                 i = -\/1;}
+\DoxyCodeLine{00038                 i1 = -\/1;}
+\DoxyCodeLine{00039             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00040                 i = t -\/ 2;}
+\DoxyCodeLine{00041                 i1 = lastCol -\/ 1;}
+\DoxyCodeLine{00042             \}}
+\DoxyCodeLine{00043             size\_H = i1 -\/ i;}
+\DoxyCodeLine{00044             \textcolor{comment}{// 'partition\_H\_2:35' z\_cur = z(firstCol:lastCol);}}
+\DoxyCodeLine{00045             \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00046                 i2 = 1;}
+\DoxyCodeLine{00047             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00048                 i2 = t;}
+\DoxyCodeLine{00049             \}}
+\DoxyCodeLine{00050             \textcolor{comment}{// 'partition\_H\_2:36' P\_tmp = eye(n);}}
+\DoxyCodeLine{00051             P\_tmp.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00052             \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{helper::eye}}(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, P\_tmp.data());}
+\DoxyCodeLine{00053             \textcolor{comment}{// Find the rank of H\_cur}}
+\DoxyCodeLine{00054             \textcolor{comment}{// 'partition\_H\_2:39' [Q\_qr,R\_qr,P\_qr]=qr(H\_cur);}}
+\DoxyCodeLine{00055             b\_H.resize(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H);}
+\DoxyCodeLine{00056             b\_H.assign(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H, 0);}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{for} (i3 = 0; i3 < size\_H; i3++) \{}
+\DoxyCodeLine{00058                 \textcolor{keywordflow}{for} (c\_i = 0; c\_i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; c\_i++) \{}
+\DoxyCodeLine{00059                     b\_H[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i3] = H\_A[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i + i3) + 1)];}
+\DoxyCodeLine{00060                 \}}
+\DoxyCodeLine{00061             \}}
+\DoxyCodeLine{00062             \mbox{\hyperlink{classcils_1_1cils__reduction}{cils\_reduction<scalar, index>}} reduction(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, size\_H, 0, upper, 0, 0);}
+\DoxyCodeLine{00063             reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a82c53f428d82267fcd3a6418f08c7500}{cils\_eml\_qr}}(b\_H.data());}
+\DoxyCodeLine{00064             \textcolor{comment}{//  coder::eml\_qr(b\_H, reduction.Q, reduction.R\_Q, reduction.P);}}
+\DoxyCodeLine{00065             \textcolor{comment}{// 'partition\_H\_2:41' if size(R\_qr,2)>1}}
+\DoxyCodeLine{00066             \textcolor{keywordflow}{if} (size\_H > 1) \{}
+\DoxyCodeLine{00067                 \textcolor{comment}{// 'partition\_H\_2:42' r = sum( abs(diag(R\_qr)) > 10\string^(-\/6) );}}
+\DoxyCodeLine{00068                 vlen = size\_H;}
+\DoxyCodeLine{00069                 \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} < vlen) \{}
+\DoxyCodeLine{00070                     vlen = \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}};}
+\DoxyCodeLine{00071                 \}}
+\DoxyCodeLine{00072                 \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.resize(vlen);}
+\DoxyCodeLine{00073                 \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}.assign(vlen, 0);}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < vlen; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00075                     \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] = (std::abs(reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}]) > 1.0E-\/6);}
+\DoxyCodeLine{00076                 \}}
+\DoxyCodeLine{00077                 \textcolor{keywordflow}{if} (vlen == 0) \{}
+\DoxyCodeLine{00078                     r = 0;}
+\DoxyCodeLine{00079                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00080                     r = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[0];}
+\DoxyCodeLine{00081                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 2; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} <= vlen; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00082                         r += \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1];}
+\DoxyCodeLine{00083                     \}}
+\DoxyCodeLine{00084                 \}}
+\DoxyCodeLine{00085             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00086                 \textcolor{comment}{// 'partition\_H\_2:43' else}}
+\DoxyCodeLine{00087                 \textcolor{comment}{// 'partition\_H\_2:44' r = sum( abs(R\_qr(1,1)) > 10\string^(-\/6));}}
+\DoxyCodeLine{00088                 r = (std::abs(reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[0]) > 1.0E-\/6);}
+\DoxyCodeLine{00089             \}}
+\DoxyCodeLine{00090             \textcolor{comment}{// 'partition\_H\_2:46' H\_P = H\_cur * P\_qr;}}
+\DoxyCodeLine{00091             b\_H.resize(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H);}
+\DoxyCodeLine{00092             b\_H.assign(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H, 0);}
+\DoxyCodeLine{00093             H\_P.resize(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H);}
+\DoxyCodeLine{00094             H\_P.assign(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * size\_H, 0);}
+\DoxyCodeLine{00095             \textcolor{keywordflow}{for} (i3 = 0; i3 < size\_H; i3++) \{}
+\DoxyCodeLine{00096                 \textcolor{keywordflow}{for} (c\_i = 0; c\_i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; c\_i++) \{}
+\DoxyCodeLine{00097                     b\_H[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i3] = H\_A[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i + i3) + 1)];}
+\DoxyCodeLine{00098                 \}}
+\DoxyCodeLine{00099             \}}
+\DoxyCodeLine{00100             \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{helper::mtimes\_AP}}(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}, size\_H, b\_H.data(), reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_ae521f68f44bc236036345957286302db}{P}}.data(), H\_P.data());}
+\DoxyCodeLine{00101             \textcolor{comment}{// 'partition\_H\_2:47' z\_p = P\_qr' * z\_cur;}}
+\DoxyCodeLine{00102             z\_p.resize(size\_H);}
+\DoxyCodeLine{00103             z\_p.assign(size\_H, 0);}
+\DoxyCodeLine{00104             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < size\_H; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00105                 \textcolor{keywordflow}{for} (c\_i = 0; c\_i < size\_H; c\_i++) \{}
+\DoxyCodeLine{00106                     z\_p[c\_i] = z\_p[c\_i] + reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_ae521f68f44bc236036345957286302db}{P}}[c\_i * size\_H + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}] * z[(i2 + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) -\/ 1];}
+\DoxyCodeLine{00107                 \}}
+\DoxyCodeLine{00108             \}}
+\DoxyCodeLine{00109             \textcolor{comment}{// 'partition\_H\_2:49' size\_H\_2 = size(H\_cur, 2);}}
+\DoxyCodeLine{00110             \textcolor{comment}{// The case where H\_cur is rank deficient}}
+\DoxyCodeLine{00111             \textcolor{comment}{// 'partition\_H\_2:52' if r < size\_H\_2}}
+\DoxyCodeLine{00112             \textcolor{keywordflow}{if} (r < size\_H) \{}
+\DoxyCodeLine{00113                 \textcolor{comment}{// Permute the columns of H\_A and the entries of z}}
+\DoxyCodeLine{00114                 \textcolor{comment}{// 'partition\_H\_2:54' H\_A(:, firstCol:firstCol+size\_H\_2-\/1 -\/r ) = H\_P(:,}}
+\DoxyCodeLine{00115                 \textcolor{comment}{// r+1:size\_H\_2);}}
+\DoxyCodeLine{00116                 \textcolor{keywordflow}{if} (r + 1 > size\_H) \{}
+\DoxyCodeLine{00117                     i2 = 0;}
+\DoxyCodeLine{00118                     i3 = -\/1;}
+\DoxyCodeLine{00119                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00120                     i2 = r;}
+\DoxyCodeLine{00121                     i3 = size\_H -\/ 1;}
+\DoxyCodeLine{00122                 \}}
+\DoxyCodeLine{00123                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} d = t + size\_H;}
+\DoxyCodeLine{00124                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} d1 = (d -\/ 1) -\/ r;}
+\DoxyCodeLine{00125                 \textcolor{keywordflow}{if} (t > d1) \{}
+\DoxyCodeLine{00126                     c\_i = 1;}
+\DoxyCodeLine{00127                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00128                     c\_i = t;}
+\DoxyCodeLine{00129                 \}}
+\DoxyCodeLine{00130                 nx = i3 -\/ i2;}
+\DoxyCodeLine{00131                 \textcolor{keywordflow}{for} (i3 = 0; i3 <= nx; i3++) \{}
+\DoxyCodeLine{00132                     \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00133                         H\_A[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((c\_i + i3) -\/ 1)] = H\_P[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i2 + i3)];}
+\DoxyCodeLine{00134                     \}}
+\DoxyCodeLine{00135                 \}}
+\DoxyCodeLine{00136                 \textcolor{comment}{// 'partition\_H\_2:55' H\_A(:, firstCol+size\_H\_2-\/r: lastCol) = H\_P(:, 1:r);}}
+\DoxyCodeLine{00137                 \textcolor{keywordflow}{if} (1 > r) \{}
+\DoxyCodeLine{00138                     vlen = 0;}
+\DoxyCodeLine{00139                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00140                     vlen = r;}
+\DoxyCodeLine{00141                 \}}
+\DoxyCodeLine{00142                 d -\/= r;}
+\DoxyCodeLine{00143                 \textcolor{keywordflow}{if} (d > lastCol) \{}
+\DoxyCodeLine{00144                     i2 = 1;}
+\DoxyCodeLine{00145                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00146                     i2 = d;}
+\DoxyCodeLine{00147                 \}}
+\DoxyCodeLine{00148 }
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{for} (i3 = 0; i3 < vlen; i3++) \{}
+\DoxyCodeLine{00150                     \textcolor{keywordflow}{for} (c\_i = 0; c\_i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; c\_i++) \{}
+\DoxyCodeLine{00151                         H\_A[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i2 + i3) -\/ 1)] = H\_P[c\_i + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i3];}
+\DoxyCodeLine{00152                     \}}
+\DoxyCodeLine{00153                 \}}
+\DoxyCodeLine{00154                 \textcolor{comment}{// 'partition\_H\_2:56' z(firstCol:firstCol+size\_H\_2-\/1-\/r) =}}
+\DoxyCodeLine{00155                 \textcolor{comment}{// z\_p(r+1:size\_H\_2);}}
+\DoxyCodeLine{00156                 \textcolor{keywordflow}{if} (r + 1 > size\_H) \{}
+\DoxyCodeLine{00157                     i2 = 0;}
+\DoxyCodeLine{00158                     i3 = 0;}
+\DoxyCodeLine{00159                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00160                     i2 = r;}
+\DoxyCodeLine{00161                     i3 = size\_H;}
+\DoxyCodeLine{00162                 \}}
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{if} (t > d1) \{}
+\DoxyCodeLine{00164                     c\_i = 1;}
+\DoxyCodeLine{00165                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00166                     c\_i = t;}
+\DoxyCodeLine{00167                 \}}
+\DoxyCodeLine{00168                 vlen = i3 -\/ i2;}
+\DoxyCodeLine{00169                 \textcolor{keywordflow}{for} (i3 = 0; i3 < vlen; i3++) \{}
+\DoxyCodeLine{00170                     z[(c\_i + i3) -\/ 1] = z\_p[i2 + i3];}
+\DoxyCodeLine{00171                 \}}
+\DoxyCodeLine{00172                 \textcolor{comment}{// 'partition\_H\_2:57' z(firstCol+size\_H\_2-\/r: lastCol) = z\_p(1:r);}}
+\DoxyCodeLine{00173                 \textcolor{keywordflow}{if} (1 > r) \{}
+\DoxyCodeLine{00174                     vlen = 0;}
+\DoxyCodeLine{00175                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00176                     vlen = r;}
+\DoxyCodeLine{00177                 \}}
+\DoxyCodeLine{00178                 d = (t + size\_H) -\/ r;}
+\DoxyCodeLine{00179                 \textcolor{keywordflow}{if} (d > lastCol) \{}
+\DoxyCodeLine{00180                     i2 = 1;}
+\DoxyCodeLine{00181                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00182                     i2 = d;}
+\DoxyCodeLine{00183                 \}}
+\DoxyCodeLine{00184                 \textcolor{keywordflow}{for} (i3 = 0; i3 < vlen; i3++) \{}
+\DoxyCodeLine{00185                     z[(i2 + i3) -\/ 1] = z\_p[i3];}
+\DoxyCodeLine{00186                 \}}
+\DoxyCodeLine{00187                 \textcolor{comment}{// Update the permutation matrix P\_tmp}}
+\DoxyCodeLine{00188                 \textcolor{comment}{// 'partition\_H\_2:60' I\_K = eye(size\_H\_2);}}
+\DoxyCodeLine{00189                 I\_K.resize(size\_H * size\_H);}
+\DoxyCodeLine{00190                 I\_K.assign(size\_H * size\_H, 0);}
+\DoxyCodeLine{00191                 \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{helper::eye}}(size\_H, I\_K.data());}
+\DoxyCodeLine{00192                 \textcolor{comment}{// 'partition\_H\_2:61' Piv = eye(size\_H\_2);}}
+\DoxyCodeLine{00193                 Piv.resize(size\_H * size\_H, 0);}
+\DoxyCodeLine{00194                 \mbox{\hyperlink{namespacehelper_a05330a2b0997edb2c1d8304fb4ae78fd}{helper::eye}}(size\_H, Piv.data());}
+\DoxyCodeLine{00195                 \textcolor{comment}{// 'partition\_H\_2:62' Piv(:, size\_H\_2-\/r+1:size\_H\_2) = I\_K(:, 1:r);}}
+\DoxyCodeLine{00196                 \textcolor{keywordflow}{if} (1 > r) \{}
+\DoxyCodeLine{00197                     vlen = 0;}
+\DoxyCodeLine{00198                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00199                     vlen = r;}
+\DoxyCodeLine{00200                 \}}
+\DoxyCodeLine{00201                 d = (size\_H -\/ r) + 1;}
+\DoxyCodeLine{00202                 \textcolor{keywordflow}{if} (d > i1 -\/ i) \{}
+\DoxyCodeLine{00203                     i = 1;}
+\DoxyCodeLine{00204                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00205                     i = d;}
+\DoxyCodeLine{00206                 \}}
+\DoxyCodeLine{00207                 \textcolor{keywordflow}{for} (i1 = 0; i1 < vlen; i1++) \{}
+\DoxyCodeLine{00208                     \textcolor{keywordflow}{for} (i2 = 0; i2 < size\_H; i2++) \{}
+\DoxyCodeLine{00209                         Piv[i2 + size\_H * ((i + i1) -\/ 1)] = I\_K[i2 + size\_H * i1];}
+\DoxyCodeLine{00210                     \}}
+\DoxyCodeLine{00211                 \}}
+\DoxyCodeLine{00212                 \textcolor{comment}{// 'partition\_H\_2:63' Piv(:, 1:size\_H\_2-\/r) = I\_K(:, r+1:size\_H\_2);}}
+\DoxyCodeLine{00213                 \textcolor{keywordflow}{if} (r + 1 > size\_H) \{}
+\DoxyCodeLine{00214                     i = 0;}
+\DoxyCodeLine{00215                     size\_H = 0;}
+\DoxyCodeLine{00216                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00217                     i = r;}
+\DoxyCodeLine{00218                 \}}
+\DoxyCodeLine{00219                 nx = size\_H -\/ i;}
+\DoxyCodeLine{00220                 \textcolor{keywordflow}{for} (i1 = 0; i1 < nx; i1++) \{}
+\DoxyCodeLine{00221                     \textcolor{keywordflow}{for} (i2 = 0; i2 < size\_H; i2++) \{}
+\DoxyCodeLine{00222                         Piv[i2 + size\_H * i1] = I\_K[i2 + size\_H * (i + i1)];}
+\DoxyCodeLine{00223                     \}}
+\DoxyCodeLine{00224                 \}}
+\DoxyCodeLine{00225                 \textcolor{comment}{// 'partition\_H\_2:64' P\_tmp(firstCol:lastCol, firstCol:lastCol) = P\_qr * Piv;}}
+\DoxyCodeLine{00226                 \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00227                     i = 1;}
+\DoxyCodeLine{00228                     i1 = 1;}
+\DoxyCodeLine{00229                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00230                     i = t;}
+\DoxyCodeLine{00231                     i1 = t;}
+\DoxyCodeLine{00232                 \}}
+\DoxyCodeLine{00233 }
+\DoxyCodeLine{00234                 I\_K.assign(size\_H * size\_H, 0);}
+\DoxyCodeLine{00235                 \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{helper::mtimes\_AP}}(size\_H, size\_H, reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_ae521f68f44bc236036345957286302db}{P}}.data(), Piv.data(), I\_K.data());}
+\DoxyCodeLine{00236                 \textcolor{keywordflow}{for} (i2 = 0; i2 < size\_H; i2++) \{}
+\DoxyCodeLine{00237                     \textcolor{keywordflow}{for} (i3 = 0; i3 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i3++) \{}
+\DoxyCodeLine{00238                         P\_tmp[((i + i3) + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ((i1 + i2) -\/ 1)) -\/ 1] = I\_K[i3 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i2];}
+\DoxyCodeLine{00239                     \}}
+\DoxyCodeLine{00240                 \}}
+\DoxyCodeLine{00241             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00242                 \textcolor{comment}{// 'partition\_H\_2:65' else}}
+\DoxyCodeLine{00243                 \textcolor{comment}{// Permute the columns of H\_A and the entries of z}}
+\DoxyCodeLine{00244                 \textcolor{comment}{// 'partition\_H\_2:67' H\_A(:, firstCol:lastCol) = H\_P;}}
+\DoxyCodeLine{00245                 \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00246                     i = 1;}
+\DoxyCodeLine{00247                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00248                     i = t;}
+\DoxyCodeLine{00249                 \}}
+\DoxyCodeLine{00250                 \textcolor{keywordflow}{for} (i1 = 0; i1 < size\_H; i1++) \{}
+\DoxyCodeLine{00251                     \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00252                         H\_A[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i + i1) -\/ 1)] = H\_P[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00253                     \}}
+\DoxyCodeLine{00254                 \}}
+\DoxyCodeLine{00255                 \textcolor{comment}{// 'partition\_H\_2:68' z(firstCol:lastCol) = z\_p;}}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00257                     i = -\/1;}
+\DoxyCodeLine{00258                     i1 = 0;}
+\DoxyCodeLine{00259                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00260                     i = t -\/ 2;}
+\DoxyCodeLine{00261                     i1 = lastCol;}
+\DoxyCodeLine{00262                 \}}
+\DoxyCodeLine{00263                 vlen = (i1 -\/ i) -\/ 1;}
+\DoxyCodeLine{00264                 \textcolor{keywordflow}{for} (i1 = 0; i1 < vlen; i1++) \{}
+\DoxyCodeLine{00265                     z[(i + i1) + 1] = z\_p[i1];}
+\DoxyCodeLine{00266                 \}}
+\DoxyCodeLine{00267                 \textcolor{comment}{// Update the permutation matrix P\_tmp}}
+\DoxyCodeLine{00268                 \textcolor{comment}{// 'partition\_H\_2:71' P\_tmp(firstCol:lastCol, firstCol:lastCol) = P\_qr;}}
+\DoxyCodeLine{00269                 \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00270                     i = 1;}
+\DoxyCodeLine{00271                     i1 = 1;}
+\DoxyCodeLine{00272                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00273                     i = t;}
+\DoxyCodeLine{00274                     i1 = t;}
+\DoxyCodeLine{00275                 \}}
+\DoxyCodeLine{00276                 \textcolor{keywordflow}{for} (i2 = 0; i2 < size\_H; i2++) \{}
+\DoxyCodeLine{00277                     \textcolor{keywordflow}{for} (i3 = 0; i3 < size\_H; i3++) \{}
+\DoxyCodeLine{00278                         P\_tmp[((i + i3) + \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * ((i1 + i2) -\/ 1)) -\/ 1] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_ae521f68f44bc236036345957286302db}{P}}[i3 + size\_H * i2];}
+\DoxyCodeLine{00279                     \}}
+\DoxyCodeLine{00280                 \}}
+\DoxyCodeLine{00281             \}}
+\DoxyCodeLine{00282             \textcolor{comment}{// 'partition\_H\_2:73' P\_cum = P\_cum * P\_tmp;}}
+\DoxyCodeLine{00283             I\_K.resize(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00284             I\_K.assign(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, 0);}
+\DoxyCodeLine{00285             \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00286                 I\_K[i] = P\_cum[i];}
+\DoxyCodeLine{00287                 P\_cum[i] = 0;}
+\DoxyCodeLine{00288             \}}
+\DoxyCodeLine{00289 }
+\DoxyCodeLine{00290             \mbox{\hyperlink{namespacehelper_a0ff8152d13da3f5a860e725fc04b4bca}{helper::mtimes\_AP}}(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, I\_K.data(), P\_tmp.data(), P\_cum);}
+\DoxyCodeLine{00291 }
+\DoxyCodeLine{00292             \textcolor{comment}{// 'partition\_H\_2:75' firstCol = lastCol -\/ r + 1;}}
+\DoxyCodeLine{00293             t = (lastCol -\/ r) + 1.0;}
+\DoxyCodeLine{00294             \textcolor{comment}{// 'partition\_H\_2:76' R\_tilde(:, firstCol:lastCol) = R\_qr(:, 1:r);}}
+\DoxyCodeLine{00295             \textcolor{keywordflow}{if} (1 > r) \{}
+\DoxyCodeLine{00296                 vlen = 0;}
+\DoxyCodeLine{00297             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00298                 vlen = r;}
+\DoxyCodeLine{00299             \}}
+\DoxyCodeLine{00300             \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00301                 i = 1;}
+\DoxyCodeLine{00302             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00303                 i = t;}
+\DoxyCodeLine{00304             \}}
+\DoxyCodeLine{00305             \textcolor{keywordflow}{for} (i1 = 0; i1 < vlen; i1++) \{}
+\DoxyCodeLine{00306                 \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00307                     R\_tilde[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i + i1) -\/ 1)] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a14fa9ac8812783f80b56bf82a2170a70}{R\_Q}}[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00308                 \}}
+\DoxyCodeLine{00309             \}}
+\DoxyCodeLine{00310             \textcolor{comment}{// 'partition\_H\_2:77' Q\_tilde(:, firstCol:lastCol) = Q\_qr(:, 1:r);}}
+\DoxyCodeLine{00311             \textcolor{keywordflow}{if} (1 > r) \{}
+\DoxyCodeLine{00312                 vlen = 0;}
+\DoxyCodeLine{00313             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00314                 vlen = r;}
+\DoxyCodeLine{00315             \}}
+\DoxyCodeLine{00316             \textcolor{keywordflow}{if} (t > lastCol) \{}
+\DoxyCodeLine{00317                 i = 1;}
+\DoxyCodeLine{00318             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00319                 i = t;}
+\DoxyCodeLine{00320             \}}
+\DoxyCodeLine{00321 }
+\DoxyCodeLine{00322             \textcolor{keywordflow}{for} (i1 = 0; i1 < vlen; i1++) \{}
+\DoxyCodeLine{00323                 \textcolor{keywordflow}{for} (i2 = 0; i2 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i2++) \{}
+\DoxyCodeLine{00324                     Q\_tilde[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * ((i + i1) -\/ 1)] = reduction.\mbox{\hyperlink{classcils_1_1cils__reduction_a1b1286111d158a26fe802e1975330c8b}{Q}}[i2 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * i1];}
+\DoxyCodeLine{00325                 \}}
+\DoxyCodeLine{00326             \}}
+\DoxyCodeLine{00327             \textcolor{comment}{// 'partition\_H\_2:79' i = i + 1;}}
+\DoxyCodeLine{00328             b\_i++;}
+\DoxyCodeLine{00329             lastCol -\/= r;}
+\DoxyCodeLine{00330         \}}
+\DoxyCodeLine{00331         \textcolor{keywordflow}{return} \{\{\}, 0, 0\};}
+\DoxyCodeLine{00332     \}}
+\DoxyCodeLine{00333 }
+\DoxyCodeLine{00334 \} \textcolor{comment}{// namespace cils}}
+\DoxyCodeLine{00335 }
+\DoxyCodeLine{00336 }
+
+\end{DoxyCode}

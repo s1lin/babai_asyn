@@ -1,0 +1,252 @@
+\hypertarget{cils__block__search___g_p_u_8cpp_source}{}\doxysection{cils\+\_\+block\+\_\+search\+\_\+\+G\+P\+U.\+cpp}
+\label{cils__block__search___g_p_u_8cpp_source}\index{src/source/cils\_block\_search\_GPU.cpp@{src/source/cils\_block\_search\_GPU.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{comment}{//}}
+\DoxyCodeLine{00002 \textcolor{comment}{// Created by shilei on 2020-\/12-\/15.}}
+\DoxyCodeLine{00003 \textcolor{comment}{//}}
+\DoxyCodeLine{00004 \textcolor{preprocessor}{\#include <OpenCL/cl.hpp>}}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{\Hypertarget{cils__block__search___g_p_u_8cpp_source_l00006}\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}{00006}} \textcolor{preprocessor}{\#define NUM\_GLOBAL\_WITEMS 1024}}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{\Hypertarget{cils__block__search___g_p_u_8cpp_source_l00008}\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}{00008}} \textcolor{keywordtype}{void} \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}{compareResults}} (\textcolor{keywordtype}{double} CPUtime, \textcolor{keywordtype}{double} GPUtime, \textcolor{keywordtype}{int} trial) \{}
+\DoxyCodeLine{00009     \textcolor{keywordtype}{double} time\_ratio = (CPUtime / GPUtime);}
+\DoxyCodeLine{00010     std::cout << \textcolor{stringliteral}{"VERSION "}   << trial   << \textcolor{stringliteral}{" -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/"} << std::endl;}
+\DoxyCodeLine{00011     std::cout << \textcolor{stringliteral}{"CPU time: "} << CPUtime << std::endl;}
+\DoxyCodeLine{00012     std::cout << \textcolor{stringliteral}{"GPU time: "} << GPUtime << std::endl;}
+\DoxyCodeLine{00013     std::cout << \textcolor{stringliteral}{"GPU is "};}
+\DoxyCodeLine{00014     \textcolor{keywordflow}{if} (time\_ratio > 1)}
+\DoxyCodeLine{00015         std::cout << time\_ratio << \textcolor{stringliteral}{" times faster!"} << std::endl;}
+\DoxyCodeLine{00016     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00017         std::cout << (1/time\_ratio) << \textcolor{stringliteral}{" times slower :("} << std::endl;}
+\DoxyCodeLine{00018 \}}
+\DoxyCodeLine{00019 }
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{\Hypertarget{cils__block__search___g_p_u_8cpp_source_l00021}\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}{00021}} \textcolor{keywordtype}{double} \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}{timeAddVectorsCPU}}(\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}) \{}
+\DoxyCodeLine{00022     \textcolor{comment}{// adds two vectors of size n, k times, returns total duration}}
+\DoxyCodeLine{00023     std::clock\_t start;}
+\DoxyCodeLine{00024     \textcolor{keywordtype}{double} duration;}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026     \textcolor{keywordtype}{int} A[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}], B[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}], C[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00027     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00028         A[i] = i;}
+\DoxyCodeLine{00029         B[i] = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}-\/i;}
+\DoxyCodeLine{00030         C[i] = 0;}
+\DoxyCodeLine{00031     \}}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033     start = std::clock();}
+\DoxyCodeLine{00034     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}; i++) \{}
+\DoxyCodeLine{00035         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j=0; j<\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++)}
+\DoxyCodeLine{00036             C[j] = A[j] + B[j];}
+\DoxyCodeLine{00037     \}}
+\DoxyCodeLine{00038 }
+\DoxyCodeLine{00039     duration = (std::clock() -\/ start) / (\textcolor{keywordtype}{double}) CLOCKS\_PER\_SEC;}
+\DoxyCodeLine{00040     \textcolor{keywordflow}{return} duration;}
+\DoxyCodeLine{00041 \}}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043 }
+\DoxyCodeLine{\Hypertarget{cils__block__search___g_p_u_8cpp_source_l00044}\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}{00044}} \textcolor{keywordtype}{void} \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}{warmup}}(cl::Context \&context, cl::CommandQueue \&queue,}
+\DoxyCodeLine{00045             cl::Kernel \&add, \textcolor{keywordtype}{int} A[], \textcolor{keywordtype}{int} B[], \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}) \{}
+\DoxyCodeLine{00046     \textcolor{keywordtype}{int} C[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00047     \textcolor{comment}{// allocate space}}
+\DoxyCodeLine{00048     cl::Buffer buffer\_A(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00049     cl::Buffer buffer\_B(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00050     cl::Buffer buffer\_C(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00051 }
+\DoxyCodeLine{00052     \textcolor{comment}{// push write commands to queue}}
+\DoxyCodeLine{00053     queue.enqueueWriteBuffer(buffer\_A, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, A);}
+\DoxyCodeLine{00054     queue.enqueueWriteBuffer(buffer\_B, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, B);}
+\DoxyCodeLine{00055 }
+\DoxyCodeLine{00056     \textcolor{comment}{// RUN ZE KERNEL}}
+\DoxyCodeLine{00057     add.setArg(1, buffer\_B);}
+\DoxyCodeLine{00058     add.setArg(0, buffer\_A);}
+\DoxyCodeLine{00059     add.setArg(2, buffer\_C);}
+\DoxyCodeLine{00060     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<5; i++)}
+\DoxyCodeLine{00061         queue.enqueueNDRangeKernel(add, cl::NullRange, cl::NDRange(\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}{NUM\_GLOBAL\_WITEMS}}), cl::NDRange(32));}
+\DoxyCodeLine{00062 }
+\DoxyCodeLine{00063     queue.enqueueReadBuffer(buffer\_C, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, C);}
+\DoxyCodeLine{00064     queue.finish();}
+\DoxyCodeLine{00065 \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{\Hypertarget{cils__block__search___g_p_u_8cpp_source_l00068}\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a6123b1bea689dc6d6068ac45017cef54}{00068}} \textcolor{keywordtype}{int} \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a6123b1bea689dc6d6068ac45017cef54}{run}}(\textcolor{keywordtype}{int} argc, \textcolor{keywordtype}{char}* argv[]) \{}
+\DoxyCodeLine{00069 }
+\DoxyCodeLine{00070     \textcolor{keywordtype}{bool} \mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{verbose}};}
+\DoxyCodeLine{00071     \textcolor{keywordflow}{if} (argc == 1 || std::strcmp(argv[1], \textcolor{stringliteral}{"0"}) == 0)}
+\DoxyCodeLine{00072         \mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{verbose}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{00073     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074         \mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{verbose}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{00075 }
+\DoxyCodeLine{00076     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} = 8*32*512;             \textcolor{comment}{// size of vectors}}
+\DoxyCodeLine{00077     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 10000;                \textcolor{comment}{// number of loop iterations}}
+\DoxyCodeLine{00078     \textcolor{comment}{// const int NUM\_GLOBAL\_WITEMS = 1024; // number of threads}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080     \textcolor{comment}{// get all platforms (drivers), e.g. NVIDIA}}
+\DoxyCodeLine{00081     std::vector<cl::Platform> all\_platforms;}
+\DoxyCodeLine{00082     cl::Platform::get(\&all\_platforms);}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084     \textcolor{keywordflow}{if} (all\_platforms.size()==0) \{}
+\DoxyCodeLine{00085         std::cout<<\textcolor{stringliteral}{" No platforms found. Check OpenCL installation!\(\backslash\)n"};}
+\DoxyCodeLine{00086         exit(1);}
+\DoxyCodeLine{00087     \}}
+\DoxyCodeLine{00088     cl::Platform default\_platform=all\_platforms[0];}
+\DoxyCodeLine{00089     \textcolor{comment}{// std::cout << "Using platform: "<<default\_platform.getInfo<CL\_PLATFORM\_NAME>()<<"\(\backslash\)n";}}
+\DoxyCodeLine{00090 }
+\DoxyCodeLine{00091     \textcolor{comment}{// get default device (CPUs, GPUs) of the default platform}}
+\DoxyCodeLine{00092     std::vector<cl::Device> all\_devices;}
+\DoxyCodeLine{00093     default\_platform.getDevices(CL\_DEVICE\_TYPE\_ALL, \&all\_devices);}
+\DoxyCodeLine{00094     \textcolor{keywordflow}{if}(all\_devices.size()==0)\{}
+\DoxyCodeLine{00095         std::cout<<\textcolor{stringliteral}{" No devices found. Check OpenCL installation!\(\backslash\)n"};}
+\DoxyCodeLine{00096         exit(1);}
+\DoxyCodeLine{00097     \}}
+\DoxyCodeLine{00098 }
+\DoxyCodeLine{00099     \textcolor{comment}{// use device[1] because that's a GPU; device[0] is the CPU}}
+\DoxyCodeLine{00100     cl::Device default\_device=all\_devices[1];}
+\DoxyCodeLine{00101     \textcolor{comment}{// std::cout<< "Using device: "<<default\_device.getInfo<CL\_DEVICE\_NAME>()<<"\(\backslash\)n";}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103     cl::Context context(\{default\_device\});}
+\DoxyCodeLine{00104     cl::Program::Sources sources;}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106     \textcolor{comment}{// calculates for each element; C = A + B}}
+\DoxyCodeLine{00107     std::string kernel\_code=}
+\DoxyCodeLine{00108             \textcolor{stringliteral}{"   void kernel add(global const int* v1, global const int* v2, global int* v3) \{"}}
+\DoxyCodeLine{00109             \textcolor{stringliteral}{"       int ID;"}}
+\DoxyCodeLine{00110             \textcolor{stringliteral}{"       ID = get\_global\_id(0);"}}
+\DoxyCodeLine{00111             \textcolor{stringliteral}{"       v3[ID] = v1[ID] + v2[ID];"}}
+\DoxyCodeLine{00112             \textcolor{stringliteral}{"   \}"}}
+\DoxyCodeLine{00113             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00114             \textcolor{stringliteral}{"   void kernel add\_looped\_1(global const int* v1, global const int* v2, global int* v3, "}}
+\DoxyCodeLine{00115             \textcolor{stringliteral}{"                          const int n, const int k) \{"}}
+\DoxyCodeLine{00116             \textcolor{stringliteral}{"       int ID, NUM\_GLOBAL\_WITEMS, ratio, start, stop;"}}
+\DoxyCodeLine{00117             \textcolor{stringliteral}{"       ID = get\_global\_id(0);"}}
+\DoxyCodeLine{00118             \textcolor{stringliteral}{"       NUM\_GLOBAL\_WITEMS = get\_global\_size(0);"}}
+\DoxyCodeLine{00119             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00120             \textcolor{stringliteral}{"       ratio = (n / NUM\_GLOBAL\_WITEMS);"} \textcolor{comment}{// elements per thread}}
+\DoxyCodeLine{00121             \textcolor{stringliteral}{"       start = ratio * ID;"}}
+\DoxyCodeLine{00122             \textcolor{stringliteral}{"       stop  = ratio * (ID+1);"}}
+\DoxyCodeLine{00123             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00124             \textcolor{stringliteral}{"       int i, j;"} \textcolor{comment}{// will the compiler optimize this anyway? probably.}}
+\DoxyCodeLine{00125             \textcolor{stringliteral}{"       for (i=0; i<k; i++) \{"}}
+\DoxyCodeLine{00126             \textcolor{stringliteral}{"           for (j=start; j<stop; j++)"}}
+\DoxyCodeLine{00127             \textcolor{stringliteral}{"               v3[j] = v1[j] + v2[j];"}}
+\DoxyCodeLine{00128             \textcolor{stringliteral}{"       \}"}}
+\DoxyCodeLine{00129             \textcolor{stringliteral}{"   \}"}}
+\DoxyCodeLine{00130             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00131             \textcolor{stringliteral}{"   void kernel add\_looped\_2(global const int* v1, global const int* v2, global int* v3,"}}
+\DoxyCodeLine{00132             \textcolor{stringliteral}{"                            const int n, const int k) \{"}}
+\DoxyCodeLine{00133             \textcolor{stringliteral}{"       int ID, NUM\_GLOBAL\_WITEMS, step;"}}
+\DoxyCodeLine{00134             \textcolor{stringliteral}{"       ID = get\_global\_id(0);"}}
+\DoxyCodeLine{00135             \textcolor{stringliteral}{"       NUM\_GLOBAL\_WITEMS = get\_global\_size(0);"}}
+\DoxyCodeLine{00136             \textcolor{stringliteral}{"       step = (n / NUM\_GLOBAL\_WITEMS);"}}
+\DoxyCodeLine{00137             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00138             \textcolor{stringliteral}{"       int i,j;"}}
+\DoxyCodeLine{00139             \textcolor{stringliteral}{"       for (i=0; i<k; i++) \{"}}
+\DoxyCodeLine{00140             \textcolor{stringliteral}{"           for (j=ID; j<n; j+=step)"}}
+\DoxyCodeLine{00141             \textcolor{stringliteral}{"               v3[j] = v1[j] + v2[j];"}}
+\DoxyCodeLine{00142             \textcolor{stringliteral}{"       \}"}}
+\DoxyCodeLine{00143             \textcolor{stringliteral}{"   \}"}}
+\DoxyCodeLine{00144             \textcolor{stringliteral}{""}}
+\DoxyCodeLine{00145             \textcolor{stringliteral}{"   void kernel add\_single(global const int* v1, global const int* v2, global int* v3, "}}
+\DoxyCodeLine{00146             \textcolor{stringliteral}{"                          const int k) \{ "}}
+\DoxyCodeLine{00147             \textcolor{stringliteral}{"       int ID = get\_global\_id(0);"}}
+\DoxyCodeLine{00148             \textcolor{stringliteral}{"       for (int i=0; i<k; i++)"}}
+\DoxyCodeLine{00149             \textcolor{stringliteral}{"           v3[ID] = v1[ID] + v2[ID];"}}
+\DoxyCodeLine{00150             \textcolor{stringliteral}{"   \}"};}
+\DoxyCodeLine{00151     sources.push\_back(\{kernel\_code.c\_str(), kernel\_code.length()\});}
+\DoxyCodeLine{00152 }
+\DoxyCodeLine{00153     cl::Program program(context, sources);}
+\DoxyCodeLine{00154     \textcolor{keywordflow}{if} (program.build(\{default\_device\}) != CL\_SUCCESS) \{}
+\DoxyCodeLine{00155         std::cout << \textcolor{stringliteral}{"Error building: "} << program.getBuildInfo<CL\_PROGRAM\_BUILD\_LOG>(default\_device) << std::endl;}
+\DoxyCodeLine{00156         exit(1);}
+\DoxyCodeLine{00157     \}}
+\DoxyCodeLine{00158 }
+\DoxyCodeLine{00159     \textcolor{comment}{// run the CPU code}}
+\DoxyCodeLine{00160     \textcolor{keywordtype}{float} CPUtime = \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_af2173933a50695dc65f0e700a52a2559}{timeAddVectorsCPU}}(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00161 }
+\DoxyCodeLine{00162     \textcolor{comment}{// set up kernels and vectors for GPU code}}
+\DoxyCodeLine{00163     cl::CommandQueue queue(context, default\_device);}
+\DoxyCodeLine{00164     cl::Kernel add          = cl::Kernel(program, \textcolor{stringliteral}{"add"});}
+\DoxyCodeLine{00165     cl::Kernel add\_looped\_1 = cl::Kernel(program, \textcolor{stringliteral}{"add\_looped\_1"});}
+\DoxyCodeLine{00166     cl::Kernel add\_looped\_2 = cl::Kernel(program, \textcolor{stringliteral}{"add\_looped\_2"});}
+\DoxyCodeLine{00167     cl::Kernel add\_single   = cl::Kernel(program, \textcolor{stringliteral}{"add\_single"});}
+\DoxyCodeLine{00168 }
+\DoxyCodeLine{00169     \textcolor{comment}{// construct vectors}}
+\DoxyCodeLine{00170     \textcolor{keywordtype}{int} A[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}], B[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}], C[\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}];}
+\DoxyCodeLine{00171     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00172         A[i] = i;}
+\DoxyCodeLine{00173         B[i] = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ i -\/ 1;}
+\DoxyCodeLine{00174     \}}
+\DoxyCodeLine{00175 }
+\DoxyCodeLine{00176     \textcolor{comment}{// attempt at warm-\/up...}}
+\DoxyCodeLine{00177     \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a182c671a8b4fc170af5ee1d3f0545969}{warmup}}(context, queue, add, A, B, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00178     queue.finish();}
+\DoxyCodeLine{00179 }
+\DoxyCodeLine{00180     std::clock\_t start\_time;}
+\DoxyCodeLine{00181 }
+\DoxyCodeLine{00182     \textcolor{comment}{// VERSION 1 ==========================================}}
+\DoxyCodeLine{00183     \textcolor{comment}{// start timer}}
+\DoxyCodeLine{00184     \textcolor{keywordtype}{double} GPUtime1;}
+\DoxyCodeLine{00185     start\_time = std::clock();}
+\DoxyCodeLine{00186 }
+\DoxyCodeLine{00187     \textcolor{comment}{// allocate space}}
+\DoxyCodeLine{00188     cl::Buffer buffer\_A(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00189     cl::Buffer buffer\_B(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00190     cl::Buffer buffer\_C(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int}) * \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192     \textcolor{comment}{// push write commands to queue}}
+\DoxyCodeLine{00193     queue.enqueueWriteBuffer(buffer\_A, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, A);}
+\DoxyCodeLine{00194     queue.enqueueWriteBuffer(buffer\_B, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, B);}
+\DoxyCodeLine{00195 }
+\DoxyCodeLine{00196     \textcolor{comment}{// RUN ZE KERNEL}}
+\DoxyCodeLine{00197     add\_looped\_1.setArg(0, buffer\_A);}
+\DoxyCodeLine{00198     add\_looped\_1.setArg(1, buffer\_B);}
+\DoxyCodeLine{00199     add\_looped\_1.setArg(2, buffer\_C);}
+\DoxyCodeLine{00200     add\_looped\_1.setArg(3, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00201     add\_looped\_1.setArg(4, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00202     queue.enqueueNDRangeKernel(add\_looped\_1, cl::NullRange,  \textcolor{comment}{// kernel, offset}}
+\DoxyCodeLine{00203                                cl::NDRange(\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}{NUM\_GLOBAL\_WITEMS}}), \textcolor{comment}{// global number of work items}}
+\DoxyCodeLine{00204                                cl::NDRange(32));               \textcolor{comment}{// local number (per group)}}
+\DoxyCodeLine{00205 }
+\DoxyCodeLine{00206     \textcolor{comment}{// read result from GPU to here; including for the sake of timing}}
+\DoxyCodeLine{00207     queue.enqueueReadBuffer(buffer\_C, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, C);}
+\DoxyCodeLine{00208     queue.finish();}
+\DoxyCodeLine{00209     GPUtime1 = (std::clock() -\/ start\_time) / (\textcolor{keywordtype}{double}) CLOCKS\_PER\_SEC;}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211 }
+\DoxyCodeLine{00212     \textcolor{comment}{// VERSION 2 ==========================================}}
+\DoxyCodeLine{00213     \textcolor{keywordtype}{double} GPUtime2;}
+\DoxyCodeLine{00214 }
+\DoxyCodeLine{00215     cl::Buffer buffer\_A2(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00216     cl::Buffer buffer\_B2(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00217     cl::Buffer buffer\_C2(context, CL\_MEM\_READ\_WRITE, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00218     queue.enqueueWriteBuffer(buffer\_A2, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, A);}
+\DoxyCodeLine{00219     queue.enqueueWriteBuffer(buffer\_B2, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, B);}
+\DoxyCodeLine{00220 }
+\DoxyCodeLine{00221     start\_time = std::clock();}
+\DoxyCodeLine{00222     add\_looped\_2.setArg(0, buffer\_A2);}
+\DoxyCodeLine{00223     add\_looped\_2.setArg(1, buffer\_B2);}
+\DoxyCodeLine{00224     add\_looped\_2.setArg(2, buffer\_C2);}
+\DoxyCodeLine{00225     add\_looped\_2.setArg(3, \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00226     add\_looped\_2.setArg(4, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}});}
+\DoxyCodeLine{00227 }
+\DoxyCodeLine{00228     queue.enqueueNDRangeKernel(add\_looped\_2, cl::NullRange, cl::NDRange(\mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a2859b601e4b579f711abcf8f13be3b8e}{NUM\_GLOBAL\_WITEMS}}), cl::NDRange(32));}
+\DoxyCodeLine{00229     queue.enqueueReadBuffer(buffer\_C2, CL\_TRUE, 0, \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{int})*\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}, C);}
+\DoxyCodeLine{00230     queue.finish();}
+\DoxyCodeLine{00231     GPUtime2 = (std::clock() -\/ start\_time) / (\textcolor{keywordtype}{double}) CLOCKS\_PER\_SEC;}
+\DoxyCodeLine{00232 }
+\DoxyCodeLine{00233     \textcolor{comment}{// let's compare!}}
+\DoxyCodeLine{00234     \textcolor{keyword}{const} \textcolor{keywordtype}{int} NUM\_VERSIONS = 2;}
+\DoxyCodeLine{00235     \textcolor{keywordtype}{double} GPUtimes[NUM\_VERSIONS] = \{GPUtime1, GPUtime2\};}
+\DoxyCodeLine{00236     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespacecils_1_1program__def_a663ad9968c98aa091e879e89b37882c8}{verbose}}) \{}
+\DoxyCodeLine{00237         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<NUM\_VERSIONS; i++)}
+\DoxyCodeLine{00238             \mbox{\hyperlink{cils__block__search___g_p_u_8cpp_a8533e70ef85b45ba6315041482afde48}{compareResults}}(CPUtime, GPUtimes[i], i+1);}
+\DoxyCodeLine{00239     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00240         std::cout << CPUtime << \textcolor{stringliteral}{","};}
+\DoxyCodeLine{00241         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i=0; i<NUM\_VERSIONS-\/1; i++)}
+\DoxyCodeLine{00242             std::cout << GPUtimes[i] << \textcolor{stringliteral}{","};}
+\DoxyCodeLine{00243         std::cout << GPUtimes[NUM\_VERSIONS-\/1] << std::endl;}
+\DoxyCodeLine{00244     \}}
+\DoxyCodeLine{00245     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{00246 \}}
+
+\end{DoxyCode}

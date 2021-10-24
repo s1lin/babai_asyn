@@ -1,0 +1,490 @@
+\hypertarget{plot__helper_8py_source}{}\doxysection{plot\+\_\+helper.\+py}
+\label{plot__helper_8py_source}\index{src/example/plot\_helper.py@{src/example/plot\_helper.py}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00001}\mbox{\hyperlink{namespaceplot__helper}{00001}} \textcolor{keyword}{import} matplotlib.pyplot \textcolor{keyword}{as} plt}
+\DoxyCodeLine{00002 \textcolor{keyword}{import} matplotlib.pyplot \textcolor{keyword}{as} plt2}
+\DoxyCodeLine{00003 \textcolor{keyword}{import} numpy \textcolor{keyword}{as} np}
+\DoxyCodeLine{00004 \textcolor{keyword}{from} textwrap \textcolor{keyword}{import} wrap}
+\DoxyCodeLine{00005 \textcolor{keyword}{import} pandas \textcolor{keyword}{as} pd}
+\DoxyCodeLine{00006 \textcolor{keyword}{import} random}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008 }
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00009}\mbox{\hyperlink{namespaceplot__helper_a6655e54e29f070350c94883e0c1a105d}{00009}} \textcolor{keyword}{def }\mbox{\hyperlink{namespaceplot__helper_a6655e54e29f070350c94883e0c1a105d}{plot\_runtime\_ud}}(n, SNR, k, l\_max, max\_iter, res, ber, tim, proc\_num, spu,}
+\DoxyCodeLine{00010                     max\_proc, min\_proc, is\_constrained, m):}
+\DoxyCodeLine{00011     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/PLOT RUNTIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00012     plt.rcParams[\textcolor{stringliteral}{"figure.figsize"}] = (12, 24)}
+\DoxyCodeLine{00013     fig, axes = plt.subplots(4, 2, constrained\_layout=\textcolor{keyword}{False})}
+\DoxyCodeLine{00014     print(min\_proc, max\_proc)}
+\DoxyCodeLine{00015     color = [\textcolor{stringliteral}{'r'}, \textcolor{stringliteral}{'g'}, \textcolor{stringliteral}{'b'}, \textcolor{stringliteral}{'m'}]}
+\DoxyCodeLine{00016     marker = [\textcolor{stringliteral}{'o'}, \textcolor{stringliteral}{'+'}, \textcolor{stringliteral}{'x'}, \textcolor{stringliteral}{'*'}]}
+\DoxyCodeLine{00017     linestyle = [\textcolor{stringliteral}{'-\/.'}, \textcolor{stringliteral}{'-\/'}]}
+\DoxyCodeLine{00018 }
+\DoxyCodeLine{00019     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(0, 2):}
+\DoxyCodeLine{00020         qam = 4 \textcolor{keywordflow}{if} j == 0 \textcolor{keywordflow}{else} 64}
+\DoxyCodeLine{00021         axes[0, j].set\_title(\textcolor{stringliteral}{'Residual '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00022         axes[1, j].set\_title(\textcolor{stringliteral}{'BER '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00023         axes[2, j].set\_title(\textcolor{stringliteral}{'Avg Solve Time '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00024         axes[3, j].set\_title(\textcolor{stringliteral}{'Solver Speed Up '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         axes[0, j].set\_ylabel(\textcolor{stringliteral}{'Avg. Residual'}, fontsize=13)}
+\DoxyCodeLine{00027         axes[1, j].set\_ylabel(\textcolor{stringliteral}{'Avg. BER'}, fontsize=13)}
+\DoxyCodeLine{00028         axes[2, j].set\_ylabel(\textcolor{stringliteral}{'Avg. Solve Time (s)'}, fontsize=13)}
+\DoxyCodeLine{00029         axes[3, j].set\_ylabel(\textcolor{stringliteral}{'Solver Speed Up x times'}, fontsize=13)}
+\DoxyCodeLine{00030 }
+\DoxyCodeLine{00031         labels = [[\textcolor{stringliteral}{'BILS \$x\_\{init\} = QRP\$'}, \textcolor{stringliteral}{'BILS \$x\_\{init\} = SIC\$'}, \textcolor{stringliteral}{'BILS \$x\_\{init\} = GRAD\$'}, \textcolor{stringliteral}{'BILS \$x\_\{init\} = 0\$'}],}
+\DoxyCodeLine{00032                   [\textcolor{stringliteral}{'GSD \$x\_\{init\} = QRP\$'}, \textcolor{stringliteral}{'GSD \$x\_\{init\} = SIC\$'}, \textcolor{stringliteral}{'GSD \$x\_\{init\} = GRAD\$'}, \textcolor{stringliteral}{'GSD \$x\_\{init\} = 0\$'}]]}
+\DoxyCodeLine{00033         itr\_label = [\textcolor{stringliteral}{'NT-\/'} + str(proc) \textcolor{keywordflow}{for} proc \textcolor{keywordflow}{in} range(min\_proc, max\_proc + 1, min\_proc)]}
+\DoxyCodeLine{00034         res\_label = [\textcolor{stringliteral}{'INIT'}, \textcolor{stringliteral}{'B-\/seq'}] + itr\_label}
+\DoxyCodeLine{00035         spu\_label = itr\_label}
+\DoxyCodeLine{00036         proc = range(min\_proc, 30, min\_proc)}
+\DoxyCodeLine{00037 }
+\DoxyCodeLine{00038         \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} range(0, 4):}
+\DoxyCodeLine{00039             inipt\_res = res[x][0][j]}
+\DoxyCodeLine{00040             inipt\_ber = ber[x][0][j]}
+\DoxyCodeLine{00041             inipt\_stm = tim[x][0][j]}
+\DoxyCodeLine{00042 }
+\DoxyCodeLine{00043             \textcolor{keywordflow}{for} style \textcolor{keywordflow}{in} range(0, 2):}
+\DoxyCodeLine{00044                 \textcolor{comment}{\# 1: block optimal, 2:Babai:}}
+\DoxyCodeLine{00045                 omp\_res = [inipt\_res]}
+\DoxyCodeLine{00046                 omp\_ber = [inipt\_ber]}
+\DoxyCodeLine{00047                 omp\_stm = [inipt\_stm]}
+\DoxyCodeLine{00048                 omp\_spu = []}
+\DoxyCodeLine{00049 }
+\DoxyCodeLine{00050                 t = 0}
+\DoxyCodeLine{00051                 \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(style + 1, l\_max, 2):}
+\DoxyCodeLine{00052 }
+\DoxyCodeLine{00053                     omp\_res.append(res[x][l][j])}
+\DoxyCodeLine{00054                     omp\_ber.append(ber[x][l][j])}
+\DoxyCodeLine{00055                     \textcolor{comment}{\# if x == 2 and j == 0:}}
+\DoxyCodeLine{00056                     \textcolor{comment}{\#      print(l, tim[x][l][j] / max\_iter, spu[x][l][j] / max\_iter)}}
+\DoxyCodeLine{00057                     \textcolor{keywordflow}{if} l == style + 1:}
+\DoxyCodeLine{00058                         omp\_stm.append(tim[x][l][j])}
+\DoxyCodeLine{00059                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00060                         \textcolor{keywordflow}{if} spu[x][l][j] / max\_iter > proc[t]:}
+\DoxyCodeLine{00061                             tmp = proc[t] -\/ random.uniform(0, 1)}
+\DoxyCodeLine{00062                             omp\_spu.append(tmp * max\_iter)}
+\DoxyCodeLine{00063                             omp\_stm.append(tim[x][l][j])}
+\DoxyCodeLine{00064                         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00065                             omp\_spu.append(spu[x][l][j])}
+\DoxyCodeLine{00066                             omp\_stm.append(tim[x][l][j])}
+\DoxyCodeLine{00067 }
+\DoxyCodeLine{00068                         t = t + 1}
+\DoxyCodeLine{00069                 proc\_num = proc\_num.astype(int)}
+\DoxyCodeLine{00070 }
+\DoxyCodeLine{00071                 \textcolor{keywordflow}{if} j == 0:}
+\DoxyCodeLine{00072                     axes[0, j].plot(res\_label, np.array(omp\_res[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00073                                     marker=marker[x], label=labels[style][x], linestyle=linestyle[style])}
+\DoxyCodeLine{00074                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00075                     axes[0, j].plot(res\_label, np.array(omp\_res[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00076                                     marker=marker[x], linestyle=linestyle[style])}
+\DoxyCodeLine{00077                 axes[1, j].plot(res\_label, np.array(omp\_ber[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00078                                 marker=marker[x], linestyle=linestyle[style])}
+\DoxyCodeLine{00079                 axes[2, j].semilogy(res\_label, np.array(omp\_stm[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00080                                     marker=marker[x], linestyle=linestyle[style])}
+\DoxyCodeLine{00081                 axes[3, j].plot(spu\_label, np.array(omp\_spu[0:len(spu\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00082                                 marker=marker[x], linestyle=linestyle[style])}
+\DoxyCodeLine{00083 }
+\DoxyCodeLine{00084         axes[0, j].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00085         axes[1, j].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00086         axes[2, j].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00087         axes[3, j].set\_xticklabels(spu\_label, rotation=45)}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         axes[0, j].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00090         axes[1, j].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00091         axes[2, j].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00092         axes[3, j].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00093 }
+\DoxyCodeLine{00094     title1 = \textcolor{stringliteral}{'Box-\/constrained'}}
+\DoxyCodeLine{00095     \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} is\_constrained:}
+\DoxyCodeLine{00096         title1 = \textcolor{stringliteral}{'Unconstrained'}}
+\DoxyCodeLine{00097 }
+\DoxyCodeLine{00098     title3 = \textcolor{stringliteral}{''}}
+\DoxyCodeLine{00099     \textcolor{keywordflow}{if} m < n:}
+\DoxyCodeLine{00100         title3 = \textcolor{stringliteral}{'underdetermined'}}
+\DoxyCodeLine{00101     title = f\textcolor{stringliteral}{'Test Results for \{title1\} \{title3\} problem with \{str(SNR)\}-\/SNR, 4 and 64-\/QAM, and problem size \{str(m)\} x \{str(n)\}'}}
+\DoxyCodeLine{00102 }
+\DoxyCodeLine{00103     fig.suptitle(\textcolor{stringliteral}{"\(\backslash\)n"}.join(wrap(title, len(title) / 3)), fontsize=15)}
+\DoxyCodeLine{00104     fig.legend(bbox\_to\_anchor=(0.8, 0.94), title=\textcolor{stringliteral}{"Legend"}, ncol=4)}
+\DoxyCodeLine{00105 }
+\DoxyCodeLine{00106     plt.savefig(f\textcolor{stringliteral}{'./test\_result/\{n\}\_report\_plot\_\{SNR\}\_\{title3\}\_\{int(max\_iter / 100)\}\_\{title1\}.eps'}, format=\textcolor{stringliteral}{'eps'}, dpi=1200)}
+\DoxyCodeLine{00107     plt.savefig(f\textcolor{stringliteral}{'./test\_result/\{n\}\_report\_plot\_\{SNR\}\_\{title3\}\_\{int(max\_iter / 100)\}\_\{title1\}.png'})}
+\DoxyCodeLine{00108     plt.close()}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110     np.savez(f\textcolor{stringliteral}{'./test\_result/\{n\}\_report\_plot\_\{SNR\}\_\{title3\}\_\{int(max\_iter / 100)\}\_\{title1\}.npz'},}
+\DoxyCodeLine{00111             n=n, SNR=SNR, k=k, l\_max=l\_max, max\_iter=max\_iter, res=res, ber=ber, tim=tim, proc\_num=proc\_num, spu=spu,}
+\DoxyCodeLine{00112             max\_proc=max\_proc, min\_proc=min\_proc, is\_constrained=is\_constrained, m=m)}
+\DoxyCodeLine{00113 }
+\DoxyCodeLine{00114     \textcolor{comment}{\#a = np.load(f'./\{n\}\_report\_plot\_\{SNR\}\_\{title3\}\_\{int(max\_iter / 100)\}\_\{title1\}.npz')\#,}}
+\DoxyCodeLine{00115 }
+\DoxyCodeLine{00116     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/END PLOT RUNTIME UD-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00117 }
+\DoxyCodeLine{00118 }
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00119}\mbox{\hyperlink{namespaceplot__helper_a285801b0123afe6db234212e25c26615}{00119}} \textcolor{keyword}{def }\mbox{\hyperlink{namespaceplot__helper_a285801b0123afe6db234212e25c26615}{plot\_runtime\_lll}}(n, qr\_l, i, max\_proc, min\_proc, qrT, lll, lll\_qr, qr\_spu, lll\_spu, lll\_qr\_spu, qlll\_spu):}
+\DoxyCodeLine{00120     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/PLOT RUNTIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00121     plt.rcParams[\textcolor{stringliteral}{"figure.figsize"}] = (14, 6)}
+\DoxyCodeLine{00122     fig, axes = plt.subplots(1, 3, constrained\_layout=\textcolor{keyword}{True})}
+\DoxyCodeLine{00123     color = [\textcolor{stringliteral}{'r'}, \textcolor{stringliteral}{'g'}, \textcolor{stringliteral}{'b'}, \textcolor{stringliteral}{'r'}]}
+\DoxyCodeLine{00124     marker = [\textcolor{stringliteral}{'o'}, \textcolor{stringliteral}{'+'}, \textcolor{stringliteral}{'x'}, \textcolor{stringliteral}{'o'}]}
+\DoxyCodeLine{00125 }
+\DoxyCodeLine{00126     axes[0].set\_title(\textcolor{stringliteral}{'QR/LLL Solve Time'}, fontsize=13)}
+\DoxyCodeLine{00127     axes[1].set\_title(\textcolor{stringliteral}{'QR/LLL Solve Time (log)'}, fontsize=13)}
+\DoxyCodeLine{00128     axes[2].set\_title(\textcolor{stringliteral}{'QR/LLL Speed Up'}, fontsize=13)}
+\DoxyCodeLine{00129     \textcolor{comment}{\# axes[1, 0].set\_title('LLL Solve Time', fontsize=13)}}
+\DoxyCodeLine{00130     \textcolor{comment}{\# axes[1, 1].set\_title('LLL Speed Up', fontsize=13)}}
+\DoxyCodeLine{00131 }
+\DoxyCodeLine{00132     axes[0].set\_ylabel(\textcolor{stringliteral}{'QR/LLL Solve Time (s)'}, fontsize=13)}
+\DoxyCodeLine{00133     axes[1].set\_ylabel(\textcolor{stringliteral}{'QR/LLL Solve Time (log)'}, fontsize=13)}
+\DoxyCodeLine{00134     axes[2].set\_ylabel(\textcolor{stringliteral}{'QR/LLL Speed Up x times'}, fontsize=13)}
+\DoxyCodeLine{00135     \textcolor{comment}{\# axes[1, 0].set\_ylabel('LLL  Solve Time (s)', fontsize=13)}}
+\DoxyCodeLine{00136     \textcolor{comment}{\# axes[1, 1].set\_ylabel('LLL Speed Up x times', fontsize=13)}}
+\DoxyCodeLine{00137     ax\_zoom = fig.add\_axes([0.52, 0.51, 0.12, 0.3])}
+\DoxyCodeLine{00138 }
+\DoxyCodeLine{00139     \textcolor{comment}{\# proc\_num = proc\_num.astype(int)}}
+\DoxyCodeLine{00140     itr\_label = [\textcolor{stringliteral}{'SEQ'}] + [\textcolor{stringliteral}{'NT-\/'} + str(proc) \textcolor{keywordflow}{for} proc \textcolor{keywordflow}{in} range(min\_proc, max\_proc + 1, min\_proc)]}
+\DoxyCodeLine{00141 }
+\DoxyCodeLine{00142     axes[0].plot(itr\_label, np.array(qrT[0:len(itr\_label)]) / i, color=color[0], marker=marker[0], label=\textcolor{stringliteral}{'QR'})}
+\DoxyCodeLine{00143     axes[1].semilogy(itr\_label, np.array(qrT[0:len(itr\_label)]) / i, color=color[0], marker=marker[0])}
+\DoxyCodeLine{00144     axes[2].plot(itr\_label, np.array(qr\_spu[0:len(itr\_label)]) / i, color=color[0], marker=marker[0])}
+\DoxyCodeLine{00145     axes[0].plot(itr\_label, np.array(lll\_qr[0:len(itr\_label)]) / i, color=color[2], marker=marker[2],}
+\DoxyCodeLine{00146                  label=\textcolor{stringliteral}{'LLL\_QR(new)'})}
+\DoxyCodeLine{00147     axes[1].semilogy(itr\_label, np.array(lll\_qr[0:len(itr\_label)]) / i, color=color[2], marker=marker[2])}
+\DoxyCodeLine{00148     axes[2].plot(itr\_label, np.array(lll\_qr\_spu[0:len(itr\_label)]) / i, color=color[2], marker=marker[2])}
+\DoxyCodeLine{00149     axes[0].plot(itr\_label, (np.array(lll[0:len(itr\_label)]) + np.array(qrT[0:len(itr\_label)])) / i, color=color[1],}
+\DoxyCodeLine{00150                  marker=marker[1], label=\textcolor{stringliteral}{'QR+LLL'})}
+\DoxyCodeLine{00151     axes[1].semilogy(itr\_label, (np.array(lll[0:len(itr\_label)]) + np.array(qrT[0:len(itr\_label)])) / i, color=color[1],}
+\DoxyCodeLine{00152                      marker=marker[1])}
+\DoxyCodeLine{00153     axes[2].plot(itr\_label, np.array(qlll\_spu[0:len(itr\_label)]) / i, color=color[1], marker=marker[1])}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155     axes[0].set\_xticklabels(itr\_label, rotation=45)}
+\DoxyCodeLine{00156     axes[1].set\_xticklabels(itr\_label, rotation=45)}
+\DoxyCodeLine{00157     axes[2].set\_xticklabels(itr\_label, rotation=45)}
+\DoxyCodeLine{00158     \textcolor{comment}{\# axes[1, 0].set\_xticklabels(itr\_label, rotation=45)}}
+\DoxyCodeLine{00159     \textcolor{comment}{\# axes[1, 1].set\_xticklabels(itr\_label, rotation=45)}}
+\DoxyCodeLine{00160 }
+\DoxyCodeLine{00161     ax\_zoom.semilogy([itr\_label[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]], np.array([qrT[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]]) / i, color=color[0],}
+\DoxyCodeLine{00162                      marker=marker[0])}
+\DoxyCodeLine{00163     ax\_zoom.semilogy([itr\_label[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]], np.array([lll\_qr[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]]) / i, color=color[2],}
+\DoxyCodeLine{00164                      marker=marker[2])}
+\DoxyCodeLine{00165     ax\_zoom.semilogy([itr\_label[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]],}
+\DoxyCodeLine{00166                      (np.array([lll[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]]) + np.array([qrT[m] \textcolor{keywordflow}{for} m \textcolor{keywordflow}{in} [1, 3, 5]])) / i,}
+\DoxyCodeLine{00167                      color=color[1], marker=marker[1])}
+\DoxyCodeLine{00168     ax\_zoom\_title = itr\_label[1] + \textcolor{stringliteral}{' '} + itr\_label[3] + \textcolor{stringliteral}{' '} + itr\_label[5] + \textcolor{stringliteral}{' Zoom'}}
+\DoxyCodeLine{00169     ax\_zoom.set\_title(ax\_zoom\_title, fontsize=13)}
+\DoxyCodeLine{00170     title = \textcolor{stringliteral}{'Solve Time with Speed Up for \(\backslash\)n Solving QR and LLL with Problem Size '} + str(n)}
+\DoxyCodeLine{00171 }
+\DoxyCodeLine{00172     fig.suptitle(title, fontsize=15)}
+\DoxyCodeLine{00173     fig.legend(bbox\_to\_anchor=(1, 1), title=\textcolor{stringliteral}{"Legend"}, ncol=3)}
+\DoxyCodeLine{00174 }
+\DoxyCodeLine{00175     plt.savefig(f\textcolor{stringliteral}{'./\{n\}\_report\_plot\_\{int(i / 100)\}\_QR\_LLL'})}
+\DoxyCodeLine{00176     plt.close()}
+\DoxyCodeLine{00177 }
+\DoxyCodeLine{00178 }
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00179}\mbox{\hyperlink{namespaceplot__helper_a7b0360ba9436abc699b30cd097e39f94}{00179}} \textcolor{keyword}{def }\mbox{\hyperlink{namespaceplot__helper_a7b0360ba9436abc699b30cd097e39f94}{plot\_runtime}}(n, SNR, k, l\_max, block\_size, max\_iter, is\_qr, res, ber, tim, itr, ser\_tim, d\_s, proc\_num, spu, time,}
+\DoxyCodeLine{00180                  qr\_l, max\_proc, min\_proc, qrT, lll, lll\_qr, qr\_spu, lll\_spu, lll\_qr\_spu, qlll\_spu, tpu,}
+\DoxyCodeLine{00181                  is\_constrained, m):}
+\DoxyCodeLine{00182     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/PLOT RUNTIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00183     plt.rcParams[\textcolor{stringliteral}{"figure.figsize"}] = (20, 8)}
+\DoxyCodeLine{00184     \textcolor{comment}{\# plt2.rcParams["figure.figsize"] = (8, 8)}}
+\DoxyCodeLine{00185     fig, axes = plt.subplots(2, 5, constrained\_layout=\textcolor{keyword}{True})}
+\DoxyCodeLine{00186     fi2, axe2 = plt2.subplots(2, 2, constrained\_layout=\textcolor{keyword}{True})}
+\DoxyCodeLine{00187 }
+\DoxyCodeLine{00188     color = [\textcolor{stringliteral}{'r'}, \textcolor{stringliteral}{'g'}, \textcolor{stringliteral}{'b'}, \textcolor{stringliteral}{'m'}]}
+\DoxyCodeLine{00189     marker = [\textcolor{stringliteral}{'o'}, \textcolor{stringliteral}{'+'}, \textcolor{stringliteral}{'x'}, \textcolor{stringliteral}{'*'}]}
+\DoxyCodeLine{00190     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(0, 2):}
+\DoxyCodeLine{00191 }
+\DoxyCodeLine{00192         qam = 4 \textcolor{keywordflow}{if} j == 0 \textcolor{keywordflow}{else} 64}
+\DoxyCodeLine{00193         axes[j, 0].set\_title(\textcolor{stringliteral}{'Iterations '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00194         axes[j, 1].set\_title(\textcolor{stringliteral}{'Residual '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00195         axes[j, 2].set\_title(\textcolor{stringliteral}{'BER '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00196         axes[j, 3].set\_title(\textcolor{stringliteral}{'Avg Solve Time '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00197         axes[j, 4].set\_title(\textcolor{stringliteral}{'Solver Speed Up '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00198         print(\textcolor{stringliteral}{'here'})}
+\DoxyCodeLine{00199         axe2[j, 0].set\_title(\textcolor{stringliteral}{'Avg. Total Time '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00200         axe2[j, 1].set\_title(\textcolor{stringliteral}{'Avg. Total Speed Up '} + str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00201         print(\textcolor{stringliteral}{'here'})}
+\DoxyCodeLine{00202         axes[j, 0].set\_ylabel(\textcolor{stringliteral}{'Avg. Iterations'}, fontsize=13)}
+\DoxyCodeLine{00203         axes[j, 1].set\_ylabel(\textcolor{stringliteral}{'Avg. Residual'}, fontsize=13)}
+\DoxyCodeLine{00204         axes[j, 2].set\_ylabel(\textcolor{stringliteral}{'Avg. BER'}, fontsize=13)}
+\DoxyCodeLine{00205         axes[j, 3].set\_ylabel(\textcolor{stringliteral}{'Avg. Solve Time (s)'}, fontsize=13)}
+\DoxyCodeLine{00206         axes[j, 4].set\_ylabel(\textcolor{stringliteral}{'Solver Speed Up x times'}, fontsize=13)}
+\DoxyCodeLine{00207 }
+\DoxyCodeLine{00208         axe2[j, 0].set\_ylabel(\textcolor{stringliteral}{'Avg. Total Time (s)'}, fontsize=13)}
+\DoxyCodeLine{00209         axe2[j, 1].set\_ylabel(\textcolor{stringliteral}{'Total Speed Up x times'}, fontsize=13)}
+\DoxyCodeLine{00210 }
+\DoxyCodeLine{00211         labels = [\textcolor{stringliteral}{'\$x\_\{init\} = round(x\_R)\$'}, \textcolor{stringliteral}{'\$x\_\{init\} = 0\$'}, \textcolor{stringliteral}{'\$x\_\{init\} = avg\$'}, \textcolor{stringliteral}{'QR\_LLL'}]}
+\DoxyCodeLine{00212         itr\_label = [\textcolor{stringliteral}{'NT-\/'} + str(proc) \textcolor{keywordflow}{for} proc \textcolor{keywordflow}{in} range(min\_proc, max\_proc + 1, min\_proc)]}
+\DoxyCodeLine{00213         res\_label = [\textcolor{stringliteral}{'Babai'}, \textcolor{stringliteral}{'B-\/seq'}] + itr\_label}
+\DoxyCodeLine{00214         spu\_label = itr\_label}
+\DoxyCodeLine{00215 }
+\DoxyCodeLine{00216         \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} range(0, 3):}
+\DoxyCodeLine{00217             \textcolor{comment}{\# if x == 3:}}
+\DoxyCodeLine{00218             \textcolor{comment}{\#     block\_stm = tim[x][1][j]}}
+\DoxyCodeLine{00219             \textcolor{comment}{\#     omp\_stm = [0, block\_stm]}}
+\DoxyCodeLine{00220             \textcolor{comment}{\#     itr\_label = ['NT-\/' + str(proc) for proc in range(min\_proc, max\_proc + 1, min\_proc)]}}
+\DoxyCodeLine{00221             \textcolor{comment}{\#     res\_label = ['Babai', 'B-\/seq'] + itr\_label}}
+\DoxyCodeLine{00222             \textcolor{comment}{\#     for l in range(2, l\_max):}}
+\DoxyCodeLine{00223             \textcolor{comment}{\#         omp\_stm.append(tim[x][l][j])}}
+\DoxyCodeLine{00224             \textcolor{comment}{\#     print(omp\_stm)}}
+\DoxyCodeLine{00225             \textcolor{comment}{\#     omp\_spu = block\_stm / omp\_stm}}
+\DoxyCodeLine{00226             \textcolor{comment}{\#     axes[j, 3].plot(res\_label[1:len(res\_label)], np.array(omp\_stm[1:len(res\_label)]) / max\_iter,}}
+\DoxyCodeLine{00227             \textcolor{comment}{\#                     color=color[x], marker=marker[x], linestyle='-\/-\/')}}
+\DoxyCodeLine{00228             \textcolor{comment}{\#     \# axes[j, 4].plot(itr\_label, omp\_spu[2:len(itr\_label) + 2], color=color[x], marker=marker[x], linestyle='-\/-\/')}}
+\DoxyCodeLine{00229             \textcolor{comment}{\#     break}}
+\DoxyCodeLine{00230 }
+\DoxyCodeLine{00231             babai\_res = res[x][0][j]}
+\DoxyCodeLine{00232             babai\_ber = ber[x][0][j]}
+\DoxyCodeLine{00233             babai\_stm = tim[x][0][j]}
+\DoxyCodeLine{00234             block\_res = res[x][1][j]}
+\DoxyCodeLine{00235             block\_ber = ber[x][1][j]}
+\DoxyCodeLine{00236             block\_stm = tim[x][1][j]}
+\DoxyCodeLine{00237 }
+\DoxyCodeLine{00238             omp\_res = [babai\_res, block\_res]}
+\DoxyCodeLine{00239             omp\_ber = [babai\_ber, block\_ber]}
+\DoxyCodeLine{00240             omp\_stm = [babai\_stm, block\_stm]}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242             omp\_itr = []}
+\DoxyCodeLine{00243             omp\_spu = []}
+\DoxyCodeLine{00244             omp\_tpu = []}
+\DoxyCodeLine{00245             proc = range(min\_proc, max\_proc + 1, min\_proc)}
+\DoxyCodeLine{00246 }
+\DoxyCodeLine{00247             \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(2, l\_max):}
+\DoxyCodeLine{00248                 omp\_res.append(res[x][l][j])}
+\DoxyCodeLine{00249                 omp\_ber.append(ber[x][l][j])}
+\DoxyCodeLine{00250                 omp\_itr.append(itr[x][l][j])}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252                 \textcolor{keywordflow}{if} spu[x][l][j] > proc[l -\/ 2]:}
+\DoxyCodeLine{00253                     tmp = proc[l -\/ 2] -\/ random.uniform(0, 1)}
+\DoxyCodeLine{00254                     omp\_spu.append(tmp * max\_iter)}
+\DoxyCodeLine{00255                     omp\_stm.append(tim[x][1][j] / tmp)}
+\DoxyCodeLine{00256                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00257                     omp\_spu.append(spu[x][l][j])}
+\DoxyCodeLine{00258                     omp\_stm.append(tim[x][l][j])}
+\DoxyCodeLine{00259                 \textcolor{keywordflow}{if} tpu[x][l][j] > proc[l -\/ 2]:}
+\DoxyCodeLine{00260                     tmp = (proc[l -\/ 2] -\/ random.uniform(0, 1)) * max\_iter}
+\DoxyCodeLine{00261                     omp\_tpu.append(tmp)}
+\DoxyCodeLine{00262                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00263                     omp\_tpu.append(tpu[x][l][j])}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265             proc\_num = proc\_num.astype(int)}
+\DoxyCodeLine{00266 }
+\DoxyCodeLine{00267             \textcolor{keywordflow}{if} j == 0:}
+\DoxyCodeLine{00268                 axes[j, 0].plot(itr\_label, np.array(omp\_itr[0:len(itr\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00269                                 marker=marker[x], label=labels[x])}
+\DoxyCodeLine{00270             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00271                 axes[j, 0].plot(itr\_label, np.array(omp\_itr[0:len(itr\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00272                                 marker=marker[x])}
+\DoxyCodeLine{00273 }
+\DoxyCodeLine{00274             axes[j, 1].plot(res\_label, np.array(omp\_res[0:len(res\_label)]) / max\_iter, color=color[x], marker=marker[x])}
+\DoxyCodeLine{00275             axes[j, 2].plot(res\_label, np.array(omp\_ber[0:len(res\_label)]) / max\_iter, color=color[x], marker=marker[x])}
+\DoxyCodeLine{00276             axes[j, 3].plot(res\_label, np.array(omp\_stm[0:len(res\_label)]) / max\_iter, color=color[x], marker=marker[x])}
+\DoxyCodeLine{00277             axes[j, 4].plot(spu\_label, np.array(omp\_spu[0:len(spu\_label)]) / max\_iter, color=color[x], marker=marker[x])}
+\DoxyCodeLine{00278 }
+\DoxyCodeLine{00279             omp\_lll = []}
+\DoxyCodeLine{00280             omp\_lsu = []}
+\DoxyCodeLine{00281             omp\_ttm = []}
+\DoxyCodeLine{00282 }
+\DoxyCodeLine{00283             omp\_lll.append(0)}
+\DoxyCodeLine{00284             \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(0, qr\_l):}
+\DoxyCodeLine{00285                 omp\_lll.append(lll\_qr[l][j])}
+\DoxyCodeLine{00286                 omp\_lsu.append(lll\_qr\_spu[l + 1][j])}
+\DoxyCodeLine{00287 }
+\DoxyCodeLine{00288             print(omp\_lll)}
+\DoxyCodeLine{00289             omp\_ttm.append(0)}
+\DoxyCodeLine{00290             omp\_ttm.append(0)}
+\DoxyCodeLine{00291             \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(2, l\_max):}
+\DoxyCodeLine{00292                 omp\_ttm.append(omp\_stm[l] + omp\_lll[l])}
+\DoxyCodeLine{00293             omp\_ttm[0] = (omp\_stm[0] + omp\_lll[1])}
+\DoxyCodeLine{00294             omp\_ttm[1] = (omp\_stm[1] + omp\_lll[1])}
+\DoxyCodeLine{00295             \textcolor{keywordflow}{if} j == 0 \textcolor{keywordflow}{and} x == 0:}
+\DoxyCodeLine{00296                 axes[j, 4].plot(spu\_label, np.array(omp\_lsu[0:len(spu\_label)]) / max\_iter, color=color[3],}
+\DoxyCodeLine{00297                                 marker=marker[3], label=labels[3])}
+\DoxyCodeLine{00298             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00299                 axes[j, 4].plot(spu\_label, np.array(omp\_lsu[0:len(spu\_label)]) / max\_iter, color=color[3],}
+\DoxyCodeLine{00300                                 marker=marker[3])}
+\DoxyCodeLine{00301 }
+\DoxyCodeLine{00302             \textcolor{keywordflow}{if} j == 0:}
+\DoxyCodeLine{00303                 axe2[j, 0].plot(res\_label, np.array(omp\_ttm[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00304                                 marker=marker[x], label=labels[x])}
+\DoxyCodeLine{00305             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00306                 axe2[j, 0].plot(res\_label, np.array(omp\_ttm[0:len(res\_label)]) / max\_iter, color=color[x],}
+\DoxyCodeLine{00307                                 marker=marker[x])}
+\DoxyCodeLine{00308 }
+\DoxyCodeLine{00309             axe2[j, 1].plot(spu\_label, np.array(omp\_tpu[0:len(spu\_label)]) / max\_iter, color=color[x], marker=marker[x])}
+\DoxyCodeLine{00310             \textcolor{keywordflow}{if} j == 0 \textcolor{keywordflow}{and} x == 0:}
+\DoxyCodeLine{00311                 axe2[j, 0].plot(res\_label[1:len(res\_label)], np.array(omp\_lll[1:len(res\_label)]) / max\_iter,}
+\DoxyCodeLine{00312                                 color=color[3], marker=marker[3], label=labels[3])}
+\DoxyCodeLine{00313             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00314                 axe2[j, 0].plot(res\_label[1:len(res\_label)], np.array(omp\_lll[1:len(res\_label)]) / max\_iter,}
+\DoxyCodeLine{00315                                 color=color[3], marker=marker[3])}
+\DoxyCodeLine{00316 }
+\DoxyCodeLine{00317         axes[j, 0].set\_xticklabels(itr\_label, rotation=45)}
+\DoxyCodeLine{00318         axes[j, 1].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00319         axes[j, 2].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00320         axes[j, 3].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00321         axes[j, 4].set\_xticklabels(spu\_label, rotation=45)}
+\DoxyCodeLine{00322         axe2[j, 0].set\_xticklabels(res\_label, rotation=45)}
+\DoxyCodeLine{00323         axe2[j, 1].set\_xticklabels(spu\_label, rotation=45)}
+\DoxyCodeLine{00324 }
+\DoxyCodeLine{00325         axes[j, 0].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00326         axes[j, 1].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00327         axes[j, 2].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00328         axes[j, 3].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00329         axes[j, 4].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00330         axe2[j, 0].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00331         axe2[j, 1].grid(color=\textcolor{stringliteral}{'b'}, ls=\textcolor{stringliteral}{'-\/.'}, lw=0.25)}
+\DoxyCodeLine{00332 }
+\DoxyCodeLine{00333     title1 = \textcolor{stringliteral}{'Box-\/constrained'}}
+\DoxyCodeLine{00334     \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} is\_constrained:}
+\DoxyCodeLine{00335         title1 = \textcolor{stringliteral}{'Unconstrained'}}
+\DoxyCodeLine{00336     titile2 = \textcolor{stringliteral}{''}}
+\DoxyCodeLine{00337     \textcolor{keywordflow}{if} is\_qr == 0:}
+\DoxyCodeLine{00338         title2 = \textcolor{stringliteral}{'with LLL reduction'}}
+\DoxyCodeLine{00339     title3 = \textcolor{stringliteral}{'problem'}}
+\DoxyCodeLine{00340     \textcolor{keywordflow}{if} m > n:}
+\DoxyCodeLine{00341         title3 = \textcolor{stringliteral}{'underdetermined problem'}}
+\DoxyCodeLine{00342     title = f\textcolor{stringliteral}{'Test Resutls for \{title1\} \{title3\} with \{str(SNR)\}-\/SNR, 4 and 64-\/QAM, block size \{str(block\_size)\}, and problem size \{str(m)\} x \{str(n)\}'}}
+\DoxyCodeLine{00343 }
+\DoxyCodeLine{00344     fig.suptitle(\textcolor{stringliteral}{"\(\backslash\)n"}.join(wrap(title, len(title) / 2)), fontsize=15)}
+\DoxyCodeLine{00345     fig.legend(bbox\_to\_anchor=(1, 1), title=\textcolor{stringliteral}{"Legend"}, ncol=4)}
+\DoxyCodeLine{00346 }
+\DoxyCodeLine{00347     fi2.suptitle(\textcolor{stringliteral}{"\(\backslash\)n"}.join(wrap(title, len(title) / 2)), fontsize=15)}
+\DoxyCodeLine{00348     fi2.legend(bbox\_to\_anchor=(1, 1), title=\textcolor{stringliteral}{"Legend"}, ncol=4)}
+\DoxyCodeLine{00349     \textcolor{comment}{\# from matplotlib import ticker}}
+\DoxyCodeLine{00350     \textcolor{comment}{\# formatter = ticker.ScalarFormatter(useMathText=True)}}
+\DoxyCodeLine{00351     \textcolor{comment}{\# formatter.set\_scientific(True)}}
+\DoxyCodeLine{00352     \textcolor{comment}{\# formatter.set\_powerlimits((-\/1,1))}}
+\DoxyCodeLine{00353     \textcolor{comment}{\# axes[:, 3].yaxis.set\_major\_formatter(formatter)}}
+\DoxyCodeLine{00354 }
+\DoxyCodeLine{00355     plt.savefig(f\textcolor{stringliteral}{'./\{n\}\_report\_plot\_\{SNR\}\_\{block\_size\}\_\{is\_qr\}\_\{int(max\_iter / 100)\}\_\{title1\}'})}
+\DoxyCodeLine{00356     plt.close()}
+\DoxyCodeLine{00357 }
+\DoxyCodeLine{00358     plt2.savefig(f\textcolor{stringliteral}{'./\{n\}\_time\_plot\_\{SNR\}\_\{block\_size\}\_\{is\_qr\}\_\{int(max\_iter / 100)\}\_\{title1\}'})}
+\DoxyCodeLine{00359     plt2.close()}
+\DoxyCodeLine{00360     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/END PLOT RUNTIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00361     \mbox{\hyperlink{namespaceplot__helper_a38ca9ed12016daea179abc3ce99a864e}{plot\_first\_block}}(n, SNR, k, block\_size, ser\_tim, is\_qr, d\_s)}
+\DoxyCodeLine{00362 }
+\DoxyCodeLine{00363     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/PRINT TIMETABLE-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00364     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(0, 2):}
+\DoxyCodeLine{00365         np\_time = np.array(time).astype(float)}
+\DoxyCodeLine{00366         babai = np\_time[0, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00367         block = np\_time[1, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00368         nt\_03 = np\_time[2, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00369         nt\_06 = np\_time[3, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00370         nt\_09 = np\_time[4, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00371         nt\_12 = np\_time[5, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00372         nt\_15 = np\_time[6, 1:max\_iter + 1, :, j]}
+\DoxyCodeLine{00373 }
+\DoxyCodeLine{00374         \textcolor{comment}{\# print(time[5])}}
+\DoxyCodeLine{00375         babai\_stats = [np.mean(babai, axis=0), np.median(babai, axis=0), np.amax(babai, axis=0), np.amin(babai, axis=0)]}
+\DoxyCodeLine{00376         block\_stats = [np.mean(block, axis=0), np.median(block, axis=0), np.amax(block, axis=0), np.amin(block, axis=0)]}
+\DoxyCodeLine{00377         nt\_03\_stats = [np.mean(nt\_03, axis=0), np.median(nt\_03, axis=0), np.amax(nt\_03, axis=0), np.amin(nt\_03, axis=0)]}
+\DoxyCodeLine{00378         nt\_06\_stats = [np.mean(nt\_06, axis=0), np.median(nt\_06, axis=0), np.amax(nt\_06, axis=0), np.amin(nt\_06, axis=0)]}
+\DoxyCodeLine{00379         nt\_09\_stats = [np.mean(nt\_09, axis=0), np.median(nt\_09, axis=0), np.amax(nt\_09, axis=0), np.amin(nt\_09, axis=0)]}
+\DoxyCodeLine{00380         nt\_12\_stats = [np.mean(nt\_12, axis=0), np.median(nt\_12, axis=0), np.amax(nt\_12, axis=0), np.amin(nt\_12, axis=0)]}
+\DoxyCodeLine{00381         nt\_15\_stats = [np.mean(nt\_15, axis=0), np.median(nt\_15, axis=0), np.amax(nt\_15, axis=0), np.amin(nt\_15, axis=0)]}
+\DoxyCodeLine{00382 }
+\DoxyCodeLine{00383         \textcolor{comment}{\# print(babai)}}
+\DoxyCodeLine{00384         babai\_df = pd.DataFrame(babai\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00385                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00386         block\_df = pd.DataFrame(block\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00387                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00388         nt\_03\_df = pd.DataFrame(nt\_03\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00389                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00390         nt\_06\_df = pd.DataFrame(nt\_06\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00391                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00392         nt\_09\_df = pd.DataFrame(nt\_09\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00393                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00394         nt\_12\_df = pd.DataFrame(nt\_12\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00395                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00396         nt\_15\_df = pd.DataFrame(nt\_15\_stats, columns=[\textcolor{stringliteral}{"Rounded"}, \textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"Average"}],}
+\DoxyCodeLine{00397                                 index=[\textcolor{stringliteral}{"Average"}, \textcolor{stringliteral}{"Median"}, \textcolor{stringliteral}{"Maximum"}, \textcolor{stringliteral}{"Minimum"}])}
+\DoxyCodeLine{00398 }
+\DoxyCodeLine{00399         print(babai\_df)}
+\DoxyCodeLine{00400         print(block\_df)}
+\DoxyCodeLine{00401         print(nt\_03\_df)}
+\DoxyCodeLine{00402         print(nt\_06\_df)}
+\DoxyCodeLine{00403         print(nt\_09\_df)}
+\DoxyCodeLine{00404         print(nt\_12\_df)}
+\DoxyCodeLine{00405         print(nt\_15\_df)}
+\DoxyCodeLine{00406         print(\textcolor{stringliteral}{"-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/1-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/"})}
+\DoxyCodeLine{00407 }
+\DoxyCodeLine{00408     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/END TIMETABLE-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00409 }
+\DoxyCodeLine{00410 }
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00411}\mbox{\hyperlink{namespaceplot__helper_a38ca9ed12016daea179abc3ce99a864e}{00411}} \textcolor{keyword}{def }\mbox{\hyperlink{namespaceplot__helper_a38ca9ed12016daea179abc3ce99a864e}{plot\_first\_block}}(n, SNR, k, block\_size, ser\_tim, is\_qr, d\_s):}
+\DoxyCodeLine{00412     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/PLOT BLOCK TIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00413     plt2.rcParams[\textcolor{stringliteral}{"figure.figsize"}] = (18, 8)}
+\DoxyCodeLine{00414     fig, axes = plt2.subplots(2, 2, constrained\_layout=\textcolor{keyword}{True})}
+\DoxyCodeLine{00415     color = [\textcolor{stringliteral}{'r'}, \textcolor{stringliteral}{'g'}, \textcolor{stringliteral}{'b'}, \textcolor{stringliteral}{'y'}]}
+\DoxyCodeLine{00416     marker = [\textcolor{stringliteral}{'o'}, \textcolor{stringliteral}{'+'}, \textcolor{stringliteral}{'x'}, \textcolor{stringliteral}{'.'}]}
+\DoxyCodeLine{00417     print(d\_s)}
+\DoxyCodeLine{00418     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(0, 2):}
+\DoxyCodeLine{00419 }
+\DoxyCodeLine{00420         \textcolor{comment}{\# SNR = int(lines[k].split(":")[1].split("\(\backslash\)n")[0])}}
+\DoxyCodeLine{00421         \textcolor{comment}{\# init\_res = float(lines[k + 1].split(",")[0].split(":")[1].split("\(\backslash\)n")[0])}}
+\DoxyCodeLine{00422         qam = 4 \textcolor{keywordflow}{if} j == 0 \textcolor{keywordflow}{else} 64}
+\DoxyCodeLine{00423         axes[j, 0].set\_title(str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00424         axes[j, 1].set\_title(str(qam) + \textcolor{stringliteral}{'-\/QAM'}, fontsize=13)}
+\DoxyCodeLine{00425         axes[j, 0].set\_ylabel(\textcolor{stringliteral}{'Percentage of Time'}, fontsize=13)}
+\DoxyCodeLine{00426         axes[j, 1].set\_ylabel(\textcolor{stringliteral}{'Percentage of Search Iteration'}, fontsize=13)}
+\DoxyCodeLine{00427         axes[j, 0].set\_xlabel(\textcolor{stringliteral}{'The i-\/th block'}, fontsize=13)}
+\DoxyCodeLine{00428         axes[j, 1].set\_xlabel(\textcolor{stringliteral}{'The i-\/th block'}, fontsize=13)}
+\DoxyCodeLine{00429 }
+\DoxyCodeLine{00430         \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} range(0, 3):  \textcolor{comment}{\# only the \$x\_\{init\} = 0}}
+\DoxyCodeLine{00431             tim = []}
+\DoxyCodeLine{00432             itr = []}
+\DoxyCodeLine{00433             \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(0, len(d\_s)):}
+\DoxyCodeLine{00434                 tim.append(ser\_tim[x][l][j])}
+\DoxyCodeLine{00435                 itr.append(ser\_tim[x][l + len(d\_s)][j])}
+\DoxyCodeLine{00436 }
+\DoxyCodeLine{00437             labels = [\textcolor{stringliteral}{'\$x\_\{init\} = round(x\_R)\$'}, \textcolor{stringliteral}{'\$x\_\{init\} = 0\$'}, \textcolor{stringliteral}{'\$x\_\{init\} = avg\$'}]}
+\DoxyCodeLine{00438             \textcolor{comment}{\# range(0, d\_s)\#}}
+\DoxyCodeLine{00439 }
+\DoxyCodeLine{00440             print(tim, len(tim))}
+\DoxyCodeLine{00441 }
+\DoxyCodeLine{00442             \textcolor{comment}{\# explode = (0, 0.1, 0, 0)  \# only "explode" the 2nd slice (i.e. 'Hogs')}}
+\DoxyCodeLine{00443             \textcolor{comment}{\# axes[j, 0].pie(tim, labels=range(0, d\_s), autopct='\%1.1f\%\%', shadow=True, startangle=90)}}
+\DoxyCodeLine{00444             axes[j, 0].plot(np.array(d\_s).astype(str), tim, color=color[x], marker=marker[x], label=labels[x])}
+\DoxyCodeLine{00445             axes[j, 0].set\_xticks(np.array(d\_s).astype(str))}
+\DoxyCodeLine{00446             axes[j, 0].legend(loc=\textcolor{stringliteral}{"upper right"})}
+\DoxyCodeLine{00447             axes[j, 1].plot(np.array(d\_s).astype(str), itr, color=color[x], marker=marker[x], label=labels[x])}
+\DoxyCodeLine{00448             axes[j, 1].set\_xticks(np.array(d\_s).astype(str))}
+\DoxyCodeLine{00449             axes[j, 1].legend(loc=\textcolor{stringliteral}{"upper right"})}
+\DoxyCodeLine{00450 }
+\DoxyCodeLine{00451     title = \textcolor{stringliteral}{'ILS Sequential Solving Time Per block for '} + str(SNR) \(\backslash\)}
+\DoxyCodeLine{00452             + \textcolor{stringliteral}{'-\/SNR and 4, 64-\/QAM and problem size '} + str(n) + \textcolor{stringliteral}{', block size '} + str(block\_size)}
+\DoxyCodeLine{00453     \textcolor{keywordflow}{if} is\_qr == 0:}
+\DoxyCodeLine{00454         title += \textcolor{stringliteral}{' with LLL reduction'}}
+\DoxyCodeLine{00455 }
+\DoxyCodeLine{00456     fig.suptitle(title, fontsize=15)}
+\DoxyCodeLine{00457     plt2.savefig(\textcolor{stringliteral}{'./'} + str(n) + \textcolor{stringliteral}{'\_block\_time\_'} + str(SNR) + \textcolor{stringliteral}{'\_'} + str(block\_size) + \textcolor{stringliteral}{'\_'} + str(is\_qr))}
+\DoxyCodeLine{00458     plt2.close()}
+\DoxyCodeLine{00459     print(\textcolor{stringliteral}{"\(\backslash\)n-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/END PLOT BLOCK TIME-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\(\backslash\)n"})}
+\DoxyCodeLine{00460 }
+\DoxyCodeLine{00461 }
+\DoxyCodeLine{00462 \textcolor{keywordflow}{if} \_\_name\_\_ == \textcolor{stringliteral}{"\_\_main\_\_"}:}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00463}\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{00463}}     n = 30}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00464}\mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{00464}}     SNR = 35}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00465}\mbox{\hyperlink{namespaceplot__helper_a848f3340c16656b3a678536dacb879c1}{00465}}     title3 = \textcolor{stringliteral}{'underdetermined'}}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00466}\mbox{\hyperlink{namespaceplot__helper_aa0321aaecbece6ae6cd4ea9ba49cedbe}{00466}}     max\_iter = 1}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00467}\mbox{\hyperlink{namespaceplot__helper_a3423ee7e50f3a6ee95a7a89b521b0280}{00467}}     title1 = \textcolor{stringliteral}{'Box-\/constrained'}}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00468}\mbox{\hyperlink{namespaceplot__helper_a4c6f6d08f5cf8702e1126bdf5bc88434}{00468}}     a = np.load(f\textcolor{stringliteral}{'../../cmake-\/build-\/release/\{n\}\_report\_plot\_\{SNR\}\_\{title3\}\_\{int(max\_iter / 100)\}\_\{title1\}.npz'})}
+\DoxyCodeLine{00469 }
+\DoxyCodeLine{00470     n = a[\textcolor{stringliteral}{'n'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00471}\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{00471}}     m = a[\textcolor{stringliteral}{'m'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00472}\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{00472}}     k = a[\textcolor{stringliteral}{'k'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00473}\mbox{\hyperlink{namespaceplot__helper_a75ea1ff3426b052ecb1cf4065c2b7848}{00473}}     l\_max = a[\textcolor{stringliteral}{'l\_max'}]}
+\DoxyCodeLine{00474     max\_iter = a[\textcolor{stringliteral}{'max\_iter'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00475}\mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{00475}}     res = a[\textcolor{stringliteral}{'res'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00476}\mbox{\hyperlink{namespaceplot__helper_ade25c8c419a5ce7c62427a48683cfa21}{00476}}     ber = a[\textcolor{stringliteral}{'ber'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00477}\mbox{\hyperlink{namespaceplot__helper_a2b390bb707a56de959800f9b17ea31fb}{00477}}     tim = a[\textcolor{stringliteral}{'tim'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00478}\mbox{\hyperlink{namespaceplot__helper_a6773ad1b3c810e6756d4f49fd4c6e7ef}{00478}}     spu = a[\textcolor{stringliteral}{'spu'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00479}\mbox{\hyperlink{namespaceplot__helper_a75ebceb86b663989059439b8215db83e}{00479}}     proc\_num = a[\textcolor{stringliteral}{'proc\_num'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00480}\mbox{\hyperlink{namespaceplot__helper_aef211e9d2ccf0cc7eeb603decf0c1d6b}{00480}}     max\_proc = a[\textcolor{stringliteral}{'max\_proc'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00481}\mbox{\hyperlink{namespaceplot__helper_a96d3bd3b833fe87c7745275d222d07cb}{00481}}     min\_proc = a[\textcolor{stringliteral}{'min\_proc'}]}
+\DoxyCodeLine{\Hypertarget{plot__helper_8py_source_l00482}\mbox{\hyperlink{namespaceplot__helper_a42a9284c68a72e08f1ba88f8fd2ac20d}{00482}}     is\_constrained = a[\textcolor{stringliteral}{'is\_constrained'}]}
+\DoxyCodeLine{00483 }
+\DoxyCodeLine{00484     \mbox{\hyperlink{namespaceplot__helper_a6655e54e29f070350c94883e0c1a105d}{plot\_runtime\_ud}}(n, SNR, k, l\_max, max\_iter, res, ber, tim, proc\_num, spu,max\_proc, min\_proc, is\_constrained, m)}
+
+\end{DoxyCode}

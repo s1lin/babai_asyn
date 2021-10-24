@@ -1,0 +1,373 @@
+\indexentry{cils@{cils}|hyperpage}{7}
+\indexentry{cils@{cils}!matrix\_vector\_mult@{matrix\_vector\_mult}|hyperpage}{7}
+\indexentry{matrix\_vector\_mult@{matrix\_vector\_mult}!cils@{cils}|hyperpage}{7}
+\indexentry{cils@{cils}!matrix\_vector\_mult@{matrix\_vector\_mult}|hyperpage}{8}
+\indexentry{matrix\_vector\_mult@{matrix\_vector\_mult}!cils@{cils}|hyperpage}{8}
+\indexentry{cils::program\_def@{cils::program\_def}|hyperpage}{8}
+\indexentry{cils::program\_def@{cils::program\_def}!index@{index}|hyperpage}{9}
+\indexentry{index@{index}!cils::program\_def@{cils::program\_def}|hyperpage}{9}
+\indexentry{cils::program\_def@{cils::program\_def}!scalar@{scalar}|hyperpage}{9}
+\indexentry{scalar@{scalar}!cils::program\_def@{cils::program\_def}|hyperpage}{9}
+\indexentry{cils::program\_def@{cils::program\_def}!d\_s@{d\_s}|hyperpage}{9}
+\indexentry{d\_s@{d\_s}!cils::program\_def@{cils::program\_def}|hyperpage}{9}
+\indexentry{cils::program\_def@{cils::program\_def}!indicator@{indicator}|hyperpage}{9}
+\indexentry{indicator@{indicator}!cils::program\_def@{cils::program\_def}|hyperpage}{9}
+\indexentry{cils::program\_def@{cils::program\_def}!init\_guess@{init\_guess}|hyperpage}{10}
+\indexentry{init\_guess@{init\_guess}!cils::program\_def@{cils::program\_def}|hyperpage}{10}
+\indexentry{cils::program\_def@{cils::program\_def}!init\_program\_def@{init\_program\_def}|hyperpage}{10}
+\indexentry{init\_program\_def@{init\_program\_def}!cils::program\_def@{cils::program\_def}|hyperpage}{10}
+\indexentry{cils::program\_def@{cils::program\_def}!permutation@{permutation}|hyperpage}{10}
+\indexentry{permutation@{permutation}!cils::program\_def@{cils::program\_def}|hyperpage}{10}
+\indexentry{cils::program\_def@{cils::program\_def}!block\_size@{block\_size}|hyperpage}{10}
+\indexentry{block\_size@{block\_size}!cils::program\_def@{cils::program\_def}|hyperpage}{10}
+\indexentry{cils::program\_def@{cils::program\_def}!chunk@{chunk}|hyperpage}{10}
+\indexentry{chunk@{chunk}!cils::program\_def@{cils::program\_def}|hyperpage}{10}
+\indexentry{cils::program\_def@{cils::program\_def}!chunk\_size@{chunk\_size}|hyperpage}{11}
+\indexentry{chunk\_size@{chunk\_size}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!coeff@{coeff}|hyperpage}{11}
+\indexentry{coeff@{coeff}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!is\_constrained@{is\_constrained}|hyperpage}{11}
+\indexentry{is\_constrained@{is\_constrained}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!is\_local@{is\_local}|hyperpage}{11}
+\indexentry{is\_local@{is\_local}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!is\_matlab@{is\_matlab}|hyperpage}{11}
+\indexentry{is\_matlab@{is\_matlab}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!is\_nc@{is\_nc}|hyperpage}{11}
+\indexentry{is\_nc@{is\_nc}!cils::program\_def@{cils::program\_def}|hyperpage}{11}
+\indexentry{cils::program\_def@{cils::program\_def}!is\_qr@{is\_qr}|hyperpage}{12}
+\indexentry{is\_qr@{is\_qr}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!max\_iter@{max\_iter}|hyperpage}{12}
+\indexentry{max\_iter@{max\_iter}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!max\_proc@{max\_proc}|hyperpage}{12}
+\indexentry{max\_proc@{max\_proc}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!max\_search@{max\_search}|hyperpage}{12}
+\indexentry{max\_search@{max\_search}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!max\_thre@{max\_thre}|hyperpage}{12}
+\indexentry{max\_thre@{max\_thre}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!min\_proc@{min\_proc}|hyperpage}{12}
+\indexentry{min\_proc@{min\_proc}!cils::program\_def@{cils::program\_def}|hyperpage}{12}
+\indexentry{cils::program\_def@{cils::program\_def}!mode@{mode}|hyperpage}{13}
+\indexentry{mode@{mode}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!num\_trials@{num\_trials}|hyperpage}{13}
+\indexentry{num\_trials@{num\_trials}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!offset@{offset}|hyperpage}{13}
+\indexentry{offset@{offset}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!plot\_itr@{plot\_itr}|hyperpage}{13}
+\indexentry{plot\_itr@{plot\_itr}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!q@{q}|hyperpage}{13}
+\indexentry{q@{q}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!qam@{qam}|hyperpage}{13}
+\indexentry{qam@{qam}!cils::program\_def@{cils::program\_def}|hyperpage}{13}
+\indexentry{cils::program\_def@{cils::program\_def}!schedule@{schedule}|hyperpage}{14}
+\indexentry{schedule@{schedule}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{cils::program\_def@{cils::program\_def}!search\_iter@{search\_iter}|hyperpage}{14}
+\indexentry{search\_iter@{search\_iter}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{cils::program\_def@{cils::program\_def}!SNR@{SNR}|hyperpage}{14}
+\indexentry{SNR@{SNR}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{cils::program\_def@{cils::program\_def}!spilt\_size@{spilt\_size}|hyperpage}{14}
+\indexentry{spilt\_size@{spilt\_size}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{cils::program\_def@{cils::program\_def}!stop@{stop}|hyperpage}{14}
+\indexentry{stop@{stop}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{cils::program\_def@{cils::program\_def}!verbose@{verbose}|hyperpage}{14}
+\indexentry{verbose@{verbose}!cils::program\_def@{cils::program\_def}|hyperpage}{14}
+\indexentry{helper@{helper}|hyperpage}{15}
+\indexentry{helper@{helper}!b\_mtimes@{b\_mtimes}|hyperpage}{16}
+\indexentry{b\_mtimes@{b\_mtimes}!helper@{helper}|hyperpage}{16}
+\indexentry{helper@{helper}!b\_rand@{b\_rand}|hyperpage}{16}
+\indexentry{b\_rand@{b\_rand}!helper@{helper}|hyperpage}{16}
+\indexentry{helper@{helper}!display\_matrix@{display\_matrix}|hyperpage}{16}
+\indexentry{display\_matrix@{display\_matrix}!helper@{helper}|hyperpage}{16}
+\indexentry{helper@{helper}!display\_vector@{display\_vector}|hyperpage}{17}
+\indexentry{display\_vector@{display\_vector}!helper@{helper}|hyperpage}{17}
+\indexentry{helper@{helper}!eye@{eye}|hyperpage}{17}
+\indexentry{eye@{eye}!helper@{helper}|hyperpage}{17}
+\indexentry{helper@{helper}!find\_bit\_error\_rate@{find\_bit\_error\_rate}|hyperpage}{17}
+\indexentry{find\_bit\_error\_rate@{find\_bit\_error\_rate}!helper@{helper}|hyperpage}{17}
+\indexentry{helper@{helper}!find\_residual@{find\_residual}|hyperpage}{18}
+\indexentry{find\_residual@{find\_residual}!helper@{helper}|hyperpage}{18}
+\indexentry{helper@{helper}!if\_all\_x\_true@{if\_all\_x\_true}|hyperpage}{19}
+\indexentry{if\_all\_x\_true@{if\_all\_x\_true}!helper@{helper}|hyperpage}{19}
+\indexentry{helper@{helper}!inv@{inv}|hyperpage}{19}
+\indexentry{inv@{inv}!helper@{helper}|hyperpage}{19}
+\indexentry{helper@{helper}!length\_nonzeros@{length\_nonzeros}|hyperpage}{19}
+\indexentry{length\_nonzeros@{length\_nonzeros}!helper@{helper}|hyperpage}{19}
+\indexentry{helper@{helper}!mtimes@{mtimes}|hyperpage}{20}
+\indexentry{mtimes@{mtimes}!helper@{helper}|hyperpage}{20}
+\indexentry{helper@{helper}!mtimes@{mtimes}|hyperpage}{20}
+\indexentry{mtimes@{mtimes}!helper@{helper}|hyperpage}{20}
+\indexentry{helper@{helper}!mtimes\_AP@{mtimes\_AP}|hyperpage}{20}
+\indexentry{mtimes\_AP@{mtimes\_AP}!helper@{helper}|hyperpage}{20}
+\indexentry{helper@{helper}!mtimes\_Axy@{mtimes\_Axy}|hyperpage}{20}
+\indexentry{mtimes\_Axy@{mtimes\_Axy}!helper@{helper}|hyperpage}{20}
+\indexentry{helper@{helper}!mtimes\_col@{mtimes\_col}|hyperpage}{21}
+\indexentry{mtimes\_col@{mtimes\_col}!helper@{helper}|hyperpage}{21}
+\indexentry{helper@{helper}!mtimes\_v@{mtimes\_v}|hyperpage}{21}
+\indexentry{mtimes\_v@{mtimes\_v}!helper@{helper}|hyperpage}{21}
+\indexentry{helper@{helper}!norm@{norm}|hyperpage}{21}
+\indexentry{norm@{norm}!helper@{helper}|hyperpage}{21}
+\indexentry{helper@{helper}!planerot@{planerot}|hyperpage}{22}
+\indexentry{planerot@{planerot}!helper@{helper}|hyperpage}{22}
+\indexentry{helper@{helper}!randperm@{randperm}|hyperpage}{22}
+\indexentry{randperm@{randperm}!helper@{helper}|hyperpage}{22}
+\indexentry{helper@{helper}!unique\_vector@{unique\_vector}|hyperpage}{23}
+\indexentry{unique\_vector@{unique\_vector}!helper@{helper}|hyperpage}{23}
+\indexentry{plot\_helper@{plot\_helper}|hyperpage}{23}
+\indexentry{plot\_helper@{plot\_helper}!plot\_first\_block@{plot\_first\_block}|hyperpage}{24}
+\indexentry{plot\_first\_block@{plot\_first\_block}!plot\_helper@{plot\_helper}|hyperpage}{24}
+\indexentry{plot\_helper@{plot\_helper}!plot\_runtime@{plot\_runtime}|hyperpage}{24}
+\indexentry{plot\_runtime@{plot\_runtime}!plot\_helper@{plot\_helper}|hyperpage}{24}
+\indexentry{plot\_helper@{plot\_helper}!plot\_runtime\_lll@{plot\_runtime\_lll}|hyperpage}{25}
+\indexentry{plot\_runtime\_lll@{plot\_runtime\_lll}!plot\_helper@{plot\_helper}|hyperpage}{25}
+\indexentry{plot\_helper@{plot\_helper}!plot\_runtime\_ud@{plot\_runtime\_ud}|hyperpage}{25}
+\indexentry{plot\_runtime\_ud@{plot\_runtime\_ud}!plot\_helper@{plot\_helper}|hyperpage}{25}
+\indexentry{plot\_helper@{plot\_helper}!a@{a}|hyperpage}{26}
+\indexentry{a@{a}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!ber@{ber}|hyperpage}{26}
+\indexentry{ber@{ber}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!is\_constrained@{is\_constrained}|hyperpage}{26}
+\indexentry{is\_constrained@{is\_constrained}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!k@{k}|hyperpage}{26}
+\indexentry{k@{k}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!l\_max@{l\_max}|hyperpage}{26}
+\indexentry{l\_max@{l\_max}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!m@{m}|hyperpage}{26}
+\indexentry{m@{m}!plot\_helper@{plot\_helper}|hyperpage}{26}
+\indexentry{plot\_helper@{plot\_helper}!max\_iter@{max\_iter}|hyperpage}{27}
+\indexentry{max\_iter@{max\_iter}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!max\_proc@{max\_proc}|hyperpage}{27}
+\indexentry{max\_proc@{max\_proc}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!min\_proc@{min\_proc}|hyperpage}{27}
+\indexentry{min\_proc@{min\_proc}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!n@{n}|hyperpage}{27}
+\indexentry{n@{n}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!proc\_num@{proc\_num}|hyperpage}{27}
+\indexentry{proc\_num@{proc\_num}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!res@{res}|hyperpage}{27}
+\indexentry{res@{res}!plot\_helper@{plot\_helper}|hyperpage}{27}
+\indexentry{plot\_helper@{plot\_helper}!SNR@{SNR}|hyperpage}{28}
+\indexentry{SNR@{SNR}!plot\_helper@{plot\_helper}|hyperpage}{28}
+\indexentry{plot\_helper@{plot\_helper}!spu@{spu}|hyperpage}{28}
+\indexentry{spu@{spu}!plot\_helper@{plot\_helper}|hyperpage}{28}
+\indexentry{plot\_helper@{plot\_helper}!tim@{tim}|hyperpage}{28}
+\indexentry{tim@{tim}!plot\_helper@{plot\_helper}|hyperpage}{28}
+\indexentry{plot\_helper@{plot\_helper}!title1@{title1}|hyperpage}{28}
+\indexentry{title1@{title1}!plot\_helper@{plot\_helper}|hyperpage}{28}
+\indexentry{plot\_helper@{plot\_helper}!title3@{title3}|hyperpage}{28}
+\indexentry{title3@{title3}!plot\_helper@{plot\_helper}|hyperpage}{28}
+\indexentry{py\_qr@{py\_qr}|hyperpage}{29}
+\indexentry{py\_qr@{py\_qr}!check\_mem@{check\_mem}|hyperpage}{29}
+\indexentry{check\_mem@{check\_mem}!py\_qr@{py\_qr}|hyperpage}{29}
+\indexentry{py\_qr@{py\_qr}!block\_mem@{block\_mem}|hyperpage}{29}
+\indexentry{block\_mem@{block\_mem}!py\_qr@{py\_qr}|hyperpage}{29}
+\indexentry{py\_qr@{py\_qr}!max\_mem@{max\_mem}|hyperpage}{29}
+\indexentry{max\_mem@{max\_mem}!py\_qr@{py\_qr}|hyperpage}{29}
+\indexentry{py\_qr@{py\_qr}!total@{total}|hyperpage}{29}
+\indexentry{total@{total}!py\_qr@{py\_qr}|hyperpage}{29}
+\indexentry{py\_qr@{py\_qr}!used@{used}|hyperpage}{30}
+\indexentry{used@{used}!py\_qr@{py\_qr}|hyperpage}{30}
+\indexentry{py\_qr@{py\_qr}!x@{x}|hyperpage}{30}
+\indexentry{x@{x}!py\_qr@{py\_qr}|hyperpage}{30}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{31}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils@{cils}|hyperpage}{32}
+\indexentry{cils@{cils}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{32}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!````~cils@{$\sim$cils}|hyperpage}{32}
+\indexentry{````~cils@{$\sim$cils}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{32}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_babai\_search\_omp@{cils\_babai\_search\_omp}|hyperpage}{33}
+\indexentry{cils\_babai\_search\_omp@{cils\_babai\_search\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{33}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_babai\_search\_serial@{cils\_babai\_search\_serial}|hyperpage}{33}
+\indexentry{cils\_babai\_search\_serial@{cils\_babai\_search\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{33}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_back\_solve@{cils\_back\_solve}|hyperpage}{34}
+\indexentry{cils\_back\_solve@{cils\_back\_solve}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{34}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_back\_solve\_omp@{cils\_back\_solve\_omp}|hyperpage}{34}
+\indexentry{cils\_back\_solve\_omp@{cils\_back\_solve\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{34}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_omp@{cils\_block\_search\_omp}|hyperpage}{35}
+\indexentry{cils\_block\_search\_omp@{cils\_block\_search\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{35}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_serial@{cils\_block\_search\_serial}|hyperpage}{35}
+\indexentry{cils\_block\_search\_serial@{cils\_block\_search\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{35}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_block\_search\_serial\_CPUTEST@{cils\_block\_search\_serial\_CPUTEST}|hyperpage}{36}
+\indexentry{cils\_block\_search\_serial\_CPUTEST@{cils\_block\_search\_serial\_CPUTEST}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{36}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_grad\_proj@{cils\_grad\_proj}|hyperpage}{36}
+\indexentry{cils\_grad\_proj@{cils\_grad\_proj}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{36}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_partition\_deficient@{cils\_partition\_deficient}|hyperpage}{36}
+\indexentry{cils\_partition\_deficient@{cils\_partition\_deficient}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{36}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_qrp\_serial@{cils\_qrp\_serial}|hyperpage}{37}
+\indexentry{cils\_qrp\_serial@{cils\_qrp\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{37}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_babai\_omp@{cils\_scp\_block\_babai\_omp}|hyperpage}{37}
+\indexentry{cils\_scp\_block\_babai\_omp@{cils\_scp\_block\_babai\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{37}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_babai\_serial@{cils\_scp\_block\_babai\_serial}|hyperpage}{37}
+\indexentry{cils\_scp\_block\_babai\_serial@{cils\_scp\_block\_babai\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{37}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_mpi@{cils\_scp\_block\_optimal\_mpi}|hyperpage}{38}
+\indexentry{cils\_scp\_block\_optimal\_mpi@{cils\_scp\_block\_optimal\_mpi}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{38}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_omp@{cils\_scp\_block\_optimal\_omp}|hyperpage}{38}
+\indexentry{cils\_scp\_block\_optimal\_omp@{cils\_scp\_block\_optimal\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{38}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_optimal\_serial@{cils\_scp\_block\_optimal\_serial}|hyperpage}{38}
+\indexentry{cils\_scp\_block\_optimal\_serial@{cils\_scp\_block\_optimal\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{38}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_suboptimal\_omp@{cils\_scp\_block\_suboptimal\_omp}|hyperpage}{39}
+\indexentry{cils\_scp\_block\_suboptimal\_omp@{cils\_scp\_block\_suboptimal\_omp}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{39}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_scp\_block\_suboptimal\_serial@{cils\_scp\_block\_suboptimal\_serial}|hyperpage}{39}
+\indexentry{cils\_scp\_block\_suboptimal\_serial@{cils\_scp\_block\_suboptimal\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{39}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_sic\_serial@{cils\_sic\_serial}|hyperpage}{39}
+\indexentry{cils\_sic\_serial@{cils\_sic\_serial}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{39}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!cils\_sic\_subopt@{cils\_sic\_subopt}|hyperpage}{39}
+\indexentry{cils\_sic\_subopt@{cils\_sic\_subopt}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{39}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init@{init}|hyperpage}{40}
+\indexentry{init@{init}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{40}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_R@{init\_R}|hyperpage}{40}
+\indexentry{init\_R@{init\_R}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{40}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_ud@{init\_ud}|hyperpage}{40}
+\indexentry{init\_ud@{init\_ud}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{40}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_y@{init\_y}|hyperpage}{40}
+\indexentry{init\_y@{init\_y}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{40}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!A@{A}|hyperpage}{41}
+\indexentry{A@{A}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!H@{H}|hyperpage}{41}
+\indexentry{H@{H}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!init\_res@{init\_res}|hyperpage}{41}
+\indexentry{init\_res@{init\_res}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!l@{l}|hyperpage}{41}
+\indexentry{l@{l}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!lower@{lower}|hyperpage}{41}
+\indexentry{lower@{lower}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!matlabPtr@{matlabPtr}|hyperpage}{41}
+\indexentry{matlabPtr@{matlabPtr}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{41}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!P@{P}|hyperpage}{42}
+\indexentry{P@{P}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!qam@{qam}|hyperpage}{42}
+\indexentry{qam@{qam}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!R\_A@{R\_A}|hyperpage}{42}
+\indexentry{R\_A@{R\_A}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!sigma@{sigma}|hyperpage}{42}
+\indexentry{sigma@{sigma}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!snr@{snr}|hyperpage}{42}
+\indexentry{snr@{snr}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!tolerance@{tolerance}|hyperpage}{42}
+\indexentry{tolerance@{tolerance}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{42}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!u@{u}|hyperpage}{43}
+\indexentry{u@{u}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!upper@{upper}|hyperpage}{43}
+\indexentry{upper@{upper}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!v\_a@{v\_a}|hyperpage}{43}
+\indexentry{v\_a@{v\_a}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!v\_q@{v\_q}|hyperpage}{43}
+\indexentry{v\_q@{v\_q}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!x\_r@{x\_r}|hyperpage}{43}
+\indexentry{x\_r@{x\_r}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!x\_t@{x\_t}|hyperpage}{43}
+\indexentry{x\_t@{x\_t}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{43}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!y\_a@{y\_a}|hyperpage}{44}
+\indexentry{y\_a@{y\_a}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{44}
+\indexentry{cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}!Z@{Z}|hyperpage}{44}
+\indexentry{Z@{Z}!cils::cils$<$ scalar, index, m, n $>$@{cils::cils$<$ scalar, index, m, n $>$}|hyperpage}{44}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{44}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_reduction@{cils\_reduction}|hyperpage}{45}
+\indexentry{cils\_reduction@{cils\_reduction}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{45}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_eml\_qr@{cils\_eml\_qr}|hyperpage}{45}
+\indexentry{cils\_eml\_qr@{cils\_eml\_qr}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{45}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_omp@{cils\_LLL\_omp}|hyperpage}{46}
+\indexentry{cils\_LLL\_omp@{cils\_LLL\_omp}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{46}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_qr\_omp@{cils\_LLL\_qr\_omp}|hyperpage}{46}
+\indexentry{cils\_LLL\_qr\_omp@{cils\_LLL\_qr\_omp}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{46}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_qr\_reduction@{cils\_LLL\_qr\_reduction}|hyperpage}{46}
+\indexentry{cils\_LLL\_qr\_reduction@{cils\_LLL\_qr\_reduction}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{46}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_qr\_serial@{cils\_LLL\_qr\_serial}|hyperpage}{46}
+\indexentry{cils\_LLL\_qr\_serial@{cils\_LLL\_qr\_serial}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{46}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_reduction@{cils\_LLL\_reduction}|hyperpage}{46}
+\indexentry{cils\_LLL\_reduction@{cils\_LLL\_reduction}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{46}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_LLL\_serial@{cils\_LLL\_serial}|hyperpage}{47}
+\indexentry{cils\_LLL\_serial@{cils\_LLL\_serial}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{47}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_obils\_matlab@{cils\_obils\_matlab}|hyperpage}{47}
+\indexentry{cils\_obils\_matlab@{cils\_obils\_matlab}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{47}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_obils\_reduction@{cils\_obils\_reduction}|hyperpage}{47}
+\indexentry{cils\_obils\_reduction@{cils\_obils\_reduction}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{47}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_obils\_reduction\_matlab@{cils\_obils\_reduction\_matlab}|hyperpage}{47}
+\indexentry{cils\_obils\_reduction\_matlab@{cils\_obils\_reduction\_matlab}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{47}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_qr\_omp@{cils\_qr\_omp}|hyperpage}{48}
+\indexentry{cils\_qr\_omp@{cils\_qr\_omp}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{48}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_qr\_py@{cils\_qr\_py}|hyperpage}{48}
+\indexentry{cils\_qr\_py@{cils\_qr\_py}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{48}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_qr\_py\_helper@{cils\_qr\_py\_helper}|hyperpage}{48}
+\indexentry{cils\_qr\_py\_helper@{cils\_qr\_py\_helper}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{48}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_qr\_serial@{cils\_qr\_serial}|hyperpage}{48}
+\indexentry{cils\_qr\_serial@{cils\_qr\_serial}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{48}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!cils\_qr\_serial\_col@{cils\_qr\_serial\_col}|hyperpage}{49}
+\indexentry{cils\_qr\_serial\_col@{cils\_qr\_serial\_col}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{49}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!A@{A}|hyperpage}{49}
+\indexentry{A@{A}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{49}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!G@{G}|hyperpage}{49}
+\indexentry{G@{G}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{49}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!P@{P}|hyperpage}{49}
+\indexentry{P@{P}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{49}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!p@{p}|hyperpage}{50}
+\indexentry{p@{p}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!Q@{Q}|hyperpage}{50}
+\indexentry{Q@{Q}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!R\_Q@{R\_Q}|hyperpage}{50}
+\indexentry{R\_Q@{R\_Q}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!R\_R@{R\_R}|hyperpage}{50}
+\indexentry{R\_R@{R\_R}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!y\_a@{y\_a}|hyperpage}{50}
+\indexentry{y\_a@{y\_a}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!y\_q@{y\_q}|hyperpage}{50}
+\indexentry{y\_q@{y\_q}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{50}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!y\_r@{y\_r}|hyperpage}{51}
+\indexentry{y\_r@{y\_r}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{51}
+\indexentry{cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}!Z@{Z}|hyperpage}{51}
+\indexentry{Z@{Z}!cils::cils\_reduction$<$ scalar, index $>$@{cils::cils\_reduction$<$ scalar, index $>$}|hyperpage}{51}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{51}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!cils\_search@{cils\_search}|hyperpage}{52}
+\indexentry{cils\_search@{cils\_search}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{52}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!bound@{bound}|hyperpage}{52}
+\indexentry{bound@{bound}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{52}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!ils\_search@{ils\_search}|hyperpage}{52}
+\indexentry{ils\_search@{ils\_search}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{52}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!ils\_search\_omp@{ils\_search\_omp}|hyperpage}{52}
+\indexentry{ils\_search\_omp@{ils\_search\_omp}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{52}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!obils\_search@{obils\_search}|hyperpage}{53}
+\indexentry{obils\_search@{obils\_search}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{53}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!obils\_search2@{obils\_search2}|hyperpage}{53}
+\indexentry{obils\_search2@{obils\_search2}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{53}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!obils\_search\_matlab@{obils\_search\_matlab}|hyperpage}{53}
+\indexentry{obils\_search\_matlab@{obils\_search\_matlab}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{53}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!obils\_search\_omp@{obils\_search\_omp}|hyperpage}{53}
+\indexentry{obils\_search\_omp@{obils\_search\_omp}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{53}
+\indexentry{cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}!ubils\_search@{ubils\_search}|hyperpage}{54}
+\indexentry{ubils\_search@{ubils\_search}!cils::cils\_search$<$ scalar, index $>$@{cils::cils\_search$<$ scalar, index $>$}|hyperpage}{54}
+\indexentry{cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}|hyperpage}{54}
+\indexentry{cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}!info@{info}|hyperpage}{55}
+\indexentry{info@{info}!cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}|hyperpage}{55}
+\indexentry{cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}!run\_time@{run\_time}|hyperpage}{55}
+\indexentry{run\_time@{run\_time}!cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}|hyperpage}{55}
+\indexentry{cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}!x@{x}|hyperpage}{55}
+\indexentry{x@{x}!cils::returnType$<$ scalar, index $>$@{cils::returnType$<$ scalar, index $>$}|hyperpage}{55}
+\indexentry{src/example/cils\_standard\_test.cpp@{src/example/cils\_standard\_test.cpp}|hyperpage}{57}
+\indexentry{src/example/cils\_underdetermined\_test.cpp@{src/example/cils\_underdetermined\_test.cpp}|hyperpage}{57}
+\indexentry{cils\_underdetermined\_test.cpp@{cils\_underdetermined\_test.cpp}!block\_optimal\_test@{block\_optimal\_test}|hyperpage}{57}
+\indexentry{block\_optimal\_test@{block\_optimal\_test}!cils\_underdetermined\_test.cpp@{cils\_underdetermined\_test.cpp}|hyperpage}{57}
+\indexentry{cils\_underdetermined\_test.cpp@{cils\_underdetermined\_test.cpp}!plot\_run@{plot\_run}|hyperpage}{58}
+\indexentry{plot\_run@{plot\_run}!cils\_underdetermined\_test.cpp@{cils\_underdetermined\_test.cpp}|hyperpage}{58}
+\indexentry{src/example/plot\_helper.py@{src/example/plot\_helper.py}|hyperpage}{58}
+\indexentry{src/example/py\_qr.py@{src/example/py\_qr.py}|hyperpage}{59}
+\indexentry{src/include/cils.h@{src/include/cils.h}|hyperpage}{59}
+\indexentry{src/include/config.h@{src/include/config.h}|hyperpage}{60}
+\indexentry{src/include/helper.h@{src/include/helper.h}|hyperpage}{61}
+\indexentry{helper.h@{helper.h}!ZERO@{ZERO}|hyperpage}{63}
+\indexentry{ZERO@{ZERO}!helper.h@{helper.h}|hyperpage}{63}
+\indexentry{src/source/cils.cpp@{src/source/cils.cpp}|hyperpage}{63}
+\indexentry{src/source/cils\_babai\_search.cpp@{src/source/cils\_babai\_search.cpp}|hyperpage}{63}
+\indexentry{src/source/cils\_block\_search.cpp@{src/source/cils\_block\_search.cpp}|hyperpage}{64}
+\indexentry{src/source/cils\_block\_search\_GPU.cpp@{src/source/cils\_block\_search\_GPU.cpp}|hyperpage}{65}
+\indexentry{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!NUM\_GLOBAL\_WITEMS@{NUM\_GLOBAL\_WITEMS}|hyperpage}{65}
+\indexentry{NUM\_GLOBAL\_WITEMS@{NUM\_GLOBAL\_WITEMS}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}|hyperpage}{65}
+\indexentry{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!compareResults@{compareResults}|hyperpage}{65}
+\indexentry{compareResults@{compareResults}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}|hyperpage}{65}
+\indexentry{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!run@{run}|hyperpage}{65}
+\indexentry{run@{run}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}|hyperpage}{65}
+\indexentry{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!timeAddVectorsCPU@{timeAddVectorsCPU}|hyperpage}{66}
+\indexentry{timeAddVectorsCPU@{timeAddVectorsCPU}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}|hyperpage}{66}
+\indexentry{cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}!warmup@{warmup}|hyperpage}{66}
+\indexentry{warmup@{warmup}!cils\_block\_search\_GPU.cpp@{cils\_block\_search\_GPU.cpp}|hyperpage}{66}
+\indexentry{src/source/cils\_ils\_search.cpp@{src/source/cils\_ils\_search.cpp}|hyperpage}{66}
+\indexentry{src/source/cils\_init\_point.cpp@{src/source/cils\_init\_point.cpp}|hyperpage}{67}
+\indexentry{src/source/cils\_partition\_deficient.cpp@{src/source/cils\_partition\_deficient.cpp}|hyperpage}{67}
+\indexentry{src/source/cils\_reduction.cpp@{src/source/cils\_reduction.cpp}|hyperpage}{68}
+\indexentry{src/source/cils\_sic\_opt.cpp@{src/source/cils\_sic\_opt.cpp}|hyperpage}{68}

@@ -1,0 +1,162 @@
+\hypertarget{cils__sic__opt_8cpp_source}{}\doxysection{cils\+\_\+sic\+\_\+opt.\+cpp}
+\label{cils__sic__opt_8cpp_source}\index{src/source/cils\_sic\_opt.cpp@{src/source/cils\_sic\_opt.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00020     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{00021     returnType <scalar, index>}
+\DoxyCodeLine{\Hypertarget{cils__sic__opt_8cpp_source_l00022}\mbox{\hyperlink{classcils_1_1cils_abf61d0f89f19c87175ce43c99caf06be}{00022}}     \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::cils\_sic\_subopt}}(vector<scalar> \&z, array<scalar, m> \&v\_cur,}
+\DoxyCodeLine{00023                                                array<scalar, m * n> A\_t, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} v\_norm\_cur, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} tolerance,}
+\DoxyCodeLine{00024                                                \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} method) \{}
+\DoxyCodeLine{00025 }
+\DoxyCodeLine{00026         vector<scalar> stopping(3, 0);}
+\DoxyCodeLine{00027         array<scalar, n> s\_bar\_temp;}
+\DoxyCodeLine{00028         array<scalar, m> v\_best, v\_temp;}
+\DoxyCodeLine{00029         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i, j, l, depth = 0;}
+\DoxyCodeLine{00030         \textcolor{comment}{// 'SIC\_subopt:32' if v\_norm\_cur <= tolerance}}
+\DoxyCodeLine{00031         \textcolor{keywordflow}{if} (v\_norm\_cur <= tolerance) \{}
+\DoxyCodeLine{00032             stopping[0] = 1;}
+\DoxyCodeLine{00033         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00034             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} max\_res = 0.0;}
+\DoxyCodeLine{00035             \textcolor{comment}{// 'SIC\_subopt:38' s\_bar\_temp = 0;}}
+\DoxyCodeLine{00036             s\_bar\_temp.fill(0);}
+\DoxyCodeLine{00037             \textcolor{comment}{// 'SIC\_subopt:39' v\_temp = 0;}}
+\DoxyCodeLine{00038             v\_best.fill(0.0);}
+\DoxyCodeLine{00039             \textcolor{comment}{// 'SIC\_subopt:40' while v\_norm\_cur > tolerance}}
+\DoxyCodeLine{00040             \textcolor{keywordflow}{while} (v\_norm\_cur > tolerance) \{}
+\DoxyCodeLine{00041                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} A\_tmp, z\_tmp, \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}};}
+\DoxyCodeLine{00042                 \textcolor{keywordtype}{int} i1;}
+\DoxyCodeLine{00043                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00044                     s\_bar\_temp[i] = z[i];}
+\DoxyCodeLine{00045                 \}}
+\DoxyCodeLine{00046                 \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00047                     v\_best[i] = v\_cur[i];}
+\DoxyCodeLine{00048                 \}}
+\DoxyCodeLine{00049                 \textcolor{comment}{// 'SIC\_subopt:41' if method == 1}}
+\DoxyCodeLine{00050                 \textcolor{keywordflow}{if} (method == 1) \{}
+\DoxyCodeLine{00051                     \textcolor{comment}{// 'SIC\_subopt:42' [s\_bar\_temp, v\_norm\_temp, v\_temp] =}}
+\DoxyCodeLine{00052                     \textcolor{comment}{// SIC1\_update(A\_t, v\_cur, n, 1, z);}}
+\DoxyCodeLine{00053                     \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; j++) \{}
+\DoxyCodeLine{00054                         i = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ j;}
+\DoxyCodeLine{00055                         \textcolor{comment}{// 'SIC\_subopt:93' v = v+s\_bar(j)*H(:,j);}}
+\DoxyCodeLine{00056                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00057                             v\_best[i1] += s\_bar\_temp[i -\/ 1] * A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00058                         \}}
+\DoxyCodeLine{00059                         display\_array<scalar, index, m>(v\_best);}
+\DoxyCodeLine{00060                         z\_tmp = 0.0;}
+\DoxyCodeLine{00061                         \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = 0.0;}
+\DoxyCodeLine{00062                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00063                             A\_tmp = A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00064                             z\_tmp += A\_tmp * v\_best[i1];}
+\DoxyCodeLine{00065                             \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} += A\_tmp * A\_tmp;}
+\DoxyCodeLine{00066                         \}}
+\DoxyCodeLine{00067                         z\_tmp = 2.0 * std::floor(z\_tmp / \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} / 2.0) + 1.0;}
+\DoxyCodeLine{00068                         \textcolor{comment}{// 'round\_int:17' for i = 1:length(rounded\_val)}}
+\DoxyCodeLine{00069                         \textcolor{comment}{// 'round\_int:18' if rounded\_val(i) < lower}}
+\DoxyCodeLine{00070                         \textcolor{keywordflow}{if} (z\_tmp < -\/1.0) \{}
+\DoxyCodeLine{00071                             z\_tmp = -\/1.0;}
+\DoxyCodeLine{00072                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z\_tmp > 1.0) \{}
+\DoxyCodeLine{00073                             z\_tmp = 1.0;}
+\DoxyCodeLine{00074                         \}}
+\DoxyCodeLine{00075                         \textcolor{comment}{// 'SIC\_subopt:97' v =v-\/ s\_bar\_temp *H(:,j);}}
+\DoxyCodeLine{00076                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00077                             v\_best[i1] -\/= z\_tmp * A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00078                         \}}
+\DoxyCodeLine{00079                         \textcolor{comment}{// Updates the term for \(\backslash\)hat\{x\}\_j in the residual}}
+\DoxyCodeLine{00080                         \textcolor{comment}{// 'SIC\_subopt:98' s\_bar(j)=s\_bar\_temp;}}
+\DoxyCodeLine{00081                         s\_bar\_temp[i -\/ 1] = z\_tmp;}
+\DoxyCodeLine{00082                     \}}
+\DoxyCodeLine{00083                     \textcolor{comment}{// 'SIC\_subopt:100' v\_norm = norm(v);}}
+\DoxyCodeLine{00084                     max\_res = helper::norm<scalar, index, m>(v\_best);}
+\DoxyCodeLine{00085                 \}}
+\DoxyCodeLine{00086                 \textcolor{comment}{// 'SIC\_subopt:44' if method == 2}}
+\DoxyCodeLine{00087 }
+\DoxyCodeLine{00088                 \textcolor{keywordflow}{if} (method == 2) \{}
+\DoxyCodeLine{00089                     \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} s\_est;}
+\DoxyCodeLine{00090                     \textcolor{comment}{// 'SIC\_subopt:45' [s\_bar\_temp, v\_norm\_temp, v\_temp] =}}
+\DoxyCodeLine{00091                     \textcolor{comment}{// SIC2\_update(A\_t, v\_cur, n, 1, z);}}
+\DoxyCodeLine{00092                     l = 0;}
+\DoxyCodeLine{00093                     \textcolor{comment}{// 'SIC\_subopt:125' s\_est = 0;}}
+\DoxyCodeLine{00094                     s\_est = 0.0;}
+\DoxyCodeLine{00095                     \textcolor{comment}{// 'SIC\_subopt:126' v\_best = -\/inf;}}
+\DoxyCodeLine{00096                     v\_best.fill(0);}
+\DoxyCodeLine{00097                     v\_best[0] = -\/INFINITY;}
+\DoxyCodeLine{00098                     \textcolor{comment}{// 'SIC\_subopt:127' max\_res = inf;}}
+\DoxyCodeLine{00099                     max\_res = INFINITY;}
+\DoxyCodeLine{00100                     \textcolor{comment}{// 'SIC\_subopt:128' for j=n:-\/1:1}}
+\DoxyCodeLine{00101                     \textcolor{keywordflow}{for} (j = 0; j < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; j++) \{}
+\DoxyCodeLine{00102                         i = \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} -\/ j;}
+\DoxyCodeLine{00103                         \textcolor{comment}{// 'SIC\_subopt:129' v\_temp = v + s\_bar(j)*H(:,j);}}
+\DoxyCodeLine{00104                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00105                             v\_temp[i1] = v\_cur[i1] + z[i -\/ 1] * A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00106                         \}}
+\DoxyCodeLine{00107                         z\_tmp = 0.0;}
+\DoxyCodeLine{00108                         \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = 0.0;}
+\DoxyCodeLine{00109                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00110                             A\_tmp = A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00111                             z\_tmp += A\_tmp * v\_temp[i1];}
+\DoxyCodeLine{00112                             \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} += A\_tmp * A\_tmp;}
+\DoxyCodeLine{00113                         \}}
+\DoxyCodeLine{00114                         z\_tmp = 2.0 * std::floor(z\_tmp / \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} / 2.0) + 1.0;}
+\DoxyCodeLine{00115                         \textcolor{keywordflow}{if} (z\_tmp < -\/1.0) \{}
+\DoxyCodeLine{00116                             z\_tmp = -\/1.0;}
+\DoxyCodeLine{00117                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z\_tmp > 1.0) \{}
+\DoxyCodeLine{00118                             z\_tmp = 1.0;}
+\DoxyCodeLine{00119                         \}}
+\DoxyCodeLine{00120                         \textcolor{comment}{// 'SIC\_subopt:133' v\_temp =v\_temp-\/ s\_bar\_temp *H(:,j);}}
+\DoxyCodeLine{00121                         \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00122                             v\_temp[i1] = v\_temp[i1] -\/ z\_tmp * A\_t[i1 + \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}} * (i -\/ 1)];}
+\DoxyCodeLine{00123                         \}}
+\DoxyCodeLine{00124                         \textcolor{comment}{// 'SIC\_subopt:134' res = norm(v\_temp);}}
+\DoxyCodeLine{00125                         \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = helper::norm<scalar, index, m>(v\_best);}
+\DoxyCodeLine{00126                         \textcolor{comment}{// 'SIC\_subopt:135' if res < max\_res}}
+\DoxyCodeLine{00127                         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} < max\_res) \{}
+\DoxyCodeLine{00128                             \textcolor{comment}{// 'SIC\_subopt:136' l=j;}}
+\DoxyCodeLine{00129                             l = i;}
+\DoxyCodeLine{00130                             \textcolor{comment}{// 'SIC\_subopt:137' s\_est=s\_bar\_temp;}}
+\DoxyCodeLine{00131                             s\_est = z\_tmp;}
+\DoxyCodeLine{00132                             \textcolor{comment}{// 'SIC\_subopt:138' v\_best = v\_temp;}}
+\DoxyCodeLine{00133                             \textcolor{keywordflow}{for} (i1 = 0; i1 < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i1++) \{}
+\DoxyCodeLine{00134                                 v\_best[i1] = v\_temp[i1];}
+\DoxyCodeLine{00135                             \}}
+\DoxyCodeLine{00136                             \textcolor{comment}{// 'SIC\_subopt:139' max\_res = res;}}
+\DoxyCodeLine{00137                             max\_res = \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}};}
+\DoxyCodeLine{00138                         \}}
+\DoxyCodeLine{00139                     \}}
+\DoxyCodeLine{00140                     \textcolor{comment}{// 'SIC\_subopt:142' s\_bar(l) = s\_est;}}
+\DoxyCodeLine{00141                     s\_bar\_temp[l -\/ 1] = s\_est;}
+\DoxyCodeLine{00142                     \textcolor{comment}{// 'SIC\_subopt:143' v = v\_best;}}
+\DoxyCodeLine{00143                     \textcolor{comment}{// 'SIC\_subopt:144' v\_norm = max\_res;}}
+\DoxyCodeLine{00144                 \}}
+\DoxyCodeLine{00145 }
+\DoxyCodeLine{00146                 \textcolor{comment}{// 'SIC\_subopt:47' depth = depth+1;}}
+\DoxyCodeLine{00147                 depth++;}
+\DoxyCodeLine{00148                 \textcolor{comment}{// 'SIC\_subopt:49' if v\_norm\_temp < 0.99999 * v\_norm\_cur}}
+\DoxyCodeLine{00149                 \textcolor{keywordflow}{if} (max\_res < 0.99999 * v\_norm\_cur) \{}
+\DoxyCodeLine{00150                     \textcolor{comment}{// 'SIC\_subopt:50' z = s\_bar\_temp;}}
+\DoxyCodeLine{00151                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00152                         z[i] = s\_bar\_temp[i];}
+\DoxyCodeLine{00153                     \}}
+\DoxyCodeLine{00154                     \textcolor{keywordflow}{for} (i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00155                         v\_cur[i] = v\_best[i];}
+\DoxyCodeLine{00156                     \}}
+\DoxyCodeLine{00157                     \textcolor{comment}{// 'SIC\_subopt:52' v\_norm\_cur = v\_norm\_temp;}}
+\DoxyCodeLine{00158                     v\_norm\_cur = max\_res;}
+\DoxyCodeLine{00159                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00160                     stopping[2] = 1.0;}
+\DoxyCodeLine{00161                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00162                 \}}
+\DoxyCodeLine{00163                 \textcolor{keywordflow}{if} (v\_norm\_cur < tolerance) \{}
+\DoxyCodeLine{00164                     stopping[1] = 1.0;}
+\DoxyCodeLine{00165                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00166                 \}}
+\DoxyCodeLine{00167             \}}
+\DoxyCodeLine{00168         \}}
+\DoxyCodeLine{00169 }
+\DoxyCodeLine{00170 }
+\DoxyCodeLine{00171         \textcolor{keywordflow}{return} \{stopping, 0, v\_norm\_cur\};}
+\DoxyCodeLine{00172     \}}
+\DoxyCodeLine{00173 \}}
+
+\end{DoxyCode}

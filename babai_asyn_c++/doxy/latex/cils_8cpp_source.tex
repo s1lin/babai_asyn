@@ -1,0 +1,271 @@
+\hypertarget{cils_8cpp_source}{}\doxysection{cils.\+cpp}
+\label{cils_8cpp_source}\index{src/source/cils.cpp@{src/source/cils.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 \textcolor{preprocessor}{\#include "../include/cils.h"}}
+\DoxyCodeLine{00002 }
+\DoxyCodeLine{00003 \textcolor{keyword}{using namespace }std;}
+\DoxyCodeLine{00004 \textcolor{keyword}{using namespace }\mbox{\hyperlink{namespacecils_1_1program__def}{cils::program\_def}};}
+\DoxyCodeLine{00005 }
+\DoxyCodeLine{00006 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00007 }
+\DoxyCodeLine{00008     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils_8cpp_source_l00009}\mbox{\hyperlink{classcils_1_1cils_a896a1180a69c4bf30bf5fbe509acc3da}{00009}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::init}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} rank) \{}
+\DoxyCodeLine{00010         \textcolor{comment}{//Create MATLAB data array factory}}
+\DoxyCodeLine{00011         \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *size = (\textcolor{keywordtype}{double} *) malloc(1 * \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double})), *p;}
+\DoxyCodeLine{00012 }
+\DoxyCodeLine{00013         \textcolor{keywordflow}{if} (rank == 0) \{}
+\DoxyCodeLine{00014 }
+\DoxyCodeLine{00015             matlab::data::ArrayFactory factory;}
+\DoxyCodeLine{00016 }
+\DoxyCodeLine{00017             \textcolor{comment}{// Call the MATLAB movsum function}}
+\DoxyCodeLine{00018             matlab::data::TypedArray<scalar> k\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(this-\/>\mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}});}
+\DoxyCodeLine{00019             matlab::data::TypedArray<scalar> m\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}});}
+\DoxyCodeLine{00020             matlab::data::TypedArray<scalar> n\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00021             matlab::data::TypedArray<scalar> \mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}} = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(snr);}
+\DoxyCodeLine{00022             matlab::data::TypedArray<scalar> MIT = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}});}
+\DoxyCodeLine{00023             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"k"}, std::move(k\_M));}
+\DoxyCodeLine{00024             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"m"}, std::move(m\_M));}
+\DoxyCodeLine{00025             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"n"}, std::move(n\_M));}
+\DoxyCodeLine{00026             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"SNR"}, std::move(\mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}}));}
+\DoxyCodeLine{00027             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"max\_iter"}, std::move(MIT));}
+\DoxyCodeLine{00028 }
+\DoxyCodeLine{00029             \textcolor{comment}{// Call the MATLAB movsum function}}
+\DoxyCodeLine{00030             matlabPtr-\/>eval(}
+\DoxyCodeLine{00031                     u\textcolor{stringliteral}{" [A, x\_t, v, y, sigma, res, permutation, size\_perm] = gen\_problem(k, m, n, SNR, max\_iter);"});}
+\DoxyCodeLine{00032 }
+\DoxyCodeLine{00033             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} A\_A = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"A"});}
+\DoxyCodeLine{00034             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} y\_M = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"y"});}
+\DoxyCodeLine{00035             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} x\_M = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"x\_t"});}
+\DoxyCodeLine{00036             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}} = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"res"});}
+\DoxyCodeLine{00037             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} per = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"permutation"});}
+\DoxyCodeLine{00038             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} szp = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"size\_perm"});}
+\DoxyCodeLine{00039 }
+\DoxyCodeLine{00040 }
+\DoxyCodeLine{00041             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0;}
+\DoxyCodeLine{00042             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : A\_A) \{}
+\DoxyCodeLine{00043                 A[i] = r;}
+\DoxyCodeLine{00044                 ++i;}
+\DoxyCodeLine{00045             \}}
+\DoxyCodeLine{00046             i = 0;}
+\DoxyCodeLine{00047             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : y\_M) \{}
+\DoxyCodeLine{00048                 y\_a[i] = r;}
+\DoxyCodeLine{00049                 ++i;}
+\DoxyCodeLine{00050             \}}
+\DoxyCodeLine{00051             i = 0;}
+\DoxyCodeLine{00052             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : x\_M) \{}
+\DoxyCodeLine{00053                 x\_t[i] = r;}
+\DoxyCodeLine{00054                 ++i;}
+\DoxyCodeLine{00055             \}}
+\DoxyCodeLine{00056             i = 0;}
+\DoxyCodeLine{00057             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}) \{}
+\DoxyCodeLine{00058                 this-\/>init\_res = r;}
+\DoxyCodeLine{00059                 ++i;}
+\DoxyCodeLine{00060             \}}
+\DoxyCodeLine{00061             i = 0;}
+\DoxyCodeLine{00062             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : \mbox{\hyperlink{namespaceplot__helper_aa7b94b27ae2103f996fbf717446d2f00}{res}}) \{}
+\DoxyCodeLine{00063                 this-\/>init\_res = r;}
+\DoxyCodeLine{00064                 ++i;}
+\DoxyCodeLine{00065             \}}
+\DoxyCodeLine{00066 }
+\DoxyCodeLine{00067             i = 0;}
+\DoxyCodeLine{00068             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : szp) \{}
+\DoxyCodeLine{00069                 size[0] = r;}
+\DoxyCodeLine{00070                 ++i;}
+\DoxyCodeLine{00071             \}}
+\DoxyCodeLine{00072             p = (\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *) malloc(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * size[0] * \textcolor{keyword}{sizeof}(\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}));}
+\DoxyCodeLine{00073             i = 0;}
+\DoxyCodeLine{00074             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : per) \{}
+\DoxyCodeLine{00075                 p[i] = r;}
+\DoxyCodeLine{00076                 ++i;}
+\DoxyCodeLine{00077             \}}
+\DoxyCodeLine{00078         \}}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{00080         MPI\_Barrier(MPI\_COMM\_WORLD);}
+\DoxyCodeLine{00081         MPI\_Bcast(\&size[0], 1, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}
+\DoxyCodeLine{00082 }
+\DoxyCodeLine{00083         \textcolor{keywordflow}{if} (rank != 0)}
+\DoxyCodeLine{00084             p = (\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *) malloc(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}} * size[0] * \textcolor{keyword}{sizeof}(\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}));}
+\DoxyCodeLine{00085 }
+\DoxyCodeLine{00086         MPI\_Bcast(\&p[0], (\textcolor{keywordtype}{int}) size[0] * N, MPI\_DOUBLE, 0, MPI\_COMM\_WORLD);}
+\DoxyCodeLine{00087         MPI\_Barrier(MPI\_COMM\_WORLD);}
+\DoxyCodeLine{00088 }
+\DoxyCodeLine{00089         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0;}
+\DoxyCodeLine{00090         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} k1 = 0;}
+\DoxyCodeLine{00091         \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}.resize((\textcolor{keywordtype}{int}) size[0] + 1);}
+\DoxyCodeLine{00092         \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}[k1] = vector<scalar>(N);}
+\DoxyCodeLine{00093         \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}[k1].assign(N, 0);}
+\DoxyCodeLine{00094         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} iter = 0; iter < (int) size[0] * N; iter++) \{}
+\DoxyCodeLine{00095             \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}[k1][i] = p[iter];}
+\DoxyCodeLine{00096             i = i + 1;}
+\DoxyCodeLine{00097             \textcolor{keywordflow}{if} (i == N) \{}
+\DoxyCodeLine{00098                 i = 0;}
+\DoxyCodeLine{00099                 k1++;}
+\DoxyCodeLine{00100                 \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}[k1] = vector<scalar>(N);}
+\DoxyCodeLine{00101                 \mbox{\hyperlink{namespacecils_1_1program__def_a07ab6903c3955da2e6b581ded511413e}{permutation}}[k1].assign(N, 0);}
+\DoxyCodeLine{00102             \}}
+\DoxyCodeLine{00103         \}}
+\DoxyCodeLine{00104         i = 0;}
+\DoxyCodeLine{00105     \}}
+\DoxyCodeLine{00106 }
+\DoxyCodeLine{00107     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils_8cpp_source_l00108}\mbox{\hyperlink{classcils_1_1cils_a870974552a559e7ac83935efc1ad7390}{00108}}     \textcolor{keywordtype}{void} \mbox{\hyperlink{classcils_1_1cils}{cils<scalar, index, m, n>::init\_ud}}() \{}
+\DoxyCodeLine{00109 }
+\DoxyCodeLine{00110         \textcolor{comment}{//Create MATLAB data array factory}}
+\DoxyCodeLine{00111         matlab::data::ArrayFactory factory;}
+\DoxyCodeLine{00112 }
+\DoxyCodeLine{00113         \textcolor{comment}{// Call the MATLAB movsum function}}
+\DoxyCodeLine{00114         matlab::data::TypedArray<scalar> k\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(this-\/>\mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}});}
+\DoxyCodeLine{00115         matlab::data::TypedArray<scalar> m\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}});}
+\DoxyCodeLine{00116         matlab::data::TypedArray<scalar> n\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}});}
+\DoxyCodeLine{00117         matlab::data::TypedArray<scalar> \mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}} = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(snr);}
+\DoxyCodeLine{00118         matlab::data::TypedArray<scalar> MIT = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}}>(\mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{search\_iter}});}
+\DoxyCodeLine{00119         matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"k"}, std::move(k\_M));}
+\DoxyCodeLine{00120         matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"m"}, std::move(m\_M));}
+\DoxyCodeLine{00121         matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"n"}, std::move(n\_M));}
+\DoxyCodeLine{00122         matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"snr"}, std::move(\mbox{\hyperlink{namespaceplot__helper_a5143134b1c15c39ee21af52c5238a604}{SNR}}));}
+\DoxyCodeLine{00123         matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"search\_iter"}, std::move(MIT));}
+\DoxyCodeLine{00124         \textcolor{comment}{// Call the MATLAB movsum function}}
+\DoxyCodeLine{00125         matlabPtr-\/>eval(}
+\DoxyCodeLine{00126                 u\textcolor{stringliteral}{" [s\_bar4, y, H, HH, Piv, s\_bar1, s, tolerance] = "}}
+\DoxyCodeLine{00127                 \textcolor{stringliteral}{"simulations\_Block\_Optimal(k, snr, m, n, 1, search\_iter, true);"});}
+\DoxyCodeLine{00128 }
+\DoxyCodeLine{00129         \textcolor{comment}{/*}}
+\DoxyCodeLine{00130 \textcolor{comment}{        matlab::data::TypedArray<scalar> const A\_A = matlabPtr-\/>getVariable(u"H");}}
+\DoxyCodeLine{00131 \textcolor{comment}{        matlab::data::TypedArray<scalar> const H\_A = matlabPtr-\/>getVariable(u"HH");}}
+\DoxyCodeLine{00132 \textcolor{comment}{        matlab::data::TypedArray<scalar> const Z\_A = matlabPtr-\/>getVariable(u"Piv");}}
+\DoxyCodeLine{00133 \textcolor{comment}{        matlab::data::TypedArray<scalar> const y\_A = matlabPtr-\/>getVariable(u"y");}}
+\DoxyCodeLine{00134 \textcolor{comment}{        matlab::data::TypedArray<scalar> const x\_1 = matlabPtr-\/>getVariable(u"s\_bar\_cur");//v\_a}}
+\DoxyCodeLine{00135 \textcolor{comment}{        matlab::data::TypedArray<scalar> const x\_2 = matlabPtr-\/>getVariable(u"s\_bar1");//x\_t}}
+\DoxyCodeLine{00136 \textcolor{comment}{        matlab::data::TypedArray<scalar> const x\_3 = matlabPtr-\/>getVariable(u"s\_bar2");//x\_r}}
+\DoxyCodeLine{00137 \textcolor{comment}{        */}}
+\DoxyCodeLine{00138         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} A\_A = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"H"});}
+\DoxyCodeLine{00139         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} H\_A = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"HH"});}
+\DoxyCodeLine{00140         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} Z\_A = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"Piv"});}
+\DoxyCodeLine{00141         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} y\_A = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"y"});}
+\DoxyCodeLine{00142         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} x\_1 = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"s\_bar1"});}
+\DoxyCodeLine{00143         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} x\_2 = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"s\_bar4"});}
+\DoxyCodeLine{00144         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} x\_s = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"s"});}
+\DoxyCodeLine{00145         matlab::data::TypedArray<scalar> \textcolor{keyword}{const} tolerance\_s = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"tolerance"});}
+\DoxyCodeLine{00146 \textcolor{comment}{//        matlab::data::TypedArray<scalar> const l\_A = matlabPtr-\/>getVariable(u"l");}}
+\DoxyCodeLine{00147 \textcolor{comment}{//        matlab::data::TypedArray<scalar> const u\_A = matlabPtr-\/>getVariable(u"u");}}
+\DoxyCodeLine{00148         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0;}
+\DoxyCodeLine{00149 }
+\DoxyCodeLine{00150         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : A\_A) \{}
+\DoxyCodeLine{00151             A[i] = r;}
+\DoxyCodeLine{00152             i++;}
+\DoxyCodeLine{00153         \}}
+\DoxyCodeLine{00154 }
+\DoxyCodeLine{00155         i = 0;}
+\DoxyCodeLine{00156         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : H\_A) \{}
+\DoxyCodeLine{00157             H[i] = r;}
+\DoxyCodeLine{00158             i++;}
+\DoxyCodeLine{00159         \}}
+\DoxyCodeLine{00160         i = 0;}
+\DoxyCodeLine{00161         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : y\_A) \{}
+\DoxyCodeLine{00162             y\_a[i] = r;}
+\DoxyCodeLine{00163             i++;}
+\DoxyCodeLine{00164         \}}
+\DoxyCodeLine{00165 \textcolor{comment}{//        i = 0;}}
+\DoxyCodeLine{00166 \textcolor{comment}{//        for (auto r : x\_1) \{}}
+\DoxyCodeLine{00167 \textcolor{comment}{//            v\_a[i] = r;}}
+\DoxyCodeLine{00168 \textcolor{comment}{//            i++;}}
+\DoxyCodeLine{00169 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00170         i = 0;}
+\DoxyCodeLine{00171         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : x\_2) \{}
+\DoxyCodeLine{00172             x\_r[i] = r;}
+\DoxyCodeLine{00173             i++;}
+\DoxyCodeLine{00174         \}}
+\DoxyCodeLine{00175         i = 0;}
+\DoxyCodeLine{00176         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : x\_s) \{}
+\DoxyCodeLine{00177             x\_t[i] = r;}
+\DoxyCodeLine{00178             i++;}
+\DoxyCodeLine{00179         \}}
+\DoxyCodeLine{00180 \textcolor{comment}{//        i = 0;}}
+\DoxyCodeLine{00181 \textcolor{comment}{//        for (auto r : u\_A) \{}}
+\DoxyCodeLine{00182 \textcolor{comment}{//            u[i] = r;}}
+\DoxyCodeLine{00183 \textcolor{comment}{//            i++;}}
+\DoxyCodeLine{00184 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00185         i = 0;}
+\DoxyCodeLine{00186         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : tolerance\_s) \{}
+\DoxyCodeLine{00187             this-\/>tolerance = r;}
+\DoxyCodeLine{00188             i++;}
+\DoxyCodeLine{00189         \}}
+\DoxyCodeLine{00190 }
+\DoxyCodeLine{00191     \}}
+\DoxyCodeLine{00192 }
+\DoxyCodeLine{00193 \textcolor{comment}{/*    template<typename scalar, typename index, index m, index n>}}
+\DoxyCodeLine{00194 \textcolor{comment}{//    void cils<scalar, index, m, n>::init\_R() \{}}
+\DoxyCodeLine{00195 \textcolor{comment}{//        if (!is\_matlab) \{}}
+\DoxyCodeLine{00196 \textcolor{comment}{//            if (is\_qr) \{}}
+\DoxyCodeLine{00197 \textcolor{comment}{//                for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00198 \textcolor{comment}{//                    for (index j = 0; j < n; j++) \{}}
+\DoxyCodeLine{00199 \textcolor{comment}{//                        R\_R[j * n + i] = R\_Q[j * n + i];}}
+\DoxyCodeLine{00200 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00201 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00202 \textcolor{comment}{//                for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00203 \textcolor{comment}{//                    for (index j = i; j < n; j++) \{}}
+\DoxyCodeLine{00204 \textcolor{comment}{//                        R\_A[(n * i) + j -\/ ((i * (i + 1)) / 2)] = R\_Q[j * n + i];}}
+\DoxyCodeLine{00205 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00206 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00207 \textcolor{comment}{//            \} else \{}}
+\DoxyCodeLine{00208 \textcolor{comment}{//                for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00209 \textcolor{comment}{//                    for (index j = i; j < n; j++) \{}}
+\DoxyCodeLine{00210 \textcolor{comment}{//                        R\_A[(n * i) + j -\/ ((i * (i + 1)) / 2)] = R\_R[j * n + i];}}
+\DoxyCodeLine{00211 \textcolor{comment}{//                    \}}}
+\DoxyCodeLine{00212 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00213 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00214 \textcolor{comment}{//        \} else \{}}
+\DoxyCodeLine{00215 \textcolor{comment}{//            for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00216 \textcolor{comment}{//                for (index j = i; j < n; j++) \{}}
+\DoxyCodeLine{00217 \textcolor{comment}{//                    R\_A[(n * i) + j -\/ ((i * (i + 1)) / 2)] = R\_Q[j * n + i];}}
+\DoxyCodeLine{00218 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00219 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00220 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00221 \textcolor{comment}{//        if (n <= 16) \{}}
+\DoxyCodeLine{00222 \textcolor{comment}{//            cout << endl;}}
+\DoxyCodeLine{00223 \textcolor{comment}{//            for (index i = 0; i < n; i++) \{}}
+\DoxyCodeLine{00224 \textcolor{comment}{//                for (index j = i; j < n; j++) \{}}
+\DoxyCodeLine{00226 \textcolor{comment}{//                    printf("\%8.5f ", R\_A[(n * i) + j -\/ ((i * (i + 1)) / 2)]);}}
+\DoxyCodeLine{00227 \textcolor{comment}{//                \}}}
+\DoxyCodeLine{00228 \textcolor{comment}{//                cout << endl;}}
+\DoxyCodeLine{00229 \textcolor{comment}{//            \}}}
+\DoxyCodeLine{00230 \textcolor{comment}{//        \}}}
+\DoxyCodeLine{00231 \textcolor{comment}{   \}}}
+\DoxyCodeLine{00232 \textcolor{comment}{*/}}
+\DoxyCodeLine{00233     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils_8cpp_source_l00234}\mbox{\hyperlink{namespacecils_a20b271f3ccea76e01bef30bc32c20195}{00234}}     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacecils_ad22e4d337abe79defbe28a2d1db20380}{matrix\_vector\_mult}}(\textcolor{keyword}{const} array<scalar, m * n> \&Z, vector<scalar> *\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}) \{}
+\DoxyCodeLine{00235         array<scalar, n> x\_c, x\_z;}
+\DoxyCodeLine{00236         x\_c.fill(0);}
+\DoxyCodeLine{00237         x\_z.fill(0);}
+\DoxyCodeLine{00238         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00239             x\_z[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}-\/>at(i);}
+\DoxyCodeLine{00240         \}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242         helper::mtimes<scalar, index, n, 1>(Z, x\_z, x\_c);}
+\DoxyCodeLine{00243 }
+\DoxyCodeLine{00244         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00245             \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}-\/>at(i) = x\_c[i];}
+\DoxyCodeLine{00246         \}}
+\DoxyCodeLine{00247     \}}
+\DoxyCodeLine{00248 }
+\DoxyCodeLine{00249     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index, index m, index n>}
+\DoxyCodeLine{\Hypertarget{cils_8cpp_source_l00250}\mbox{\hyperlink{namespacecils_ad22e4d337abe79defbe28a2d1db20380}{00250}}     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{namespacecils_ad22e4d337abe79defbe28a2d1db20380}{matrix\_vector\_mult}}(\textcolor{keyword}{const} array<scalar, m * n> \&Z, \textcolor{keyword}{const} vector<scalar> \&\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}, vector<scalar> \&c) \{}
+\DoxyCodeLine{00251         array<scalar, n> x\_z;}
+\DoxyCodeLine{00252         array<scalar, m> x\_c;}
+\DoxyCodeLine{00253         x\_c.fill(0);}
+\DoxyCodeLine{00254         x\_z.fill(0);}
+\DoxyCodeLine{00255         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_ae676d371d23b5326292ba89e470e00ec}{n}}; i++) \{}
+\DoxyCodeLine{00256             x\_z[i] = \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i];}
+\DoxyCodeLine{00257         \}}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{00259         helper::mtimes\_Axy<scalar, index, m, n>(Z, x\_z, x\_c);}
+\DoxyCodeLine{00260 }
+\DoxyCodeLine{00261         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0; i < \mbox{\hyperlink{namespaceplot__helper_aba60fb347ae24607d27482b95e00e2ad}{m}}; i++) \{}
+\DoxyCodeLine{00262             c[i] = x\_c[i];}
+\DoxyCodeLine{00263         \}}
+\DoxyCodeLine{00264     \}}
+\DoxyCodeLine{00265 }
+\DoxyCodeLine{00266 \}}
+
+\end{DoxyCode}

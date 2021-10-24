@@ -1,0 +1,271 @@
+\hypertarget{py__qr_8py_source}{}\doxysection{py\+\_\+qr.\+py}
+\label{py__qr_8py_source}\index{src/example/py\_qr.py@{src/example/py\_qr.py}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00001}\mbox{\hyperlink{namespacepy__qr}{00001}} \textcolor{comment}{\# import numpy as np}}
+\DoxyCodeLine{00002 \textcolor{comment}{\#}}
+\DoxyCodeLine{00003 \textcolor{comment}{\#}}
+\DoxyCodeLine{00004 \textcolor{comment}{\# \# import netCDF4 as nc}}
+\DoxyCodeLine{00005 \textcolor{comment}{\#}}
+\DoxyCodeLine{00006 \textcolor{comment}{\#}}
+\DoxyCodeLine{00007 \textcolor{comment}{\# def qr(A, n):}}
+\DoxyCodeLine{00008 \textcolor{comment}{\#     \# print('Python function qr called')}}
+\DoxyCodeLine{00009 \textcolor{comment}{\#     q, r = np.linalg.qr(np.reshape(A, (-\/1, n)))}}
+\DoxyCodeLine{00010 \textcolor{comment}{\#     q = q.T}}
+\DoxyCodeLine{00011 \textcolor{comment}{\#     r = r.T}}
+\DoxyCodeLine{00012 \textcolor{comment}{\#     return q.ravel(), r.ravel()}}
+\DoxyCodeLine{00013 \textcolor{comment}{\#}}
+\DoxyCodeLine{00014 \textcolor{comment}{\#}}
+\DoxyCodeLine{00015 \textcolor{comment}{\# def planerot(x):}}
+\DoxyCodeLine{00016 \textcolor{comment}{\#     G = np.eye(2, 2)}}
+\DoxyCodeLine{00017 \textcolor{comment}{\#     if x[1] != 0:}}
+\DoxyCodeLine{00018 \textcolor{comment}{\#         r = np.linalg.norm(x)}}
+\DoxyCodeLine{00019 \textcolor{comment}{\#         G[0, :] = x.T}}
+\DoxyCodeLine{00020 \textcolor{comment}{\#         G[1, 0] = -\/x[1]}}
+\DoxyCodeLine{00021 \textcolor{comment}{\#         G[1, 1] = x[0]}}
+\DoxyCodeLine{00022 \textcolor{comment}{\#         G = G / r}}
+\DoxyCodeLine{00023 \textcolor{comment}{\#         x = np.array([r, 0])}}
+\DoxyCodeLine{00024 \textcolor{comment}{\#     return G, x}}
+\DoxyCodeLine{00025 \textcolor{comment}{\#}}
+\DoxyCodeLine{00026 \textcolor{comment}{\#}}
+\DoxyCodeLine{00027 \textcolor{comment}{\# def sils\_reduction\_driver(A, v, x, n):}}
+\DoxyCodeLine{00028 \textcolor{comment}{\#     A = np.reshape(A, (-\/1, n))}}
+\DoxyCodeLine{00029 \textcolor{comment}{\#     \# y = A @ x + v}}
+\DoxyCodeLine{00030 \textcolor{comment}{\#     \# y = np.reshape(y, (n, 1))}}
+\DoxyCodeLine{00031 \textcolor{comment}{\#     \# print(y.shape)}}
+\DoxyCodeLine{00032 \textcolor{comment}{\#     \# return sils\_reduction(A, y)}}
+\DoxyCodeLine{00033 \textcolor{comment}{\#}}
+\DoxyCodeLine{00034 \textcolor{comment}{\#}}
+\DoxyCodeLine{00035 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00036 \textcolor{comment}{\# \# [R,Z,y] = sils\_reduction(A,y) reduces the general standard integer}}
+\DoxyCodeLine{00037 \textcolor{comment}{\# \# least squares problem to an upper triangular one by the LLL-\/QRZ}}
+\DoxyCodeLine{00038 \textcolor{comment}{\# \# factorization Q'*A*Z = [R 0]. The orthogonal matrix Q}}
+\DoxyCodeLine{00039 \textcolor{comment}{\# \# is not produced.}}
+\DoxyCodeLine{00040 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00041 \textcolor{comment}{\# \# Inputs:}}
+\DoxyCodeLine{00042 \textcolor{comment}{\# \#    A -\/ m-\/by-\/n real matrix with full column rank}}
+\DoxyCodeLine{00043 \textcolor{comment}{\# \#    y -\/ m-\/dimensional real vector to be transformed to Q'*y}}
+\DoxyCodeLine{00044 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00045 \textcolor{comment}{\# \# Outputs:}}
+\DoxyCodeLine{00046 \textcolor{comment}{\# \#    R -\/ n-\/by-\/n LLL-\/reduced upper triangular matrix}}
+\DoxyCodeLine{00047 \textcolor{comment}{\# \#    Z -\/ n-\/by-\/n unimodular matrix, i.e., an integer matrix with}}
+\DoxyCodeLine{00048 \textcolor{comment}{\# \#    |det(Z)|=1}}
+\DoxyCodeLine{00049 \textcolor{comment}{\# \#    y -\/ m-\/vector transformed from the input y by Q', i.e., y := Q'*y}}
+\DoxyCodeLine{00050 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00051 \textcolor{comment}{\#}}
+\DoxyCodeLine{00052 \textcolor{comment}{\# \# Subfunction: qrmcp}}
+\DoxyCodeLine{00053 \textcolor{comment}{\#}}
+\DoxyCodeLine{00054 \textcolor{comment}{\# \# Main Reference:}}
+\DoxyCodeLine{00055 \textcolor{comment}{\# \# X. Xie, X.-\/W. Chang, and M. Al Borno. Partial LLL Reduction,}}
+\DoxyCodeLine{00056 \textcolor{comment}{\# \# Proceedings of IEEE GLOBECOM 2011, 5 pages.}}
+\DoxyCodeLine{00057 \textcolor{comment}{\#}}
+\DoxyCodeLine{00058 \textcolor{comment}{\# \# Authors: Xiao-\/Wen Chang, www.cs.mcgill.ca/\string~chang}}
+\DoxyCodeLine{00059 \textcolor{comment}{\# \#          Xiaohu Xie, Tianyang Zhou}}
+\DoxyCodeLine{00060 \textcolor{comment}{\# \# Modified by Shilei Lin into Python}}
+\DoxyCodeLine{00061 \textcolor{comment}{\# \# Copyright (c) 2006-\/2021. Scientific Computing Lab, McGill University.}}
+\DoxyCodeLine{00062 \textcolor{comment}{\# \# October 2006. Last revision: June 2016}}
+\DoxyCodeLine{00063 \textcolor{comment}{\# def sils\_reduction(A, y):}}
+\DoxyCodeLine{00064 \textcolor{comment}{\#     m, n = A.shape}}
+\DoxyCodeLine{00065 \textcolor{comment}{\#}}
+\DoxyCodeLine{00066 \textcolor{comment}{\#     \# QR factorization with minimum-\/column pivoting}}
+\DoxyCodeLine{00067 \textcolor{comment}{\#     [R, piv, y] = qrmcp(A, y)}}
+\DoxyCodeLine{00068 \textcolor{comment}{\#     np.set\_printoptions(formatter=\{'float': '\{: 0.2f\}'.format\})}}
+\DoxyCodeLine{00069 \textcolor{comment}{\#     print(R, piv, y)}}
+\DoxyCodeLine{00070 \textcolor{comment}{\#     \# Obtain the permutation matrix Z}}
+\DoxyCodeLine{00071 \textcolor{comment}{\#     Z = np.zeros(shape=(n, n))}}
+\DoxyCodeLine{00072 \textcolor{comment}{\#     for j in range(0, n):}}
+\DoxyCodeLine{00073 \textcolor{comment}{\#         Z[piv[j], j] = 1}}
+\DoxyCodeLine{00074 \textcolor{comment}{\#}}
+\DoxyCodeLine{00075 \textcolor{comment}{\#     \# -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00076 \textcolor{comment}{\#     \# -\/-\/-\/-\/-\/-\/-\/-\/  Perfome the partial LLL reduction  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00077 \textcolor{comment}{\#     \# -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00078 \textcolor{comment}{\#}}
+\DoxyCodeLine{00079 \textcolor{comment}{\#     k = 1}}
+\DoxyCodeLine{00080 \textcolor{comment}{\#}}
+\DoxyCodeLine{00081 \textcolor{comment}{\#     while k < n:}}
+\DoxyCodeLine{00082 \textcolor{comment}{\#}}
+\DoxyCodeLine{00083 \textcolor{comment}{\#         k1 = k -\/ 1}}
+\DoxyCodeLine{00084 \textcolor{comment}{\#         if abs(R[k1, k1]) < 1e-\/15:}}
+\DoxyCodeLine{00085 \textcolor{comment}{\#             print(k1, R[k1, k1])}}
+\DoxyCodeLine{00086 \textcolor{comment}{\#         zeta = round(R[k1, k] / R[k1, k1])}}
+\DoxyCodeLine{00087 \textcolor{comment}{\#         alpha = R[k1, k] -\/ zeta * R[k1, k1]}}
+\DoxyCodeLine{00088 \textcolor{comment}{\#}}
+\DoxyCodeLine{00089 \textcolor{comment}{\#         if R[k1, k1] ** 2 > 2 * (alpha ** 2 + R[k, k] ** 2):}}
+\DoxyCodeLine{00090 \textcolor{comment}{\#             if zeta != 0:}}
+\DoxyCodeLine{00091 \textcolor{comment}{\#                 \# Perform a size reduction on R[k-\/1,k]}}
+\DoxyCodeLine{00092 \textcolor{comment}{\#                 R[k1, k] = alpha}}
+\DoxyCodeLine{00093 \textcolor{comment}{\#                 R[0:k -\/ 1, k] = R[0:k -\/ 1, k] -\/ zeta * R[0:k -\/ 1, k -\/ 1]}}
+\DoxyCodeLine{00094 \textcolor{comment}{\#                 Z[:, k] = Z[:, k] -\/ zeta * Z[:, k -\/ 1]}}
+\DoxyCodeLine{00095 \textcolor{comment}{\#}}
+\DoxyCodeLine{00096 \textcolor{comment}{\#                 \# Perform size reductions on R[1:k-\/2,k]}}
+\DoxyCodeLine{00097 \textcolor{comment}{\#                 for i in range(k -\/ 2, 0, -\/1):}}
+\DoxyCodeLine{00098 \textcolor{comment}{\#                     zeta = round(R[i, k] / R[i, i])}}
+\DoxyCodeLine{00099 \textcolor{comment}{\#                     if zeta != 0:}}
+\DoxyCodeLine{00100 \textcolor{comment}{\#                         R[0:i, k] = R[0:i, k] -\/ zeta * R[0:i, i]}}
+\DoxyCodeLine{00101 \textcolor{comment}{\#                         Z[:, k] = Z[:, k] -\/ zeta * Z[:, i]}}
+\DoxyCodeLine{00102 \textcolor{comment}{\#}}
+\DoxyCodeLine{00103 \textcolor{comment}{\#             \# Permute columns k-\/1 and k of R and Z}}
+\DoxyCodeLine{00104 \textcolor{comment}{\#             R[0:k, [k1, k]] = R[0:k, [k, k1]]}}
+\DoxyCodeLine{00105 \textcolor{comment}{\#             Z[:, [k1, k]] = Z[:, [k, k1]]}}
+\DoxyCodeLine{00106 \textcolor{comment}{\#}}
+\DoxyCodeLine{00107 \textcolor{comment}{\#             \# Bring R back to an upper triangular matrix by a Givens rotation}}
+\DoxyCodeLine{00108 \textcolor{comment}{\#             G, R[[k1, k], k1] = planerot(R[[k1, k], k1])}}
+\DoxyCodeLine{00109 \textcolor{comment}{\#             \#            R[[k1, k], k:n] = G @ R[[k1, k], k:n]}}
+\DoxyCodeLine{00110 \textcolor{comment}{\#}}
+\DoxyCodeLine{00111 \textcolor{comment}{\#             \# Apply the Givens rotation to y}}
+\DoxyCodeLine{00112 \textcolor{comment}{\#             y\_t = np.array([y[k1], y[k]])}}
+\DoxyCodeLine{00113 \textcolor{comment}{\#             \#            y\_t = G @ y\_t}}
+\DoxyCodeLine{00114 \textcolor{comment}{\#             y[k1], y[k] = y\_t[0], y\_t[1]}}
+\DoxyCodeLine{00115 \textcolor{comment}{\#}}
+\DoxyCodeLine{00116 \textcolor{comment}{\#             if k > 1:}}
+\DoxyCodeLine{00117 \textcolor{comment}{\#                 k = k -\/ 1}}
+\DoxyCodeLine{00118 \textcolor{comment}{\#         else:}}
+\DoxyCodeLine{00119 \textcolor{comment}{\#             k = k + 1}}
+\DoxyCodeLine{00120 \textcolor{comment}{\#     return R.ravel(), Z, y}}
+\DoxyCodeLine{00121 \textcolor{comment}{\#}}
+\DoxyCodeLine{00122 \textcolor{comment}{\#}}
+\DoxyCodeLine{00123 \textcolor{comment}{\# \# [R,piv,y] = qrmcp(A,y) computes the QR factorization of A with}}
+\DoxyCodeLine{00124 \textcolor{comment}{\# \#             minimum-\/column pivoting:}}
+\DoxyCodeLine{00125 \textcolor{comment}{\# \#             Q'BP = R (underdetermined A),}}
+\DoxyCodeLine{00126 \textcolor{comment}{\# \#             Q'BP = [R 0] (underdetermined A)}}
+\DoxyCodeLine{00127 \textcolor{comment}{\# \#             and computes Q'*y. The orthogonal matrix Q is not produced.}}
+\DoxyCodeLine{00128 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00129 \textcolor{comment}{\# \# Inputs:}}
+\DoxyCodeLine{00130 \textcolor{comment}{\# \#    A -\/ m-\/by-\/n real matrix to be factorized}}
+\DoxyCodeLine{00131 \textcolor{comment}{\# \#    y -\/ m-\/dimensional real vector to be transformed to Q'y}}
+\DoxyCodeLine{00132 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00133 \textcolor{comment}{\# \# Outputs:}}
+\DoxyCodeLine{00134 \textcolor{comment}{\# \#    R -\/ m-\/by-\/n real upper trapezoidal matrix (m < n)}}
+\DoxyCodeLine{00135 \textcolor{comment}{\# \#        n-\/by-\/n real upper triangular matrix (m >= n)}}
+\DoxyCodeLine{00136 \textcolor{comment}{\# \#    piv -\/ n-\/dimensional permutation vector representing P}}
+\DoxyCodeLine{00137 \textcolor{comment}{\# \#    y -\/ m-\/vector transformed from the input y by Q, i.e., y := Q'*y}}
+\DoxyCodeLine{00138 \textcolor{comment}{\#}}
+\DoxyCodeLine{00139 \textcolor{comment}{\# \# Authors: Xiao-\/Wen Chang, www.cs.mcgill.ca/\string~chang}}
+\DoxyCodeLine{00140 \textcolor{comment}{\# \#          Xiaohu Xie, Tianyang Zhou}}
+\DoxyCodeLine{00141 \textcolor{comment}{\# \# Modified by Shilei Lin into Python}}
+\DoxyCodeLine{00142 \textcolor{comment}{\# \# Copyright (c) 2006-\/2021. Scientific Computing Lab, McGill University.}}
+\DoxyCodeLine{00143 \textcolor{comment}{\# \# October 2006 Last revision: June 2016}}
+\DoxyCodeLine{00144 \textcolor{comment}{\# def qrmcp(A, y):}}
+\DoxyCodeLine{00145 \textcolor{comment}{\#     m, n = A.shape}}
+\DoxyCodeLine{00146 \textcolor{comment}{\#     colNormB = np.zeros((2, n))}}
+\DoxyCodeLine{00147 \textcolor{comment}{\#     piv = np.array(range(0, n))}}
+\DoxyCodeLine{00148 \textcolor{comment}{\#}}
+\DoxyCodeLine{00149 \textcolor{comment}{\#     for j in range(0, n):}}
+\DoxyCodeLine{00150 \textcolor{comment}{\#         colNormB[0, j] = (np.linalg.norm(A[:, j])) ** 2}}
+\DoxyCodeLine{00151 \textcolor{comment}{\#}}
+\DoxyCodeLine{00152 \textcolor{comment}{\#     n\_dim = min(m -\/ 1, n)}}
+\DoxyCodeLine{00153 \textcolor{comment}{\#     for k in range(0, n\_dim):}}
+\DoxyCodeLine{00154 \textcolor{comment}{\#         \# Find the column with minimum 2-\/norm in A(k:m,k:n)}}
+\DoxyCodeLine{00155 \textcolor{comment}{\#         col = colNormB[0, k:n] -\/ colNormB[1, k:n]}}
+\DoxyCodeLine{00156 \textcolor{comment}{\#         print(col)}}
+\DoxyCodeLine{00157 \textcolor{comment}{\#         min\_index = np.argmin(col)}}
+\DoxyCodeLine{00158 \textcolor{comment}{\#         min\_value = col[min\_index]}}
+\DoxyCodeLine{00159 \textcolor{comment}{\#}}
+\DoxyCodeLine{00160 \textcolor{comment}{\#         col[min\_index] = np.inf}}
+\DoxyCodeLine{00161 \textcolor{comment}{\#}}
+\DoxyCodeLine{00162 \textcolor{comment}{\#         min\_index\_2 = np.argmin(col)}}
+\DoxyCodeLine{00163 \textcolor{comment}{\#         min\_value\_2 = col[min\_index\_2]}}
+\DoxyCodeLine{00164 \textcolor{comment}{\#}}
+\DoxyCodeLine{00165 \textcolor{comment}{\#         \# if abs(min\_value -\/ min\_value\_2) < 1e-\/4:}}
+\DoxyCodeLine{00166 \textcolor{comment}{\#         \#     i = max(min\_index, min\_index\_2)}}
+\DoxyCodeLine{00167 \textcolor{comment}{\#         \# else:}}
+\DoxyCodeLine{00168 \textcolor{comment}{\#         i = min\_index}}
+\DoxyCodeLine{00169 \textcolor{comment}{\#}}
+\DoxyCodeLine{00170 \textcolor{comment}{\#         col[min\_index] = min\_value}}
+\DoxyCodeLine{00171 \textcolor{comment}{\#}}
+\DoxyCodeLine{00172 \textcolor{comment}{\#         \# i = np.argmin(colNormB[0, k:n] -\/ colNormB[1, k:n])}}
+\DoxyCodeLine{00173 \textcolor{comment}{\#         \# print("\%.100f, \%.100f" \% ((colNormB[0, k:n] -\/ colNormB[1, k:n])[1], (colNormB[0, k:n] -\/ colNormB[1, k:n])[17]))}}
+\DoxyCodeLine{00174 \textcolor{comment}{\#         q = i + k}}
+\DoxyCodeLine{00175 \textcolor{comment}{\#         print(i + 1)}}
+\DoxyCodeLine{00176 \textcolor{comment}{\#         \# Column interchange}}
+\DoxyCodeLine{00177 \textcolor{comment}{\#         if q > k:}}
+\DoxyCodeLine{00178 \textcolor{comment}{\#             print(piv.T + 1)}}
+\DoxyCodeLine{00179 \textcolor{comment}{\#             piv[k], piv[q] = piv[q], piv[k]}}
+\DoxyCodeLine{00180 \textcolor{comment}{\#             print(piv.T + 1)}}
+\DoxyCodeLine{00181 \textcolor{comment}{\#             colNormB[:, [k, q]] = colNormB[:, [q, k]]}}
+\DoxyCodeLine{00182 \textcolor{comment}{\#             A[:, [k, q]] = A[:, [q, k]]}}
+\DoxyCodeLine{00183 \textcolor{comment}{\#}}
+\DoxyCodeLine{00184 \textcolor{comment}{\#         print(np.linalg.norm(A[k + 1:m, k]))}}
+\DoxyCodeLine{00185 \textcolor{comment}{\#         if np.linalg.norm(A[k + 1:m, k]) > 0:  \# A Householder transformation is needed}}
+\DoxyCodeLine{00186 \textcolor{comment}{\#             v = np.array(A[k:m, k]).reshape(-\/1, 1)}}
+\DoxyCodeLine{00187 \textcolor{comment}{\#             rho = np.linalg.norm(v)}}
+\DoxyCodeLine{00188 \textcolor{comment}{\#             if v[0, 0] >= 0:}}
+\DoxyCodeLine{00189 \textcolor{comment}{\#                 rho = -\/rho}}
+\DoxyCodeLine{00190 \textcolor{comment}{\#             v[0, 0] = v[0, 0] -\/ rho}}
+\DoxyCodeLine{00191 \textcolor{comment}{\#             tao = -\/1 / (rho * v[0, 0])}}
+\DoxyCodeLine{00192 \textcolor{comment}{\#             A[k, k] = rho}}
+\DoxyCodeLine{00193 \textcolor{comment}{\#             if m < n:}}
+\DoxyCodeLine{00194 \textcolor{comment}{\#                 A[k + 1:m, k] = 0}}
+\DoxyCodeLine{00195 \textcolor{comment}{\#}}
+\DoxyCodeLine{00196 \textcolor{comment}{\#         \#            A[k:m, k + 1:n] = A[k:m, k + 1:n] -\/ tao * v * (v.T @ A[k:m, k + 1:n])}}
+\DoxyCodeLine{00197 \textcolor{comment}{\#}}
+\DoxyCodeLine{00198 \textcolor{comment}{\#         \# Update y by the Householder transformation}}
+\DoxyCodeLine{00199 \textcolor{comment}{\#         \#            y[k:m] = y[k:m, :] -\/ tao * v * (v.T @ y[k:m])}}
+\DoxyCodeLine{00200 \textcolor{comment}{\#         \# print(y)}}
+\DoxyCodeLine{00201 \textcolor{comment}{\#}}
+\DoxyCodeLine{00202 \textcolor{comment}{\#         \# Update colnormB(2,k+1:n)}}
+\DoxyCodeLine{00203 \textcolor{comment}{\#         colNormB[1, k + 1:n] = colNormB[1, k + 1:n] + A[k, k + 1:n] * A[k, k + 1:n]  \# .* in Matlab!}}
+\DoxyCodeLine{00204 \textcolor{comment}{\#         print(colNormB[1, k + 1:n])}}
+\DoxyCodeLine{00205 \textcolor{comment}{\#}}
+\DoxyCodeLine{00206 \textcolor{comment}{\#     if m < n:}}
+\DoxyCodeLine{00207 \textcolor{comment}{\#         R = A}}
+\DoxyCodeLine{00208 \textcolor{comment}{\#     else:}}
+\DoxyCodeLine{00209 \textcolor{comment}{\#         R = np.triu(A[0:n, 0:n])}}
+\DoxyCodeLine{00210 \textcolor{comment}{\#}}
+\DoxyCodeLine{00211 \textcolor{comment}{\#     return R, piv, y}}
+\DoxyCodeLine{00212 \textcolor{comment}{\#}}
+\DoxyCodeLine{00213 \textcolor{comment}{\# def matlabtest():}}
+\DoxyCodeLine{00214 \textcolor{comment}{\#     import matlab.engine}}
+\DoxyCodeLine{00215 \textcolor{comment}{\#}}
+\DoxyCodeLine{00216 \textcolor{comment}{\#     engine = matlab.engine.start\_matlab()}}
+\DoxyCodeLine{00217 \textcolor{comment}{\#}}
+\DoxyCodeLine{00218 \textcolor{comment}{\# \# def test\_matlab():}}
+\DoxyCodeLine{00219 \textcolor{comment}{\# \#     eng = matlab.engine.start\_matlab()}}
+\DoxyCodeLine{00220 \textcolor{comment}{\# \#     a = matlab.double([1,4,9,16,25])}}
+\DoxyCodeLine{00221 \textcolor{comment}{\# \#     b = eng.sqrt(a)}}
+\DoxyCodeLine{00222 \textcolor{comment}{\# \#     print(b)}}
+\DoxyCodeLine{00223 \textcolor{comment}{\# \#     \# A = eng.randn(256)}}
+\DoxyCodeLine{00224 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00225 \textcolor{comment}{\# \#}}
+\DoxyCodeLine{00226 \textcolor{comment}{\# if \_\_name\_\_ == "\_\_main\_\_":}}
+\DoxyCodeLine{00227 \textcolor{comment}{\#     matlabtest()}}
+\DoxyCodeLine{00228 \textcolor{comment}{\# \# fn = '/home/shilei/CLionProjects/babai\_asyn/data/new32\_35\_3.nc'}}
+\DoxyCodeLine{00229 \textcolor{comment}{\# \# ds = nc.Dataset(fn)}}
+\DoxyCodeLine{00230 \textcolor{comment}{\# \# y = np.reshape(ds.variables['y\_LLL'], (-\/1, 1)).astype(np.float32)}}
+\DoxyCodeLine{00231 \textcolor{comment}{\# \# A = np.reshape(ds.variables['A\_A'], (-\/1, y.shape[0])).astype(np.float32)}}
+\DoxyCodeLine{00232 \textcolor{comment}{\# \# np.set\_printoptions(formatter=\{'float': '\{: 0.3f\}'.format\})}}
+\DoxyCodeLine{00233 \textcolor{comment}{\# \# print(A)}}
+\DoxyCodeLine{00234 \textcolor{comment}{\#}}
+\DoxyCodeLine{00235 \textcolor{comment}{\#}}
+\DoxyCodeLine{00236 \textcolor{comment}{\# \# R, Z, y = sils\_reduction(A, y)}}
+\DoxyCodeLine{00237 \textcolor{comment}{\# \# print(A)}}
+\DoxyCodeLine{00238 \textcolor{comment}{\# \# print(y)}}
+\DoxyCodeLine{00239 \textcolor{comment}{\# \# print(R)}}
+\DoxyCodeLine{00240 \textcolor{comment}{\# \# print(np.get\_include())}}
+\DoxyCodeLine{00241 }
+\DoxyCodeLine{00242 }
+\DoxyCodeLine{00243 \textcolor{keyword}{import} os}
+\DoxyCodeLine{00244 \textcolor{keyword}{import} torch}
+\DoxyCodeLine{00245 }
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00246}\mbox{\hyperlink{namespacepy__qr_acd7fb723af323e5c1dcb767dab3a0f7f}{00246}} \textcolor{keyword}{def }\mbox{\hyperlink{namespacepy__qr_acd7fb723af323e5c1dcb767dab3a0f7f}{check\_mem}}():}
+\DoxyCodeLine{00247 }
+\DoxyCodeLine{00248     mem = os.popen(\textcolor{stringliteral}{'"<path\(\backslash\)to\(\backslash\)NVSMI>\(\backslash\)nvidia-\/smi" -\/-\/query-\/gpu=memory.total,memory.used -\/-\/format=csv,nounits,noheader'}).read().split(\textcolor{stringliteral}{","})}
+\DoxyCodeLine{00249 }
+\DoxyCodeLine{00250     \textcolor{keywordflow}{return} mem}
+\DoxyCodeLine{00251 }
+\DoxyCodeLine{00252 \textcolor{keywordflow}{if} \_\_name\_\_ == \textcolor{stringliteral}{"\_\_main\_\_"}:}
+\DoxyCodeLine{00253 }
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00254}\mbox{\hyperlink{namespacepy__qr_a980b1088acf5a660cd3f344fad2ac2a6}{00254}}     total, used = \mbox{\hyperlink{namespacepy__qr_acd7fb723af323e5c1dcb767dab3a0f7f}{check\_mem}}()}
+\DoxyCodeLine{00255 }
+\DoxyCodeLine{00256     total = int(total)}
+\DoxyCodeLine{00257     used = int(used)}
+\DoxyCodeLine{00258 }
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00259}\mbox{\hyperlink{namespacepy__qr_a97b1ba112ca90c8d5ae129d6e364988e}{00259}}     max\_mem = int(total * 0.8)}
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00260}\mbox{\hyperlink{namespacepy__qr_a05d93da8c97ef2a7d4a8a65930126a61}{00260}}     block\_mem = max\_mem -\/ used}
+\DoxyCodeLine{00261 }
+\DoxyCodeLine{\Hypertarget{py__qr_8py_source_l00262}\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{00262}}     x = torch.rand((256,1024,block\_mem)).cuda()}
+\DoxyCodeLine{00263     x = torch.rand((2,2)).cuda()}
+\DoxyCodeLine{00264 }
+\DoxyCodeLine{00265     \textcolor{comment}{\#do things here}}
+
+\end{DoxyCode}

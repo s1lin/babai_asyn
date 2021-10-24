@@ -1,0 +1,1164 @@
+\hypertarget{cils__ils__search_8cpp_source}{}\doxysection{cils\+\_\+ils\+\_\+search.\+cpp}
+\label{cils__ils__search_8cpp_source}\index{src/source/cils\_ils\_search.cpp@{src/source/cils\_ils\_search.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001 }
+\DoxyCodeLine{00019 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespacecils}{cils}} \{}
+\DoxyCodeLine{00020 }
+\DoxyCodeLine{00021     \textcolor{keyword}{template}<\textcolor{keyword}{typename} scalar, \textcolor{keyword}{typename} index>}
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00022}\mbox{\hyperlink{classcils_1_1cils__search}{00022}}     \textcolor{keyword}{class }\mbox{\hyperlink{classcils_1_1cils__search}{cils\_search}} \{}
+\DoxyCodeLine{00023 }
+\DoxyCodeLine{00024     \textcolor{keyword}{private}:}
+\DoxyCodeLine{00025         \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} upper, lower, m, n;}
+\DoxyCodeLine{00026         vector<scalar> p, c, z, d, l, u;}
+\DoxyCodeLine{00027 }
+\DoxyCodeLine{00028         \textcolor{keyword}{static} \textcolor{keywordtype}{void} init(\textcolor{keywordtype}{double} c\_k, \textcolor{keywordtype}{double} l\_k, \textcolor{keywordtype}{double} u\_k, \textcolor{keywordtype}{double} *z\_k, \textcolor{keywordtype}{double} *d\_k,}
+\DoxyCodeLine{00029                          \textcolor{keywordtype}{double} *lflag\_k, \textcolor{keywordtype}{double} *uflag\_k) \{}
+\DoxyCodeLine{00030             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00031             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/  Subfunctions  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00032             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00033             \textcolor{comment}{//}}
+\DoxyCodeLine{00034             \textcolor{comment}{//  Find the initial integer and the search direction at level \_k}}
+\DoxyCodeLine{00035             \textcolor{comment}{// 'obils\_search:156' z\_k = round(c\_k);}}
+\DoxyCodeLine{00036             *z\_k = std::round(c\_k);}
+\DoxyCodeLine{00037             \textcolor{comment}{// 'obils\_search:157' if z\_k <= l\_k}}
+\DoxyCodeLine{00038             \textcolor{keywordflow}{if} (*z\_k <= l\_k) \{}
+\DoxyCodeLine{00039                 \textcolor{comment}{// 'obils\_search:158' z\_k = l\_k;}}
+\DoxyCodeLine{00040                 *z\_k = l\_k;}
+\DoxyCodeLine{00041                 \textcolor{comment}{// 'obils\_search:159' lflag\_k = 1;}}
+\DoxyCodeLine{00042                 *lflag\_k = 1.0;}
+\DoxyCodeLine{00043                 \textcolor{comment}{//  The lower bound is reached}}
+\DoxyCodeLine{00044                 \textcolor{comment}{// 'obils\_search:160' uflag\_k = 0;}}
+\DoxyCodeLine{00045                 *uflag\_k = 0.0;}
+\DoxyCodeLine{00046                 \textcolor{comment}{// 'obils\_search:161' d\_k = 1;}}
+\DoxyCodeLine{00047                 *d\_k = 1.0;}
+\DoxyCodeLine{00048             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (*z\_k >= u\_k) \{}
+\DoxyCodeLine{00049                 \textcolor{comment}{// 'obils\_search:162' elseif z\_k >= u\_k}}
+\DoxyCodeLine{00050                 \textcolor{comment}{// 'obils\_search:163' z\_k = u\_k;}}
+\DoxyCodeLine{00051                 *z\_k = u\_k;}
+\DoxyCodeLine{00052                 \textcolor{comment}{// 'obils\_search:164' uflag\_k = 1;}}
+\DoxyCodeLine{00053                 *uflag\_k = 1.0;}
+\DoxyCodeLine{00054                 \textcolor{comment}{//  The upper bound is reached}}
+\DoxyCodeLine{00055                 \textcolor{comment}{// 'obils\_search:165' lflag\_k = 0;}}
+\DoxyCodeLine{00056                 *lflag\_k = 0.0;}
+\DoxyCodeLine{00057                 \textcolor{comment}{// 'obils\_search:166' d\_k = -\/1;}}
+\DoxyCodeLine{00058                 *d\_k = -\/1.0;}
+\DoxyCodeLine{00059             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00060                 \textcolor{comment}{// 'obils\_search:167' else}}
+\DoxyCodeLine{00061                 \textcolor{comment}{// 'obils\_search:168' lflag\_k = 0;}}
+\DoxyCodeLine{00062                 *lflag\_k = 0.0;}
+\DoxyCodeLine{00063                 \textcolor{comment}{// 'obils\_search:169' uflag\_k = 0;}}
+\DoxyCodeLine{00064                 *uflag\_k = 0.0;}
+\DoxyCodeLine{00065                 \textcolor{comment}{// 'obils\_search:170' if c\_k > z\_k}}
+\DoxyCodeLine{00066                 \textcolor{keywordflow}{if} (c\_k > *z\_k) \{}
+\DoxyCodeLine{00067                     \textcolor{comment}{// 'obils\_search:171' d\_k = 1;}}
+\DoxyCodeLine{00068                     *d\_k = 1.0;}
+\DoxyCodeLine{00069                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00070                     \textcolor{comment}{// 'obils\_search:172' else}}
+\DoxyCodeLine{00071                     \textcolor{comment}{// 'obils\_search:173' d\_k = -\/1;}}
+\DoxyCodeLine{00072                     *d\_k = -\/1.0;}
+\DoxyCodeLine{00073                 \}}
+\DoxyCodeLine{00074             \}}
+\DoxyCodeLine{00075         \}}
+\DoxyCodeLine{00076 }
+\DoxyCodeLine{00077 }
+\DoxyCodeLine{00078     \textcolor{keyword}{public}:}
+\DoxyCodeLine{00079 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00080}\mbox{\hyperlink{classcils_1_1cils__search_ad7aa3dbae53d53d13447c653017ef4c0}{00080}}         \mbox{\hyperlink{classcils_1_1cils__search_ad7aa3dbae53d53d13447c653017ef4c0}{cils\_search}}(\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} m, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n, \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) \{}
+\DoxyCodeLine{00081 }
+\DoxyCodeLine{00082             this-\/>upper = pow(2, \mbox{\hyperlink{namespacecils_1_1program__def_a3d3f108bbedbc57412eb97058fd02f4f}{qam}}) -\/ 1;}
+\DoxyCodeLine{00083             this-\/>lower = 0;}
+\DoxyCodeLine{00084             this-\/>m = m;}
+\DoxyCodeLine{00085             this-\/>n = n;}
+\DoxyCodeLine{00086             \textcolor{comment}{//pow(2, qam) -\/ 1;}}
+\DoxyCodeLine{00087             this-\/>p.resize(n);}
+\DoxyCodeLine{00088             this-\/>p.assign(n, 0);}
+\DoxyCodeLine{00089             this-\/>c.resize(n);}
+\DoxyCodeLine{00090             this-\/>c.assign(n, 0);}
+\DoxyCodeLine{00091             this-\/>z.resize(n);}
+\DoxyCodeLine{00092             this-\/>z.assign(n, 0);}
+\DoxyCodeLine{00093             this-\/>d.resize(n);}
+\DoxyCodeLine{00094             this-\/>d.assign(n, 0);}
+\DoxyCodeLine{00095             this-\/>l.resize(n);}
+\DoxyCodeLine{00096             this-\/>l.assign(n, 0);}
+\DoxyCodeLine{00097             this-\/>u.resize(n);}
+\DoxyCodeLine{00098             this-\/>u.assign(n, this-\/>upper);}
+\DoxyCodeLine{00099         \}}
+\DoxyCodeLine{00100 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00101}\mbox{\hyperlink{classcils_1_1cils__search_ae8b951bda44dd917010f2896a355eea9}{00101}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{classcils_1_1cils__search_ae8b951bda44dd917010f2896a355eea9}{obils\_search\_matlab}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \textcolor{keywordtype}{bool} check,}
+\DoxyCodeLine{00102                                         vector<scalar> \&R\_R, vector<scalar> \&y\_B, vector<scalar> \&z\_x) \{}
+\DoxyCodeLine{00103             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} t = n\_dx\_q\_1;}
+\DoxyCodeLine{00104             \textcolor{keyword}{using namespace }matlab::engine;}
+\DoxyCodeLine{00105             \textcolor{comment}{// Start MATLAB engine synchronously}}
+\DoxyCodeLine{00106             std::unique\_ptr<MATLABEngine> matlabPtr = startMATLAB();}
+\DoxyCodeLine{00107 }
+\DoxyCodeLine{00108             \textcolor{comment}{//Create MATLAB data array factory}}
+\DoxyCodeLine{00109             matlab::data::ArrayFactory factory;}
+\DoxyCodeLine{00110 }
+\DoxyCodeLine{00111             matlab::data::TypedArray<scalar> R\_M = factory.createArray(}
+\DoxyCodeLine{00112                     \{\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long}\textcolor{keyword}{>}(n), \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long}\textcolor{keyword}{>}(n)\}, R\_R.begin(), R\_R.end());}
+\DoxyCodeLine{00113             matlab::data::TypedArray<scalar> y\_M = factory.createArray(}
+\DoxyCodeLine{00114                     \{\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long}\textcolor{keyword}{>}(n), \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long}\textcolor{keyword}{>}(1)\}, y\_B.begin(), y\_B.end());}
+\DoxyCodeLine{00115             matlab::data::TypedArray<index> t\_M = factory.createScalar<\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}}>(n);}
+\DoxyCodeLine{00116 }
+\DoxyCodeLine{00117             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"R"}, std::move(R\_M));}
+\DoxyCodeLine{00118             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"y"}, std::move(y\_M));}
+\DoxyCodeLine{00119             matlabPtr-\/>setVariable(u\textcolor{stringliteral}{"t"}, std::move(t\_M));}
+\DoxyCodeLine{00120 }
+\DoxyCodeLine{00121             \textcolor{comment}{// Call the MATLAB movsum function}}
+\DoxyCodeLine{00122             matlabPtr-\/>eval(u\textcolor{stringliteral}{" z = obils\_search(R,y,zeros(t,1),7*ones(t,1));"});}
+\DoxyCodeLine{00123 }
+\DoxyCodeLine{00124             matlab::data::TypedArray<scalar> \textcolor{keyword}{const} z\_M = matlabPtr-\/>getVariable(u\textcolor{stringliteral}{"z"});}
+\DoxyCodeLine{00125             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i = 0;}
+\DoxyCodeLine{00126             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} r : z\_M) \{}
+\DoxyCodeLine{00127                 z\_x[i] = r;}
+\DoxyCodeLine{00128                 ++i;}
+\DoxyCodeLine{00129             \}}
+\DoxyCodeLine{00130 }
+\DoxyCodeLine{00131         \}}
+\DoxyCodeLine{00132 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00133}\mbox{\hyperlink{classcils_1_1cils__search_a5ce0e601706b8cfb6454e27a659418f0}{00133}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_a5ce0e601706b8cfb6454e27a659418f0}{obils\_search2}}(\textcolor{keyword}{const} vector<scalar> \&R, \textcolor{keyword}{const} vector<scalar> \&y, vector<scalar> \&zhat) \{}
+\DoxyCodeLine{00134             vector<scalar> lflag, prsd, uflag;}
+\DoxyCodeLine{00135             \textcolor{keywordtype}{double} b\_gamma;}
+\DoxyCodeLine{00136             \textcolor{keywordtype}{double} beta;}
+\DoxyCodeLine{00137             \textcolor{keywordtype}{int} dflag, i, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}, loop\_ub;}
+\DoxyCodeLine{00138             \textcolor{comment}{//}}
+\DoxyCodeLine{00139             \textcolor{comment}{//  zhat = bils\_search(R,y,l,u,beta) produces the optimal solution to}}
+\DoxyCodeLine{00140             \textcolor{comment}{//  the upper triangular box-\/constrained integer least squares problem}}
+\DoxyCodeLine{00141             \textcolor{comment}{//  min\_\{z\}||y-\/Rz|| s.t. z in [l, u] by a search algorithm.}}
+\DoxyCodeLine{00142             \textcolor{comment}{//  Inputs:}}
+\DoxyCodeLine{00143             \textcolor{comment}{//     R -\/ n by n real nonsingular upper triangular matrix}}
+\DoxyCodeLine{00144             \textcolor{comment}{//     y -\/ n-\/dimensional real vector}}
+\DoxyCodeLine{00145             \textcolor{comment}{//     l -\/ n-\/dimensional integer vector, lower bound}}
+\DoxyCodeLine{00146             \textcolor{comment}{//     u -\/ n-\/dimensional integer vector, upper bound}}
+\DoxyCodeLine{00147             \textcolor{comment}{//}}
+\DoxyCodeLine{00148             \textcolor{comment}{//  Outputs:}}
+\DoxyCodeLine{00149             \textcolor{comment}{//     zhat -\/ n-\/dimensional integer vector (in double precision).}}
+\DoxyCodeLine{00150             \textcolor{comment}{//  Subfunctions: init, update (included in this file)}}
+\DoxyCodeLine{00151             \textcolor{comment}{//  Main Reference:}}
+\DoxyCodeLine{00152             \textcolor{comment}{//  X.-\/W. Chang and Q. Han. Solving Box-\/Constrained Integer Least}}
+\DoxyCodeLine{00153             \textcolor{comment}{//  Squares Problems, IEEE Transactions on Wireless Communications,}}
+\DoxyCodeLine{00154             \textcolor{comment}{//  7 (2008), pp. 277-\/287.}}
+\DoxyCodeLine{00155             \textcolor{comment}{//  Authors: Xiao-\/Wen Chang, www.cs.mcgill.ca/\string~chang}}
+\DoxyCodeLine{00156             \textcolor{comment}{//           Xiangyu Ren, Jiqqun Shen}}
+\DoxyCodeLine{00157             \textcolor{comment}{//  Copyright (c) 2015. Scientific Computing Lab, McGill University.}}
+\DoxyCodeLine{00158             \textcolor{comment}{//  April 2015. Last revision: December 2015}}
+\DoxyCodeLine{00159             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00160             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/  Initialization  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00161             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00162             \textcolor{comment}{// 'obils\_search:34' n = size(R,1);}}
+\DoxyCodeLine{00163             \textcolor{comment}{//  Current point}}
+\DoxyCodeLine{00164             \textcolor{comment}{// 'obils\_search:37' z = zeros(n,1);}}
+\DoxyCodeLine{00165             z.resize(n);}
+\DoxyCodeLine{00166             z.assign(n, 0);}
+\DoxyCodeLine{00167             \textcolor{comment}{// 'obils\_search:38' zhat = zeros(n, 1);}}
+\DoxyCodeLine{00168             zhat.resize(n);}
+\DoxyCodeLine{00169             zhat.assign(n, 0);}
+\DoxyCodeLine{00170             \textcolor{comment}{//  c(k)=(y(k)-\/R(k,k+1:n)*z(k+1:n))/R(k,k)}}
+\DoxyCodeLine{00171             \textcolor{comment}{// 'obils\_search:41' c = zeros(n,1);}}
+\DoxyCodeLine{00172             c.resize(n);}
+\DoxyCodeLine{00173             c.assign(n, 0);}
+\DoxyCodeLine{00174             \textcolor{comment}{//  d(k): left or right search direction at level k}}
+\DoxyCodeLine{00175             \textcolor{comment}{// 'obils\_search:44' d = zeros(n,1);}}
+\DoxyCodeLine{00176             d.resize(n);}
+\DoxyCodeLine{00177             d.assign(n, 0);}
+\DoxyCodeLine{00178             \textcolor{comment}{//  lflag(k) = 1 if the lower bound is reached at level k}}
+\DoxyCodeLine{00179             \textcolor{comment}{// 'obils\_search:47' lflag = zeros(size(l));}}
+\DoxyCodeLine{00180             lflag.resize(n);}
+\DoxyCodeLine{00181             lflag.assign(n, 0);}
+\DoxyCodeLine{00182             \textcolor{comment}{//  uflag(k) = 1 if the upper bound is reached at level k}}
+\DoxyCodeLine{00183             \textcolor{comment}{// 'obils\_search:49' uflag = lflag;}}
+\DoxyCodeLine{00184             uflag.resize(n);}
+\DoxyCodeLine{00185             uflag.assign(n, 0);}
+\DoxyCodeLine{00186             \textcolor{comment}{//  Partial squared residual norm for z}}
+\DoxyCodeLine{00187             \textcolor{comment}{//  prsd(k) = (norm(y(k+1:n)-\/R(k+1:n,k+1:n)*z(k+1:n)))\string^2}}
+\DoxyCodeLine{00188             \textcolor{comment}{// 'obils\_search:53' prsd = zeros(n,1);}}
+\DoxyCodeLine{00189             prsd.resize(n);}
+\DoxyCodeLine{00190             prsd.assign(n, 0);}
+\DoxyCodeLine{00191             \textcolor{comment}{//  Store some quantities for efficiently calculating c}}
+\DoxyCodeLine{00192             \textcolor{comment}{//  S(k,n) = y(k),}}
+\DoxyCodeLine{00193             \textcolor{comment}{//  S(k,j-\/1) = y(k) -\/ R(k,j:n)*z(j:n) = S(k,j) -\/ R(k,j)*z(j), j=k+1:n}}
+\DoxyCodeLine{00194             \textcolor{comment}{// 'obils\_search:58' S = zeros(n,n);}}
+\DoxyCodeLine{00195             \textcolor{comment}{//  path(k): record information for updating S(k,k:path(k)-\/1)}}
+\DoxyCodeLine{00196             \textcolor{comment}{// 'obils\_search:62' path = n*ones(n,1);}}
+\DoxyCodeLine{00197             \textcolor{comment}{//  The level at which search starts to move up to a higher level}}
+\DoxyCodeLine{00198             \textcolor{comment}{// 'obils\_search:65' ulevel = 0;}}
+\DoxyCodeLine{00199             \textcolor{comment}{//  Initial search radius}}
+\DoxyCodeLine{00200             \textcolor{comment}{// 'obils\_search:68' beta = Inf;}}
+\DoxyCodeLine{00201             beta = INFINITY;}
+\DoxyCodeLine{00202             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00203             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/  Search process  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00204             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00205             \textcolor{comment}{// 'obils\_search:74' k = n;}}
+\DoxyCodeLine{00206             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = n;}
+\DoxyCodeLine{00207             \textcolor{comment}{//  Find the initial integer in [l(n), u(n)]}}
+\DoxyCodeLine{00208             \textcolor{comment}{// 'obils\_search:77' c(k) = S(k,k) / R(k,k);}}
+\DoxyCodeLine{00209             c[n -\/ 1] = y[n -\/ 1] / R[(n + n * (n -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00210             \textcolor{comment}{// 'obils\_search:78' [z(k),d(k),lflag(k),uflag(k)] = init(c(k),l(k),u(k));}}
+\DoxyCodeLine{00211             init(c[n -\/ 1], l[n -\/ 1], u[n -\/ 1], \&z[n -\/ 1],}
+\DoxyCodeLine{00212                  \&d[n -\/ 1], \&lflag[n -\/ 1], \&uflag[n -\/ 1]);}
+\DoxyCodeLine{00213             \textcolor{comment}{// 'obils\_search:79' gamma = R(k,k) * (c(k) -\/ z(k));}}
+\DoxyCodeLine{00214             b\_gamma = R[(n + n * (n -\/ 1)) -\/ 1] * (c[n -\/ 1] -\/ z[n -\/ 1]);}
+\DoxyCodeLine{00215             \textcolor{comment}{//  dflag for down or up search direction}}
+\DoxyCodeLine{00216             \textcolor{comment}{// 'obils\_search:82' dflag = 1;}}
+\DoxyCodeLine{00217             dflag = 1;}
+\DoxyCodeLine{00218             \textcolor{comment}{//  Intend to move down to a lower level}}
+\DoxyCodeLine{00219             \textcolor{comment}{// 'obils\_search:85' while 1}}
+\DoxyCodeLine{00220             \textcolor{keywordflow}{while} (\textcolor{keyword}{true}) \{}
+\DoxyCodeLine{00221                 \textcolor{keywordtype}{double} newprsd;}
+\DoxyCodeLine{00222                 \textcolor{keywordflow}{while} (dflag == 1) \{}
+\DoxyCodeLine{00223                     \textcolor{keywordtype}{int} t = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1;}
+\DoxyCodeLine{00224                     \textcolor{comment}{//  Temporary partial squared residual norm at level k}}
+\DoxyCodeLine{00225                     \textcolor{comment}{// 'obils\_search:90' newprsd = prsd(k) + gamma * gamma;}}
+\DoxyCodeLine{00226                     newprsd = prsd[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] + b\_gamma * b\_gamma;}
+\DoxyCodeLine{00227                     \textcolor{comment}{// 'obils\_search:92' if newprsd < beta}}
+\DoxyCodeLine{00228                     \textcolor{keywordflow}{if} (newprsd < beta) \{}
+\DoxyCodeLine{00229                         \textcolor{comment}{//  Inside the ellispoid}}
+\DoxyCodeLine{00230                         \textcolor{comment}{// 'obils\_search:93' if k \string~= 1}}
+\DoxyCodeLine{00231                         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} != 1) \{}
+\DoxyCodeLine{00232                             \textcolor{keywordtype}{int} i1, i2;}
+\DoxyCodeLine{00233                             \textcolor{comment}{//  Move to level k-\/1}}
+\DoxyCodeLine{00234                             \textcolor{comment}{//  Update path}}
+\DoxyCodeLine{00235                             \textcolor{comment}{//                 if ulevel \string~= 0}}
+\DoxyCodeLine{00236                             \textcolor{comment}{//                     path(ulevel:k-\/1) = k;}}
+\DoxyCodeLine{00237                             \textcolor{comment}{//                     for j = ulevel-\/1 : -\/1 : 1}}
+\DoxyCodeLine{00238                             \textcolor{comment}{//                         if path(j) < k}}
+\DoxyCodeLine{00239                             \textcolor{comment}{//                             path(j) = k;}}
+\DoxyCodeLine{00240                             \textcolor{comment}{//                         else}}
+\DoxyCodeLine{00241                             \textcolor{comment}{//                             break;  \% Note path(1:j-\/1) >= path(j)}}
+\DoxyCodeLine{00242                             \textcolor{comment}{//                         end}}
+\DoxyCodeLine{00243                             \textcolor{comment}{//                     end}}
+\DoxyCodeLine{00244                             \textcolor{comment}{//                 end}}
+\DoxyCodeLine{00245                             \textcolor{comment}{//  Update S}}
+\DoxyCodeLine{00246                             \textcolor{comment}{// 'obils\_search:106' k = k -\/ 1;}}
+\DoxyCodeLine{00247                             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00248                             \textcolor{comment}{//                 for j = path(k):-\/1:k+1}}
+\DoxyCodeLine{00249                             \textcolor{comment}{//                     S(k,j-\/1) = S(k,j) -\/ R(k,j)*z(j);}}
+\DoxyCodeLine{00250                             \textcolor{comment}{//                 end}}
+\DoxyCodeLine{00251                             \textcolor{comment}{//                R(k,k+1:n)}}
+\DoxyCodeLine{00252                             \textcolor{comment}{// 'obils\_search:111' sum = y(k) -\/ R(k,k+1:n)*z(k+1:n);}}
+\DoxyCodeLine{00253                             \textcolor{keywordflow}{if} (t + 1 > n) \{}
+\DoxyCodeLine{00254                                 i = 0;}
+\DoxyCodeLine{00255                                 i1 = 0;}
+\DoxyCodeLine{00256                                 i2 = 0;}
+\DoxyCodeLine{00257                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00258                                 i = t;}
+\DoxyCodeLine{00259                                 i1 = n;}
+\DoxyCodeLine{00260                                 i2 = t;}
+\DoxyCodeLine{00261                             \}}
+\DoxyCodeLine{00262                             \textcolor{comment}{//                 S(k,k) -\/ sum}}
+\DoxyCodeLine{00263                             \textcolor{comment}{//  Update the partial squared residual norm}}
+\DoxyCodeLine{00264                             \textcolor{comment}{// 'obils\_search:115' prsd(k) = newprsd;}}
+\DoxyCodeLine{00265                             prsd[t -\/ 1] = newprsd;}
+\DoxyCodeLine{00266                             \textcolor{comment}{//  Find the initial integer in [l(k), u(k)]}}
+\DoxyCodeLine{00267                             \textcolor{comment}{// 'obils\_search:118' c(k) = sum / R(k,k);}}
+\DoxyCodeLine{00268                             newprsd = 0.0;}
+\DoxyCodeLine{00269                             loop\_ub = i1 -\/ i;}
+\DoxyCodeLine{00270                             \textcolor{keywordflow}{for} (i1 = 0; i1 < loop\_ub; i1++) \{}
+\DoxyCodeLine{00271                                 newprsd += R[(t + n * (i + i1)) -\/ 1] * z[i2 + i1];}
+\DoxyCodeLine{00272                             \}}
+\DoxyCodeLine{00273                             c[t -\/ 1] = (y[t -\/ 1] -\/ newprsd) / R[(t + n * (t -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00274                             \textcolor{comment}{// 'obils\_search:119' [z(k),d(k),lflag(k),uflag(k)] =}}
+\DoxyCodeLine{00275                             \textcolor{comment}{// init(c(k),l(k),u(k));}}
+\DoxyCodeLine{00276                             init(c[t -\/ 1], l[t -\/ 1],}
+\DoxyCodeLine{00277                                  u[t -\/ 1], \&z[t -\/ 1],}
+\DoxyCodeLine{00278                                  \&d[t -\/ 1], \&lflag[t -\/ 1],}
+\DoxyCodeLine{00279                                  \&uflag[t -\/ 1]);}
+\DoxyCodeLine{00280                             \textcolor{comment}{//                 z(k)}}
+\DoxyCodeLine{00281                             \textcolor{comment}{// 'obils\_search:121' gamma = R(k,k) * (c(k) -\/ z(k));}}
+\DoxyCodeLine{00282                             b\_gamma = R[(t + n * (t -\/ 1)) -\/ 1] * (c[t -\/ 1] -\/ z[t -\/ 1]);}
+\DoxyCodeLine{00283                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00284                             \textcolor{comment}{// 'obils\_search:123' else}}
+\DoxyCodeLine{00285                             \textcolor{comment}{//  A valid point is found, update search radius}}
+\DoxyCodeLine{00286                             \textcolor{comment}{// 'obils\_search:124' zhat = z;}}
+\DoxyCodeLine{00287                             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00288                                 zhat[i] = z[i];}
+\DoxyCodeLine{00289                             \}}
+\DoxyCodeLine{00290                             \textcolor{comment}{// 'obils\_search:125' beta = newprsd;}}
+\DoxyCodeLine{00291                             beta = newprsd;}
+\DoxyCodeLine{00292                         \}}
+\DoxyCodeLine{00293                         \textcolor{comment}{//             ulevel = 0;}}
+\DoxyCodeLine{00294                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00295                         \textcolor{comment}{// 'obils\_search:128' else}}
+\DoxyCodeLine{00296                         \textcolor{comment}{// 'obils\_search:129' dflag = 0;}}
+\DoxyCodeLine{00297                         dflag = 0;}
+\DoxyCodeLine{00298                         \textcolor{comment}{//  Will move back to a higher level}}
+\DoxyCodeLine{00299                     \}}
+\DoxyCodeLine{00300                     \textcolor{comment}{// 'obils\_search:88' if dflag == 1}}
+\DoxyCodeLine{00301                 \}}
+\DoxyCodeLine{00302                 \textcolor{comment}{// 'obils\_search:131' else}}
+\DoxyCodeLine{00303                 \textcolor{comment}{//  Outside the ellispoid}}
+\DoxyCodeLine{00304                 \textcolor{comment}{// 'obils\_search:133' if k == n}}
+\DoxyCodeLine{00305                 \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == n) \{}
+\DoxyCodeLine{00306                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00307                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00308                     \textcolor{keywordtype}{double} b\_d;}
+\DoxyCodeLine{00309                     \textcolor{comment}{// 'obils\_search:135' else}}
+\DoxyCodeLine{00310                     \textcolor{comment}{//  Move back to level k+1}}
+\DoxyCodeLine{00311                     \textcolor{comment}{//             if ulevel == 0}}
+\DoxyCodeLine{00312                     \textcolor{comment}{//                 ulevel = k;}}
+\DoxyCodeLine{00313                     \textcolor{comment}{//             end}}
+\DoxyCodeLine{00314                     \textcolor{comment}{// 'obils\_search:140' k = k + 1;}}
+\DoxyCodeLine{00315                     \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00316                     \textcolor{comment}{// 'obils\_search:141' if lflag(k) \string~= 1 || uflag(k) \string~= 1}}
+\DoxyCodeLine{00317                     b\_d = lflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1];}
+\DoxyCodeLine{00318                     \textcolor{keywordflow}{if} ((b\_d != 1.0) || (uflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] != 1.0)) \{}
+\DoxyCodeLine{00319                         \textcolor{comment}{//  Find a new integer at level k}}
+\DoxyCodeLine{00320                         \textcolor{comment}{// 'obils\_search:143' [z(k),d(k),lflag(k),uflag(k)] = ...}}
+\DoxyCodeLine{00321                         \textcolor{comment}{// 'obils\_search:144' update(z(k),d(k),lflag(k),uflag(k),l(k),u(k));}}
+\DoxyCodeLine{00322                         newprsd = uflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1];}
+\DoxyCodeLine{00323                         \textcolor{comment}{//}}
+\DoxyCodeLine{00324                         \textcolor{comment}{//  Find a new integer at level k and record it if it hits a boundary.}}
+\DoxyCodeLine{00325                         \textcolor{comment}{// 'obils\_search:187' z\_k = z\_k + d\_k;}}
+\DoxyCodeLine{00326                         b\_gamma = z[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] + d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1];}
+\DoxyCodeLine{00327                         \textcolor{comment}{// 'obils\_search:188' if z\_k == l\_k}}
+\DoxyCodeLine{00328                         \textcolor{keywordflow}{if} (b\_gamma == l[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1]) \{}
+\DoxyCodeLine{00329                             \textcolor{comment}{// 'obils\_search:189' lflag\_k = 1;}}
+\DoxyCodeLine{00330                             b\_d = 1.0;}
+\DoxyCodeLine{00331                             \textcolor{comment}{// 'obils\_search:190' d\_k = -\/d\_k + 1;}}
+\DoxyCodeLine{00332                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = -\/d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] + 1.0;}
+\DoxyCodeLine{00333                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (b\_gamma == u[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1]) \{}
+\DoxyCodeLine{00334                             \textcolor{comment}{// 'obils\_search:191' elseif z\_k == u\_k}}
+\DoxyCodeLine{00335                             \textcolor{comment}{// 'obils\_search:192' uflag\_k = 1;}}
+\DoxyCodeLine{00336                             newprsd = 1.0;}
+\DoxyCodeLine{00337                             \textcolor{comment}{// 'obils\_search:193' d\_k = -\/d\_k -\/ 1;}}
+\DoxyCodeLine{00338                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = -\/d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] -\/ 1.0;}
+\DoxyCodeLine{00339                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (lflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] == 1.0) \{}
+\DoxyCodeLine{00340                             \textcolor{comment}{// 'obils\_search:194' elseif lflag\_k == 1}}
+\DoxyCodeLine{00341                             \textcolor{comment}{// 'obils\_search:195' d\_k = 1;}}
+\DoxyCodeLine{00342                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = 1.0;}
+\DoxyCodeLine{00343                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (uflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] == 1.0) \{}
+\DoxyCodeLine{00344                             \textcolor{comment}{// 'obils\_search:196' elseif uflag\_k == 1}}
+\DoxyCodeLine{00345                             \textcolor{comment}{// 'obils\_search:197' d\_k = -\/1;}}
+\DoxyCodeLine{00346                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = -\/1.0;}
+\DoxyCodeLine{00347 }
+\DoxyCodeLine{00348                             \textcolor{comment}{// 'obils\_search:198' else}}
+\DoxyCodeLine{00349                             \textcolor{comment}{// 'obils\_search:199' if d\_k > 0}}
+\DoxyCodeLine{00350                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] > 0.0) \{}
+\DoxyCodeLine{00351                             \textcolor{comment}{// 'obils\_search:200' d\_k = -\/d\_k -\/ 1;}}
+\DoxyCodeLine{00352                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = -\/d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] -\/ 1.0;}
+\DoxyCodeLine{00353                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00354                             \textcolor{comment}{// 'obils\_search:201' else}}
+\DoxyCodeLine{00355                             \textcolor{comment}{// 'obils\_search:202' d\_k = -\/d\_k + 1;}}
+\DoxyCodeLine{00356                             d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = -\/d[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] + 1.0;}
+\DoxyCodeLine{00357                         \}}
+\DoxyCodeLine{00358                         z[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = b\_gamma;}
+\DoxyCodeLine{00359                         lflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = b\_d;}
+\DoxyCodeLine{00360                         uflag[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] = newprsd;}
+\DoxyCodeLine{00361                         \textcolor{comment}{// 'obils\_search:145' gamma = R(k,k) * (c(k) -\/ z(k));}}
+\DoxyCodeLine{00362                         b\_gamma = R[(\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + n * (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1)) -\/ 1] * (c[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1] -\/ z[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1]);}
+\DoxyCodeLine{00363                         \textcolor{comment}{// 'obils\_search:146' dflag = 1;}}
+\DoxyCodeLine{00364                         dflag = 1;}
+\DoxyCodeLine{00365                     \}}
+\DoxyCodeLine{00366                 \}}
+\DoxyCodeLine{00367             \}}
+\DoxyCodeLine{00368             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{00369             \textcolor{comment}{//  The optimal solution has been found, terminate}}
+\DoxyCodeLine{00370         \}}
+\DoxyCodeLine{00371 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00372}\mbox{\hyperlink{classcils_1_1cils__search_afbc108cdc3d8e1d47d3b2bb4513ce520}{00372}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_afbc108cdc3d8e1d47d3b2bb4513ce520}{obils\_search}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \textcolor{keywordtype}{bool} check,}
+\DoxyCodeLine{00373                                  \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_B, vector<scalar> \&z\_x) \{}
+\DoxyCodeLine{00374             this-\/>z.assign(n, 0);}
+\DoxyCodeLine{00375             \textcolor{comment}{// Variables}}
+\DoxyCodeLine{00376             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum, newprsd, gamma, beta = INFINITY;}
+\DoxyCodeLine{00377 }
+\DoxyCodeLine{00378             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dx = n\_dx\_q\_1 -\/ n\_dx\_q\_0, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = dx -\/ 1;}
+\DoxyCodeLine{00379             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} end\_1 = n\_dx\_q\_1 -\/ 1, row\_k = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + n\_dx\_q\_0, diff = 0;}
+\DoxyCodeLine{00380             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dflag = 1, count = 0, iter = 0;}
+\DoxyCodeLine{00381 }
+\DoxyCodeLine{00382             \textcolor{comment}{//Initial squared search radius}}
+\DoxyCodeLine{00383             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} R\_kk = R\_R[n * end\_1 + end\_1];}
+\DoxyCodeLine{00384             c[row\_k] = y\_B[row\_k] / R\_kk;}
+\DoxyCodeLine{00385             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00386             \textcolor{keywordflow}{if} (z[row\_k] <= lower) \{}
+\DoxyCodeLine{00387                 z[row\_k] = u[row\_k] = lower; \textcolor{comment}{//The lower bound is reached}}
+\DoxyCodeLine{00388                 l[row\_k] = d[row\_k] = 1;}
+\DoxyCodeLine{00389             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] >= upper) \{}
+\DoxyCodeLine{00390                 z[row\_k] = upper; \textcolor{comment}{//The upper bound is reached}}
+\DoxyCodeLine{00391                 u[row\_k] = 1;}
+\DoxyCodeLine{00392                 l[row\_k] = 0;}
+\DoxyCodeLine{00393                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00394             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00395                 l[row\_k] = u[row\_k] = 0;}
+\DoxyCodeLine{00396                 \textcolor{comment}{//  Determine enumeration direction at level block\_size}}
+\DoxyCodeLine{00397                 d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00398             \}}
+\DoxyCodeLine{00399 }
+\DoxyCodeLine{00400             gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00401             \textcolor{comment}{//ILS search process}}
+\DoxyCodeLine{00402             \textcolor{keywordflow}{while} (\textcolor{keyword}{true}) \{}
+\DoxyCodeLine{00403 \textcolor{comment}{//            count++;}}
+\DoxyCodeLine{00404 \textcolor{comment}{//            for (count = 0; count < program\_def::max\_thre || iter == 0; count++) \{}}
+\DoxyCodeLine{00405                 \textcolor{keywordflow}{if} (dflag) \{}
+\DoxyCodeLine{00406                     newprsd = p[row\_k] + gamma * gamma;}
+\DoxyCodeLine{00407                     \textcolor{keywordflow}{if} (newprsd < beta) \{}
+\DoxyCodeLine{00408                         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} != 0) \{}
+\DoxyCodeLine{00409                             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00410                             row\_k-\/-\/;}
+\DoxyCodeLine{00411                             sum = 0;}
+\DoxyCodeLine{00412                             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1; col < dx; col++) \{}
+\DoxyCodeLine{00413                                 sum += R\_R[(col + n\_dx\_q\_0) * n + row\_k] * z[col + n\_dx\_q\_0];}
+\DoxyCodeLine{00414                             \}}
+\DoxyCodeLine{00415                             R\_kk = R\_R[n * row\_k + row\_k];}
+\DoxyCodeLine{00416                             p[row\_k] = newprsd;}
+\DoxyCodeLine{00417                             c[row\_k] = (y\_B[row\_k] -\/ sum) / R\_kk;}
+\DoxyCodeLine{00418                             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00419                             \textcolor{keywordflow}{if} (z[row\_k] <= lower) \{}
+\DoxyCodeLine{00420                                 z[row\_k] = lower;}
+\DoxyCodeLine{00421                                 l[row\_k] = 1;}
+\DoxyCodeLine{00422                                 u[row\_k] = 0;}
+\DoxyCodeLine{00423                                 d[row\_k] = 1;}
+\DoxyCodeLine{00424                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] >= upper) \{}
+\DoxyCodeLine{00425                                 z[row\_k] = upper;}
+\DoxyCodeLine{00426                                 u[row\_k] = 1;}
+\DoxyCodeLine{00427                                 l[row\_k] = 0;}
+\DoxyCodeLine{00428                                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00429                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00430                                 l[row\_k] = 0;}
+\DoxyCodeLine{00431                                 u[row\_k] = 0;}
+\DoxyCodeLine{00432                                 d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00433                             \}}
+\DoxyCodeLine{00434                             gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00435 }
+\DoxyCodeLine{00436                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00437                             beta = newprsd;}
+\DoxyCodeLine{00438                             diff = 0;}
+\DoxyCodeLine{00439                             iter++;}
+\DoxyCodeLine{00440                             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = n\_dx\_q\_0; h < n\_dx\_q\_1; h++) \{}
+\DoxyCodeLine{00441                                 diff += z\_x[h] == z[h];}
+\DoxyCodeLine{00442                                 z\_x[h] = z[h];}
+\DoxyCodeLine{00443                             \}}
+\DoxyCodeLine{00444 \textcolor{comment}{//                            if (n\_dx\_q\_1 != n) \{}}
+\DoxyCodeLine{00445 \textcolor{comment}{//                                if (diff == dx || iter > program\_def::search\_iter || !check) \{}}
+\DoxyCodeLine{00446 \textcolor{comment}{//                                    break;}}
+\DoxyCodeLine{00447 \textcolor{comment}{//                                \}}}
+\DoxyCodeLine{00448 \textcolor{comment}{//                            \}}}
+\DoxyCodeLine{00449                         \}}
+\DoxyCodeLine{00450                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00451                         dflag = 0;}
+\DoxyCodeLine{00452                     \}}
+\DoxyCodeLine{00453 }
+\DoxyCodeLine{00454                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00455                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == dx -\/ 1) \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00456                     \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00457                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00458                         row\_k++;}
+\DoxyCodeLine{00459                         \textcolor{keywordflow}{if} (l[row\_k] != 1 || u[row\_k] != 1) \{}
+\DoxyCodeLine{00460                             z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00461                             \textcolor{keywordflow}{if} (z[row\_k] == lower) \{}
+\DoxyCodeLine{00462                                 l[row\_k] = 1;}
+\DoxyCodeLine{00463                                 d[row\_k] = -\/d[row\_k] + 1;}
+\DoxyCodeLine{00464                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] == upper) \{}
+\DoxyCodeLine{00465                                 u[row\_k] = 1;}
+\DoxyCodeLine{00466                                 d[row\_k] = -\/d[row\_k] -\/ 1;}
+\DoxyCodeLine{00467                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (l[row\_k] == 1) \{}
+\DoxyCodeLine{00468                                 d[row\_k] = 1;}
+\DoxyCodeLine{00469                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (u[row\_k] == 1) \{}
+\DoxyCodeLine{00470                                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00471                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00472                                 d[row\_k] = d[row\_k] > 0 ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00473                             \}}
+\DoxyCodeLine{00474                             gamma = R\_R[n * row\_k + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00475                             dflag = 1;}
+\DoxyCodeLine{00476                         \}}
+\DoxyCodeLine{00477                     \}}
+\DoxyCodeLine{00478                 \}}
+\DoxyCodeLine{00479             \}}
+\DoxyCodeLine{00480             \textcolor{keywordflow}{return} diff;}
+\DoxyCodeLine{00481         \}}
+\DoxyCodeLine{00482 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00483}\mbox{\hyperlink{classcils_1_1cils__search_a30a32f5f1ac4a2dba1ffb4f710371567}{00483}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_a30a32f5f1ac4a2dba1ffb4f710371567}{obils\_search\_omp}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} check,}
+\DoxyCodeLine{00484                                      \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_A, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_B, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *z\_x) \{}
+\DoxyCodeLine{00485             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dx = n\_dx\_q\_1 -\/ n\_dx\_q\_0;}
+\DoxyCodeLine{00486             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} row\_k = n\_dx\_q\_1 -\/ 1, row\_kk = row\_k * (n -\/ n\_dx\_q\_1 / 2);}
+\DoxyCodeLine{00487             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dflag = 1, iter = 0, diff = 0, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = dx -\/ 1;}
+\DoxyCodeLine{00488             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} R\_kk = R\_A[row\_kk + row\_k], beta = INFINITY;}
+\DoxyCodeLine{00489 }
+\DoxyCodeLine{00490 \textcolor{comment}{//\#pragma omp simd}}
+\DoxyCodeLine{00491             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} R\_R = n\_dx\_q\_0; R\_R < n\_dx\_q\_1; R\_R++) \{}
+\DoxyCodeLine{00492                 z[R\_R] = z\_x[R\_R];}
+\DoxyCodeLine{00493             \}}
+\DoxyCodeLine{00494 }
+\DoxyCodeLine{00495             c[row\_k] = y\_B[row\_k] / R\_kk;}
+\DoxyCodeLine{00496             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00497             \textcolor{keywordflow}{if} (z[row\_k] <= lower) \{}
+\DoxyCodeLine{00498                 z[row\_k] = u[row\_k] = lower; \textcolor{comment}{//The lower bound is reached}}
+\DoxyCodeLine{00499                 l[row\_k] = d[row\_k] = 1;}
+\DoxyCodeLine{00500             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] >= upper) \{}
+\DoxyCodeLine{00501                 z[row\_k] = upper; \textcolor{comment}{//The upper bound is reached}}
+\DoxyCodeLine{00502                 u[row\_k] = 1;}
+\DoxyCodeLine{00503                 l[row\_k] = 0;}
+\DoxyCodeLine{00504                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00505             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00506                 l[row\_k] = u[row\_k] = 0;}
+\DoxyCodeLine{00507                 d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1; \textcolor{comment}{//Determine enumeration direction at level block\_size}}
+\DoxyCodeLine{00508             \}}
+\DoxyCodeLine{00509             \textcolor{comment}{//Initial squared search radius}}
+\DoxyCodeLine{00510             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00511             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} newprsd, sum;}
+\DoxyCodeLine{00512             \textcolor{comment}{//ILS search process}}
+\DoxyCodeLine{00513             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} count = 0; count < \mbox{\hyperlink{namespacecils_1_1program__def_a7f6a1246867f6245ba1bcff17ba993e5}{program\_def::max\_search}} || iter == 0; count++) \{}
+\DoxyCodeLine{00514                 \textcolor{comment}{//while (1) \{}}
+\DoxyCodeLine{00515                 \textcolor{keywordflow}{if} (dflag) \{}
+\DoxyCodeLine{00516                     newprsd = p[row\_k] + gamma * gamma;}
+\DoxyCodeLine{00517                     \textcolor{keywordflow}{if} (newprsd < beta) \{}
+\DoxyCodeLine{00518                         \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} != 0) \{}
+\DoxyCodeLine{00519                             \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00520                             row\_k-\/-\/;}
+\DoxyCodeLine{00521                             row\_kk -\/= (n -\/ row\_k -\/ 1);}
+\DoxyCodeLine{00522                             R\_kk = R\_A[row\_kk + row\_k];}
+\DoxyCodeLine{00523                             p[row\_k] = newprsd;}
+\DoxyCodeLine{00524                             sum = 0;}
+\DoxyCodeLine{00525 \textcolor{preprocessor}{\#pragma omp simd reduction(+ : sum)}}
+\DoxyCodeLine{00526                             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1; col < dx; col++) \{}
+\DoxyCodeLine{00527                                 sum += R\_A[row\_kk + col + n\_dx\_q\_0] * z[col + n\_dx\_q\_0];}
+\DoxyCodeLine{00528                             \}}
+\DoxyCodeLine{00529                             c[row\_k] = (y\_B[row\_k] -\/ sum) / R\_kk;}
+\DoxyCodeLine{00530                             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00531                             \textcolor{keywordflow}{if} (z[row\_k] <= lower) \{}
+\DoxyCodeLine{00532                                 z[row\_k] = u[row\_k] = lower;}
+\DoxyCodeLine{00533                                 l[row\_k] = d[row\_k] = 1;}
+\DoxyCodeLine{00534                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] >= upper) \{}
+\DoxyCodeLine{00535                                 z[row\_k] = upper;}
+\DoxyCodeLine{00536                                 u[row\_k] = 1;}
+\DoxyCodeLine{00537                                 l[row\_k] = 0;}
+\DoxyCodeLine{00538                                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00539                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00540                                 l[row\_k] = u[row\_k] = 0;}
+\DoxyCodeLine{00541                                 d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00542                             \}}
+\DoxyCodeLine{00543                             gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00544 }
+\DoxyCodeLine{00545                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00546                             beta = newprsd;}
+\DoxyCodeLine{00547                             diff = 0;}
+\DoxyCodeLine{00548                             iter++;}
+\DoxyCodeLine{00549                             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = n\_dx\_q\_0; h < n\_dx\_q\_1; h++) \{}
+\DoxyCodeLine{00550                                 diff += z\_x[h] == z[h];}
+\DoxyCodeLine{00551                                 z\_x[h] = z[h];}
+\DoxyCodeLine{00552                             \}}
+\DoxyCodeLine{00553                             \textcolor{keywordflow}{if} (i != 0) \{}
+\DoxyCodeLine{00554                                 \textcolor{keywordflow}{if} (diff == dx || iter > \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{program\_def::search\_iter}} || !check) \{}
+\DoxyCodeLine{00555                                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00556                                 \}}
+\DoxyCodeLine{00557                             \}}
+\DoxyCodeLine{00558                         \}}
+\DoxyCodeLine{00559                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00560                         dflag = 0;}
+\DoxyCodeLine{00561                     \}}
+\DoxyCodeLine{00562 }
+\DoxyCodeLine{00563                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00564                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == dx -\/ 1) \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00565                     \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00566                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00567                         row\_k++;}
+\DoxyCodeLine{00568                         row\_kk += n -\/ row\_k;}
+\DoxyCodeLine{00569                         \textcolor{keywordflow}{if} (l[row\_k] != 1 || u[row\_k] != 1) \{}
+\DoxyCodeLine{00570                             z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00571                             \textcolor{keywordflow}{if} (z[row\_k] == 0) \{}
+\DoxyCodeLine{00572                                 l[row\_k] = 1;}
+\DoxyCodeLine{00573                                 d[row\_k] = -\/d[row\_k] + 1;}
+\DoxyCodeLine{00574                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (z[row\_k] == upper) \{}
+\DoxyCodeLine{00575                                 u[row\_k] = 1;}
+\DoxyCodeLine{00576                                 d[row\_k] = -\/d[row\_k] -\/ 1;}
+\DoxyCodeLine{00577                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (l[row\_k] == 1) \{}
+\DoxyCodeLine{00578                                 d[row\_k] = 1;}
+\DoxyCodeLine{00579                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (u[row\_k] == 1) \{}
+\DoxyCodeLine{00580                                 d[row\_k] = -\/1;}
+\DoxyCodeLine{00581                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00582                                 d[row\_k] = d[row\_k] > 0 ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00583                             \}}
+\DoxyCodeLine{00584                             gamma = R\_A[row\_kk + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00585                             dflag = 1;}
+\DoxyCodeLine{00586                         \}}
+\DoxyCodeLine{00587                     \}}
+\DoxyCodeLine{00588                 \}}
+\DoxyCodeLine{00589             \}}
+\DoxyCodeLine{00590             \textcolor{keywordflow}{return} diff == dx;}
+\DoxyCodeLine{00591         \}}
+\DoxyCodeLine{00592 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00593}\mbox{\hyperlink{classcils_1_1cils__search_a441f70585541ce2098891ec6b59b466d}{00593}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_a441f70585541ce2098891ec6b59b466d}{ils\_search}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \textcolor{keywordtype}{bool} check,}
+\DoxyCodeLine{00594                                \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_B, vector<scalar> *z\_x) \{}
+\DoxyCodeLine{00595 }
+\DoxyCodeLine{00596             \textcolor{comment}{//variables}}
+\DoxyCodeLine{00597             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum, newprsd, gamma, beta = INFINITY;}
+\DoxyCodeLine{00598 }
+\DoxyCodeLine{00599             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dx = n\_dx\_q\_1 -\/ n\_dx\_q\_0, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = dx -\/ 1;}
+\DoxyCodeLine{00600             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} end\_1 = n\_dx\_q\_1 -\/ 1, row\_k = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + n\_dx\_q\_0, diff;}
+\DoxyCodeLine{00601             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} row\_kk = n * end\_1 + end\_1, count, iter = 0;}
+\DoxyCodeLine{00602 }
+\DoxyCodeLine{00603             \textcolor{comment}{//Initial squared search radius}}
+\DoxyCodeLine{00604             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} R\_kk = R\_R[n * end\_1 + end\_1];}
+\DoxyCodeLine{00605             c[row\_k] = y\_B[row\_k] / R\_kk;}
+\DoxyCodeLine{00606             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00607             gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00608 }
+\DoxyCodeLine{00609             \textcolor{comment}{//  Determine enumeration direction at level block\_size}}
+\DoxyCodeLine{00610             d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00611 }
+\DoxyCodeLine{00612             \textcolor{comment}{//ILS search process}}
+\DoxyCodeLine{00613             \textcolor{keywordflow}{for} (count = 0; count < \mbox{\hyperlink{namespacecils_1_1program__def_a02176941627c9e890f5d830941ccae76}{program\_def::max\_thre}} || iter == 0; count++) \{}
+\DoxyCodeLine{00614                 newprsd = p[row\_k] + gamma * gamma;}
+\DoxyCodeLine{00615                 \textcolor{keywordflow}{if} (newprsd < beta) \{}
+\DoxyCodeLine{00616                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} != 0) \{}
+\DoxyCodeLine{00617                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00618                         row\_k-\/-\/;}
+\DoxyCodeLine{00619                         sum = 0;}
+\DoxyCodeLine{00620                         R\_kk = R\_R[n * row\_k + row\_k];}
+\DoxyCodeLine{00621                         p[row\_k] = newprsd;}
+\DoxyCodeLine{00622                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1; col < dx; col++) \{}
+\DoxyCodeLine{00623                             sum += R\_R[(col + n\_dx\_q\_0) * n + row\_k] * z[col + n\_dx\_q\_0];}
+\DoxyCodeLine{00624                         \}}
+\DoxyCodeLine{00625 }
+\DoxyCodeLine{00626                         c[row\_k] = (y\_B[row\_k] -\/ sum) / R\_kk;}
+\DoxyCodeLine{00627                         z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00628                         gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00629                         d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00630 }
+\DoxyCodeLine{00631                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00632                         beta = newprsd;}
+\DoxyCodeLine{00633                         diff = 0;}
+\DoxyCodeLine{00634                         iter++;}
+\DoxyCodeLine{00635                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = n\_dx\_q\_0; h < n\_dx\_q\_1; h++) \{}
+\DoxyCodeLine{00636                             diff += z\_x-\/>at(h) == z[h];}
+\DoxyCodeLine{00637                             z\_x-\/>at(h) = z[h];}
+\DoxyCodeLine{00638                         \}}
+\DoxyCodeLine{00639                         \textcolor{keywordflow}{if} (n\_dx\_q\_1 != n) \{}
+\DoxyCodeLine{00640                             \textcolor{keywordflow}{if} (diff == dx || iter > \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{program\_def::search\_iter}} || !check) \{}
+\DoxyCodeLine{00641                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00642                             \}}
+\DoxyCodeLine{00643                         \}}
+\DoxyCodeLine{00644                         z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00645                         gamma = R\_R[n * row\_k + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00646                         d[row\_k] = d[row\_k] > row\_k ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00647                     \}}
+\DoxyCodeLine{00648                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00649                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == dx -\/ 1) \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00650                     \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00651                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00652                         row\_k++;}
+\DoxyCodeLine{00653                         z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00654                         gamma = R\_R[n * row\_k + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00655                         d[row\_k] = d[row\_k] > 0 ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00656                     \}}
+\DoxyCodeLine{00657                 \}}
+\DoxyCodeLine{00658             \}}
+\DoxyCodeLine{00659             \textcolor{keywordflow}{return} beta;}
+\DoxyCodeLine{00660         \}}
+\DoxyCodeLine{00661 }
+\DoxyCodeLine{00662 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00663}\mbox{\hyperlink{classcils_1_1cils__search_a64f9d7903096e9c34b6d83f2164715ad}{00663}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_a64f9d7903096e9c34b6d83f2164715ad}{ils\_search\_omp}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} check,}
+\DoxyCodeLine{00664                                    \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_A, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_B,}
+\DoxyCodeLine{00665                                    \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *z\_x) \{}
+\DoxyCodeLine{00666 }
+\DoxyCodeLine{00667             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dx = n\_dx\_q\_1 -\/ n\_dx\_q\_0;}
+\DoxyCodeLine{00668             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} row\_k = n\_dx\_q\_1 -\/ 1, row\_kk = row\_k * (n -\/ n\_dx\_q\_1 / 2);}
+\DoxyCodeLine{00669             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} dflag = 1, iter = 0, diff = 0, \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = dx -\/ 1;}
+\DoxyCodeLine{00670             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} R\_kk = R\_A[row\_kk + row\_k], beta = INFINITY;}
+\DoxyCodeLine{00671 }
+\DoxyCodeLine{00672 \textcolor{comment}{//\#pragma omp simd}}
+\DoxyCodeLine{00673             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} R\_R = n\_dx\_q\_0; R\_R < n\_dx\_q\_1; R\_R++) \{}
+\DoxyCodeLine{00674                 z[R\_R] = z\_x[R\_R];}
+\DoxyCodeLine{00675             \}}
+\DoxyCodeLine{00676 }
+\DoxyCodeLine{00677             c[row\_k] = y\_B[row\_k] / R\_kk;}
+\DoxyCodeLine{00678             z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00679 }
+\DoxyCodeLine{00680             \textcolor{comment}{//  Determine enumeration direction at level block\_size}}
+\DoxyCodeLine{00681             d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00682 \textcolor{comment}{//Initial squared search radius}}
+\DoxyCodeLine{00683             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00684             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} newprsd, sum;}
+\DoxyCodeLine{00685             \textcolor{comment}{//ILS search process}}
+\DoxyCodeLine{00686             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} count = 0; count < \mbox{\hyperlink{namespacecils_1_1program__def_a7f6a1246867f6245ba1bcff17ba993e5}{program\_def::max\_search}} || iter == 0; count++) \{}
+\DoxyCodeLine{00687                 newprsd = p[row\_k] + gamma * gamma;}
+\DoxyCodeLine{00688                 \textcolor{keywordflow}{if} (newprsd < beta) \{}
+\DoxyCodeLine{00689                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} != 0) \{}
+\DoxyCodeLine{00690                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}-\/-\/;}
+\DoxyCodeLine{00691                         row\_k-\/-\/;}
+\DoxyCodeLine{00692                         sum = 0;}
+\DoxyCodeLine{00693                         row\_kk -\/= (n -\/ row\_k -\/ 1);}
+\DoxyCodeLine{00694                         R\_kk = R\_A[row\_kk + row\_k];}
+\DoxyCodeLine{00695                         p[row\_k] = newprsd;}
+\DoxyCodeLine{00696 \textcolor{preprocessor}{\#pragma omp simd reduction(+ : sum)}}
+\DoxyCodeLine{00697                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} col = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + 1; col < dx; col++) \{}
+\DoxyCodeLine{00698                             sum += R\_A[row\_kk + col + n\_dx\_q\_0] * z[col + n\_dx\_q\_0];}
+\DoxyCodeLine{00699                         \}}
+\DoxyCodeLine{00700 }
+\DoxyCodeLine{00701                         c[row\_k] = (y\_B[row\_k] -\/ sum) / R\_kk;}
+\DoxyCodeLine{00702                         z[row\_k] = round(c[row\_k]);}
+\DoxyCodeLine{00703                         gamma = R\_kk * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00704                         d[row\_k] = c[row\_k] > z[row\_k] ? 1 : -\/1;}
+\DoxyCodeLine{00705 }
+\DoxyCodeLine{00706                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00707                         beta = newprsd;}
+\DoxyCodeLine{00708                         diff = 0;}
+\DoxyCodeLine{00709                         iter++;}
+\DoxyCodeLine{00710                         \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = n\_dx\_q\_0; h < n\_dx\_q\_1; h++) \{}
+\DoxyCodeLine{00711                             diff += z\_x[h] == z[h];}
+\DoxyCodeLine{00712                             z\_x[h] = z[h];}
+\DoxyCodeLine{00713                         \}}
+\DoxyCodeLine{00714                         \textcolor{keywordflow}{if} (i != 0) \{}
+\DoxyCodeLine{00715                             \textcolor{keywordflow}{if} (diff == dx || iter > \mbox{\hyperlink{namespacecils_1_1program__def_a8cd622a2e5710eb4cae8ea311efdbb89}{program\_def::search\_iter}} || !check) \{}
+\DoxyCodeLine{00716                                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00717                             \}}
+\DoxyCodeLine{00718                         \}}
+\DoxyCodeLine{00719 }
+\DoxyCodeLine{00720                         z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00721                         gamma = R\_A[row\_kk + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00722                         d[row\_k] = d[row\_k] > 0 ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00723                     \}}
+\DoxyCodeLine{00724                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00725                     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} == dx -\/ 1) \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00726                     \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00727                         \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++;}
+\DoxyCodeLine{00728                         row\_k++;}
+\DoxyCodeLine{00729                         row\_kk += n -\/ row\_k;}
+\DoxyCodeLine{00730                         z[row\_k] += d[row\_k];}
+\DoxyCodeLine{00731                         gamma = R\_A[row\_kk + row\_k] * (c[row\_k] -\/ z[row\_k]);}
+\DoxyCodeLine{00732                         d[row\_k] = d[row\_k] > 0 ? -\/d[row\_k] -\/ 1 : -\/d[row\_k] + 1;}
+\DoxyCodeLine{00733                     \}}
+\DoxyCodeLine{00734                 \}}
+\DoxyCodeLine{00735             \}}
+\DoxyCodeLine{00736             \textcolor{keywordflow}{return} diff == dx;}
+\DoxyCodeLine{00737         \}}
+\DoxyCodeLine{00738 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l00739}\mbox{\hyperlink{classcils_1_1cils__search_ac7cd450f4e488ef2fb67fbd0c0056d60}{00739}}         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{classcils_1_1cils__search_ac7cd450f4e488ef2fb67fbd0c0056d60}{ubils\_search}}(\textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_0, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} n\_dx\_q\_1, \textcolor{keyword}{const} \textcolor{keywordtype}{bool} check, \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} beta,}
+\DoxyCodeLine{00740                                  \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *y\_B,}
+\DoxyCodeLine{00741                                  vector<scalar> \&z\_x) \{}
+\DoxyCodeLine{00742             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} i, nx, j;}
+\DoxyCodeLine{00743             \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} gamma;}
+\DoxyCodeLine{00744             vector<scalar> zhat(z\_x.size(), 0);}
+\DoxyCodeLine{00745             \textcolor{comment}{// 'ubils\_search:35' [m,n] = size(R\_R);}}
+\DoxyCodeLine{00746             \textcolor{comment}{//  Point which determins the initial search radius beta}}
+\DoxyCodeLine{00747             \textcolor{comment}{// 'ubils\_search:38' zhat = z0;}}
+\DoxyCodeLine{00748             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00749                 zhat[i] = z\_x[i];}
+\DoxyCodeLine{00750             \}}
+\DoxyCodeLine{00751             \textcolor{comment}{//  Current point}}
+\DoxyCodeLine{00752             \textcolor{comment}{// 'ubils\_search:41' z = zeros(n,1);}}
+\DoxyCodeLine{00753             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00754                 z[i] = 0.0;}
+\DoxyCodeLine{00755             \}}
+\DoxyCodeLine{00756             \textcolor{comment}{//  c(k) = (y\_B(k)-\/R\_R(k,k+1:n)*z(k+1:n))/R\_R(k,k)}}
+\DoxyCodeLine{00757             \textcolor{comment}{// 'ubils\_search:44' c = zeros(n,1);}}
+\DoxyCodeLine{00758             \textcolor{keywordflow}{for} (i = 0; i < nx; i++) \{}
+\DoxyCodeLine{00759                 c[i] = 0.0;}
+\DoxyCodeLine{00760             \}}
+\DoxyCodeLine{00761             \textcolor{comment}{//  d(k): left or right search direction at level k}}
+\DoxyCodeLine{00762             \textcolor{comment}{// 'ubils\_search:47' d = zeros(n,1);}}
+\DoxyCodeLine{00763             \textcolor{keywordflow}{for} (i = 0; i < nx; i++) \{}
+\DoxyCodeLine{00764                 d[i] = 0.0;}
+\DoxyCodeLine{00765             \}}
+\DoxyCodeLine{00766             \textcolor{comment}{//  l(k) = 1 if the lower bound is reached at level k}}
+\DoxyCodeLine{00767             \textcolor{comment}{// 'ubils\_search:50' l = zeros(size(l));}}
+\DoxyCodeLine{00768             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00769                 l[i] = 0.0;}
+\DoxyCodeLine{00770             \}}
+\DoxyCodeLine{00771             \textcolor{comment}{//  u(k) = 1 if the upper bound is reached at level k}}
+\DoxyCodeLine{00772             \textcolor{comment}{// 'ubils\_search:52' u = l;}}
+\DoxyCodeLine{00773             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00774                 u[i] = 0.0;}
+\DoxyCodeLine{00775             \}}
+\DoxyCodeLine{00776             \textcolor{comment}{//  Partial squared residual norm for z}}
+\DoxyCodeLine{00777             \textcolor{comment}{//  prsd(k) = (norm(y\_B(k+1:n)-\/R\_R(k+1:n,k+1:n)*z(k+1:n)))\string^2}}
+\DoxyCodeLine{00778             \textcolor{comment}{// 'ubils\_search:59' prsd = zeros(m+1,1);}}
+\DoxyCodeLine{00779             vector<scalar> prsd(m, 0);}
+\DoxyCodeLine{00780 }
+\DoxyCodeLine{00781             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00782             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/  Search process  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00783             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00784             \textcolor{comment}{//  A transformation for z and bounds}}
+\DoxyCodeLine{00785             \textcolor{comment}{// 'ubils\_search:72' [R\_R,y\_B,u,l,Z\_t,s] = shift(R\_R,y\_B,l,u);}}
+\DoxyCodeLine{00786             \textcolor{comment}{//}}
+\DoxyCodeLine{00787             \textcolor{comment}{//  Perform transformations:}}
+\DoxyCodeLine{00788             \textcolor{comment}{//     z(j) := -\/l(j) + z(j) if r\_\{tj\}>=0  for t=m or t=j}}
+\DoxyCodeLine{00789             \textcolor{comment}{//     z(j) := u(j) -\/ z(j)  if r\_\{tj\}<0   for t=m or t=j}}
+\DoxyCodeLine{00790             \textcolor{comment}{//  so that z(j) is in \{0,1, . . . ,u\_j-\/l\_j\} and R\_R(t,j)>=0}}
+\DoxyCodeLine{00791             \textcolor{comment}{//}}
+\DoxyCodeLine{00792             \textcolor{comment}{// 'ubils\_search:247' [m,n] = size(R\_R);}}
+\DoxyCodeLine{00793             \textcolor{comment}{// 'ubils\_search:268' [m,n] = size(R\_R);}}
+\DoxyCodeLine{00794             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} b\_m = m;}
+\DoxyCodeLine{00795             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} t;}
+\DoxyCodeLine{00796             \textcolor{comment}{// 'ubils\_search:269' R\_temp = R\_R;}}
+\DoxyCodeLine{00797             \textcolor{comment}{// 'ubils\_search:270' Z = zeros(n,n);}}
+\DoxyCodeLine{00798             vector<scalar> Z(n * n, 0);}
+\DoxyCodeLine{00799             \textcolor{comment}{// 'ubils\_search:271' s = zeros(n,1);}}
+\DoxyCodeLine{00800             vector<scalar> s(n, 0);}
+\DoxyCodeLine{00801             \textcolor{comment}{// 'ubils\_search:273' for j = 1:n}}
+\DoxyCodeLine{00802             i = n;}
+\DoxyCodeLine{00803             \textcolor{keywordflow}{for} (j = 0; j < n; j++) \{}
+\DoxyCodeLine{00804                 \textcolor{comment}{// 'ubils\_search:274' if j > m}}
+\DoxyCodeLine{00805                 \textcolor{keywordflow}{if} (j + 1 > m) \{}
+\DoxyCodeLine{00806                     \textcolor{comment}{// 'ubils\_search:275' t = m;}}
+\DoxyCodeLine{00807                     t = b\_m -\/ 1;}
+\DoxyCodeLine{00808                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00809                     \textcolor{comment}{// 'ubils\_search:276' else}}
+\DoxyCodeLine{00810                     \textcolor{comment}{// 'ubils\_search:277' t = j;}}
+\DoxyCodeLine{00811                     t = j;}
+\DoxyCodeLine{00812                 \}}
+\DoxyCodeLine{00813                 \textcolor{comment}{// 'ubils\_search:280' if R\_R(t,j) >= 0}}
+\DoxyCodeLine{00814                 \textcolor{keywordflow}{if} (R\_R[t + m * j] >= 0.0) \{}
+\DoxyCodeLine{00815                     \textcolor{comment}{// 'ubils\_search:281' Z(j,j) = 1;}}
+\DoxyCodeLine{00816                     Z[j + n * j] = 1.0;}
+\DoxyCodeLine{00817                     \textcolor{comment}{// 'ubils\_search:282' s(j) = l(j);}}
+\DoxyCodeLine{00818                     s[j] = l[j];}
+\DoxyCodeLine{00819                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00820                     \textcolor{comment}{// 'ubils\_search:283' else}}
+\DoxyCodeLine{00821                     \textcolor{comment}{// 'ubils\_search:284' Z(j,j) = -\/1;}}
+\DoxyCodeLine{00822                     Z[j + n * j] = -\/1.0;}
+\DoxyCodeLine{00823                     \textcolor{comment}{// 'ubils\_search:285' s(j) = u(j);}}
+\DoxyCodeLine{00824                     s[j] = u[j];}
+\DoxyCodeLine{00825                 \}}
+\DoxyCodeLine{00826             \}}
+\DoxyCodeLine{00827             \textcolor{comment}{// 'ubils\_search:289' R\_R = R\_temp * Z;}}
+\DoxyCodeLine{00828             t = m;}
+\DoxyCodeLine{00829             b\_m = n;}
+\DoxyCodeLine{00830             vector<scalar> b\_R(m * n, 0);}
+\DoxyCodeLine{00831             \textcolor{keywordflow}{for} (j = 0; j < n; j++) \{}
+\DoxyCodeLine{00832                 \textcolor{keywordtype}{int} boffset;}
+\DoxyCodeLine{00833                 \textcolor{keywordtype}{int} coffset = j * t;}
+\DoxyCodeLine{00834                 boffset = j * n;}
+\DoxyCodeLine{00835                 \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} b\_i = 0; b\_i < t; b\_i++) \{}
+\DoxyCodeLine{00836                     b\_R[coffset + b\_i] = 0.0;}
+\DoxyCodeLine{00837                 \}}
+\DoxyCodeLine{00838                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < b\_m; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00839                     \textcolor{keywordtype}{int} aoffset = \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * m;}
+\DoxyCodeLine{00840                     \textcolor{keywordtype}{int} bkj = Z[boffset + \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00841                     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} b\_i = 0; b\_i < t; b\_i++) \{}
+\DoxyCodeLine{00842                         i = coffset + b\_i;}
+\DoxyCodeLine{00843                         b\_R[i] = b\_R[i] + R\_R[aoffset + b\_i] * bkj;}
+\DoxyCodeLine{00844                     \}}
+\DoxyCodeLine{00845                 \}}
+\DoxyCodeLine{00846             \}}
+\DoxyCodeLine{00847             \textcolor{comment}{// 'ubils\_search:290' y\_B = y\_B -\/ R\_temp*s;}}
+\DoxyCodeLine{00848             vector<scalar> C(m, 0);}
+\DoxyCodeLine{00849             \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < n; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{00850                 \textcolor{keywordflow}{for} (i = 0; i < m; i++) \{}
+\DoxyCodeLine{00851                     C[i] = C[i] + R\_R[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * m + i] * s[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{00852                 \}}
+\DoxyCodeLine{00853             \}}
+\DoxyCodeLine{00854             \textcolor{keywordflow}{for} (i = 0; i < m; i++) \{}
+\DoxyCodeLine{00855                 C[i] = y\_B[i] -\/ C[i];}
+\DoxyCodeLine{00856             \}}
+\DoxyCodeLine{00857             \textcolor{comment}{// 'ubils\_search:291' u = u -\/ l;}}
+\DoxyCodeLine{00858             vector<scalar> b\_u(n, 0);}
+\DoxyCodeLine{00859             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00860                 b\_u[i] = u[i] -\/ l[i];}
+\DoxyCodeLine{00861             \}}
+\DoxyCodeLine{00862             \textcolor{comment}{// 'ubils\_search:292' l = zeros(size(l));}}
+\DoxyCodeLine{00863             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00864                 l[i] = 0.0;}
+\DoxyCodeLine{00865             \}}
+\DoxyCodeLine{00866             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00867                 u[i] = b\_u[i];}
+\DoxyCodeLine{00868             \}}
+\DoxyCodeLine{00869             \textcolor{comment}{// 'ubils\_search:74' utemp = u;}}
+\DoxyCodeLine{00870             \textcolor{comment}{// 'ubils\_search:76' k = n;}}
+\DoxyCodeLine{00871             \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} b\_k = n;}
+\DoxyCodeLine{00872             \textcolor{comment}{//  S(k,n) = y\_B(k), k=1:m-\/1, S(k,n) = y\_B(m), k=m:n}}
+\DoxyCodeLine{00873             \textcolor{comment}{//  S(m:n,n) = y\_B(m);}}
+\DoxyCodeLine{00874             \textcolor{comment}{//  S(1:m-\/1,n) = y\_B(1:m-\/1);}}
+\DoxyCodeLine{00875             \textcolor{comment}{// 'ubils\_search:82' c(n) = y\_B(m)/R\_R(m,n);}}
+\DoxyCodeLine{00876             c[n -\/ 1] = C[m -\/ 1] / b\_R[(m + b\_m * (n -\/ 1)) -\/ 1];}
+\DoxyCodeLine{00877             \textcolor{comment}{//  Compute new bound at level k}}
+\DoxyCodeLine{00878             \textcolor{comment}{// 'ubils\_search:85' [l(k),u(k)] = bound(c(k),R\_R,utemp,beta,prsd,k);}}
+\DoxyCodeLine{00879             \mbox{\hyperlink{classcils_1_1cils__search_a3e244407f2e7fe87e8f47d8abce65429}{bound}}(c[n -\/ 1], b\_R, b\_u, beta, prsd, \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(n),}
+\DoxyCodeLine{00880                   \&l[n -\/ 1], \&u[n -\/ 1]);}
+\DoxyCodeLine{00881             \textcolor{comment}{//  Find the initial integer in [l(k), u(k)]}}
+\DoxyCodeLine{00882             \textcolor{comment}{// 'ubils\_search:88' [z(k),d(k),l(k),u(k)] = init(c(k),l(k),u(k));}}
+\DoxyCodeLine{00883             init(c[n -\/ 1], l[n -\/ 1], u[n -\/ 1], \&z[n -\/ 1],}
+\DoxyCodeLine{00884                  \&d[n -\/ 1], \&l[n -\/ 1], \&u[n -\/ 1]);}
+\DoxyCodeLine{00885             \textcolor{comment}{//  dflag for down or up search direction}}
+\DoxyCodeLine{00886             \textcolor{comment}{// 'ubils\_search:91' dflag = 1;}}
+\DoxyCodeLine{00887             t = 1;}
+\DoxyCodeLine{00888             \textcolor{comment}{//  Intend to move down to a lower level}}
+\DoxyCodeLine{00889             \textcolor{comment}{// 'ubils\_search:93' while 1}}
+\DoxyCodeLine{00890             \textcolor{keywordflow}{while} (1) \{}
+\DoxyCodeLine{00891                 \textcolor{keywordflow}{while} (t == 1) \{}
+\DoxyCodeLine{00892                     \textcolor{comment}{// 'ubils\_search:95' if l(k) \string~= 1 || u(k) \string~= 1}}
+\DoxyCodeLine{00893                     \textcolor{keywordflow}{if} ((l[b\_k -\/ 1] != 1.0) || (u[b\_k -\/ 1] != 1.0)) \{}
+\DoxyCodeLine{00894                         \textcolor{comment}{// 'ubils\_search:96' if k \string~= 1}}
+\DoxyCodeLine{00895                         \textcolor{keywordflow}{if} (b\_k != 1) \{}
+\DoxyCodeLine{00896                             \textcolor{comment}{// 'ubils\_search:111' if k <= m}}
+\DoxyCodeLine{00897                             \textcolor{keywordflow}{if} (b\_k <= m) \{}
+\DoxyCodeLine{00898                                 \textcolor{comment}{//                    for j = path(k1):-\/1:k1+1}}
+\DoxyCodeLine{00899                                 \textcolor{comment}{//                        S(k1,j-\/1) = S(k1,j) -\/ R\_R(k1,j)*z(j);}}
+\DoxyCodeLine{00900                                 \textcolor{comment}{//                    end}}
+\DoxyCodeLine{00901                                 \textcolor{comment}{//                    c(k1) = S(k1,k1) / R\_R(k1,k1);}}
+\DoxyCodeLine{00902                                 \textcolor{comment}{// 'ubils\_search:117' sum = y\_B(k1) -\/ R\_R(k1,k1+1:n)*z(k1+1:n);}}
+\DoxyCodeLine{00903                                 i = b\_k -\/ 1;}
+\DoxyCodeLine{00904                                 \textcolor{comment}{// 'ubils\_search:118' c(k1) = sum / R(k1,k1);}}
+\DoxyCodeLine{00905                                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0.0;}
+\DoxyCodeLine{00906                                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = 0; h < n -\/ b\_k + 1; h++) \{}
+\DoxyCodeLine{00907                                     sum += b\_R[(b\_k + m * (i + h)) -\/ 2] * z[(b\_k + h) -\/ 1];}
+\DoxyCodeLine{00908                                 \}}
+\DoxyCodeLine{00909                                 c[b\_k -\/ 2] = (C[b\_k -\/ 2] -\/ sum) / b\_R[(b\_k + m * (b\_k -\/ 2)) -\/ 2];}
+\DoxyCodeLine{00910 }
+\DoxyCodeLine{00911                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00912                                 \textcolor{comment}{// 'ubils\_search:124' else}}
+\DoxyCodeLine{00913                                 \textcolor{comment}{//  S(k,n) = y\_B(k), k=1:m-\/1, S(k,n) = y\_B(m), k=m:n}}
+\DoxyCodeLine{00914                                 \textcolor{comment}{// S(m:n,n) = y\_B(m);}}
+\DoxyCodeLine{00915                                 \textcolor{comment}{// S(1:m-\/1,n) = y\_B(1:m-\/1);}}
+\DoxyCodeLine{00916                                 \textcolor{comment}{//                    S(m:k1,k1) = S(k1,k1+1) -\/ R\_R(m,k1+1)*z(k1+1);}}
+\DoxyCodeLine{00917                                 \textcolor{comment}{//                    c(k1) = S(k1,k1) / R\_R(m,k1);}}
+\DoxyCodeLine{00918                                 \textcolor{comment}{// 'ubils\_search:133' sum2 = (y\_B(m) -\/ R\_R(m,k1+1:n)*z(k1+1:n));}}
+\DoxyCodeLine{00919                                 \mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} coffset;}
+\DoxyCodeLine{00920                                 \textcolor{keywordflow}{if} (b\_k > n) \{}
+\DoxyCodeLine{00921                                     i = 0;}
+\DoxyCodeLine{00922                                     coffset = 0;}
+\DoxyCodeLine{00923                                     b\_m = 1;}
+\DoxyCodeLine{00924                                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00925                                     i = b\_k -\/ 1;}
+\DoxyCodeLine{00926                                     coffset = n;}
+\DoxyCodeLine{00927                                     b\_m = b\_k;}
+\DoxyCodeLine{00928                                 \}}
+\DoxyCodeLine{00929                                 \textcolor{comment}{// 'ubils\_search:134' c(k1) = sum2 / R\_R(m,k1);}}
+\DoxyCodeLine{00930                                 \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} sum = 0.0;}
+\DoxyCodeLine{00931                                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} h = 0; h < coffset -\/ i; h++) \{}
+\DoxyCodeLine{00932                                     sum += b\_R[(m + b\_m * (i + h)) -\/ 1] * z[(b\_m + h) -\/ 1];}
+\DoxyCodeLine{00933                                 \}}
+\DoxyCodeLine{00934                                 c[b\_k -\/ 2] = (C[m -\/ 1] -\/ sum) / b\_R[(m + b\_m * (b\_k -\/ 2)) -\/ 1];}
+\DoxyCodeLine{00935                             \}}
+\DoxyCodeLine{00936                             \textcolor{comment}{//  Compute new bound at level k1}}
+\DoxyCodeLine{00937                             \textcolor{comment}{// 'ubils\_search:143' [l(k1),u(k1)] =}}
+\DoxyCodeLine{00938                             \textcolor{comment}{// bound(c(k1),R\_R,utemp,beta,prsd,k1);}}
+\DoxyCodeLine{00939                             \mbox{\hyperlink{classcils_1_1cils__search_a3e244407f2e7fe87e8f47d8abce65429}{bound}}(c[b\_k -\/ 2], b\_R, b\_u, beta, prsd, b\_k -\/ 1.0, \&l[b\_k -\/ 2], \&u[b\_k -\/ 2]);}
+\DoxyCodeLine{00940                             \textcolor{comment}{//  Find the initial integer in [l(k1), u(k1)]}}
+\DoxyCodeLine{00941                             \textcolor{comment}{// 'ubils\_search:146' if l(k1) > u(k1)}}
+\DoxyCodeLine{00942                             \textcolor{keywordflow}{if} (l[b\_k -\/ 2] > u[b\_k -\/ 2]) \{}
+\DoxyCodeLine{00943                                 \textcolor{comment}{// 'ubils\_search:147' l(k1) = 1;}}
+\DoxyCodeLine{00944                                 l[b\_k -\/ 2] = 1.0;}
+\DoxyCodeLine{00945                                 \textcolor{comment}{// 'ubils\_search:148' u(k1) = 1;}}
+\DoxyCodeLine{00946                                 u[b\_k -\/ 2] = 1.0;}
+\DoxyCodeLine{00947                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00948                                 \textcolor{comment}{// 'ubils\_search:149' else}}
+\DoxyCodeLine{00949                                 \textcolor{comment}{// 'ubils\_search:150' [z(k1),d(k1),l(k1),u(k1)] =}}
+\DoxyCodeLine{00950                                 \textcolor{comment}{// init(c(k1),l(k1),u(k1));}}
+\DoxyCodeLine{00951                                 init(c[b\_k -\/ 2], l[b\_k -\/ 2], u[b\_k -\/ 2], \&z[b\_k -\/ 2],}
+\DoxyCodeLine{00952                                      \&d[b\_k -\/ 2], \&l[b\_k -\/ 2], \&u[b\_k -\/ 2]);}
+\DoxyCodeLine{00953                                 \textcolor{comment}{// 'ubils\_search:152' if k1 <= m}}
+\DoxyCodeLine{00954                                 \textcolor{keywordflow}{if} (b\_k -\/ 1 <= m) \{}
+\DoxyCodeLine{00955                                     \textcolor{comment}{// 'ubils\_search:153' gamma = R\_R(k1,k1)*(c(k1)-\/z(k1));}}
+\DoxyCodeLine{00956                                     gamma = b\_R[(b\_k + b\_m * (b\_k -\/ 2)) -\/ 2] * (c[b\_k -\/ 2] -\/ z[b\_k -\/ 2]);}
+\DoxyCodeLine{00957                                     \textcolor{comment}{// 'ubils\_search:154' prsd(k1)= prsd(k1+1) + gamma * gamma;}}
+\DoxyCodeLine{00958                                     prsd[b\_k -\/ 2] = prsd[b\_k -\/ 1] + gamma * gamma;}
+\DoxyCodeLine{00959                                 \}}
+\DoxyCodeLine{00960                             \}}
+\DoxyCodeLine{00961                             \textcolor{comment}{// 'ubils\_search:158' k = k1;}}
+\DoxyCodeLine{00962                             b\_k = \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}\textcolor{keyword}{>}(b\_k -\/ 1);}
+\DoxyCodeLine{00963                             \textcolor{comment}{//                ulevel = 0;}}
+\DoxyCodeLine{00964                         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00965                             \textcolor{comment}{// 'ubils\_search:160' else}}
+\DoxyCodeLine{00966                             \textcolor{comment}{//  A valid point is found}}
+\DoxyCodeLine{00967                             \textcolor{comment}{// 'ubils\_search:161' zhat = z;}}
+\DoxyCodeLine{00968                             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{00969                                 zhat[i] = z[i];}
+\DoxyCodeLine{00970                             \}}
+\DoxyCodeLine{00971                             \textcolor{comment}{// 'ubils\_search:162' beta = sqrt(prsd(1));}}
+\DoxyCodeLine{00972                             beta = std::sqrt(prsd[0]);}
+\DoxyCodeLine{00973                             \textcolor{comment}{// 'ubils\_search:163' for j = 1:n}}
+\DoxyCodeLine{00974                             \textcolor{keywordflow}{for} (j = 0; j < n; j++) \{}
+\DoxyCodeLine{00975                                 \textcolor{comment}{// 'ubils\_search:164' [l(j),u(j)] = bound(c(j),R\_R,utemp,beta,prsd,j);}}
+\DoxyCodeLine{00976                                 \mbox{\hyperlink{classcils_1_1cils__search_a3e244407f2e7fe87e8f47d8abce65429}{bound}}(c[j], b\_R, b\_u, beta, prsd, \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(j) + 1.0,}
+\DoxyCodeLine{00977                                       \&l[j], \&u[j]);}
+\DoxyCodeLine{00978                             \}}
+\DoxyCodeLine{00979                             \textcolor{comment}{// 'ubils\_search:166' dflag = 0;}}
+\DoxyCodeLine{00980                             t = 0;}
+\DoxyCodeLine{00981                         \}}
+\DoxyCodeLine{00982                     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00983                         \textcolor{comment}{// 'ubils\_search:168' else}}
+\DoxyCodeLine{00984                         \textcolor{comment}{//  Will move back to a higher level}}
+\DoxyCodeLine{00985                         \textcolor{comment}{// 'ubils\_search:169' dflag = 0;}}
+\DoxyCodeLine{00986                         t = 0;}
+\DoxyCodeLine{00987                     \}}
+\DoxyCodeLine{00988                     \textcolor{comment}{// 'ubils\_search:94' if dflag == 1}}
+\DoxyCodeLine{00989                 \}}
+\DoxyCodeLine{00990                 \textcolor{comment}{// 'ubils\_search:171' else}}
+\DoxyCodeLine{00991                 \textcolor{comment}{// 'ubils\_search:172' if k == n}}
+\DoxyCodeLine{00992                 \textcolor{keywordflow}{if} (b\_k == n) \{}
+\DoxyCodeLine{00993                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00994                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{00995                     \textcolor{comment}{// 'ubils\_search:174' else}}
+\DoxyCodeLine{00996                     \textcolor{comment}{//  Move back to level k+1}}
+\DoxyCodeLine{00997                     \textcolor{comment}{//              if ulevel == 0}}
+\DoxyCodeLine{00998                     \textcolor{comment}{//                 ulevel = k;}}
+\DoxyCodeLine{00999                     \textcolor{comment}{//              end}}
+\DoxyCodeLine{01000                     \textcolor{comment}{// 'ubils\_search:180' k = k + 1;}}
+\DoxyCodeLine{01001                     b\_k++;}
+\DoxyCodeLine{01002                     \textcolor{comment}{// 'ubils\_search:182' if l(k) \string~= 1 || u(k) \string~= 1}}
+\DoxyCodeLine{01003                     \textcolor{keywordflow}{if} ((l[b\_k -\/ 1] != 1.0) || (u[b\_k -\/ 1] != 1.0)) \{}
+\DoxyCodeLine{01004                         \textcolor{keywordtype}{double} b\_d;}
+\DoxyCodeLine{01005                         \textcolor{keywordtype}{double} d1;}
+\DoxyCodeLine{01006                         \textcolor{keywordtype}{double} d2;}
+\DoxyCodeLine{01007                         \textcolor{comment}{//  Find a new integer at level k}}
+\DoxyCodeLine{01008                         \textcolor{comment}{// 'ubils\_search:184' [z(k),d(k),l(k),u(k)] = ...}}
+\DoxyCodeLine{01009                         \textcolor{comment}{// 'ubils\_search:185' update(z(k),d(k),l(k),u(k),l(k),u(k));}}
+\DoxyCodeLine{01010                         b\_d = z[b\_k -\/ 1];}
+\DoxyCodeLine{01011                         d1 = d[b\_k -\/ 1];}
+\DoxyCodeLine{01012                         d2 = u[b\_k -\/ 1];}
+\DoxyCodeLine{01013                         \textcolor{comment}{//}}
+\DoxyCodeLine{01014                         \textcolor{comment}{//  Find a new integer at level k and record it if it hits a boundary.}}
+\DoxyCodeLine{01015                         \textcolor{comment}{//}}
+\DoxyCodeLine{01016                         \textcolor{comment}{// 'ubils\_search:300' if lflag\_k == 0 \&\& uflag\_k == 0}}
+\DoxyCodeLine{01017                         \textcolor{keywordflow}{if} ((l[b\_k -\/ 1] == 0.0) \&\&}
+\DoxyCodeLine{01018                             (u[b\_k -\/ 1] == 0.0)) \{}
+\DoxyCodeLine{01019                             \textcolor{keywordtype}{double} zk;}
+\DoxyCodeLine{01020                             \textcolor{keywordtype}{double} zk\_tmp;}
+\DoxyCodeLine{01021                             \textcolor{comment}{// 'ubils\_search:301' zk = z\_k + d\_k;}}
+\DoxyCodeLine{01022                             zk\_tmp = d[b\_k -\/ 1];}
+\DoxyCodeLine{01023                             zk = z[b\_k -\/ 1] + zk\_tmp;}
+\DoxyCodeLine{01024                             \textcolor{comment}{// 'ubils\_search:302' if zk > u\_k}}
+\DoxyCodeLine{01025                             \textcolor{keywordflow}{if} (zk > u[b\_k -\/ 1]) \{}
+\DoxyCodeLine{01026                                 \textcolor{comment}{// 'ubils\_search:303' uflag\_k = 1;}}
+\DoxyCodeLine{01027                                 d2 = 1.0;}
+\DoxyCodeLine{01028                             \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (zk < l[b\_k -\/ 1]) \{}
+\DoxyCodeLine{01029                                 \textcolor{comment}{// 'ubils\_search:304' elseif zk < l\_k}}
+\DoxyCodeLine{01030                                 \textcolor{comment}{// 'ubils\_search:305' lflag\_k = 1;}}
+\DoxyCodeLine{01031                                 l[b\_k -\/ 1] = 1.0;}
+\DoxyCodeLine{01032                             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{01033                                 \textcolor{comment}{// 'ubils\_search:306' else}}
+\DoxyCodeLine{01034                                 \textcolor{comment}{// 'ubils\_search:307' z\_k = zk;}}
+\DoxyCodeLine{01035                                 b\_d = zk;}
+\DoxyCodeLine{01036                                 \textcolor{comment}{// 'ubils\_search:308' if d\_k > 0}}
+\DoxyCodeLine{01037                                 \textcolor{keywordflow}{if} (zk\_tmp > 0.0) \{}
+\DoxyCodeLine{01038                                     \textcolor{comment}{// 'ubils\_search:309' d\_k = -\/d\_k -\/ 1;}}
+\DoxyCodeLine{01039                                     d1 = -\/zk\_tmp -\/ 1.0;}
+\DoxyCodeLine{01040                                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{01041                                     \textcolor{comment}{// 'ubils\_search:310' else}}
+\DoxyCodeLine{01042                                     \textcolor{comment}{// 'ubils\_search:311' d\_k = -\/d\_k + 1;}}
+\DoxyCodeLine{01043                                     d1 = -\/d[b\_k -\/ 1] + 1.0;}
+\DoxyCodeLine{01044                                 \}}
+\DoxyCodeLine{01045                             \}}
+\DoxyCodeLine{01046                         \}}
+\DoxyCodeLine{01047                         \textcolor{comment}{// 'ubils\_search:316' if lflag\_k == 1 \&\& uflag\_k == 0}}
+\DoxyCodeLine{01048                         \textcolor{keywordflow}{if} ((l[b\_k -\/ 1] == 1.0) \&\& (d2 == 0.0)) \{}
+\DoxyCodeLine{01049                             \textcolor{comment}{// 'ubils\_search:317' z\_k = z\_k + 1;}}
+\DoxyCodeLine{01050                             b\_d++;}
+\DoxyCodeLine{01051                             \textcolor{comment}{// 'ubils\_search:318' if z\_k > u\_k}}
+\DoxyCodeLine{01052                             \textcolor{keywordflow}{if} (b\_d > u[b\_k -\/ 1]) \{}
+\DoxyCodeLine{01053                                 \textcolor{comment}{// 'ubils\_search:319' uflag\_k = 1;}}
+\DoxyCodeLine{01054                                 d2 = 1.0;}
+\DoxyCodeLine{01055                             \}}
+\DoxyCodeLine{01056                         \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} ((l[b\_k -\/ 1] == 0.0) \&\& (d2 == 1.0)) \{}
+\DoxyCodeLine{01057                             \textcolor{comment}{// 'ubils\_search:321' elseif lflag\_k == 0 \&\& uflag\_k == 1}}
+\DoxyCodeLine{01058                             \textcolor{comment}{// 'ubils\_search:322' z\_k = z\_k -\/ 1;}}
+\DoxyCodeLine{01059                             b\_d-\/-\/;}
+\DoxyCodeLine{01060                             \textcolor{comment}{// 'ubils\_search:323' if z\_k < l\_k}}
+\DoxyCodeLine{01061                             \textcolor{keywordflow}{if} (b\_d < l[b\_k -\/ 1]) \{}
+\DoxyCodeLine{01062                                 \textcolor{comment}{// 'ubils\_search:324' lflag\_k = 1;}}
+\DoxyCodeLine{01063                                 l[b\_k -\/ 1] = 1.0;}
+\DoxyCodeLine{01064                             \}}
+\DoxyCodeLine{01065                         \}}
+\DoxyCodeLine{01066                         z[b\_k -\/ 1] = b\_d;}
+\DoxyCodeLine{01067                         d[b\_k -\/ 1] = d1;}
+\DoxyCodeLine{01068                         u[b\_k -\/ 1] = d2;}
+\DoxyCodeLine{01069                         \textcolor{comment}{// 'ubils\_search:186' if k <= m}}
+\DoxyCodeLine{01070                         \textcolor{keywordflow}{if} (b\_k <= m) \{}
+\DoxyCodeLine{01071                             \textcolor{comment}{// 'ubils\_search:187' gamma = R\_R(k,k)*(c(k)-\/z(k));}}
+\DoxyCodeLine{01072                             gamma = b\_R[(b\_k + b\_m * (b\_k -\/ 1)) -\/ 1] * (c[b\_k -\/ 1] -\/ z[b\_k -\/ 1]);}
+\DoxyCodeLine{01073                             \textcolor{comment}{// 'ubils\_search:188' prsd(k)= prsd(k+1) + gamma * gamma;}}
+\DoxyCodeLine{01074                             prsd[b\_k -\/ 1] = prsd[b\_k] + gamma * gamma;}
+\DoxyCodeLine{01075                         \}}
+\DoxyCodeLine{01076                         \textcolor{comment}{// 'ubils\_search:190' dflag = 1;}}
+\DoxyCodeLine{01077                         t = 1;}
+\DoxyCodeLine{01078                     \}}
+\DoxyCodeLine{01079                 \}}
+\DoxyCodeLine{01080             \}}
+\DoxyCodeLine{01081             \textcolor{comment}{//  The optimal solution has been found, terminate}}
+\DoxyCodeLine{01082             \textcolor{comment}{// 'ubils\_search:196' if zhat == z0}}
+\DoxyCodeLine{01083             vector<bool> \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}(n, 0);}
+\DoxyCodeLine{01084             \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{01085                 \mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}}[i] = (zhat[i] == z\_x[i]);}
+\DoxyCodeLine{01086             \}}
+\DoxyCodeLine{01087             \textcolor{keywordtype}{bool} b\_y = helper::if\_all\_x\_true<index>(\mbox{\hyperlink{namespacepy__qr_a3c41c1fee6839cc452e15bf2f02a7d42}{x}});}
+\DoxyCodeLine{01088             \textcolor{keywordflow}{if} (b\_y) \{}
+\DoxyCodeLine{01089                 \textcolor{comment}{//  z0 is the optimal solution}}
+\DoxyCodeLine{01090                 \textcolor{comment}{// 'ubils\_search:197' z = zhat;}}
+\DoxyCodeLine{01091                 \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{01092                     z[i] = zhat[i];}
+\DoxyCodeLine{01093                 \}}
+\DoxyCodeLine{01094             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{01095                 \textcolor{comment}{// 'ubils\_search:198' else}}
+\DoxyCodeLine{01096                 \textcolor{comment}{//  Shift the optimal solution back}}
+\DoxyCodeLine{01097                 \textcolor{comment}{// 'ubils\_search:199' z = Z*zhat + s;}}
+\DoxyCodeLine{01098                 \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{01099                     z[i] = 0.0;}
+\DoxyCodeLine{01100                 \}}
+\DoxyCodeLine{01101                 \textcolor{keywordflow}{for} (\mbox{\hyperlink{namespacecils_1_1program__def_ade128bad84a8ce56a208e55d7eb2aa1c}{index}} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} = 0; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} < b\_m; \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}++) \{}
+\DoxyCodeLine{01102                     \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{01103                         z[i] += Z[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} * n + i] * zhat[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}];}
+\DoxyCodeLine{01104                     \}}
+\DoxyCodeLine{01105                 \}}
+\DoxyCodeLine{01106                 \textcolor{keywordflow}{for} (i = 0; i < n; i++) \{}
+\DoxyCodeLine{01107                     z[i] = z[i] + s[i];}
+\DoxyCodeLine{01108                 \}}
+\DoxyCodeLine{01109             \}}
+\DoxyCodeLine{01110             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{01111         \}}
+\DoxyCodeLine{01112 }
+\DoxyCodeLine{\Hypertarget{cils__ils__search_8cpp_source_l01113}\mbox{\hyperlink{classcils_1_1cils__search_a3e244407f2e7fe87e8f47d8abce65429}{01113}}         \textcolor{keywordtype}{void} \mbox{\hyperlink{classcils_1_1cils__search_a3e244407f2e7fe87e8f47d8abce65429}{bound}}(\textcolor{keywordtype}{double} c\_k, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *R\_R, \textcolor{keywordtype}{double} beta, \textcolor{keyword}{const} \mbox{\hyperlink{namespacecils_1_1program__def_a5a443b032763573934e651509da95505}{scalar}} *prsd, \textcolor{keywordtype}{double} \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}, \textcolor{keywordtype}{double} *l\_k,}
+\DoxyCodeLine{01114                    \textcolor{keywordtype}{double} *u\_k) \{}
+\DoxyCodeLine{01115             \textcolor{keywordtype}{double} lambda\_k, lambda\_k\_tmp, mu\_k;}
+\DoxyCodeLine{01116             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01117             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/  Local functions  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01118             \textcolor{comment}{//  -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01119             \textcolor{comment}{//}}
+\DoxyCodeLine{01120             \textcolor{comment}{//  Compute new lower bound and upper bound for z\_k}}
+\DoxyCodeLine{01121             \textcolor{comment}{//}}
+\DoxyCodeLine{01122             \textcolor{comment}{// 'ubils\_search:190' m = size(R\_R,1);}}
+\DoxyCodeLine{01123             \textcolor{comment}{// 'ubils\_search:192' if k > m-\/1}}
+\DoxyCodeLine{01124             \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} > \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(m) -\/ 1.0) \{}
+\DoxyCodeLine{01125                 \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{01126                 \textcolor{keywordtype}{int} i1;}
+\DoxyCodeLine{01127                 \textcolor{keywordtype}{int} i2;}
+\DoxyCodeLine{01128                 \textcolor{keywordtype}{int} loop\_ub;}
+\DoxyCodeLine{01129                 \textcolor{comment}{// 'ubils\_search:193' lambda\_k = c\_k -\/ (beta+R\_R(m,m:k-\/1)*u(m:k-\/1))/R\_R(m,k);}}
+\DoxyCodeLine{01130                 \textcolor{keywordflow}{if} (m > \mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1.0) \{}
+\DoxyCodeLine{01131                     i = 0;}
+\DoxyCodeLine{01132                     i1 = 0;}
+\DoxyCodeLine{01133                     i2 = 1;}
+\DoxyCodeLine{01134                 \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{01135                     i = m -\/ 1;}
+\DoxyCodeLine{01136                     i1 = \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1.0);}
+\DoxyCodeLine{01137                     i2 = m;}
+\DoxyCodeLine{01138                 \}}
+\DoxyCodeLine{01139                 lambda\_k\_tmp = 0.0;}
+\DoxyCodeLine{01140                 loop\_ub = i1 -\/ i;}
+\DoxyCodeLine{01141                 \textcolor{keywordflow}{for} (i1 = 0; i1 < loop\_ub; i1++) \{}
+\DoxyCodeLine{01142                     lambda\_k\_tmp += R\_R[(m + m * (i + i1)) -\/ 1] * u[(i2 + i1) -\/ 1];}
+\DoxyCodeLine{01143                 \}}
+\DoxyCodeLine{01144                 lambda\_k = c\_k -\/ (beta + lambda\_k\_tmp) / R\_R[(m + m * (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1)) -\/ 1];}
+\DoxyCodeLine{01145                 \textcolor{comment}{// 'ubils\_search:194' mu\_k = c\_k + beta/R\_R(m,k);}}
+\DoxyCodeLine{01146                 mu\_k =}
+\DoxyCodeLine{01147                         c\_k + beta / R\_R[(m + m * (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1)) -\/ 1];}
+\DoxyCodeLine{01148             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{01149                 \textcolor{comment}{// 'ubils\_search:195' else}}
+\DoxyCodeLine{01150                 \textcolor{comment}{// 'ubils\_search:196' lambda\_k = c\_k -\/ sqrt(beta\string^2-\/prsd(k+1))/R\_R(k,k);}}
+\DoxyCodeLine{01151                 lambda\_k\_tmp = std::sqrt(beta * beta -\/ prsd[\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}}]) / R\_R[(\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} + m * (\mbox{\hyperlink{namespaceplot__helper_a27b29b6fc4f6130141f8ff1335214862}{k}} -\/ 1)) -\/ 1];}
+\DoxyCodeLine{01152                 lambda\_k = c\_k -\/ lambda\_k\_tmp;}
+\DoxyCodeLine{01153                 \textcolor{comment}{// 'ubils\_search:197' mu\_k = c\_k + sqrt(beta\string^2-\/prsd(k+1))/R\_R(k,k);}}
+\DoxyCodeLine{01154                 mu\_k = c\_k + lambda\_k\_tmp;}
+\DoxyCodeLine{01155             \}}
+\DoxyCodeLine{01156             \textcolor{comment}{// 'ubils\_search:200' if lambda\_k -\/ floor(lambda\_k) < 1e-\/12 \&\& lambda\_k \string~= 0}}
+\DoxyCodeLine{01157             lambda\_k\_tmp = std::floor(lambda\_k);}
+\DoxyCodeLine{01158             \textcolor{keywordflow}{if} ((lambda\_k -\/ lambda\_k\_tmp < 1.0E-\/12) \&\& (lambda\_k != 0.0)) \{}
+\DoxyCodeLine{01159                 \textcolor{comment}{// 'ubils\_search:201' lambda\_k = floor(lambda\_k);}}
+\DoxyCodeLine{01160                 lambda\_k = lambda\_k\_tmp;}
+\DoxyCodeLine{01161             \}}
+\DoxyCodeLine{01162             \textcolor{comment}{// 'ubils\_search:204' if ceil(mu\_k) -\/ mu\_k < 1e-\/12 \&\& mu\_k \string~= u(k)}}
+\DoxyCodeLine{01163             lambda\_k\_tmp = std::ceil(mu\_k);}
+\DoxyCodeLine{01164             \textcolor{keywordflow}{if} ((lambda\_k\_tmp -\/ mu\_k < 1.0E-\/12) \&\& (mu\_k != 1.0)) \{}
+\DoxyCodeLine{01165                 \textcolor{comment}{// 'ubils\_search:205' mu\_k = ceil(mu\_k);}}
+\DoxyCodeLine{01166                 mu\_k = lambda\_k\_tmp;}
+\DoxyCodeLine{01167             \}}
+\DoxyCodeLine{01168             \textcolor{comment}{// 'ubils\_search:208' l\_k = ceil(max(0,lambda\_k));}}
+\DoxyCodeLine{01169             *l\_k = std::ceil(std::fmax(0.0, lambda\_k));}
+\DoxyCodeLine{01170             \textcolor{comment}{// 'ubils\_search:209' u\_k = floor(min(u(k),mu\_k));}}
+\DoxyCodeLine{01171             *u\_k = std::floor(std::fmin(1.0, mu\_k));}
+\DoxyCodeLine{01172         \}}
+\DoxyCodeLine{01173 }
+\DoxyCodeLine{01174     \};}
+\DoxyCodeLine{01175 \}}
+
+\end{DoxyCode}

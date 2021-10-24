@@ -1,0 +1,638 @@
+\begin{theindex}
+
+  \item {$\sim$cils}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{32}
+
+  \indexspace
+
+  \item {A}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{49}
+  \item {a}
+    \subitem {plot\_helper}, \hyperpage{26}
+
+  \indexspace
+
+  \item {b\_mtimes}
+    \subitem {helper}, \hyperpage{16}
+  \item {b\_rand}
+    \subitem {helper}, \hyperpage{16}
+  \item {ber}
+    \subitem {plot\_helper}, \hyperpage{26}
+  \item {block\_mem}
+    \subitem {py\_qr}, \hyperpage{29}
+  \item {block\_optimal\_test}
+    \subitem {cils\_underdetermined\_test.cpp}, \hyperpage{57}
+  \item {block\_size}
+    \subitem {cils::program\_def}, \hyperpage{10}
+  \item {bound}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{52}
+
+  \indexspace
+
+  \item {check\_mem}
+    \subitem {py\_qr}, \hyperpage{29}
+  \item {chunk}
+    \subitem {cils::program\_def}, \hyperpage{10}
+  \item {chunk\_size}
+    \subitem {cils::program\_def}, \hyperpage{11}
+  \item {cils}, \hyperpage{7}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{32}
+    \subitem {matrix\_vector\_mult}, \hyperpage{7, 8}
+  \item {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{31}
+    \subitem {$\sim$cils}, \hyperpage{32}
+    \subitem {A}, \hyperpage{41}
+    \subitem {cils}, \hyperpage{32}
+    \subitem {cils\_babai\_search\_omp}, \hyperpage{33}
+    \subitem {cils\_babai\_search\_serial}, \hyperpage{33}
+    \subitem {cils\_back\_solve}, \hyperpage{34}
+    \subitem {cils\_back\_solve\_omp}, \hyperpage{34}
+    \subitem {cils\_block\_search\_omp}, \hyperpage{35}
+    \subitem {cils\_block\_search\_serial}, \hyperpage{35}
+    \subitem {cils\_block\_search\_serial\_CPUTEST}, \hyperpage{36}
+    \subitem {cils\_grad\_proj}, \hyperpage{36}
+    \subitem {cils\_partition\_deficient}, \hyperpage{36}
+    \subitem {cils\_qrp\_serial}, \hyperpage{37}
+    \subitem {cils\_scp\_block\_babai\_omp}, \hyperpage{37}
+    \subitem {cils\_scp\_block\_babai\_serial}, \hyperpage{37}
+    \subitem {cils\_scp\_block\_optimal\_mpi}, \hyperpage{38}
+    \subitem {cils\_scp\_block\_optimal\_omp}, \hyperpage{38}
+    \subitem {cils\_scp\_block\_optimal\_serial}, \hyperpage{38}
+    \subitem {cils\_scp\_block\_suboptimal\_omp}, \hyperpage{39}
+    \subitem {cils\_scp\_block\_suboptimal\_serial}, \hyperpage{39}
+    \subitem {cils\_sic\_serial}, \hyperpage{39}
+    \subitem {cils\_sic\_subopt}, \hyperpage{39}
+    \subitem {H}, \hyperpage{41}
+    \subitem {init}, \hyperpage{40}
+    \subitem {init\_R}, \hyperpage{40}
+    \subitem {init\_res}, \hyperpage{41}
+    \subitem {init\_ud}, \hyperpage{40}
+    \subitem {init\_y}, \hyperpage{40}
+    \subitem {l}, \hyperpage{41}
+    \subitem {lower}, \hyperpage{41}
+    \subitem {matlabPtr}, \hyperpage{41}
+    \subitem {P}, \hyperpage{42}
+    \subitem {qam}, \hyperpage{42}
+    \subitem {R\_A}, \hyperpage{42}
+    \subitem {sigma}, \hyperpage{42}
+    \subitem {snr}, \hyperpage{42}
+    \subitem {tolerance}, \hyperpage{42}
+    \subitem {u}, \hyperpage{43}
+    \subitem {upper}, \hyperpage{43}
+    \subitem {v\_a}, \hyperpage{43}
+    \subitem {v\_q}, \hyperpage{43}
+    \subitem {x\_r}, \hyperpage{43}
+    \subitem {x\_t}, \hyperpage{43}
+    \subitem {y\_a}, \hyperpage{44}
+    \subitem {Z}, \hyperpage{44}
+  \item {cils::cils\_reduction$<$ scalar, index $>$}, \hyperpage{44}
+    \subitem {A}, \hyperpage{49}
+    \subitem {cils\_eml\_qr}, \hyperpage{45}
+    \subitem {cils\_LLL\_omp}, \hyperpage{46}
+    \subitem {cils\_LLL\_qr\_omp}, \hyperpage{46}
+    \subitem {cils\_LLL\_qr\_reduction}, \hyperpage{46}
+    \subitem {cils\_LLL\_qr\_serial}, \hyperpage{46}
+    \subitem {cils\_LLL\_reduction}, \hyperpage{46}
+    \subitem {cils\_LLL\_serial}, \hyperpage{47}
+    \subitem {cils\_obils\_matlab}, \hyperpage{47}
+    \subitem {cils\_obils\_reduction}, \hyperpage{47}
+    \subitem {cils\_obils\_reduction\_matlab}, \hyperpage{47}
+    \subitem {cils\_qr\_omp}, \hyperpage{48}
+    \subitem {cils\_qr\_py}, \hyperpage{48}
+    \subitem {cils\_qr\_py\_helper}, \hyperpage{48}
+    \subitem {cils\_qr\_serial}, \hyperpage{48}
+    \subitem {cils\_qr\_serial\_col}, \hyperpage{49}
+    \subitem {cils\_reduction}, \hyperpage{45}
+    \subitem {G}, \hyperpage{49}
+    \subitem {P}, \hyperpage{49}
+    \subitem {p}, \hyperpage{50}
+    \subitem {Q}, \hyperpage{50}
+    \subitem {R\_Q}, \hyperpage{50}
+    \subitem {R\_R}, \hyperpage{50}
+    \subitem {y\_a}, \hyperpage{50}
+    \subitem {y\_q}, \hyperpage{50}
+    \subitem {y\_r}, \hyperpage{51}
+    \subitem {Z}, \hyperpage{51}
+  \item {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{51}
+    \subitem {bound}, \hyperpage{52}
+    \subitem {cils\_search}, \hyperpage{52}
+    \subitem {ils\_search}, \hyperpage{52}
+    \subitem {ils\_search\_omp}, \hyperpage{52}
+    \subitem {obils\_search}, \hyperpage{53}
+    \subitem {obils\_search2}, \hyperpage{53}
+    \subitem {obils\_search\_matlab}, \hyperpage{53}
+    \subitem {obils\_search\_omp}, \hyperpage{53}
+    \subitem {ubils\_search}, \hyperpage{54}
+  \item {cils::program\_def}, \hyperpage{8}
+    \subitem {block\_size}, \hyperpage{10}
+    \subitem {chunk}, \hyperpage{10}
+    \subitem {chunk\_size}, \hyperpage{11}
+    \subitem {coeff}, \hyperpage{11}
+    \subitem {d\_s}, \hyperpage{9}
+    \subitem {index}, \hyperpage{9}
+    \subitem {indicator}, \hyperpage{9}
+    \subitem {init\_guess}, \hyperpage{10}
+    \subitem {init\_program\_def}, \hyperpage{10}
+    \subitem {is\_constrained}, \hyperpage{11}
+    \subitem {is\_local}, \hyperpage{11}
+    \subitem {is\_matlab}, \hyperpage{11}
+    \subitem {is\_nc}, \hyperpage{11}
+    \subitem {is\_qr}, \hyperpage{12}
+    \subitem {max\_iter}, \hyperpage{12}
+    \subitem {max\_proc}, \hyperpage{12}
+    \subitem {max\_search}, \hyperpage{12}
+    \subitem {max\_thre}, \hyperpage{12}
+    \subitem {min\_proc}, \hyperpage{12}
+    \subitem {mode}, \hyperpage{13}
+    \subitem {num\_trials}, \hyperpage{13}
+    \subitem {offset}, \hyperpage{13}
+    \subitem {permutation}, \hyperpage{10}
+    \subitem {plot\_itr}, \hyperpage{13}
+    \subitem {q}, \hyperpage{13}
+    \subitem {qam}, \hyperpage{13}
+    \subitem {scalar}, \hyperpage{9}
+    \subitem {schedule}, \hyperpage{14}
+    \subitem {search\_iter}, \hyperpage{14}
+    \subitem {SNR}, \hyperpage{14}
+    \subitem {spilt\_size}, \hyperpage{14}
+    \subitem {stop}, \hyperpage{14}
+    \subitem {verbose}, \hyperpage{14}
+  \item {cils::returnType$<$ scalar, index $>$}, \hyperpage{54}
+    \subitem {info}, \hyperpage{55}
+    \subitem {run\_time}, \hyperpage{55}
+    \subitem {x}, \hyperpage{55}
+  \item {cils\_babai\_search\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{33}
+  \item {cils\_babai\_search\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{33}
+  \item {cils\_back\_solve}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{34}
+  \item {cils\_back\_solve\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{34}
+  \item {cils\_block\_search\_GPU.cpp}
+    \subitem {compareResults}, \hyperpage{65}
+    \subitem {NUM\_GLOBAL\_WITEMS}, \hyperpage{65}
+    \subitem {run}, \hyperpage{65}
+    \subitem {timeAddVectorsCPU}, \hyperpage{66}
+    \subitem {warmup}, \hyperpage{66}
+  \item {cils\_block\_search\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{35}
+  \item {cils\_block\_search\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{35}
+  \item {cils\_block\_search\_serial\_CPUTEST}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{36}
+  \item {cils\_eml\_qr}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{45}
+  \item {cils\_grad\_proj}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{36}
+  \item {cils\_LLL\_omp}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{46}
+  \item {cils\_LLL\_qr\_omp}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{46}
+  \item {cils\_LLL\_qr\_reduction}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{46}
+  \item {cils\_LLL\_qr\_serial}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{46}
+  \item {cils\_LLL\_reduction}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{46}
+  \item {cils\_LLL\_serial}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{47}
+  \item {cils\_obils\_matlab}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{47}
+  \item {cils\_obils\_reduction}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{47}
+  \item {cils\_obils\_reduction\_matlab}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{47}
+  \item {cils\_partition\_deficient}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{36}
+  \item {cils\_qr\_omp}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{48}
+  \item {cils\_qr\_py}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{48}
+  \item {cils\_qr\_py\_helper}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{48}
+  \item {cils\_qr\_serial}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{48}
+  \item {cils\_qr\_serial\_col}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{49}
+  \item {cils\_qrp\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{37}
+  \item {cils\_reduction}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{45}
+  \item {cils\_scp\_block\_babai\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{37}
+  \item {cils\_scp\_block\_babai\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{37}
+  \item {cils\_scp\_block\_optimal\_mpi}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{38}
+  \item {cils\_scp\_block\_optimal\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{38}
+  \item {cils\_scp\_block\_optimal\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{38}
+  \item {cils\_scp\_block\_suboptimal\_omp}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{39}
+  \item {cils\_scp\_block\_suboptimal\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{39}
+  \item {cils\_search}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{52}
+  \item {cils\_sic\_serial}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{39}
+  \item {cils\_sic\_subopt}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{39}
+  \item {cils\_underdetermined\_test.cpp}
+    \subitem {block\_optimal\_test}, \hyperpage{57}
+    \subitem {plot\_run}, \hyperpage{58}
+  \item {coeff}
+    \subitem {cils::program\_def}, \hyperpage{11}
+  \item {compareResults}
+    \subitem {cils\_block\_search\_GPU.cpp}, \hyperpage{65}
+
+  \indexspace
+
+  \item {d\_s}
+    \subitem {cils::program\_def}, \hyperpage{9}
+  \item {display\_matrix}
+    \subitem {helper}, \hyperpage{16}
+  \item {display\_vector}
+    \subitem {helper}, \hyperpage{17}
+
+  \indexspace
+
+  \item {eye}
+    \subitem {helper}, \hyperpage{17}
+
+  \indexspace
+
+  \item {find\_bit\_error\_rate}
+    \subitem {helper}, \hyperpage{17}
+  \item {find\_residual}
+    \subitem {helper}, \hyperpage{18}
+
+  \indexspace
+
+  \item {G}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{49}
+
+  \indexspace
+
+  \item {H}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+  \item {helper}, \hyperpage{15}
+    \subitem {b\_mtimes}, \hyperpage{16}
+    \subitem {b\_rand}, \hyperpage{16}
+    \subitem {display\_matrix}, \hyperpage{16}
+    \subitem {display\_vector}, \hyperpage{17}
+    \subitem {eye}, \hyperpage{17}
+    \subitem {find\_bit\_error\_rate}, \hyperpage{17}
+    \subitem {find\_residual}, \hyperpage{18}
+    \subitem {if\_all\_x\_true}, \hyperpage{19}
+    \subitem {inv}, \hyperpage{19}
+    \subitem {length\_nonzeros}, \hyperpage{19}
+    \subitem {mtimes}, \hyperpage{20}
+    \subitem {mtimes\_AP}, \hyperpage{20}
+    \subitem {mtimes\_Axy}, \hyperpage{20}
+    \subitem {mtimes\_col}, \hyperpage{21}
+    \subitem {mtimes\_v}, \hyperpage{21}
+    \subitem {norm}, \hyperpage{21}
+    \subitem {planerot}, \hyperpage{22}
+    \subitem {randperm}, \hyperpage{22}
+    \subitem {unique\_vector}, \hyperpage{23}
+  \item {helper.h}
+    \subitem {ZERO}, \hyperpage{63}
+
+  \indexspace
+
+  \item {if\_all\_x\_true}
+    \subitem {helper}, \hyperpage{19}
+  \item {ils\_search}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{52}
+  \item {ils\_search\_omp}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{52}
+  \item {index}
+    \subitem {cils::program\_def}, \hyperpage{9}
+  \item {indicator}
+    \subitem {cils::program\_def}, \hyperpage{9}
+  \item {info}
+    \subitem {cils::returnType$<$ scalar, index $>$}, \hyperpage{55}
+  \item {init}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{40}
+  \item {init\_guess}
+    \subitem {cils::program\_def}, \hyperpage{10}
+  \item {init\_program\_def}
+    \subitem {cils::program\_def}, \hyperpage{10}
+  \item {init\_R}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{40}
+  \item {init\_res}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+  \item {init\_ud}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{40}
+  \item {init\_y}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{40}
+  \item {inv}
+    \subitem {helper}, \hyperpage{19}
+  \item {is\_constrained}
+    \subitem {cils::program\_def}, \hyperpage{11}
+    \subitem {plot\_helper}, \hyperpage{26}
+  \item {is\_local}
+    \subitem {cils::program\_def}, \hyperpage{11}
+  \item {is\_matlab}
+    \subitem {cils::program\_def}, \hyperpage{11}
+  \item {is\_nc}
+    \subitem {cils::program\_def}, \hyperpage{11}
+  \item {is\_qr}
+    \subitem {cils::program\_def}, \hyperpage{12}
+
+  \indexspace
+
+  \item {k}
+    \subitem {plot\_helper}, \hyperpage{26}
+
+  \indexspace
+
+  \item {l}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+  \item {l\_max}
+    \subitem {plot\_helper}, \hyperpage{26}
+  \item {length\_nonzeros}
+    \subitem {helper}, \hyperpage{19}
+  \item {lower}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+
+  \indexspace
+
+  \item {m}
+    \subitem {plot\_helper}, \hyperpage{26}
+  \item {matlabPtr}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{41}
+  \item {matrix\_vector\_mult}
+    \subitem {cils}, \hyperpage{7, 8}
+  \item {max\_iter}
+    \subitem {cils::program\_def}, \hyperpage{12}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {max\_mem}
+    \subitem {py\_qr}, \hyperpage{29}
+  \item {max\_proc}
+    \subitem {cils::program\_def}, \hyperpage{12}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {max\_search}
+    \subitem {cils::program\_def}, \hyperpage{12}
+  \item {max\_thre}
+    \subitem {cils::program\_def}, \hyperpage{12}
+  \item {min\_proc}
+    \subitem {cils::program\_def}, \hyperpage{12}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {mode}
+    \subitem {cils::program\_def}, \hyperpage{13}
+  \item {mtimes}
+    \subitem {helper}, \hyperpage{20}
+  \item {mtimes\_AP}
+    \subitem {helper}, \hyperpage{20}
+  \item {mtimes\_Axy}
+    \subitem {helper}, \hyperpage{20}
+  \item {mtimes\_col}
+    \subitem {helper}, \hyperpage{21}
+  \item {mtimes\_v}
+    \subitem {helper}, \hyperpage{21}
+
+  \indexspace
+
+  \item {n}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {norm}
+    \subitem {helper}, \hyperpage{21}
+  \item {NUM\_GLOBAL\_WITEMS}
+    \subitem {cils\_block\_search\_GPU.cpp}, \hyperpage{65}
+  \item {num\_trials}
+    \subitem {cils::program\_def}, \hyperpage{13}
+
+  \indexspace
+
+  \item {obils\_search}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{53}
+  \item {obils\_search2}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{53}
+  \item {obils\_search\_matlab}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{53}
+  \item {obils\_search\_omp}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{53}
+  \item {offset}
+    \subitem {cils::program\_def}, \hyperpage{13}
+
+  \indexspace
+
+  \item {P}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{49}
+  \item {p}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {permutation}
+    \subitem {cils::program\_def}, \hyperpage{10}
+  \item {planerot}
+    \subitem {helper}, \hyperpage{22}
+  \item {plot\_first\_block}
+    \subitem {plot\_helper}, \hyperpage{24}
+  \item {plot\_helper}, \hyperpage{23}
+    \subitem {a}, \hyperpage{26}
+    \subitem {ber}, \hyperpage{26}
+    \subitem {is\_constrained}, \hyperpage{26}
+    \subitem {k}, \hyperpage{26}
+    \subitem {l\_max}, \hyperpage{26}
+    \subitem {m}, \hyperpage{26}
+    \subitem {max\_iter}, \hyperpage{27}
+    \subitem {max\_proc}, \hyperpage{27}
+    \subitem {min\_proc}, \hyperpage{27}
+    \subitem {n}, \hyperpage{27}
+    \subitem {plot\_first\_block}, \hyperpage{24}
+    \subitem {plot\_runtime}, \hyperpage{24}
+    \subitem {plot\_runtime\_lll}, \hyperpage{25}
+    \subitem {plot\_runtime\_ud}, \hyperpage{25}
+    \subitem {proc\_num}, \hyperpage{27}
+    \subitem {res}, \hyperpage{27}
+    \subitem {SNR}, \hyperpage{28}
+    \subitem {spu}, \hyperpage{28}
+    \subitem {tim}, \hyperpage{28}
+    \subitem {title1}, \hyperpage{28}
+    \subitem {title3}, \hyperpage{28}
+  \item {plot\_itr}
+    \subitem {cils::program\_def}, \hyperpage{13}
+  \item {plot\_run}
+    \subitem {cils\_underdetermined\_test.cpp}, \hyperpage{58}
+  \item {plot\_runtime}
+    \subitem {plot\_helper}, \hyperpage{24}
+  \item {plot\_runtime\_lll}
+    \subitem {plot\_helper}, \hyperpage{25}
+  \item {plot\_runtime\_ud}
+    \subitem {plot\_helper}, \hyperpage{25}
+  \item {proc\_num}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {py\_qr}, \hyperpage{29}
+    \subitem {block\_mem}, \hyperpage{29}
+    \subitem {check\_mem}, \hyperpage{29}
+    \subitem {max\_mem}, \hyperpage{29}
+    \subitem {total}, \hyperpage{29}
+    \subitem {used}, \hyperpage{30}
+    \subitem {x}, \hyperpage{30}
+
+  \indexspace
+
+  \item {Q}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {q}
+    \subitem {cils::program\_def}, \hyperpage{13}
+  \item {qam}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+    \subitem {cils::program\_def}, \hyperpage{13}
+
+  \indexspace
+
+  \item {R\_A}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+  \item {R\_Q}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {R\_R}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {randperm}
+    \subitem {helper}, \hyperpage{22}
+  \item {res}
+    \subitem {plot\_helper}, \hyperpage{27}
+  \item {run}
+    \subitem {cils\_block\_search\_GPU.cpp}, \hyperpage{65}
+  \item {run\_time}
+    \subitem {cils::returnType$<$ scalar, index $>$}, \hyperpage{55}
+
+  \indexspace
+
+  \item {scalar}
+    \subitem {cils::program\_def}, \hyperpage{9}
+  \item {schedule}
+    \subitem {cils::program\_def}, \hyperpage{14}
+  \item {search\_iter}
+    \subitem {cils::program\_def}, \hyperpage{14}
+  \item {sigma}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+  \item {SNR}
+    \subitem {cils::program\_def}, \hyperpage{14}
+    \subitem {plot\_helper}, \hyperpage{28}
+  \item {snr}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+  \item {spilt\_size}
+    \subitem {cils::program\_def}, \hyperpage{14}
+  \item {spu}
+    \subitem {plot\_helper}, \hyperpage{28}
+  \item {src/example/cils\_standard\_test.cpp}, \hyperpage{57}
+  \item {src/example/cils\_underdetermined\_test.cpp}, \hyperpage{57}
+  \item {src/example/plot\_helper.py}, \hyperpage{58}
+  \item {src/example/py\_qr.py}, \hyperpage{59}
+  \item {src/include/cils.h}, \hyperpage{59}
+  \item {src/include/config.h}, \hyperpage{60}
+  \item {src/include/helper.h}, \hyperpage{61}
+  \item {src/source/cils.cpp}, \hyperpage{63}
+  \item {src/source/cils\_babai\_search.cpp}, \hyperpage{63}
+  \item {src/source/cils\_block\_search.cpp}, \hyperpage{64}
+  \item {src/source/cils\_block\_search\_GPU.cpp}, \hyperpage{65}
+  \item {src/source/cils\_ils\_search.cpp}, \hyperpage{66}
+  \item {src/source/cils\_init\_point.cpp}, \hyperpage{67}
+  \item {src/source/cils\_partition\_deficient.cpp}, \hyperpage{67}
+  \item {src/source/cils\_reduction.cpp}, \hyperpage{68}
+  \item {src/source/cils\_sic\_opt.cpp}, \hyperpage{68}
+  \item {stop}
+    \subitem {cils::program\_def}, \hyperpage{14}
+
+  \indexspace
+
+  \item {tim}
+    \subitem {plot\_helper}, \hyperpage{28}
+  \item {timeAddVectorsCPU}
+    \subitem {cils\_block\_search\_GPU.cpp}, \hyperpage{66}
+  \item {title1}
+    \subitem {plot\_helper}, \hyperpage{28}
+  \item {title3}
+    \subitem {plot\_helper}, \hyperpage{28}
+  \item {tolerance}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{42}
+  \item {total}
+    \subitem {py\_qr}, \hyperpage{29}
+
+  \indexspace
+
+  \item {u}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+  \item {ubils\_search}
+    \subitem {cils::cils\_search$<$ scalar, index $>$}, \hyperpage{54}
+  \item {unique\_vector}
+    \subitem {helper}, \hyperpage{23}
+  \item {upper}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+  \item {used}
+    \subitem {py\_qr}, \hyperpage{30}
+
+  \indexspace
+
+  \item {v\_a}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+  \item {v\_q}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+  \item {verbose}
+    \subitem {cils::program\_def}, \hyperpage{14}
+
+  \indexspace
+
+  \item {warmup}
+    \subitem {cils\_block\_search\_GPU.cpp}, \hyperpage{66}
+
+  \indexspace
+
+  \item {x}
+    \subitem {cils::returnType$<$ scalar, index $>$}, \hyperpage{55}
+    \subitem {py\_qr}, \hyperpage{30}
+  \item {x\_r}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+  \item {x\_t}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{43}
+
+  \indexspace
+
+  \item {y\_a}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{44}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {y\_q}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{50}
+  \item {y\_r}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{51}
+
+  \indexspace
+
+  \item {Z}
+    \subitem {cils::cils$<$ scalar, index, m, n $>$}, \hyperpage{44}
+    \subitem {cils::cils\_reduction$<$ scalar, index $>$}, 
+		\hyperpage{51}
+  \item {ZERO}
+    \subitem {helper.h}, \hyperpage{63}
+
+\end{theindex}
