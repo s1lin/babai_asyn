@@ -259,7 +259,7 @@ namespace cils {
         vector<scalar> r0, ex;
         array<scalar, n> c, g, pj_1;
         array<scalar, m> q;
-        vector<scalar> t_bar, t_seq;
+        vector<scalar> t_bar, t_seq, x_cur;
         vector<index> r1, r2, r3, r4, r5;
         vector<bool> b_x_0, b_x_1(n, 0);
         index i, j, k1, k2, k3;
@@ -268,6 +268,7 @@ namespace cils {
         for (i = 0; i < m * n; i++) {
             H[i] = A[i];
         }
+        scalar v_norm = INFINITY;
         //
         //  Find a solution to the box-constrained real least squares problem
         //  min_{l<=x<=u}||y_a-Bx|| by the gradient projection method
@@ -285,7 +286,7 @@ namespace cils {
         // 'ubils_reduction:223' c = A'*y_a;
 
         c.fill(0);
-        x.assign(n, 0);
+        x_cur.assign(n, 0);
         scalar time = omp_get_wtime();
         for (j = 0; j < m; j++) {
             for (i = 0; i < n; i++) {
@@ -295,14 +296,14 @@ namespace cils {
 
         // 'ubils_reduction:225' for iter = 1:search_iter
         for (index iter = 0; iter < search_iter; iter++) {
-            // 'ubils_reduction:227' g = A'*(A*x-y_a);
+            // 'ubils_reduction:227' g = A'*(A*x_cur-y_a);
             r0.resize(m);
             for (i = 0; i < m; i++) {
                 r0[i] = -y_a[i];
             }
             for (j = 0; j < n; j++) {
                 for (i = 0; i < m; i++) {
-                    r0[i] += A[j * m + i] * x[j];
+                    r0[i] += A[j * m + i] * x_cur[j];
                 }
             }
             g.fill(0);
@@ -312,10 +313,10 @@ namespace cils {
                 }
             }
             //  Check KKT conditions
-            // 'ubils_reduction:230' if (x==l) == 0
+            // 'ubils_reduction:230' if (x_cur==l) == 0
             b_x_0.resize(n, 0);
             for (i = 0; i < n; i++) {
-                b_x_0[i] = !(x[i] == l[i]);
+                b_x_0[i] = !(x_cur[i] == l[i]);
             }
             if (helper::if_all_x_true<index>(b_x_0)) {
                 // 'ubils_reduction:231' k1 = 1;
@@ -323,14 +324,14 @@ namespace cils {
             } else {
                 k3 = 0;
                 for (i = 0; i < n; i++) {
-                    if (x[i] == l[i]) {
+                    if (x_cur[i] == l[i]) {
                         k3++;
                     }
                 }
                 r1.resize(k3, 0);
                 k3 = 0;
                 for (i = 0; i < n; i++) {
-                    if (x[i] == l[i]) {
+                    if (x_cur[i] == l[i]) {
                         r1[k3] = i + 1;
                         k3++;
                     }
@@ -341,7 +342,7 @@ namespace cils {
                     b_x_0[i] = (g[r1[i] - 1] > -1.0E-5);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
-                    // 'ubils_reduction:232' elseif (g(x==l) > -1.e-5) == 1
+                    // 'ubils_reduction:232' elseif (g(x_cur==l) > -1.e-5) == 1
                     // 'ubils_reduction:233' k1 = 1;
                     k1 = 1;
                 } else {
@@ -350,10 +351,10 @@ namespace cils {
                     k1 = 0;
                 }
             }
-            // 'ubils_reduction:236' if (x==u) == 0
+            // 'ubils_reduction:236' if (x_cur==u) == 0
             b_x_0.resize(n, 0);
             for (i = 0; i < n; i++) {
-                b_x_0[i] = !(x[i] == u[i]);
+                b_x_0[i] = !(x_cur[i] == u[i]);
             }
             if (helper::if_all_x_true<index>(b_x_0)) {
                 // 'ubils_reduction:237' k2 = 1;
@@ -361,14 +362,14 @@ namespace cils {
             } else {
                 k3 = 0;
                 for (i = 0; i < n; i++) {
-                    if (x[i] == u[i]) {
+                    if (x_cur[i] == u[i]) {
                         k3++;
                     }
                 }
                 r2.resize(k3, 0);
                 k3 = 0;
                 for (i = 0; i < n; i++) {
-                    if (x[i] == u[i]) {
+                    if (x_cur[i] == u[i]) {
                         r2[k3] = i + 1;
                         k3++;
                     }
@@ -379,7 +380,7 @@ namespace cils {
                     b_x_0[i] = (g[r2[i] - 1] < 1.0E-5);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
-                    // 'ubils_reduction:238' elseif (g(x==u) < 1.e-5) == 1
+                    // 'ubils_reduction:238' elseif (g(x_cur==u) < 1.e-5) == 1
                     // 'ubils_reduction:239' k2 = 1;
                     k2 = 1;
                 } else {
@@ -388,10 +389,10 @@ namespace cils {
                     k2 = 0;
                 }
             }
-            // 'ubils_reduction:242' if (l<x & x<u) == 0
+            // 'ubils_reduction:242' if (l<x_cur & x_cur<u) == 0
             b_x_0.resize(n, 0);
             for (i = 0; i < n; i++) {
-                b_x_0[i] = ((!(l[i] < x[i])) || (!(x[i] < u[i])));
+                b_x_0[i] = ((!(l[i] < x_cur[i])) || (!(x_cur[i] < u[i])));
             }
             if (helper::if_all_x_true<index>(b_x_0)) {
                 // 'ubils_reduction:243' k3 = 1;
@@ -399,8 +400,8 @@ namespace cils {
             } else {
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = (l[i] < x[i]);
-                    b_x_1[i] = (x[i] < u[i]);
+                    b_x_0[i] = (l[i] < x_cur[i]);
+                    b_x_1[i] = (x_cur[i] < u[i]);
                 }
                 k3 = 0;
                 for (i = 0; i < n; i++) {
@@ -422,7 +423,7 @@ namespace cils {
                     b_x_0[i] = (g[r3[i] - 1] < 1.0E-5);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
-                    // 'ubils_reduction:244' elseif (g(l<x & x<u) < 1.e-5) == 1
+                    // 'ubils_reduction:244' elseif (g(l<x_cur & x_cur<u) < 1.e-5) == 1
                     // 'ubils_reduction:245' k3 = 1;
                     k3 = 1;
                 } else {
@@ -431,15 +432,27 @@ namespace cils {
                     k3 = 0;
                 }
             }
+            scalar v_norm_cur = helper::find_residual<scalar, index>(m, n, A.data(), x_cur.data(), y_a.data());
             // 'ubils_reduction:248' if (k1 & k2 & k3)
-            if ((k1 != 0) && (k2 != 0) && (k3 != 0)) {
-                break;
+            if ((k1 != 0) && (k2 != 0) && (k3 != 0) && (v_norm > v_norm_cur)) {
+                k1 = k2 = k3 = 0;
+                for (i = 0; i < n; i++) {
+                    scalar x_est = round(x_cur[i]);
+                    //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
+                    if (x_est < 0) {
+                        x_est = 0;
+                    } else if (x_est > upper) {
+                        x_est = upper;
+                    }
+                    x[i] = x_est;
+                }
+                v_norm = v_norm_cur;
             } else {
                 scalar x_tmp;
                 //  Find the Cauchy point
                 // 'ubils_reduction:253' t_bar = 1.e5*ones(n,1);
                 t_bar.resize(n, 1e5);
-                // 'ubils_reduction:254' t_bar(g<0) = (x(g<0)-u(g<0))./g(g<0);
+                // 'ubils_reduction:254' t_bar(g<0) = (x_cur(g<0)-u(g<0))./g(g<0);
                 k3 = 0;
                 for (i = 0; i < n; i++) {
                     if (g[i] < 0.0) {
@@ -457,7 +470,7 @@ namespace cils {
                 r0.resize(r4.size());
                 k3 = r4.size();
                 for (i = 0; i < k3; i++) {
-                    r0[i] = (x[r4[i] - 1] - u[r4[i] - 1]) / g[r4[i] - 1];
+                    r0[i] = (x_cur[r4[i] - 1] - u[r4[i] - 1]) / g[r4[i] - 1];
                 }
                 k3 = 0;
                 for (i = 0; i < n; i++) {
@@ -466,7 +479,7 @@ namespace cils {
                         k3++;
                     }
                 }
-                // 'ubils_reduction:255' t_bar(g>0) = (x(g>0)-l(g>0))./g(g>0);
+                // 'ubils_reduction:255' t_bar(g>0) = (x_cur(g>0)-l(g>0))./g(g>0);
                 k3 = 0;
                 for (i = 0; i < n; i++) {
                     if (g[i] > 0.0) {
@@ -484,7 +497,7 @@ namespace cils {
                 r0.resize(r5.size());
                 k3 = r5.size();
                 for (i = 0; i < k3; i++) {
-                    r0[i] = (x[r5[i] - 1] - l[r5[i] - 1]) / g[r5[i] - 1];
+                    r0[i] = (x_cur[r5[i] - 1] - l[r5[i] - 1]) / g[r5[i] - 1];
                 }
                 k3 = 0;
                 for (i = 0; i < n; i++) {
@@ -511,8 +524,8 @@ namespace cils {
                     scalar tj_1 = t_seq[k2];
                     // 'ubils_reduction:263' tj = t_seq(j);
                     scalar tj = t_seq[k2 + 1];
-                    //  Compute x(t_{j-1})
-                    // 'ubils_reduction:265' xt_j_1 = x - min(tj_1,t_bar).*g;
+                    //  Compute x_cur(t_{j-1})
+                    // 'ubils_reduction:265' xt_j_1 = x_cur - min(tj_1,t_bar).*g;
                     //  Compute teh search direction p_{j-1}
                     // 'ubils_reduction:267' pj_1 = zeros(n,1);
                     pj_1.fill(0);
@@ -537,7 +550,7 @@ namespace cils {
                     }
                     ex.resize(n);
                     for (i = 0; i < n; i++) {
-                        ex[i] = x[i] - ex[i] * g[i];
+                        ex[i] = x_cur[i] - ex[i] * g[i];
                     }
                     r0.resize(m);
                     for (i = 0; i < m; i++) {
@@ -579,33 +592,393 @@ namespace cils {
                         break;
                     }
                 }
-                // 'ubils_reduction:285' x = x - min(t,t_bar).*g;
+                // 'ubils_reduction:285' x_cur = x_cur - min(t,t_bar).*g;
                 ex.resize(t_bar.size());
                 k3 = t_bar.size();
                 for (j = 0; j < k3; j++) {
                     ex[j] = std::fmin(x_tmp, t_bar[j]);
                 }
                 for (i = 0; i < n; i++) {
-                    x[i] = x[i] - ex[i] * g[i];
+                    x_cur[i] = x_cur[i] - ex[i] * g[i];
                 }
             }
         }
         //s_bar4 = round_int(s_bar4_unrounded, -1, 1);
-        for (i = 0; i < n; i++) {
-            scalar x_est = round(x[i]);
-            //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
-            if (x_est < 0) {
-                x_est = 0;
-            } else if (x_est > upper) {
-                x_est = upper;
-            }
-            x[i] = x_est;
-        }
+//        for (i = 0; i < n; i++) {
+//            scalar x_est = round(x[i]);
+//            //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
+//            if (x_est < 0) {
+//                x_est = 0;
+//            } else if (x_est > upper) {
+//                x_est = upper;
+//            }
+//            x[i] = x_est;
+//        }
 
-        scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y_a.data());
+        //scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y_a.data());
         time = omp_get_wtime() - time;
         return {{}, time, v_norm};
     }
 
+    template<typename scalar, typename index, index m, index n>
+    returnType <scalar, index>
+    cils<scalar, index, m, n>::cils_grad_proj_omp(vector<scalar> &x, const index search_iter, const index n_proc) {
+        array<scalar, n> c, g, pj_1;
+        array<scalar, m> q;
+        vector<scalar> t_bar, t_seq, r0, ex, x_proc_tmp(n, 0);
+        vector<index> r1, r2, r3, r4, r5;
+        vector<bool> b_x_0, b_x_1(n, 0);
+        index i, j, k1, k2, k3, flag = 0;
+
+        vector<vector<scalar>> x_proc(n_proc, vector<scalar>(n, 0));
+        vector<scalar> v_norm_proc(n_proc, INFINITY);
+
+        helper::eye<scalar, index>(n, P.data());
+        H.fill(0);
+        for (i = 0; i < m * n; i++) {
+            H[i] = A[i];
+        }
+
+        c.fill(0);
+        scalar time = omp_get_wtime(), v_norm_tmp;
+
+        for (j = 0; j < m; j++) {
+            for (i = 0; i < n; i++) {
+                c[i] += A[i * m + j] * y_a[j];
+            }
+        }
+
+
+#pragma omp parallel default(shared) num_threads(n_proc) private(t_bar, t_seq, ex, i, j, k1, k2, k3, b_x_0, r0, r1, r2, r3, r4, r5, v_norm_tmp) firstprivate(b_x_1, q, c, g, pj_1, x_proc_tmp)
+        {
+            index t = omp_get_thread_num();
+            x_proc_tmp.assign(n, t);
+#pragma omp for nowait
+            for (index iter = 0; iter < search_iter; iter++) {
+                if (flag) iter = search_iter;
+                // 'ubils_reduction:227' g = A'*(A*x-y_a);
+                r0.resize(m);
+                for (i = 0; i < m; i++) {
+                    r0[i] = -y_a[i];
+                }
+                for (j = 0; j < n; j++) {
+                    for (i = 0; i < m; i++) {
+                        r0[i] += A[j * m + i] * x_proc_tmp[j];
+                    }
+                }
+                g.fill(0);
+                for (j = 0; j < m; j++) {
+                    for (i = 0; i < n; i++) {
+                        g[i] += A[i * m + j] * r0[j];
+                    }
+                }
+                //  Check KKT conditions
+                // 'ubils_reduction:230' if (x==l) == 0
+                b_x_0.resize(n, 0);
+                for (i = 0; i < n; i++) {
+                    b_x_0[i] = !(x_proc_tmp[i] == l[i]);
+                }
+                if (helper::if_all_x_true<index>(b_x_0)) {
+                    // 'ubils_reduction:231' k1 = 1;
+                    k1 = 1;
+                } else {
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (x_proc_tmp[i] == l[i]) {
+                            k3++;
+                        }
+                    }
+                    r1.resize(k3, 0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (x_proc_tmp[i] == l[i]) {
+                            r1[k3] = i + 1;
+                            k3++;
+                        }
+                    }
+                    b_x_0.resize(r1.size(), 0);
+                    k3 = r1.size();
+                    for (i = 0; i < k3; i++) {
+                        b_x_0[i] = (g[r1[i] - 1] > -1.0E-5);
+                    }
+                    if (helper::if_all_x_true<index>(b_x_0)) {
+                        // 'ubils_reduction:232' elseif (g(x==l) > -1.e-5) == 1
+                        // 'ubils_reduction:233' k1 = 1;
+                        k1 = 1;
+                    } else {
+                        // 'ubils_reduction:234' else
+                        // 'ubils_reduction:234' k1 = 0;
+                        k1 = 0;
+                    }
+                }
+                // 'ubils_reduction:236' if (x==u) == 0
+                b_x_0.resize(n, 0);
+                for (i = 0; i < n; i++) {
+                    b_x_0[i] = !(x_proc_tmp[i] == u[i]);
+                }
+                if (helper::if_all_x_true<index>(b_x_0)) {
+                    // 'ubils_reduction:237' k2 = 1;
+                    k2 = 1;
+                } else {
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (x_proc_tmp[i] == u[i]) {
+                            k3++;
+                        }
+                    }
+                    r2.resize(k3, 0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (x_proc_tmp[i] == u[i]) {
+                            r2[k3] = i + 1;
+                            k3++;
+                        }
+                    }
+                    b_x_0.resize(r2.size(), 0);
+                    k3 = r2.size();
+                    for (i = 0; i < k3; i++) {
+                        b_x_0[i] = (g[r2[i] - 1] < 1.0E-5);
+                    }
+                    if (helper::if_all_x_true<index>(b_x_0)) {
+                        // 'ubils_reduction:238' elseif (g(x==u) < 1.e-5) == 1
+                        // 'ubils_reduction:239' k2 = 1;
+                        k2 = 1;
+                    } else {
+                        // 'ubils_reduction:240' else
+                        // 'ubils_reduction:240' k2 = 0;
+                        k2 = 0;
+                    }
+                }
+                // 'ubils_reduction:242' if (l<x & x<u) == 0
+                b_x_0.resize(n, 0);
+                for (i = 0; i < n; i++) {
+                    b_x_0[i] = ((!(l[i] < x_proc_tmp[i])) || (!(x_proc_tmp[i] < u[i])));
+                }
+                if (helper::if_all_x_true<index>(b_x_0)) {
+                    // 'ubils_reduction:243' k3 = 1;
+                    k3 = 1;
+                } else {
+                    b_x_0.resize(n, 0);
+                    for (i = 0; i < n; i++) {
+                        b_x_0[i] = (l[i] < x_proc_tmp[i]);
+                        b_x_1[i] = (x_proc_tmp[i] < u[i]);
+                    }
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (b_x_0[i] && b_x_1[i]) {
+                            k3++;
+                        }
+                    }
+                    r3.resize(k3, 0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (b_x_0[i] && b_x_1[i]) {
+                            r3[k3] = i + 1;
+                            k3++;
+                        }
+                    }
+                    b_x_0.resize(r3.size(), 0);
+                    k3 = r3.size();
+                    for (i = 0; i < k3; i++) {
+                        b_x_0[i] = (g[r3[i] - 1] < 1.0E-5);
+                    }
+                    if (helper::if_all_x_true<index>(b_x_0)) {
+                        // 'ubils_reduction:244' elseif (g(l<x & x<u) < 1.e-5) == 1
+                        // 'ubils_reduction:245' k3 = 1;
+                        k3 = 1;
+                    } else {
+                        // 'ubils_reduction:246' else
+                        // 'ubils_reduction:246' k3 = 0;
+                        k3 = 0;
+                    }
+                }
+                v_norm_tmp = helper::find_residual<scalar, index>(m, n, A.data(), x_proc_tmp.data(), y_a.data());
+                // 'ubils_reduction:248' if (k1 & k2 & k3)
+                if ((k1 != 0) && (k2 != 0) && (k3 != 0) && v_norm_proc[t] > v_norm_tmp) {
+//                    cout << t << " ";
+                    k1 = k2 = k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        scalar x_est = round(x_proc_tmp[i]);
+                        //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
+                        if (x_est < 0) {
+                            x_est = 0;
+                        } else if (x_est > upper) {
+                            x_est = upper;
+                        }
+                        x_proc[t][i] = x_est;
+                    }
+                    v_norm_proc[t] = v_norm_tmp;
+                } else {
+                    scalar x_tmp;
+                    //  Find the Cauchy point
+                    // 'ubils_reduction:253' t_bar = 1.e5*ones(n,1);
+                    t_bar.resize(n, 1e5);
+                    // 'ubils_reduction:254' t_bar(g<0) = (x(g<0)-u(g<0))./g(g<0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] < 0.0) {
+                            k3++;
+                        }
+                    }
+                    r4.resize(k3, 0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] < 0.0) {
+                            r4[k3] = i + 1;
+                            k3++;
+                        }
+                    }
+                    r0.resize(r4.size());
+                    k3 = r4.size();
+                    for (i = 0; i < k3; i++) {
+                        r0[i] = (x_proc_tmp[r4[i] - 1] - u[r4[i] - 1]) / g[r4[i] - 1];
+                    }
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] < 0.0) {
+                            t_bar[i] = r0[k3];
+                            k3++;
+                        }
+                    }
+                    // 'ubils_reduction:255' t_bar(g>0) = (x_proc_tmp(g>0)-l(g>0))./g(g>0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] > 0.0) {
+                            k3++;
+                        }
+                    }
+                    r5.resize(k3, 0);
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] > 0.0) {
+                            r5[k3] = i + 1;
+                            k3++;
+                        }
+                    }
+                    r0.resize(r5.size());
+                    k3 = r5.size();
+                    for (i = 0; i < k3; i++) {
+                        r0[i] = (x_proc_tmp[r5[i] - 1] - l[r5[i] - 1]) / g[r5[i] - 1];
+                    }
+                    k3 = 0;
+                    for (i = 0; i < n; i++) {
+                        if (g[i] > 0.0) {
+                            t_bar[i] = r0[k3];
+                            k3++;
+                        }
+                    }
+                    //  Generate the ordered and non-repeated sequence of t_bar
+                    // 'ubils_reduction:258' t_seq = unique([0;t_bar]);
+                    r0.resize(n + 1);
+                    r0[0] = 0;
+                    for (i = 0; i < n; i++) {
+                        r0[i + 1] = t_bar[i];
+                    }
+                    helper::unique_vector<scalar, index>(r0, t_seq);
+                    //  Add 0 to make the implementation easier
+                    // 'ubils_reduction:259' t = 0;
+                    x_tmp = 0.0;
+                    //  Search
+                    // 'ubils_reduction:261' for j = 2:length(t_seq)
+                    for (k2 = 0; k2 < t_seq.size() - 1; k2++) {
+                        // 'ubils_reduction:262' tj_1 = t_seq(j-1);
+                        scalar tj_1 = t_seq[k2];
+                        // 'ubils_reduction:263' tj = t_seq(j);
+                        scalar tj = t_seq[k2 + 1];
+                        //  Compute x(t_{j-1})
+                        // 'ubils_reduction:265' xt_j_1 = x - min(tj_1,t_bar).*g;
+                        //  Compute teh search direction p_{j-1}
+                        // 'ubils_reduction:267' pj_1 = zeros(n,1);
+                        pj_1.fill(0);
+                        // 'ubils_reduction:268' pj_1(tj_1<t_bar) = -g(tj_1<t_bar);
+                        for (i = 0; i < t_bar.size(); i++) {
+                            if (tj_1 < t_bar[i]) {
+                                pj_1[i] = -g[i];
+                            }
+                        }
+                        //  Compute coefficients
+                        // 'ubils_reduction:270' q = A*pj_1;
+                        q.fill(0);
+                        for (j = 0; j < n; j++) {
+                            for (i = 0; i < m; i++) {
+                                q[i] += A[j * m + i] * pj_1[j];
+                            }
+                        }
+                        // 'ubils_reduction:271' fj_1d = (A*xt_j_1)'*q - c'*pj_1;
+                        ex.resize(t_bar.size());
+                        for (j = 0; j < t_bar.size(); j++) {
+                            ex[j] = std::fmin(tj_1, t_bar[j]);
+                        }
+                        ex.resize(n);
+                        for (i = 0; i < n; i++) {
+                            ex[i] = x_proc_tmp[i] - ex[i] * g[i];
+                        }
+                        r0.resize(m);
+                        for (i = 0; i < m; i++) {
+                            r0[i] = 0;
+                        }
+                        for (j = 0; j < n; j++) {
+                            for (i = 0; i < m; i++) {
+                                r0[i] += A[j * m + i] * ex[j];
+                            }
+                        }
+                        scalar delta_t = 0.0;
+                        for (i = 0; i < m; i++) {
+                            delta_t += r0[i] * q[i];
+                        }
+                        scalar fj_1d = 0.0;
+                        for (i = 0; i < n; i++) {
+                            fj_1d += c[i] * pj_1[i];
+                        }
+                        fj_1d = delta_t - fj_1d;
+                        // 'ubils_reduction:272' fj_1dd = q'*q;
+                        // 'ubils_reduction:273' t = tj;
+                        x_tmp = tj;
+                        //  Find a local minimizer
+                        // 'ubils_reduction:275' delta_t = -fj_1d/fj_1dd;
+                        delta_t = 0.0;
+                        for (i = 0; i < m; i++) {
+                            delta_t += q[i] * q[i];
+                        }
+                        delta_t = -fj_1d / delta_t;
+                        // 'ubils_reduction:276' if fj_1d >= 0
+                        if (fj_1d >= 0.0) {
+                            // 'ubils_reduction:277' t = tj_1;
+                            x_tmp = tj_1;
+                            break;
+                        } else if (delta_t < x_tmp - tj_1) {
+                            // 'ubils_reduction:279' elseif delta_t < (tj-tj_1)
+                            // 'ubils_reduction:280' t = tj_1+delta_t;
+                            x_tmp = tj_1 + delta_t;
+                            break;
+                        }
+                    }
+                    // 'ubils_reduction:285' x = x - min(t,t_bar).*g;
+                    ex.resize(t_bar.size());
+                    k3 = t_bar.size();
+                    for (j = 0; j < k3; j++) {
+                        ex[j] = std::fmin(x_tmp, t_bar[j]);
+                    }
+                    for (i = 0; i < n; i++) {
+                        x_proc_tmp[i] = x_proc_tmp[i] - ex[i] * g[i];
+                    }
+                }
+            }
+        }
+
+        auto it = std::min_element(std::begin(v_norm_proc), std::end(v_norm_proc));
+        index min_index = (int) std::distance(std::begin(v_norm_proc), it);
+        scalar v_norm = v_norm_proc[min_index];
+        x.assign(x_proc[min_index].begin(), x_proc[min_index].end());
+
+        if (verbose) {
+            for (i = 0; i < n_proc; i++) {
+                helper::display_vector(n, x_proc[i].data(), "x_proc_" + to_string(i));
+            }
+        }
+
+        time = omp_get_wtime() - time;
+        return {{}, time, v_norm};
+    }
 
 }

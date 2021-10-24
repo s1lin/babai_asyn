@@ -38,6 +38,8 @@
 #include "MatlabEngine.hpp"
 #include <numeric>
 #include "mpi.h"
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
 
 using namespace std;
 
@@ -218,8 +220,7 @@ namespace cils {
         cils_grad_proj(vector<scalar> &x, const index max_iter);
 
         returnType<scalar, index>
-        cils_sic_subopt(vector<scalar> &z, array<scalar, m> &v_cur, array<scalar, m * n> A_t, scalar v_norm_cur,
-                        scalar tolerance, index method);
+        cils_grad_proj_omp(vector<scalar> &x, const index search_iter, const index n_proc);
 
         /**
          * Applies the SCP-Block Optimal method to obtain a sub-optimal solution

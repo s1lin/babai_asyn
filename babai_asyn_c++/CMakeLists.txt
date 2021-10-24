@@ -88,6 +88,7 @@ endif ()
 find_package(Python3 COMPONENTS Interpreter NumPy)
 find_package(OpenMP REQUIRED)
 find_package(Matlab REQUIRED)
+find_package(Boost REQUIRED)
 find_package(MPI)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -129,13 +130,17 @@ if (Python3_FOUND)
 endif ()
 
 if (Matlab_FOUND)
-
-    message(STATUS "Linking UNIX C++")
+    message(STATUS "Linking Matlab")
     target_link_libraries(cils ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabEngine.so)
     target_link_libraries(cils ${Matlab_ROOT_DIR}/extern/bin/glnxa64/libMatlabDataArray.so)
     message("-- Matlab_FOUND ${PROJECT_NAME} ${Matlab_LIBRARIES}")
 endif ()
 
+if (Boost_FOUND)
+    message(STATUS "Linking Boost")
+    target_link_libraries(cils ${Boost_LIBRARY_DIRS})
+    message("-- Boost_FOUND ${Boost_LIBRARY_DIRS}")
+endif ()
 
 
 #message("-- reduction PRIVATE ${reduction_lib}")

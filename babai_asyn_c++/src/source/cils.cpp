@@ -83,22 +83,22 @@ namespace cils {
         if (rank != 0)
             p = (scalar *) malloc(n * size[0] * sizeof(scalar));
 
-        MPI_Bcast(&p[0], (int) size[0] * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&p[0], (int) size[0] * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Barrier(MPI_COMM_WORLD);
 
         index i = 0;
         index k1 = 0;
         permutation.resize((int) size[0] + 1);
-        permutation[k1] = vector<scalar>(N);
-        permutation[k1].assign(N, 0);
-        for (index iter = 0; iter < (int) size[0] * N; iter++) {
+        permutation[k1] = vector<scalar>(n);
+        permutation[k1].assign(n, 0);
+        for (index iter = 0; iter < (int) size[0] * n; iter++) {
             permutation[k1][i] = p[iter];
             i = i + 1;
-            if (i == N) {
+            if (i == n) {
                 i = 0;
                 k1++;
-                permutation[k1] = vector<scalar>(N);
-                permutation[k1].assign(N, 0);
+                permutation[k1] = vector<scalar>(n);
+                permutation[k1].assign(n, 0);
             }
         }
         i = 0;

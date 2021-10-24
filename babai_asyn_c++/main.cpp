@@ -45,7 +45,9 @@ int main(int argc, char *argv[]) {
 
     }
     program_def::init_program_def(argc, argv);
-    plot_run<scalar, int, M, N>(size, rank);
+//    init_point_test<scalar, int, M, N>(size, rank);
+//    plot_run<scalar, int, M, N>(size, rank);
+    plot_run_grad_omp(size, rank);
 //    block_optimal_test<scalar, int, M, N>(size, rank);
 
     if (rank == 0) {
@@ -62,23 +64,14 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-//int main(int argc, char *argv[]) {
-//    int numprocs, rank, namelen;
-//    char processor_name[MPI_MAX_PROCESSOR_NAME];
-//    int iam = 0, np = 1;
+//#include <boost/numeric/ublas/matrix.hpp>
+//#include <boost/numeric/ublas/io.hpp>
 //
-//    MPI_Init(&argc, &argv);
-//    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-//    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-//    MPI_Get_processor_name(processor_name, &namelen);
-//
-//  #pragma omp parallel default(shared) private(iam, np)
-//    {
-//        np = omp_get_num_threads();
-//        iam = omp_get_thread_num();
-//        printf("Hello from thread %d out of %d from process %d out of %d on %s\n",
-//               iam, np, rank, numprocs, processor_name);
-//    }
-//
-//    MPI_Finalize();
+//int main () {
+//    using namespace boost::numeric::ublas;
+//    matrix<double> m (3, 3);
+//    for (unsigned i = 0; i < m.size1 (); ++ i)
+//        for (unsigned j = 0; j < m.size2 (); ++ j)
+//            m (i, j) = 3 * i + j;
+//        std::cout << m << std::endl;
 //}
