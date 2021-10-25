@@ -9,7 +9,7 @@
 #include "helper.h"
 
 const static int M = 20;
-const static int N = 30;
+const static int N = 40;
 
 using namespace std;
 

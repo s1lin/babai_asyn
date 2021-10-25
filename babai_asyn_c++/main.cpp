@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     program_def::init_program_def(argc, argv);
 //    init_point_test<scalar, int, M, N>(size, rank);
 //    plot_run<scalar, int, M, N>(size, rank);
-    plot_run_grad_omp(size, rank);
+    plot_run_grad_omp<scalar, int, M, N>(size, rank);
 //    block_optimal_test<scalar, int, M, N>(size, rank);
 
     if (rank == 0) {
