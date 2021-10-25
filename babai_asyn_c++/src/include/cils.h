@@ -38,10 +38,17 @@
 #include "MatlabEngine.hpp"
 #include <numeric>
 #include "mpi.h"
+#include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 
 using namespace std;
+
+
+using namespace boost::numeric::ublas;
+typedef boost::numeric::ublas::vector<double> b_vector;
+typedef boost::numeric::ublas::matrix<double> b_matrix;
+typedef boost::numeric::ublas::identity_matrix<double> b_eye_matrix;
 
 /**
  * namespace of cils
@@ -55,30 +62,28 @@ namespace cils {
      */
     template<typename scalar, typename index>
     struct returnType {
-        vector<scalar> x;
+        std::vector<scalar> x;
         scalar run_time;
         scalar info; //true_res, error
     };
 
 
-
     template<typename scalar, typename index, index m, index n>
-    class cils {
+    class CILS {
 
-    public:
-        index qam, snr, upper, lower;
+    private:
+        index qam, snr, upper, lower, search_iter;
         scalar init_res, sigma, tolerance;
         array<scalar, m * (n + 1) / 2> R_A;
 
-        array<scalar, m * n> A, H;
-        array<scalar, n * n> Z, P;
+        b_matrix A, H, Z, P; //b_matrix
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR
-        array<scalar, n> x_r, x_t, l, u;
-        array<scalar, m> y_a, v_a, v_q;
+        b_vector x_r, x_t, l, u;
+        b_vector y_a, v_a, v_q;
 
         std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
     public:
-        cils(index qam, index snr) {
+        CILS(index qam, index snr) {
 
             // Start MATLAB engine synchronously
             this->matlabPtr = matlab::engine::startMATLAB();
@@ -88,60 +93,146 @@ namespace cils {
             this->sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (6 * pow(10, ((scalar) snr / 10.0))));
             this->tolerance = sqrt(m) * this->sigma;
             this->upper = pow(2, qam) - 1;
-            helper::eye<scalar, index>(n, P.data());
-            helper::eye<scalar, index>(n, Z.data());
+
+            b_eye_matrix I(n, n);
+            this->Z.resize(n, n);
+            this->P.resize(n, n);
+            this->Z.assign(I);
+            this->P.assign(I);
 
             this->R_A.fill(0);// = new scalar[n * (n + 1) / 2];
 
-            this->A.fill(0);//.resize(n * n, 0);
-            this->H.fill(0);//.resize(n * n, 0);
+            this->A.resize(m, n, false);
+            this->H.resize(m, n, false);
+            this->A.clear();
+            this->H.clear();
 
-            this->x_r.fill(0);//.resize(n, 0);
-            this->x_t.fill(0);//.resize(n, 0);
-            this->y_a.fill(0);//.resize(n, 0);
-            this->v_a.fill(0);//.resize(n, 0);
-            this->v_q.fill(0);//.resize(n, 0);
+            this->x_r.resize(n, false);
+            this->x_t.resize(n, false);
+            this->y_a.resize(n, false);
+            this->v_a.resize(n, false);
+            this->v_q.resize(n, false);
+            this->l.resize(n, false);
+            this->u.resize(n, false);
 
-            this->l.fill(0);//.resize(n, 0);
-            this->u.fill(this->upper);//.resize(n, 0);
+            this->x_r.clear();
+            this->x_t.clear();
+            this->y_a.clear();
+            this->v_a.clear();
+            this->v_q.clear();
+            this->l.clear();
+            this->u.clear();
+
+            std::fill(u.begin(), u.end(), upper);
+
         }
 
-        ~cils() {
-//            delete[] R_A;
+        ~CILS() {
             matlabPtr.get_deleter();
-//            matlab::engine::terminateEngineClient();
         }
 
         /**
-         * Initialize the problem either reading from files (.csv or .nc) or generating the problem
+         * Generating the problem from Matlab funtion
          */
-        void init(index rank);
+        void init(index rank) {
 
-        /**
-         *
-         */
-        void init_ud();
+            //Create MATLAB data array factory
+            scalar *size = (double *) malloc(1 * sizeof(double)), *p;
 
-        /**
-         * Only invoke is function when it is not reading from files and after completed qr!
-         */
-        void init_y();
+            if (rank == 0) {
 
-        /**
-         *
-         */
-        void init_R();
+                matlab::data::ArrayFactory factory;
+
+                // Call the MATLAB movsum function
+                matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(this->qam);
+                matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(m);
+                matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(n);
+                matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(snr);
+                matlab::data::TypedArray<scalar> MIT = factory.createScalar<scalar>(search_iter);
+                matlabPtr->setVariable(u"k", std::move(k_M));
+                matlabPtr->setVariable(u"m", std::move(m_M));
+                matlabPtr->setVariable(u"n", std::move(n_M));
+                matlabPtr->setVariable(u"SNR", std::move(SNR));
+                matlabPtr->setVariable(u"max_iter", std::move(MIT));
+
+                // Call the MATLAB movsum function
+                matlabPtr->eval(
+                        u" [A, x_t, v, y, sigma, res, permutation, size_perm] = gen_problem(k, m, n, SNR, max_iter);");
+
+                matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+                matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
+                matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
+                matlab::data::TypedArray<scalar> const res = matlabPtr->getVariable(u"res");
+                matlab::data::TypedArray<scalar> const per = matlabPtr->getVariable(u"permutation");
+                matlab::data::TypedArray<scalar> const szp = matlabPtr->getVariable(u"size_perm");
 
 
-        /**
-         * Parallel version of QR-factorization using modified Gram-Schmidt algorithm, row-oriented
-         * @param eval
-         * @param verbose
-         * @param n_proc
-         * @return
-         */
-//        returnType<scalar, index>
-//        cils_qr_omp(const index eval, const index verbose, const index n_proc);
+                index i = 0;
+                for (auto r : A_A) {
+                    A[i] = r;
+                    ++i;
+                }
+                i = 0;
+                for (auto r : y_M) {
+                    y_a[i] = r;
+                    ++i;
+                }
+                i = 0;
+                for (auto r : x_M) {
+                    x_t[i] = r;
+                    ++i;
+                }
+                i = 0;
+                for (auto r : res) {
+                    this->init_res = r;
+                    ++i;
+                }
+                i = 0;
+                for (auto r : res) {
+                    this->init_res = r;
+                    ++i;
+                }
+
+                i = 0;
+                for (auto r : szp) {
+                    size[0] = r;
+                    ++i;
+                }
+                p = (scalar *) malloc(n * size[0] * sizeof(scalar));
+                i = 0;
+                for (auto r : per) {
+                    p[i] = r;
+                    ++i;
+                }
+            }
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Bcast(&size[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+            if (rank != 0)
+                p = (scalar *) malloc(n * size[0] * sizeof(scalar));
+
+            MPI_Bcast(&p[0], (int) size[0] * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            MPI_Barrier(MPI_COMM_WORLD);
+
+            index i = 0;
+            index k1 = 0;
+            permutation.resize((int) size[0] + 1);
+            permutation[k1] = vector<scalar>(n);
+            permutation[k1].assign(n, 0);
+            for (index iter = 0; iter < (int) size[0] * n; iter++) {
+                permutation[k1][i] = p[iter];
+                i = i + 1;
+                if (i == n) {
+                    i = 0;
+                    k1++;
+                    permutation[k1] = vector<scalar>(n);
+                    permutation[k1].assign(n, 0);
+                }
+            }
+            i = 0;
+        }
+
 
         /**
          * Usage Caution: If LLL reduction is applied, please do permutation after getting the result.
@@ -278,15 +369,15 @@ namespace cils {
         returnType<scalar, index>
         cils_partition_deficient(scalar *z_B, scalar *Q_tilde, scalar *R_tilde, scalar *H_A, scalar *Piv_cum);
 
-        returnType <scalar, index>
+        returnType<scalar, index>
         cils_block_search_serial(const index init, const scalar *R_R, const scalar *y_r, const vector<index> *d,
                                  vector<scalar> *z_B);
 
 
-        returnType <scalar, index>
+        returnType<scalar, index>
         cils_scp_block_optimal_omp(vector<scalar> &x_cur, scalar v_norm_cur, index n_proc, index mode);
 
-        returnType <scalar, index>
+        returnType<scalar, index>
         cils_scp_block_optimal_mpi(vector<scalar> &x_cur, scalar *v_norm_cur, index size, index rank);
     };
 }
