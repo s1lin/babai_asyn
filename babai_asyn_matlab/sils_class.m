@@ -64,7 +64,7 @@ classdef sils_class
             %Get Upper triangular matrix
             %[sils.Q, sils.R] = qr(sils.A);
             sils.y_LLL = sils.A * sils.x0 + v;
-            [sils.R, sils.P, sils.y] = sils_reduction(sils.A, sils.y_LLL);
+            [sils.R, sils.P, sils.y] = sils_as_reduction(sils.A, sils.y_LLL);
             
              %Right-hand side y:
             %sils.y = sils.R * sils.x0 + sils.Q' * v;
