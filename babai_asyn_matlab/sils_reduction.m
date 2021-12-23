@@ -135,6 +135,10 @@ function [R,Z,y] = sils_reduction(B,y)
 % QR factorization with minimum-column pivoting
 %[R,piv,y] = qrmcp(B,y);
 [Q, R] = qr(B);
+
+y_ = y;
+y = Q'*y;
+R_ = R;
 % Obtain the permutation matrix Z
 % Z = zeros(n,n);
 Z = eye(n);
@@ -172,13 +176,13 @@ while k <= n
         end
         
         % Permute columns k-1 and k of R and Z
-        R(1:k,[k1,k]) = R(1:k,[k,k1]);
+        R(1:k,[k1,k]) = R(1:k,[k,k1]);       
         Z(:,[k1,k]) = Z(:,[k,k1]);
         
         % Bring R back to an upper triangular matrix by a Givens rotation
         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
         R([k1,k],k:n) = G * R([k1,k],k:n);   
-        
+                
         % Apply the Givens rotation to y
         y([k1,k]) = G * y([k1,k]);
         
@@ -190,7 +194,9 @@ while k <= n
         k = k + 1;
     end
 end
-
-diff = Q'*B*Z-R
-norm(Q'*B*Z-R, 1)
-sils_lll_eval(R);
+y
+% Q = B*Z*inv(R)
+% Q'*Q
+% diff = Q'*y_ - y
+% norm(Q'*y_ - y, 1)
+% sils_lll_eval(R);

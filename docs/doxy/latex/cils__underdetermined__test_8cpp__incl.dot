@@ -60,7 +60,7 @@ digraph "src/example/cils_underdetermined_test.cpp"
   Node1 -> Node26 [color="midnightblue",fontsize="10",style="solid"];
   Node26 [label="../source/cils_block\l_search.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$cils__block__search_8cpp.html",tooltip="Computation of Block Babai Algorithm."];
   Node26 -> Node27 [color="midnightblue",fontsize="10",style="solid"];
-  Node27 [label="cils_reduction.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$cils__reduction_8cpp.html",tooltip=" "];
+  Node27 [label="CILS_Reduction.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$cils__reduction_8cpp.html",tooltip=" "];
   Node27 -> Node21 [color="midnightblue",fontsize="10",style="solid"];
   Node27 -> Node28 [color="midnightblue",fontsize="10",style="solid"];
   Node28 [label="Python.h",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];

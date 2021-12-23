@@ -1,6 +1,6 @@
-#include "../babai_asyn_c++/src/source/cils.cpp"
-#include "../babai_asyn_c++/src/source/cils_babai_search.cpp"
-#include "../babai_asyn_c++/src/source/cils_block_search.cpp"
+#include "../babai_asyn_c++/src/source/CILS.cpp"
+#include "../babai_asyn_c++/src/source/CILS_Babai.cpp"
+#include "../babai_asyn_c++/src/source/CILS_Block_Babai.cpp"
 #include "cils_cuda_solvers.cuh"
 #include "cuda_runtime_api.h"
 #include <ctime>

@@ -464,20 +464,9 @@ namespace cils {
             printf("[ INFO: in LLL validation]\n");
             scalar sum, error = 0, det;
             b_matrix A_T = prod(A_R, Z);
-            b_matrix R_I(m, n);
+            b_matrix R_I;
 
-            typedef permutation_matrix<std::size_t> pmatrix;
-            // create a working copy of the input
-            b_matrix M(R_R);
-            // create a permutation matrix for the LU-factorization
-            pmatrix pm(M.size1());
-            // perform LU-factorization
-            auto res = lu_factorize(M, pm);
-
-            // create identity matrix of "inverse"
-            R_I.assign(identity_matrix<typename b_matrix::value_type>(M.size1()));
-            // backsubstitute to get the inverse
-            lu_substitute(M, pm, R_I);
+            helper::inv<scalar, index>(R_R, R_I);
 
             b_matrix Q_Z = prod(A_T, R_I);
             b_vector y_R = prod(trans(Q_Z), y_a);
@@ -493,7 +482,7 @@ namespace cils {
                 printf("\n[ Print y_r:]\n");
                 helper::display_vector<scalar, index>(m, y_r, "y_r");
             }
-            cout << y_R << endl;
+
             for (index i = 0; i < m; i++) {
                 error += fabs(y_R(i) - y_r(i));
             }
@@ -515,6 +504,15 @@ namespace cils {
                 }
                 k++;
             }
+            if (!pass) {
+                cout << "[ERROR: LLL Failed on index:";
+                for (index i = 0; i < n; i++) {
+                    if (fail_index[i] != 0)
+                        cout << i << ",";
+                }
+                cout << "]" << endl;
+            }
+
             printf("====================[ END | LLL_VALIDATE ]==================================\n");
             return {fail_index, det, (scalar) pass};
         }
@@ -811,13 +809,8 @@ namespace cils {
             t_qr = omp_get_wtime() - t_qr;
             y_q = column(R_Q, n);
             R_Q.resize(m, n);
-            scalar error = -1;
-            if (eval) {
-                error = qr_validation();
-                if (verbose)
-                    cout << "[  QR ERROR SER:]" << error << endl;
-            }
-            return {{}, t_qr, error};
+
+            return {{}, t_qr, 0};
         }
 
 
@@ -983,7 +976,7 @@ namespace cils {
 
 
         returnType <scalar, index>
-        cils_aip_reduction(const b_matrix &B, const b_vector &y) {
+        cils_aip_reduction_legacy(const b_matrix &B, const b_vector &y) {
             b_vector b_y, c_y, b, C;
 
             cils_qr_serial_col(B, y.data());
@@ -1301,6 +1294,59 @@ namespace cils {
             return {{}, 0, 0};
         }
 
+        returnType <scalar, index> cils_aip_reduction() {
+            scalar alpha;
+
+            //  ------------------------------------------------------------------
+            //  --------  Perform the QR factorization: MGS Row-------------------
+            //  ------------------------------------------------------------------
+            cils_mgs_qr();
+
+            b_vector y_0(y_q);
+            b_matrix R_0(R_Q);
+
+            //Permutation vector
+            p.resize(n);
+            p.clear();
+            for (index i = 0; i < n; i++) {
+                p[i] = i;
+            }
+
+            //Inverse transpose of R
+            helper::inv<scalar, index>(R_0, G);
+            G = trans(G);
+            scalar dist, dist_i;
+            index j = 0, x_j = 0;
+            for (index k = n - 1; k >= 1; k--) {
+                index maxDist = -1;
+                for (index i = 0; i <= k; i++) {
+                    //alpha = y(i:k)' * G(i:k,i);
+                    auto gi = subrange(column(G, i), i, k + 1);
+                    auto yg = prod(trans(subrange(y_r, i, k + 1)), gi);
+                    alpha = yg[0];
+                    index x_i = max(min(round(alpha), cils.upper), cils.lower);
+                    if (alpha < cils.lower || alpha > cils.upper || alpha == x_i)
+                        dist = 1 + abs(alpha - x_i);
+                    else
+                        dist = 1 - abs(alpha - x_i);
+                    dist_i = dist / norm_2(gi);
+                    if (dist_i > maxDist) {
+                        maxDist = dist_i;
+                        j = i;
+                        x_j = x_i;
+                    }
+                }
+                //p(j:k) = p([j+1:k,j]);
+                scalar pj = p[j];
+                subrange(p, j, k) = subrange(p, j + 1, k + 1);
+                p[k + 1] = pj;
+
+                //Update y, R and G for the new dimension-reduced problem
+                //y(1:k-1) = y(1:k-1) - R(1:k-1,j) * x_j;
+                subrange(y_r, 0, k) = subrange(y_r, 0, k) - subrange(column(R_R, j),0, k) * x_j;
+
+            }
+        }
 
         /**
          * Test caller for reduction method.
@@ -1314,51 +1360,29 @@ namespace cils {
             eval = true;
             verbose = true;
 
-//            cout << "[ In cils_plll_reduction_serial]\n";
-//            reT = cils_plll_reduction_serial();
-//            printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
-//                   reT.run_time, reT.info);
-//            time = reT.info;
-//            lll_val = lll_validation();
-//            if (lll_val.info != 1) {
-//                cerr << "0: LLL Failed, index:";
-//                for (index i = 0; i < n; i++) {
-//                    if (lll_val.x[i] != 0)
-//                        cerr << i << ",";
-//                }
-//                cout << endl;
-//            }
-            cout << "[ In cils_eo_plll_reduction_omp]\n";
-            reT = cils_eo_plll_reduction_omp(16);
+            cout << "[ In cils_plll_reduction_serial]\n";
+            reT = cils_plll_reduction_serial();
             printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
                    reT.run_time, reT.info);
             time = reT.info;
-
-
             lll_val = lll_validation();
-            if (lll_val.info != 1) {
-                cerr << "0: LLL Failed, index:";
-                for (index i = 0; i < n; i++) {
-                    if (lll_val.x[i] != 0)
-                        cerr << i << ",";
-                }
-                cout << endl;
-            }
 
             cout << "[ In cils_eo_plll_reduction_serial]\n";
             reT = cils_eo_plll_reduction_serial();
             printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
                    reT.run_time, reT.info);
-            time = reT.info;
+            scalar t_qr = reT.run_time;
+            scalar t_plll = reT.info;
             lll_val = lll_validation();
-            if (lll_val.info != 1) {
-                cerr << "0: LLL Failed, index:";
-                for (index i = 0; i < n; i++) {
-                    if (lll_val.x[i] != 0)
-                        cerr << i << ",";
-                }
-                cout << endl;
+
+            for (index i = 2; i <= 16; i++) {
+                cout << "[ In cils_eo_plll_reduction_omp]\n";
+                reT = cils_eo_plll_reduction_omp(i);
+                printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f, QR SPU: %8.5f, LLL SPU:%8.2f]\n",
+                       reT.run_time, reT.info, t_qr / reT.run_time, t_plll / reT.info);
+                lll_val = lll_validation();
             }
+
 
             return {{reT.info, lll_val.info}, time, lll_val.run_time};
         }
@@ -1427,6 +1451,7 @@ namespace cils {
 
             index k = 1, k1, i, i1;
             t_plll = omp_get_wtime();
+
             while (k < n) {
                 k1 = k - 1;
                 zeta = round(R_R(k1, k) / R_R(k1, k1));
@@ -1482,10 +1507,10 @@ namespace cils {
                     k++;
                 }
             }
+
             y_r = column(R_R, n);
             R_R.resize(m, n);
-            if (verbose)
-                cout << y_r;
+
             t_plll = omp_get_wtime() - t_plll;
             return {{}, t_qr, t_plll};
         }
@@ -1574,7 +1599,7 @@ namespace cils {
                                 Z(i, k) -= zeta * Z(i, k1);
                             }
                             //Perform size reductions on R(1:k-2,k)
-                            for (i = k - 3; i >= 0; i--) {
+                            for (i = k - 2; i >= 0; i--) {
                                 zeta = round(R_R(i, k) / R_R(i, i));
                                 if (zeta != 0.0) {
                                     for (i1 = 0; i1 <= i; i1++) {
@@ -1629,8 +1654,7 @@ namespace cils {
             }
             y_r = column(R_R, n);
             R_R.resize(m, n);
-            if (verbose)
-                cout << y_r;
+
             t_plll = omp_get_wtime() - t_plll;
             return {{}, t_qr, t_plll};
         }
@@ -1725,6 +1749,8 @@ namespace cils {
             std::vector<b_matrix> G_v(n);
             b_vector R_k1, Z_k1, R_k, Z_k;
             b_matrix R_G, G_m;
+#pragma omp parallel default(shared) num_threads(n_proc)
+            {}
             t_plll = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(k1, k, i, i1, i2, zeta, alpha, R_k1, Z_k1, G_m, R_G, R_k, Z_k)
             {
@@ -1769,7 +1795,7 @@ namespace cils {
                             }
                         }
                     }
-#pragma omp barrier
+
 #pragma omp for schedule(static, 1)
                     for (i2 = 0; i2 < end; i2++) {
                         k = i2 * 2 + start;
@@ -1803,6 +1829,12 @@ namespace cils {
                             //Combined Rotation.
                             //R([k1,k],k:n) = G * R([k1,k],k:n);
                             //y([k1,k]) = G * y([k1,k]);
+//                            scalar G_a[4] = {};
+//                            scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
+//                            G_m = helper::planerot<scalar, index>(low_tmp, G_a);
+//                            R_R(k1, k1) = low_tmp[0];
+//                            R_R(k, k1) = low_tmp[1];
+//                            G_v[k] = G_m;
                             R_G = subrange(R_R, k1, k + 1, k, n);
                             subrange(R_R, k1, k + 1, k, n) = prod(G_v[k], R_G);
                             subrange(y_r, k1, k + 1) = prod(G_v[k], subrange(y_r, k1, k + 1));

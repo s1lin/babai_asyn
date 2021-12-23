@@ -19,11 +19,12 @@
 namespace cils {
 
     template<typename scalar, typename index>
-    class cils_search {
+    class CILS_SECH_Search {
 
     private:
-        index upper, lower, m, n;
-        vector<scalar> p, c, z, d, l, u;
+        index m, n, max_thre = 1e6;
+        b_vector p, c, z, d, l, u;
+        CILS <scalar, index> cils;
 
         static void init(double c_k, double l_k, double u_k, double *z_k, double *d_k,
                          double *lflag_k, double *uflag_k) {
@@ -40,7 +41,7 @@ namespace cils {
                 *z_k = l_k;
                 // 'obils_search:159' lflag_k = 1;
                 *lflag_k = 1.0;
-                //  The lower bound is reached
+                //  The cils.lower bound is reached
                 // 'obils_search:160' uflag_k = 0;
                 *uflag_k = 0.0;
                 // 'obils_search:161' d_k = 1;
@@ -51,7 +52,7 @@ namespace cils {
                 *z_k = u_k;
                 // 'obils_search:164' uflag_k = 1;
                 *uflag_k = 1.0;
-                //  The upper bound is reached
+                //  The cils.upper bound is reached
                 // 'obils_search:165' lflag_k = 0;
                 *lflag_k = 0.0;
                 // 'obils_search:166' d_k = -1;
@@ -77,29 +78,26 @@ namespace cils {
 
     public:
 
-        cils_search(index m, index n, index qam) {
-
-            this->upper = pow(2, qam) - 1;
-            this->lower = 0;
-            this->m = m;
-            this->n = n;
+        CILS_SECH_Search(CILS <scalar, index> &cils) {
+            this->cils = cils;
+            this->m = cils.m;
+            this->n = cils.n;
             //pow(2, qam) - 1;
             this->p.resize(n);
-            this->p.assign(n, 0);
+            this->p.clear();
             this->c.resize(n);
-            this->c.assign(n, 0);
+            this->c.clear();
             this->z.resize(n);
-            this->z.assign(n, 0);
+            this->z.clear();
             this->d.resize(n);
-            this->d.assign(n, 0);
-            this->l.resize(n);
-            this->l.assign(n, 0);
-            this->u.resize(n);
-            this->u.assign(n, this->upper);
+            this->d.clear();
+            this->l = cils.l;
+            this->u = cils.u;
         }
 
+
         inline void obils_search_matlab(const index n_dx_q_0, const index n_dx_q_1, const bool check,
-                                        vector<scalar> &R_R, vector<scalar> &y_B, vector<scalar> &z_x) {
+                                        b_vector &y_B, b_matrix &R_R, b_vector &z_x) {
             index t = n_dx_q_1;
             using namespace matlab::engine;
             // Start MATLAB engine synchronously
@@ -109,7 +107,7 @@ namespace cils {
             matlab::data::ArrayFactory factory;
 
             matlab::data::TypedArray<scalar> R_M = factory.createArray(
-                    {static_cast<unsigned long>(n), static_cast<unsigned long>(n)}, R_R.begin(), R_R.end());
+                    {static_cast<unsigned long>(n), static_cast<unsigned long>(n)}, R_R.begin1(), R_R.end1());
             matlab::data::TypedArray<scalar> y_M = factory.createArray(
                     {static_cast<unsigned long>(n), static_cast<unsigned long>(1)}, y_B.begin(), y_B.end());
             matlab::data::TypedArray<index> t_M = factory.createScalar<index>(n);
@@ -123,27 +121,27 @@ namespace cils {
 
             matlab::data::TypedArray<scalar> const z_M = matlabPtr->getVariable(u"z");
             index i = 0;
-            for (auto r : z_M) {
+            for (auto r: z_M) {
                 z_x[i] = r;
                 ++i;
             }
 
         }
 
-        inline bool obils_search2(const vector<scalar> &R, const vector<scalar> &y, vector<scalar> &zhat) {
-            vector<scalar> lflag, prsd, uflag;
+        inline bool obils_search2(const b_vector &R, const b_vector &y, b_vector &zhat) {
+            b_vector lflag, prsd, uflag;
             double b_gamma;
             double beta;
             int dflag, i, k, loop_ub;
             //
             //  zhat = bils_search(R,y,l,u,beta) produces the optimal solution to
-            //  the upper triangular box-constrained integer least squares problem
+            //  the cils.upper triangular box-constrained integer least squares problem
             //  min_{z}||y-Rz|| s.t. z in [l, u] by a search algorithm.
             //  Inputs:
-            //     R - n by n real nonsingular upper triangular matrix
+            //     R - n by n real nonsingular cils.upper triangular matrix
             //     y - n-dimensional real vector
-            //     l - n-dimensional integer vector, lower bound
-            //     u - n-dimensional integer vector, upper bound
+            //     l - n-dimensional integer vector, cils.lower bound
+            //     u - n-dimensional integer vector, cils.upper bound
             //
             //  Outputs:
             //     zhat - n-dimensional integer vector (in double precision).
@@ -163,31 +161,31 @@ namespace cils {
             //  Current point
             // 'obils_search:37' z = zeros(n,1);
             z.resize(n);
-            z.assign(n, 0);
+            z.clear();
             // 'obils_search:38' zhat = zeros(n, 1);
             zhat.resize(n);
-            zhat.assign(n, 0);
+            zhat.clear();
             //  c(k)=(y(k)-R(k,k+1:n)*z(k+1:n))/R(k,k)
             // 'obils_search:41' c = zeros(n,1);
             c.resize(n);
-            c.assign(n, 0);
+            c.clear();
             //  d(k): left or right search direction at level k
             // 'obils_search:44' d = zeros(n,1);
             d.resize(n);
-            d.assign(n, 0);
-            //  lflag(k) = 1 if the lower bound is reached at level k
+            d.clear();
+            //  lflag(k) = 1 if the cils.lower bound is reached at level k
             // 'obils_search:47' lflag = zeros(size(l));
             lflag.resize(n);
-            lflag.assign(n, 0);
-            //  uflag(k) = 1 if the upper bound is reached at level k
+            lflag.clear();
+            //  uflag(k) = 1 if the cils.upper bound is reached at level k
             // 'obils_search:49' uflag = lflag;
             uflag.resize(n);
-            uflag.assign(n, 0);
+            uflag.clear();
             //  Partial squared residual norm for z
             //  prsd(k) = (norm(y(k+1:n)-R(k+1:n,k+1:n)*z(k+1:n)))^2
             // 'obils_search:53' prsd = zeros(n,1);
             prsd.resize(n);
-            prsd.assign(n, 0);
+            prsd.clear();
             //  Store some quantities for efficiently calculating c
             //  S(k,n) = y(k),
             //  S(k,j-1) = y(k) - R(k,j:n)*z(j:n) = S(k,j) - R(k,j)*z(j), j=k+1:n
@@ -215,7 +213,7 @@ namespace cils {
             //  dflag for down or up search direction
             // 'obils_search:82' dflag = 1;
             dflag = 1;
-            //  Intend to move down to a lower level
+            //  Intend to move down to a cils.lower level
             // 'obils_search:85' while 1
             while (true) {
                 double newprsd;
@@ -369,25 +367,24 @@ namespace cils {
             //  The optimal solution has been found, terminate
         }
 
-        inline bool obils_search(const index n_dx_q_0, const index n_dx_q_1, const bool check,
-                                 const scalar *R_R, const scalar *y_B, vector<scalar> &z_x) {
-            this->z.assign(n, 0);
+        bool obils_search(const index n_dx_q_0, const index n_dx_q_1, const bool check,
+                          const b_matrix &R_R, const b_vector &y_B, b_vector &z_x) {
+            this->z.clear();
             // Variables
             scalar sum, newprsd, gamma, beta = INFINITY;
-
-            index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
-            index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, diff = 0;
+            index dx = n_dx_q_1 - n_dx_q_0;
+            index diff = 0, row_k = n_dx_q_1 - 1;
             index dflag = 1, count = 0, iter = 0;
 
             //Initial squared search radius
-            scalar R_kk = R_R[n * end_1 + end_1];
+            scalar R_kk = R_R(row_k, row_k);
             c[row_k] = y_B[row_k] / R_kk;
             z[row_k] = round(c[row_k]);
-            if (z[row_k] <= lower) {
-                z[row_k] = u[row_k] = lower; //The lower bound is reached
+            if (z[row_k] <= cils.lower) {
+                z[row_k] = u[row_k] = cils.lower; //The cils.lower bound is reached
                 l[row_k] = d[row_k] = 1;
-            } else if (z[row_k] >= upper) {
-                z[row_k] = upper; //The upper bound is reached
+            } else if (z[row_k] >= cils.upper) {
+                z[row_k] = cils.upper; //The cils.upper bound is reached
                 u[row_k] = 1;
                 l[row_k] = 0;
                 d[row_k] = -1;
@@ -401,28 +398,27 @@ namespace cils {
             //ILS search process
             while (true) {
 //            count++;
-//            for (count = 0; count < program_def::max_thre || iter == 0; count++) {
+//            for (count = 0; count < max_thre || iter == 0; count++) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {
-                        if (k != 0) {
-                            k--;
+                        if (row_k != n_dx_q_0) {
                             row_k--;
                             sum = 0;
-                            for (index col = k + 1; col < dx; col++) {
-                                sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col + n_dx_q_0];
+                            for (index col = row_k + 1; col < n_dx_q_1; col++) {
+                                sum += R_R(row_k, col) * z[col];
                             }
-                            R_kk = R_R[n * row_k + row_k];
+                            R_kk = R_R(row_k, row_k);
                             p[row_k] = newprsd;
                             c[row_k] = (y_B[row_k] - sum) / R_kk;
                             z[row_k] = round(c[row_k]);
-                            if (z[row_k] <= lower) {
-                                z[row_k] = lower;
+                            if (z[row_k] <= cils.lower) {
+                                z[row_k] = cils.lower;
                                 l[row_k] = 1;
                                 u[row_k] = 0;
                                 d[row_k] = 1;
-                            } else if (z[row_k] >= upper) {
-                                z[row_k] = upper;
+                            } else if (z[row_k] >= cils.upper) {
+                                z[row_k] = cils.upper;
                                 u[row_k] = 1;
                                 l[row_k] = 0;
                                 d[row_k] = -1;
@@ -442,7 +438,7 @@ namespace cils {
                                 z_x[h] = z[h];
                             }
 //                            if (n_dx_q_1 != n) {
-//                                if (diff == dx || iter > program_def::search_iter || !check) {
+//                                if (diff == dx || iter > cils.search_iter || !check) {
 //                                    break;
 //                                }
 //                            }
@@ -452,16 +448,16 @@ namespace cils {
                     }
 
                 } else {
-                    if (k == dx - 1) break;
+                    if (row_k == n_dx_q_1 - 1) break;
                     else {
-                        k++;
+//                        k++;
                         row_k++;
                         if (l[row_k] != 1 || u[row_k] != 1) {
                             z[row_k] += d[row_k];
-                            if (z[row_k] == lower) {
+                            if (z[row_k] == cils.lower) {
                                 l[row_k] = 1;
                                 d[row_k] = -d[row_k] + 1;
-                            } else if (z[row_k] == upper) {
+                            } else if (z[row_k] == cils.upper) {
                                 u[row_k] = 1;
                                 d[row_k] = -d[row_k] - 1;
                             } else if (l[row_k] == 1) {
@@ -471,7 +467,7 @@ namespace cils {
                             } else {
                                 d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
                             }
-                            gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
+                            gamma = R_R(n * row_k + row_k) * (c[row_k] - z[row_k]);
                             dflag = 1;
                         }
                     }
@@ -494,11 +490,11 @@ namespace cils {
 
             c[row_k] = y_B[row_k] / R_kk;
             z[row_k] = round(c[row_k]);
-            if (z[row_k] <= lower) {
-                z[row_k] = u[row_k] = lower; //The lower bound is reached
+            if (z[row_k] <= cils.lower) {
+                z[row_k] = u[row_k] = cils.lower; //The cils.lower bound is reached
                 l[row_k] = d[row_k] = 1;
-            } else if (z[row_k] >= upper) {
-                z[row_k] = upper; //The upper bound is reached
+            } else if (z[row_k] >= cils.upper) {
+                z[row_k] = cils.upper; //The cils.upper bound is reached
                 u[row_k] = 1;
                 l[row_k] = 0;
                 d[row_k] = -1;
@@ -510,7 +506,7 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
             scalar newprsd, sum;
             //ILS search process
-            for (index count = 0; count < program_def::max_search || iter == 0; count++) {
+            for (index count = 0; count < this->max_search || iter == 0; count++) {
                 //while (1) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
@@ -528,11 +524,11 @@ namespace cils {
                             }
                             c[row_k] = (y_B[row_k] - sum) / R_kk;
                             z[row_k] = round(c[row_k]);
-                            if (z[row_k] <= lower) {
-                                z[row_k] = u[row_k] = lower;
+                            if (z[row_k] <= cils.lower) {
+                                z[row_k] = u[row_k] = cils.lower;
                                 l[row_k] = d[row_k] = 1;
-                            } else if (z[row_k] >= upper) {
-                                z[row_k] = upper;
+                            } else if (z[row_k] >= cils.upper) {
+                                z[row_k] = cils.upper;
                                 u[row_k] = 1;
                                 l[row_k] = 0;
                                 d[row_k] = -1;
@@ -551,7 +547,7 @@ namespace cils {
                                 z_x[h] = z[h];
                             }
                             if (i != 0) {
-                                if (diff == dx || iter > program_def::search_iter || !check) {
+                                if (diff == dx || iter > cils.search_iter || !check) {
                                     break;
                                 }
                             }
@@ -571,7 +567,7 @@ namespace cils {
                             if (z[row_k] == 0) {
                                 l[row_k] = 1;
                                 d[row_k] = -d[row_k] + 1;
-                            } else if (z[row_k] == upper) {
+                            } else if (z[row_k] == cils.upper) {
                                 u[row_k] = 1;
                                 d[row_k] = -d[row_k] - 1;
                             } else if (l[row_k] == 1) {
@@ -591,7 +587,7 @@ namespace cils {
         }
 
         inline bool ils_search(const index n_dx_q_0, const index n_dx_q_1, const bool check,
-                               const scalar *R_R, const scalar *y_B, vector<scalar> *z_x) {
+                               const b_matrix &R_R, const b_vector &y_B, b_vector &z_x) {
 
             //variables
             scalar sum, newprsd, gamma, beta = INFINITY;
@@ -601,7 +597,7 @@ namespace cils {
             index row_kk = n * end_1 + end_1, count, iter = 0;
 
             //Initial squared search radius
-            scalar R_kk = R_R[n * end_1 + end_1];
+            scalar R_kk = R_R(n * end_1 + end_1);
             c[row_k] = y_B[row_k] / R_kk;
             z[row_k] = round(c[row_k]);
             gamma = R_kk * (c[row_k] - z[row_k]);
@@ -610,17 +606,17 @@ namespace cils {
             d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
 
             //ILS search process
-            for (count = 0; count < program_def::max_thre || iter == 0; count++) {
+            for (count = 0; count < max_thre || iter == 0; count++) {
                 newprsd = p[row_k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
                         k--;
                         row_k--;
                         sum = 0;
-                        R_kk = R_R[n * row_k + row_k];
+                        R_kk = R_R(n * row_k + row_k);
                         p[row_k] = newprsd;
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col + n_dx_q_0];
+                            sum += R_R((col + n_dx_q_0) * n + row_k) * z[col + n_dx_q_0];
                         }
 
                         c[row_k] = (y_B[row_k] - sum) / R_kk;
@@ -633,16 +629,16 @@ namespace cils {
                         diff = 0;
                         iter++;
                         for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
-                            diff += z_x->at(h) == z[h];
-                            z_x->at(h) = z[h];
+                            diff += z_x[h] == z[h];
+                            z_x[h] = z[h];
                         }
                         if (n_dx_q_1 != n) {
-                            if (diff == dx || iter > program_def::search_iter || !check) {
+                            if (diff == dx || iter > cils.search_iter || !check) {
                                 break;
                             }
                         }
                         z[row_k] += d[row_k];
-                        gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
+                        gamma = R_R(n * row_k + row_k) * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > row_k ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 } else {
@@ -651,7 +647,7 @@ namespace cils {
                         k++;
                         row_k++;
                         z[row_k] += d[row_k];
-                        gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
+                        gamma = R_R(n * row_k + row_k) * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 }
@@ -683,7 +679,7 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
             scalar newprsd, sum;
             //ILS search process
-            for (index count = 0; count < program_def::max_search || iter == 0; count++) {
+            for (index count = 0; count < this->max_search || iter == 0; count++) {
                 newprsd = p[row_k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -712,7 +708,7 @@ namespace cils {
                             z_x[h] = z[h];
                         }
                         if (i != 0) {
-                            if (diff == dx || iter > program_def::search_iter || !check) {
+                            if (diff == dx || iter > cils.search_iter || !check) {
                                 break;
                             }
                         }
@@ -738,10 +734,10 @@ namespace cils {
 
         inline bool ubils_search(const index n_dx_q_0, const index n_dx_q_1, const bool check, scalar beta,
                                  const scalar *R_R, const scalar *y_B,
-                                 vector<scalar> &z_x) {
+                                 b_vector &z_x) {
             index i, nx, j;
             scalar gamma;
-            vector<scalar> zhat(z_x.size(), 0);
+            b_vector zhat(z_x.size(), 0);
             // 'ubils_search:35' [m,n] = size(R_R);
             //  Point which determins the initial search radius beta
             // 'ubils_search:38' zhat = z0;
@@ -763,12 +759,12 @@ namespace cils {
             for (i = 0; i < nx; i++) {
                 d[i] = 0.0;
             }
-            //  l(k) = 1 if the lower bound is reached at level k
+            //  l(k) = 1 if the cils.lower bound is reached at level k
             // 'ubils_search:50' l = zeros(size(l));
             for (i = 0; i < n; i++) {
                 l[i] = 0.0;
             }
-            //  u(k) = 1 if the upper bound is reached at level k
+            //  u(k) = 1 if the cils.upper bound is reached at level k
             // 'ubils_search:52' u = l;
             for (i = 0; i < n; i++) {
                 u[i] = 0.0;
@@ -776,7 +772,7 @@ namespace cils {
             //  Partial squared residual norm for z
             //  prsd(k) = (norm(y_B(k+1:n)-R_R(k+1:n,k+1:n)*z(k+1:n)))^2
             // 'ubils_search:59' prsd = zeros(m+1,1);
-            vector<scalar> prsd(m, 0);
+            b_vector prsd(m, 0);
 
             //  ------------------------------------------------------------------
             //  --------  Search process  ----------------------------------------
@@ -795,9 +791,9 @@ namespace cils {
             index t;
             // 'ubils_search:269' R_temp = R_R;
             // 'ubils_search:270' Z = zeros(n,n);
-            vector<scalar> Z(n * n, 0);
+            b_vector Z(n * n, 0);
             // 'ubils_search:271' s = zeros(n,1);
-            vector<scalar> s(n, 0);
+            b_vector s(n, 0);
             // 'ubils_search:273' for j = 1:n
             i = n;
             for (j = 0; j < n; j++) {
@@ -811,7 +807,7 @@ namespace cils {
                     t = j;
                 }
                 // 'ubils_search:280' if R_R(t,j) >= 0
-                if (R_R[t + m * j] >= 0.0) {
+                if (R_R(t + m * j) >= 0.0) {
                     // 'ubils_search:281' Z(j,j) = 1;
                     Z[j + n * j] = 1.0;
                     // 'ubils_search:282' s(j) = l(j);
@@ -827,7 +823,7 @@ namespace cils {
             // 'ubils_search:289' R_R = R_temp * Z;
             t = m;
             b_m = n;
-            vector<scalar> b_R(m * n, 0);
+            b_vector b_R(m * n, 0);
             for (j = 0; j < n; j++) {
                 int boffset;
                 int coffset = j * t;
@@ -840,22 +836,22 @@ namespace cils {
                     int bkj = Z[boffset + k];
                     for (int b_i = 0; b_i < t; b_i++) {
                         i = coffset + b_i;
-                        b_R[i] = b_R[i] + R_R[aoffset + b_i] * bkj;
+                        b_R[i] = b_R[i] + R_R(aoffset + b_i) * bkj;
                     }
                 }
             }
             // 'ubils_search:290' y_B = y_B - R_temp*s;
-            vector<scalar> C(m, 0);
+            b_vector C(m, 0);
             for (index k = 0; k < n; k++) {
                 for (i = 0; i < m; i++) {
-                    C[i] = C[i] + R_R[k * m + i] * s[k];
+                    C[i] = C[i] + R_R(k * m + i) * s[k];
                 }
             }
             for (i = 0; i < m; i++) {
                 C[i] = y_B[i] - C[i];
             }
             // 'ubils_search:291' u = u - l;
-            vector<scalar> b_u(n, 0);
+            b_vector b_u(n, 0);
             for (i = 0; i < n; i++) {
                 b_u[i] = u[i] - l[i];
             }
@@ -885,7 +881,7 @@ namespace cils {
             //  dflag for down or up search direction
             // 'ubils_search:91' dflag = 1;
             t = 1;
-            //  Intend to move down to a lower level
+            //  Intend to move down to a cils.lower level
             // 'ubils_search:93' while 1
             while (1) {
                 while (t == 1) {
@@ -1080,7 +1076,7 @@ namespace cils {
             }
             //  The optimal solution has been found, terminate
             // 'ubils_search:196' if zhat == z0
-            vector<bool> x(n, 0);
+            std::vector<bool> x(n, 0);
             for (i = 0; i < n; i++) {
                 x[i] = (zhat[i] == z_x[i]);
             }
@@ -1117,7 +1113,7 @@ namespace cils {
             //  --------  Local functions  ---------------------------------------
             //  ------------------------------------------------------------------
             //
-            //  Compute new lower bound and upper bound for z_k
+            //  Compute new cils.lower bound and cils.upper bound for z_k
             //
             // 'ubils_search:190' m = size(R_R,1);
             // 'ubils_search:192' if k > m-1
@@ -1139,16 +1135,16 @@ namespace cils {
                 lambda_k_tmp = 0.0;
                 loop_ub = i1 - i;
                 for (i1 = 0; i1 < loop_ub; i1++) {
-                    lambda_k_tmp += R_R[(m + m * (i + i1)) - 1] * u[(i2 + i1) - 1];
+                    lambda_k_tmp += R_R((m + m * (i + i1)) - 1) * u[(i2 + i1) - 1];
                 }
-                lambda_k = c_k - (beta + lambda_k_tmp) / R_R[(m + m * (k - 1)) - 1];
+                lambda_k = c_k - (beta + lambda_k_tmp) / R_R((m + m * (k - 1)) - 1);
                 // 'ubils_search:194' mu_k = c_k + beta/R_R(m,k);
                 mu_k =
-                        c_k + beta / R_R[(m + m * (k - 1)) - 1];
+                        c_k + beta / R_R((m + m * (k - 1)) - 1);
             } else {
                 // 'ubils_search:195' else
                 // 'ubils_search:196' lambda_k = c_k - sqrt(beta^2-prsd(k+1))/R_R(k,k);
-                lambda_k_tmp = std::sqrt(beta * beta - prsd[k]) / R_R[(k + m * (k - 1)) - 1];
+                lambda_k_tmp = std::sqrt(beta * beta - prsd[k]) / R_R((k + m * (k - 1)) - 1);
                 lambda_k = c_k - lambda_k_tmp;
                 // 'ubils_search:197' mu_k = c_k + sqrt(beta^2-prsd(k+1))/R_R(k,k);
                 mu_k = c_k + lambda_k_tmp;

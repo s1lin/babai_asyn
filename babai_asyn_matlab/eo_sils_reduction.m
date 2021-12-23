@@ -1,8 +1,8 @@
-function [A, R, Z, y, y_LLL, x_t, d] = eo_sils_reduction(k, n, SNR)
+function [A, R, Z, y, y_LLL, x_t, d] = eo_sils_reduction(qam, n, SNR)
 
 rng('shuffle')
 %Initialize Variables
-sigma = sqrt(((4^k-1)*n)/(6*10^(SNR/10)));
+sigma = sqrt(((4^qam-1)*n)/(6*10^(SNR/10)));
 
 Ar = normrnd(0, sqrt(1/2), n/2, n/2);
 Ai = normrnd(0, sqrt(1/2), n/2, n/2);
@@ -10,12 +10,12 @@ Abar = [Ar -Ai; Ai, Ar];
 A = 2 * Abar;
 
 %True parameter x:
-low = -2^(k-1);
-upp = 2^(k-1) - 1;
+low = -2^(qam-1);
+upp = 2^(qam-1) - 1;
 xr = 1 + 2 * randi([low upp], n/2, 1);
 xi = 1 + 2 * randi([low upp], n/2, 1);
 xbar = [xr; xi];
-x_t = (2^k - 1 + xbar)./2;
+x_t = (2^qam - 1 + xbar)./2;
 
 %Noise vector v:
 vr = normrnd(0, sigma, n/2, 1);
@@ -44,153 +44,75 @@ Z = eye(n);
 
 f = true;
 swap = zeros(n,1);
-tic
-while f
-    f = false;
-    for i = 2:2:n
-        i1 = i-1;
-        zeta = round(R(i1,i) / R(i1,i1));
-        alpha = R(i1,i) - zeta * R(i1,i1);
-
-        if R(i1,i1)^2 > 2 * (alpha^2 + R(i,i)^2)
-            swap(i) = 1;
-            f = true;
-            if zeta ~= 0
-                % Perform a size reduction on R(k-1,k)
-
-                R(i1,i) = alpha;
-                R(1:i-2,i) = R(1:i-2,i) - zeta * R(1:i-2,i-1);
-                Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
-
-%                 for l = i-2:-1:1
-%                     zeta = round(R(l,i)/R(l,l));
-%                     if zeta ~= 0
-%                         R(1:l,i) = R(1:l,i) - zeta * R(1:l,l);
-%                         Z(:,i) = Z(:,i) - zeta * Z(:,l);
-%                     end
-%                 end
-            end
-            % Permute columns k-1 and k of R and Z
-            R(1:i,[i1,i]) = R(1:i,[i,i1]);
-            Z(:,[i1,i]) = Z(:,[i,i1]);
-        end
-    end
-%     for i = 2:2:n
-%         i1 = i-1;
-%         if swap(i) == 1
-%             [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
-%             R([i1,i],i:n) = G * R([i1,i],i:n);
-%             y([i1,i]) = G * y([i1,i]);
-%             swap(i) = 0;
-%         end
-%     end
-    if f
-        [~, R] = qr(R);
-    end
-    for i = 3:2:n
-        i1 = i-1;
-        zeta = round(R(i1,i) / R(i1,i1));
-        alpha = R(i1,i) - zeta * R(i1,i1);
-
-        if R(i1,i1)^2 > 2 * (alpha^2 + R(i,i)^2)
-            swap(i) = 1;
-            f = true;
-            if zeta ~= 0
-                % Perform a size reduction on R(k-1,k)
-
-                R(i1,i) = alpha;
-                R(1:i-2,i) = R(1:i-2,i) - zeta * R(1:i-2,i-1);
-                Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
-
-%                 for l = i-2:-1:1
-%                     zeta = round(R(l,i)/R(l,l));
-%                     if zeta ~= 0
-%                         R(1:l,i) = R(1:l,i) - zeta * R(1:l,l);
-%                         Z(:,i) = Z(:,i) - zeta * Z(:,l);
-%                     end
-%                 end
-            end
-            % Permute columns k-1 and k of R and Z
-            R(1:i,[i1,i]) = R(1:i,[i,i1]);
-            Z(:,[i1,i]) = Z(:,[i,i1]);
-        end
-    end
-    if f
-        [~, R] = qr(R);
-    end
-
-%     for i = 3:2:n
-%         i1 = i-1;
-%         if swap(i) == 1
-%             [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
-%             R([i1,i],i:n) = G * R([i1,i],i:n);
-%             y([i1,i]) = G * y([i1,i]);
-%             swap(i) = 0;
-%         end
-%     end
-end
 even = true;
-while f
+start = 2;
+G = cell(n, 1);
+tic
+while f || ~even
     f = false;
-    for i = 2:n
-        i1 = i-1;
-        zeta = round(R(i1,i) / R(i1,i1));
-        alpha = R(i1,i) - zeta * R(i1,i1);
-        
-        %if R(i1,i1)^2 > 2 * (alpha^2 + R(i,i)^2)
-            %swap(i) = 1;
-            
+    for k = start:2:n
+        k1 = k-1;
+        zeta = round(R(k1,k) / R(k1,k1));
+        alpha = R(k1,k) - zeta * R(k1,k1);
+        if R(k1,k1)^2 > 2 * (alpha^2 + R(k,k)^2)
+            swap(k) = 1;
+            f = true;
             if zeta ~= 0
                 % Perform a size reduction on R(k-1,k)
-                
-                R(i1,i) = alpha;
-                R(1:i-2,i) = R(1:i-2,i) - zeta * R(1:i-2,i-1);
-                Z(:,i) = Z(:,i) - zeta * Z(:,i-1);
-                
-                for l = i-2:-1:1
-                    zeta = round(R(l,i)/R(l,l));
+                R(k1,k) = alpha;
+                R(1:k-2,k) = R(1:k-2,k) - zeta * R(1:k-2,k-1);
+                Z(:,k) = Z(:,k) - zeta * Z(:,k-1);  
+
+                %Perform size reductions on R(1:k-2,k)
+                for i = k-2:-1:1
+                    zeta = round(R(i,k)/R(i,i));  
                     if zeta ~= 0
-                        R(1:l,i) = R(1:l,i) - zeta * R(1:l,l);
-                        Z(:,i) = Z(:,i) - zeta * Z(:,l);
+                        R(1:i,k) = R(1:i,k) - zeta * R(1:i,i);  
+                        Z(:,k) = Z(:,k) - zeta * Z(:,i);  
                     end
                 end
             end
-            % Permute columns k-1 and k of R and Z
-            
-        %end
+           
+        end
     end
-    
-    if even
-        start = 2;
-        even = false;
-    else
-        start = 3;
-        even = true;
-    end
-    
-    for i = start:2:n
-        i1 = i-1;
-        zeta = round(R(i1,i) / R(i1,i1));
-        alpha = R(i1,i) - zeta * R(i1,i1);
-        %if swap(i) == 1
-        if R(i1,i1)^2 > 2 * (alpha^2 + R(i,i)^2)
-            f = true;
-            R(1:i,[i1,i]) = R(1:i,[i,i1]);
-            Z(:,[i1,i]) = Z(:,[i,i1]);
-            [G,R([i1,i],i1)] = planerot(R([i1,i],i1));
-            R([i1,i],i:n) = G * R([i1,i],i:n);
-            y([i1,i]) = G * y([i1,i]);
-            swap(i) = 0;
+    for k = start:2:n
+        if swap(k) == 1
+         k1 = k - 1;         
+         % Permute columns k-1 and k of R and Z
+         R(1:k,[k1,k]) = R(1:k,[k,k1]);       
+         Z(:,[k1,k]) = Z(:,[k,k1]);
+         [G{k},R([k1,k],k1)] = planerot(R([k1,k],k1));
         end
     end
     
+    for k = start:2:n    
+        if swap(k) == 1
+            k1 = k-1;
+            R([k1,k],k:n) = G{k} * R([k1,k],k:n);   
+            y([k1,k]) = G{k} * y([k1,k]);
+            swap(k) = 0;
+        end
+    end
+
+    if even
+        even = false;
+        start = 3;
+    else
+        even = true;
+        start = 2;           
+    end
 end
+
 toc
-Q1 = R_*Z/R;
-% Q1
-d = det(Q1*Q1')
-diff = Q'*A*Z-R
-norm(Q'*A*Z-R, 1)
+Q = A*Z*inv(R);
+if n <= 16
+    G
+    R
+    Q
+    Q'*Q
+end
+diff = norm(Q'*y_LLL - y, 2)
+
 sils_lll_eval(R);
 sils_reduction(A,y_LLL);
 
