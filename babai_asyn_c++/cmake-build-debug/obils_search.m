@@ -91,33 +91,16 @@ while 1
        
        if newprsd < beta  % Inside the ellispoid
            if k ~= 1 % Move to level k-1
-               % Update path  
-%                if ulevel ~= 0 
-%                    path(ulevel:k-1) = k;
-%                    for j = ulevel-1 : -1 : 1
-%                        if path(j) < k
-%                            path(j) = k;
-%                        else
-%                            break;  % Note path(1:j-1) >= path(j)
-%                        end
-%                    end
-%                end               
-               % Update S
-               k = k - 1;
-%                for j = path(k):-1:k+1
-%                    S(k,j-1) = S(k,j) - R(k,j)*z(j);
-%                end
-%               R(k,k+1:n)
-               sum = y(k) - R(k,k+1:n)*z(k+1:n);
                
-%                S(k,k) - sum
+               k = k - 1;
+               sum = y(k) - R(k,k+1:n)*z(k+1:n);              
                % Update the partial squared residual norm
                prsd(k) = newprsd;
                
                % Find the initial integer in [l(k), u(k)]
                c(k) = sum / R(k,k);
                [z(k),d(k),lflag(k),uflag(k)] = init(c(k),l(k),u(k));
-%                z(k)
+               
                gamma = R(k,k) * (c(k) - z(k));
                
            else    % A valid point is found, update search radius
@@ -134,9 +117,6 @@ while 1
            break;
        else
        % Move back to level k+1
-%            if ulevel == 0
-%                ulevel = k;
-%            end
            k = k + 1;
            if lflag(k) ~= 1 || uflag(k) ~= 1
                % Find a new integer at level k  

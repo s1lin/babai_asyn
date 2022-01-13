@@ -1,12 +1,12 @@
-#include "src/example/cils_standard_test.cpp"
+//#include "src/example/cils_standard_test.cpp"
 #include "src/example/cils_underdetermined_test.cpp"
 
 using namespace std;
 using namespace cils;
 
-void run_test(int argc, char *argv[], int rank) {
-
-
+//void run_test(int argc, char *argv[], int rank) {
+//
+//
 //    block_optimal_test<scalar, int, M, N>(rank);
 //    sic_opt_test<scalar, int, M, N>();
 //    switch (program_def::mode) {
@@ -27,64 +27,66 @@ void run_test(int argc, char *argv[], int rank) {
 ////            test_ils_search<scalar, int, M, N>();
 //            break;
 //    }
-}
-
-//int main(int argc, char *argv[]) {
-//    double t;
-//    MPI_Comm comm;
-//    int rank, size;
-//    MPI_Init(nullptr, nullptr);
-//    comm = MPI_COMM_WORLD;
-//    /* Determine the sender and receiver */
-//    MPI_Comm_rank(comm, &rank);
-//    MPI_Comm_size(comm, &size);
-//
-//    if (rank == 0) {
-//        printf("\n====================[ Run | cils | Release ]==================================\n");
-//        t = omp_get_wtime();
-//
-//    }
-//    program_def::init_program_def(argc, argv);
-////    init_point_test<scalar, int, M, N>(size, rank);
-////    plot_run<scalar, int, M, N>(size, rank);
-//    plot_run_grad_omp<scalar, int, M, N>(size, rank);
-////    block_optimal_test<scalar, int, M, N>(size, rank);
-//
-//    if (rank == 0) {
-//        t = omp_get_wtime() - t;
-//
-//        printf("====================[TOTAL TIME | %2.2fs, %2.2fm, %2.2fh]==================================\n",
-//               t, t / 60, t / 3600);
-//    }
-//    /* do a zero length gather */
-//    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
-//
-//    MPI_Finalize();
-//
-//    return 0;
 //}
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/io.hpp>
+int main(int argc, char *argv[]) {
+    double t;
+    MPI_Comm comm;
+    int rank, size;
+    MPI_Init(nullptr, nullptr);
+    comm = MPI_COMM_WORLD;
+    /* Determine the sender and receiver */
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
 
-int main () {
-    using namespace boost::numeric::ublas;
-    identity_matrix<double> m;
-    matrix<double> m2(3,3);
-    m.resize(3, 3, false);
-    m2.assign(m);
-    m2(1,2) = m2(1, 1) + m2(2, 2);
-    std::cout << m2 << std::endl;
+    if (rank == 0) {
+        printf("\n====================[ Run | cils | Release ]==================================\n");
+        t = omp_get_wtime();
 
-    m2.resize(5, 5, true);
-    std::cout << m2 << std::endl;
+    }
+//    CILS cils = cils_driver<double, int>(argc, argv);
+    init_point_test<double, int>(size, rank);
+//    plot_run<scalar, int, M, N>(size, rank);
+//    plot_run_grad_omp<double, int>(size, rank);
+//    block_optimal_test<scalar, int, M, N>(size, rank);
 
-    m2.resize(3, 3, false);
-    std::cout << m2 << std::endl;
+    if (rank == 0) {
+        t = omp_get_wtime() - t;
 
-    vector<double> v1(3);
-    std::fill(v1.begin(),v1.end(),3);
+        printf("====================[TOTAL TIME | %2.2fs, %2.2fm, %2.2fh]==================================\n",
+               t, t / 60, t / 3600);
+    }
+    /* do a zero length gather */
+    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
 
-    std::cout << v1 << std::endl;
+    MPI_Finalize();
+
+    return 0;
 }
+
+//#include <boost/numeric/ublas/matrix.hpp>
+//#include <boost/numeric/ublas/vector.hpp>
+//#include <boost/numeric/ublas/io.hpp>
+//
+//int main () {
+//    using namespace boost::numeric::ublas;
+//    identity_matrix<double> m;
+//    matrix<double> m2(3,3);
+//    m.resize(3, 3, false);
+//    m2.assign(m);
+//    m2(1,2) = m2(1, 1) + m2(2, 2);
+//    std::cout << m2 << std::endl;
+//
+//    m2.resize(5, 5, true);
+//    std::cout << m2 << std::endl;
+//
+////    m2.resize(3, 3, false);
+//    std::cout << m2(7)  << std::endl;
+//
+//    subrange(m2, 0, 2, 0, 1) = subrange(m2, 0, 2, 1, 0);
+//    std::cout << m2 << std::endl;
+////    vector<double> v1(3);
+////    std::fill(v1.begin(),v1.end(),3);
+//
+////    std::cout << v1 << std::endl;
+//}

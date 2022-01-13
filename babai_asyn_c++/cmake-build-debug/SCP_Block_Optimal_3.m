@@ -53,11 +53,14 @@ for i = 1:max_Babai
     
     H_P = H(:,permutation(:, i));        
     x_tmp = x_per(permutation(:, i));
-         
+    
+    %[H_A, P_cum, z, Q_tilde, R_tilde, indicator] = partition_H_2(H, z_B, m, n)
+    
     per = i;
     %Apply permutation strategy to update x_cur and v_norm_cur
     %[x_tmp, v_norm_temp] = block_opt(H_P, y, x_tmp, N, indicator);
     %Corresponds to Algorithm 12 (Block Optimal) in Report 10
+   
     for j = 1:q
         
         %cur_1st refers to the column of H where the current block starts
@@ -75,11 +78,10 @@ for i = 1:max_Babai
         else
             y_bar = y - H_P(:,1:cur_1st-1) * x_tmp(1:cur_1st-1) - H_P(:, cur_end+1:N) * x_tmp(cur_end+1:N);
         end
-        %y_bar'
         % Compute optimal solution
         %e_vec = repelem(1, t)';
         %y_bar = y_bar - H_P(:, cur_1st:cur_end) * e_vec;
-        %H_adj = 2 * H_P(:, cur_1st:cur_end);
+        %H_adj = 2 * H_P(:, cur_1st:cur_end);        
         H_adj = H_P(:, cur_1st:cur_end);
         l = repelem(0, t)';
         u = repelem(2^k-1, t)';
@@ -91,6 +93,7 @@ for i = 1:max_Babai
         %z
     end
     
+    %x_tmp'
     v_norm_cur = norm(y - H_P * x_tmp);
     
     if v_norm_cur < v_norm
@@ -121,5 +124,5 @@ end
 %     stopping(4) = 1;
 % end
 
-x_cur = I(:, permutation(:, best_per)) * x_per; %
+x_cur = I(:, permutation(:, best_per)) * x_per %
 end

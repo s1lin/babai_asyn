@@ -1,4 +1,3 @@
-
 function [Q, R_, y_q] = qrmgs_row(A, y)
     A = [A y];
     [m, n] = size(A);
@@ -17,4 +16,5 @@ function [Q, R_, y_q] = qrmgs_row(A, y)
     end
     R_  = R(:,1:n-1);
     y_q = R(:, n);
+    norm(y - Q'*y_q)
 end

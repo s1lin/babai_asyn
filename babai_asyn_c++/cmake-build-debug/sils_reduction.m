@@ -54,11 +54,10 @@
 % while k <= n
 %     
 %     k1 = k-1;
-%     
-%     zeta = round(R(k1,k) / R(k1,k1));
-%     alpha = R(k1,k) - zeta * R(k1,k1);
-%     
-%     if R(k1,k1)^2 > (1 + 1.e-0) * (alpha^2 + R(k,k)^2)   
+%     zeta = round(R(k1,k) / R(k1,k1));  
+%     alpha = R(k1,k) - zeta * R(k1,k1);  
+% 
+%     if R(k1,k1)^2 > (1 + 1.e-10) * (alpha^2 + R(k,k)^2)   
 %         if zeta ~= 0
 %             % Perform a size reduction on R(k-1,k)
 %             R(k1,k) = alpha;
@@ -78,25 +77,13 @@
 %         % Permute columns k-1 and k of R and Z
 %         R(1:k,[k1,k]) = R(1:k,[k,k1]);
 %         Z(:,[k1,k]) = Z(:,[k,k1]);
-%         %Q(:,[k1,k]) = Q(:,[k,k1]);
-%         %B(:,[k1,k]) = B(:,[k1,k]);
-%         G = zeros(2,2);
+%         
 %         % Bring R back to an upper triangular matrix by a Givens rotation
 %         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
-% %         R
-% %         R([k1,k],k:n)
-%         R([k1,k],k:n) = G * R([k1,k],k:n);  
-%         %Q([k1,k],k:n) = G * Q([k1,k],k:n); 
-%         %B([k1,k],k:n) = G * B([k1,k],k:n); 
-%         y_t = zeros(2,1);
+%         R([k1,k],k:n) = G * R([k1,k],k:n);   
 %         
-%         y_t(1) = y(k1);
-%         y_t(2) = y(k);
 %         % Apply the Givens rotation to y
-%         y_t = G * y_t;
-%         y(k1) = y_t(1);
-%         y(k) = y_t(2);
-%         
+%         y([k1,k]) = G * y([k1,k]);
 %         
 %         if k > 2
 %             k = k - 1;
@@ -107,9 +94,13 @@
 %     end
 % end
 % toc
-% %Q1 = R_*Z/R;
-% %det(Q1*Q1')
-% %sils_lll_eval(R);
+% Q1 = R_*Z/R;
+% det(Q1*Q1')
+% diff = Q'*B*Z-R
+% norm(Q'*B*Z-R, 1)
+% sils_lll_eval(R);
+
+
 function [R,Z,y] = sils_reduction(B,y)
 %
 % [R,Z,y] = sils_reduction(B,y) reduces the general standard integer 
@@ -142,13 +133,18 @@ function [R,Z,y] = sils_reduction(B,y)
 [m,n] = size(B);
 
 % QR factorization with minimum-column pivoting
-[R,piv,y] = qrmcp(B,y);
+%[R,piv,y] = qrmcp(B,y);
+[Q, R, ~] = qrmgs_row(B, y);
 
+y_ = y;
+y = Q'*y;
+R_ = R;
 % Obtain the permutation matrix Z
-Z = zeros(n,n);
-for j = 1 : n
-    Z(piv(j),j) = 1;
-end
+% Z = zeros(n,n);
+Z = eye(n);
+% for j = 1 : n
+%     Z(piv(j),j) = 1;
+% end
 
 % ------------------------------------------------------------------
 % --------  Perfome the partial LLL reduction  ---------------------
@@ -180,13 +176,13 @@ while k <= n
         end
         
         % Permute columns k-1 and k of R and Z
-        R(1:k,[k1,k]) = R(1:k,[k,k1]);
+        R(1:k,[k1,k]) = R(1:k,[k,k1]);       
         Z(:,[k1,k]) = Z(:,[k,k1]);
         
         % Bring R back to an upper triangular matrix by a Givens rotation
         [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
         R([k1,k],k:n) = G * R([k1,k],k:n);   
-        
+                
         % Apply the Givens rotation to y
         y([k1,k]) = G * y([k1,k]);
         
@@ -198,3 +194,13 @@ while k <= n
         k = k + 1;
     end
 end
+if n <= 16
+    Z
+    R
+    y
+end
+% Q = B*Z*inv(R)
+% Q'*Q
+% diff = Q'*y_ - y
+% norm(Q'*y_ - y, 1)
+% sils_lll_eval(R);

@@ -13,7 +13,7 @@ function [R,y,l,u,p] = obils_reduction(B,y,l,u)
 %
 % Outputs:
 %    R - n-by-n real nonsingular upper triangular matrix
-%    y - m-vector transformed from the input y by Q', i.e., y := Q'*y
+%    y - n-dimensional vector transformed from the input y, y:=(Q'*y)(1:n)
 %    l - permuted input lower bound l, i.e., l := P'*l 
 %    u - permuted input upper bound u, i.e., u := P'*u
 %    p - n-dimensional permutation vector representing P
@@ -25,9 +25,8 @@ function [R,y,l,u,p] = obils_reduction(B,y,l,u)
 
 % Authors: Xiao-Wen Chang, www.cs.mcgill.ca/~chang
 %          Xiangyu Ren
-% Copyright (c) 2015. Scientific Computing Lab, McGill University.
-% April 2015. Last revision: December 2015
-
+% Copyright (c) 2015-2018. Scientific Computing Lab, McGill University.
+% Last revision: December 2018
 
 [m,n] = size(B);
 
@@ -42,8 +41,7 @@ p = 1:n;
 
 % Inverse transpose of R
 G = inv(R)';
-j = 0;
-x_j = 0;
+
 % Determine the column permutatons 
 for k = n : -1 : 2
     maxDist = -1;
@@ -89,7 +87,6 @@ end
 R0 = R0(:,p);
 % Compute the QR factorization of R0 and then transform y0
 [Q, R, y] = qrmgs(R0, y0);
-
 %y = Q' * y0;
 
 

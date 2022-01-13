@@ -30,7 +30,7 @@ for j=N:-1:1
     % Determine the j-th column
     for i=1:j
         s_temp_unrounded = HH(:,i)'*y_temp / (HH(:,i)' * HH(:,i));
-        s_temp = round_int(s_temp_unrounded, -bound, bound);
+        s_temp = round_int(s_temp_unrounded, 0, bound);
         res = norm(y_temp-s_temp*HH(:,i));
         if res < max_res
             k=i;
@@ -44,5 +44,6 @@ for j=N:-1:1
         s_bar_IP(j)=s_est;
     end
     y_temp=y_temp-s_bar_IP(j)*HH(:,j);
+    %y_temp'
 end
 v_norm = norm(y_temp);
