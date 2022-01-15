@@ -15,9 +15,6 @@
  *   You should have received a copy of the GNU General Public License
  *   along with CILS.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "CILS_SECH_Search.cpp"
-
 using namespace std;
 
 namespace cils {
@@ -52,10 +49,6 @@ namespace cils {
 
         returnType<scalar, index>
         cils_block_search_serial(const b_matrix &R, const b_vector &y_bar) {
-            for (index i = 0; i < cils.d.size(); i++) {
-                cout << cils.d[i] << ", ";
-            }
-            cout << endl;
             index ds = cils.d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(cils.n);
             z_hat.clear();
@@ -69,43 +62,38 @@ namespace cils {
 
             scalar sum = 0;
             CILS_SECH_Search<scalar, index> ils(this->cils);
-            //        CILS_SECH_Search<scalar, index> ils(size_m, size_n, cils.qam);
             scalar start = omp_get_wtime();
 
-//            if (init == -1) {
-//                for (index i = 0; i < ds; i++) {
-//                    n_dx_q_1 = cils.d[i];
-//                    n_dx_q_0 = i == ds - 1 ? 0 : cils.d[i + 1];
-//
-//                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-//                        sum = 0;
-//                        for (index col = n_dx_q_1; col < cils.n; col++) {
-//                            sum += R(row, col) * z_hat[col];
-//                        }
-//                        y_b[row] = y_bar[row] - sum;
-//                    }
-//                    if (cils.is_constrained)
-//                        ils.obils_search(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
-//                    else
-//                        ils.ils_search(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
-//                }
-//            }
-            start = omp_get_wtime() - start;
-//        CILS_SECH_Search<scalar, index, cils.m,  cils.n> ils(k);
+            if (init == -1) {
+                for (index i = 0; i < ds; i++) {
+                    n_dx_q_1 = cils.d[i];
+                    n_dx_q_0 = i == ds - 1 ? 0 : cils.d[i + 1];
 
+                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                        sum = 0;
+                        for (index col = n_dx_q_1; col < cils.n; col++) {
+                            sum += R(row, col) * z_hat[col];
+                        }
+                        y_b[row] = y_bar[row] - sum;
+                    }
+                    if (cils.is_constrained)
+                        ils.obils_search(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
+                    else
+                        ils.ils_search(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
+                }
+            }
+            start = omp_get_wtime() - start;
             scalar run_time = omp_get_wtime();
 
             for (index i = 0; i < ds; i++) {
                 n_dx_q_1 = cils.d[i];
                 n_dx_q_0 = i == ds - 1 ? 0 : cils.d[i + 1];
-                cout << n_dx_q_1 << "," << n_dx_q_0 << endl;
                 for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                     sum = 0;
                     for (index col = n_dx_q_1; col < cils.n; col++) {
                         sum += R(row, col) * z_hat[col];
                     }
                     y_b[row] = y_bar[row] - sum;
-                    cout << y_b[row] << ",";
                 }
 
                 if (cils.is_constrained)
@@ -113,9 +101,7 @@ namespace cils {
                 else
                     ils.ils_search(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
             }
-
             run_time = omp_get_wtime() - run_time + start;
-            //Matlab Partial Reduction needs to do the permutation
 
             returnType<scalar, index> reT = {{run_time - start}, run_time, 0};
             return reT;

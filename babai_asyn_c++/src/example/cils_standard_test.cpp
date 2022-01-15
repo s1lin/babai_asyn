@@ -1,10 +1,10 @@
 
-#include "../source/cils.cpp"
-#include "../source/cils_ils_search.cpp"
-#include "../source/cils_block_search.cpp"
-#include "../source/cils_babai_search.cpp"
-#include "../source/cils_reduction.cpp"
-#include "../source/cils_init_point.cpp"
+#include "../source/CILS.cpp"
+#include "../source/CILS_SECH_Search.cpp"
+#include "../source/CILS_Block_Babai.cpp"
+#include "../source/CILS_Babai.cpp"
+#include "../source/CILS_Reduction.cpp"
+#include "../source/CILS_Init_Point.cpp"
 #include <ctime>
 
 template<typename scalar, typename index, index m, index n>
@@ -17,8 +17,7 @@ long plot_run() {
             lt->tm_hour, lt->tm_min, lt->tm_sec
     );
     printf("====================[ TEST | ILS | %s ]==================================\n", time_str);
-    for (SNR = 35; SNR <= 35; SNR += 30) {
-        index d_s_size = d_s.size();
+    for (index SNR = 35; SNR <= 35; SNR += 30) {
         scalar res[3][200][2] = {}, ber[3][200][2] = {}, tim[4][200][2] = {}, spu[4][200][2] = {}, t_spu[4][200][2] = {};
         scalar itr[3][200][2] = {}, stm[3][200][2] = {};
         scalar all_time[7][1000][3][2] = {}; //Method, iter, init, qam
@@ -32,11 +31,11 @@ long plot_run() {
 
         index l = 2; //count for qam.
 
-        vector<scalar> z_B(n, 0);
+        b_vector z_B(n, 0);
 //        for (k = 1; k <= 3; k += 2) {
         scalar qr_spu[200][2] = {}, lll_spu[200][2] = {}, lll_qr_spu[200][2] = {}, qlll_spu[200][2] = {};
         scalar qrT[200][2] = {}, lll[200][2] = {}, LLL_qr[200][2] = {};
-        cils::cils<scalar, index, m, n> cils(k, SNR);
+        cils::CILS<scalar, index> cils(k, SNR);
         for (index tt = 0; tt <= 0; tt++) {
             is_qr = tt;
             for (index i = 1; i <= max_iter; i++) {
@@ -527,7 +526,7 @@ long plot_LLL() {
             printf("[ PLOT LLL]\n++++++++++++++++++++++++++++++++++++++\n");
             std::cout << "Init, size: " << n << std::endl;
             run_time = omp_get_wtime();
-            cils::cils<scalar, index, m, n> cils(k, SNR);
+            cils::CILS<scalar, index> cils(k, SNR);
 
             scalar ber_babai, ber_thre3, ber_serial, res_lll, res_qr, ber_qr;
             printf("[ INIT PHASE]\n++++++++++++++++++++++++++++++++++++++\n");
@@ -725,10 +724,10 @@ long plot_LLL() {
 template<typename scalar, typename index, index m, index n>
 long test_ils_search() {
     std::cout << "Init, size: " << n << std::endl;
-    cils::cils<scalar, index, m, n> cils(k, SNR);
+    cils::CILS<scalar, index> cils(k, SNR);
     index init = -1;
     scalar error = 0, b, r, ber;
-    vector<scalar> z_B(n, 0);
+    b_vector z_B(n, 0);
     cils::returnType<scalar, index> reT, back_reT, qr_reT = {{}, 0, 0}, qr_reT_omp = {{}, 0, 0};
 
     for (index i = 0; i < max_iter; i++) {
@@ -834,13 +833,13 @@ void plot_res() {
             std::cout << "Init, SNR: " << SNR << std::endl;
 
             //bool read_r, bool read_ra, bool read_xy
-            cils::cils<scalar, index, m, n> cils(k, SNR);
+            cils::CILS<scalar, index> cils(k, SNR);
             cils.init();
             auto reT = cils.cils_qr_matlab();
             cils.init_R();
             printf("init_res: %.5f, sigma: %.5f, qr time: %.5fs\n", cils.init_res, cils.sigma, reT.run_time);
 
-            vector<scalar> z_B(n, 0);
+            b_vector z_B(n, 0);
             reT = cils.cils_babai_search_serial(&z_B);
             scalar res = cils::find_residual<scalar, index, m, n>(cils.A, cils.y_a, z_B.data());
             scalar ber = cils::find_bit_error_rate<scalar, index, m, n>(&z_B, cils.x_t, k);

@@ -94,7 +94,7 @@ namespace cils {
 
         b_vector R_A;
 
-        b_matrix A, H;
+        b_matrix A, R;
         b_eye_matrix I; //b_matrix
         //x_r: real solution, x_t: true parameter, y_a: original y, y_r: reduced, y_q: QR
         b_vector x_r, x_t, l, u;
@@ -205,9 +205,7 @@ namespace cils {
 
             this->I.resize(n, n, true);
             this->A.resize(m, n, false);
-            this->H.resize(m, n, false);
             this->A.clear();
-            this->H.clear();
 
             this->R_A.resize(m * (n + 1) / 2, false);// = new scalar[n * (n + 1) / 2];
             this->x_r.resize(n, false);

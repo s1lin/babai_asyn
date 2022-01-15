@@ -56,7 +56,7 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
         for x in range(0, 4):
             inipt_res = res[x][0][j]
             inipt_ber = ber[x][0][j]
-            inipt_stm = tim[x][0][j]                
+            inipt_stm = tim[x][0][j]
 
             for style in range(0, 2):
                 # 1: block optimal, 2:Babai:
@@ -76,9 +76,8 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
                     omp_stm.append(tim[x][l][j])
 
                     if l > style + 1:
-                        omp_spu.append(float(tim[x][style + 1][j])/ float(tim[x][l][j]))
-                        total_spu.append(float(tim_total[x][style + 1][j])/ float(tim_total[x][l][j]))
-
+                        omp_spu.append(float(tim[x][style + 1][j]) / float(tim[x][l][j]))
+                        total_spu.append(float(tim_total[x][style + 1][j]) / float(tim_total[x][l][j]))
 
                     # if l == style + 1:
                     #     omp_stm.append(tim[x][l][j])
@@ -91,7 +90,6 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
                     #
                     #
                     #     t = t + 1
-
 
                 proc_num = proc_num.astype(int)
 
@@ -107,7 +105,8 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
                                     marker=marker[x], linestyle=linestyle[style])
                 axes[3, j].plot(spu_label, omp_spu[0:len(spu_label)], color=color[x],
                                 marker=marker[x], linestyle=linestyle[style])
-                axes[4, j].semilogy(res_label[1:len(res_label)], np.array(total_stm[1:len(res_label)]) / max_iter, color=color[x],
+                axes[4, j].semilogy(res_label[1:len(res_label)], np.array(total_stm[1:len(res_label)]) / max_iter,
+                                    color=color[x],
                                     marker=marker[x], linestyle=linestyle[style])
                 axes[5, j].plot(spu_label, np.array(total_spu[0:len(spu_label)]), color=color[x],
                                 marker=marker[x], linestyle=linestyle[style])
@@ -126,7 +125,7 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
         axes[4, j].grid(color='b', ls='-.', lw=0.25)
         axes[5, j].grid(color='b', ls='-.', lw=0.25)
 
-    #FOR GRAD PLOTTING
+    # FOR GRAD PLOTTING
     for j in range(0, 2):
         inipt_res = res[2][0][j]
         inipt_ber = ber[2][0][j]
@@ -164,8 +163,6 @@ def plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, sp
                             marker=marker[4], linestyle=linestyle[1])
         axes[3, j].plot(spu_label, np.array(omp_spu[0:len(spu_label)]) / max_iter, color=color[4],
                         marker=marker[4], linestyle=linestyle[1])
-
-
 
     fig.suptitle("\n".join(wrap(title, len(title) / 3)), fontsize=15)
     fig.legend(bbox_to_anchor=(0.87, 0.94), title="Legend", ncol=5)
@@ -633,29 +630,85 @@ def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s):
     print("\n----------END PLOT BLOCK TIME--------------\n")
 
 
+def plot_babai_converge(n, nswp, snr, ber):
+    print("\n----------PLOT BABAI CONVERGE--------------\n")
+    np.savez(f'./test_result/{n}_{snr}_convergence_report.npz',
+             n=n, nswp=nswp, ber=ber, snr=snr)
+    plt.rcParams["figure.figsize"] = (15, 18)
+    fig, axes = plt.subplots(3, 2, constrained_layout=False)
+
+    color = ['r', 'g', 'b', 'm', 'tab:orange']
+    marker = ['o', '+', 'x', '*', '>']
+    linestyle = ['-.', '-']
+
+    # title = f'Convergence of Babai Point {str(snr)}-SNR, 64-QAM, and Problem Size {str(n)} x {str(n)}'
+    title = f'Convergence of Babai Point with Problem Size {str(n)} x {str(n)}'
+
+    # labels = ['$x^{babai}$' + ]
+    labels = ['NT-' + str(proc) for proc in range(3, 15 + 1, 3)]
+
+    itr_label = [str(proc) for proc in range(1, nswp + 1)]
+    init_range = [0, 3, 6]
+    for init in range(0, 3):
+        axes[init, 0].set_title('Initial Point $x=' + str(init_range[init]) + '$', fontsize=13)
+        # axes[init, 0].set_ylabel('Average BER between Babai Point(BP) and Parallel BP', fontsize=13)
+        # axes[init, 0].set_xlabel('The j-th iteration', fontsize=13)
+        axes[init, 1].set_title('Initial Point $x=' + str(init_range[init]) + '$', fontsize=13)
+        # axes[init, 1].set_ylabel('Average BER between Babai Point(BP) and Parallel BP', fontsize=13)
+        # axes[init, 1].set_xlabel('The j-th iteration', fontsize=13)
+
+        if init == 0:
+            for j in range(0, 5):
+                axes[init, 0].semilogy(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j], label=labels[j])
+                axes[init, 1].plot(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
+        else:
+            for j in range(0, 5):
+                axes[init, 0].semilogy(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
+                axes[init, 1].plot(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
+        # axes.set_xticklabels(itr_label, rotation=45)
+
+    # axes[init, 0].legend(title="Legend", ncol=5)
+    # axes[init, 1].legend(title="Legend", ncol=5)
+    fig.suptitle(title, fontsize=15)
+    fig.legend(bbox_to_anchor=(0.87, 0.94), title="Legend", ncol=5)
+    fig.text(0.5, 0.04, 'The j-th iteration', ha='center', fontsize=15)
+    fig.text(0.04, 0.5, 'Average BER between Babai Point(BP) and Parallel BP', va='center', rotation='vertical', fontsize=15)
+    plt.savefig(f'./test_result/{n}_{snr}_babai_convergence_report.eps', format='eps', dpi=1200)
+    plt.savefig(f'./test_result/{n}_{snr}_babai_convergence_report.png')
+    plt.close()
+
+    print("\n----------END PLOT RUNTIME UD--------------\n")
+
+
 if __name__ == "__main__":
-    n = 30
-    SNR = 35
-    title3 = 'underdetermined'
-    max_iter = 1
-    title1 = 'Box-constrained'
-    a = np.load(f'../../cmake-build-release/test_result/{n}_report_grad_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}.npz')
+    # n = 30
+    # SNR = 35
+    # title3 = 'underdetermined'
+    # max_iter = 1
+    # title1 = 'Box-constrained'
+    # a = np.load(f'../../cmake-build-release/test_result/{n}_report_grad_plot_{SNR}_{title3}_{int(max_iter / 100)}_{title1}.npz')
+    #
+    # n = a['n']
+    # m = a['m']
+    # k = a['k']
+    # l_max = a['l_max']
+    # max_iter = a['max_iter']
+    # res = a['res']
+    # ber = a['ber']
+    # tim = a['tim']
+    # spu = a['spu']
+    # tim_total = a['tim_total']
+    # spu_total = a['spu_total']
+    # proc_num = a['proc_num']
+    # max_proc = a['max_proc']
+    # min_proc = a['min_proc']
+    # is_constrained = a['is_constrained']
+    #
+    # plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu, tim_total, spu_total,
+    #                      max_proc, min_proc, is_constrained, m)
 
-    n = a['n']
-    m = a['m']
-    k = a['k']
-    l_max = a['l_max']
-    max_iter = a['max_iter']
-    res = a['res']
+    n = 256
+    a = np.load(f'../../cmake-build-debug/test_result/{str(n)}_35_convergence_report.npz')
+    nswp = a['nswp']
     ber = a['ber']
-    tim = a['tim']
-    spu = a['spu']
-    tim_total = a['tim_total']
-    spu_total = a['spu_total']
-    proc_num = a['proc_num']
-    max_proc = a['max_proc']
-    min_proc = a['min_proc']
-    is_constrained = a['is_constrained']
-
-    plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu, tim_total, spu_total,
-                         max_proc, min_proc, is_constrained, m)
+    plot_babai_converge(n, nswp, 35, ber)

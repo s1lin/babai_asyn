@@ -22,10 +22,14 @@ namespace cils {
     private:
         CILS <scalar, index> cils;
     public:
-        b_matrix P;
+        b_matrix P, H;
 
         explicit CILS_Init_Point(CILS <scalar, index> &cils) {
             this->cils = cils;
+            this->H.resize(cils.m, cils.n);
+            this->H.assign(cils.A);
+            this->P.resize(cils.n, cils.n);
+            this->P.assign(cils.I);
         }
 
         /**
@@ -51,12 +55,6 @@ namespace cils {
 
             //s_bar_IP=zeros(N,1);
             x.clear();
-            //Piv=eye(N);
-            this->P.resize(cils.n, cils.n);
-            this->P.assign(cils.I);
-            //HH = H;
-            cils.H.clear();
-            cils.H.assign(cils.A);
             //y_temp=y;
             b_vector y_tmp(cils.y_a);
             //Variable Declarations
@@ -67,7 +65,7 @@ namespace cils {
             for (index j = cils.n - 1; j >= 0; j--) {
                 max_res = INFINITY;
                 for (index i = 0; i <= j; i++) {
-                    auto Hi = column(cils.H, i);
+                    auto Hi = column(this->H, i);
                     hiy = inner_prod(Hi, y_tmp);
                     hih = inner_prod(Hi, Hi);
                     x_tmp = hiy / hih;
@@ -81,9 +79,9 @@ namespace cils {
                 }
                 if (k != -1) {
                     //HH(:,[k,j])=HH(:,[j,k]);
-                    b_vector Hj = column(cils.H, j);
-                    column(cils.H, j) = column(cils.H, k);
-                    column(cils.H, k) = Hj;
+                    b_vector Hj = column(this->H, j);
+                    column(this->H, j) = column(this->H, k);
+                    column(this->H, k) = Hj;
 
                     //Piv(:,[k,j])=Piv(:,[j,k]);
                     b_vector Pj = column(P, j);
@@ -93,7 +91,7 @@ namespace cils {
                     //s_bar_IP(j)=s_est;
                     x[j] = x_est;
                 }
-                y_tmp = y_tmp - x[j] * column(cils.H, j);
+                y_tmp = y_tmp - x[j] * column(this->H, j);
             }
 
             scalar v_norm = norm_2(y_tmp);
@@ -113,9 +111,9 @@ namespace cils {
             std::vector<bool> b_x_0, b_x_1(cils.n, 0);
 
             index i, j, k1, k2, k3;
-            cils.H.clear();
+            this->H.clear();
             this->P.assign(cils.I);
-            cils.H.assign(cils.A);
+            this->H.assign(cils.A);
             scalar v_norm = INFINITY;
             //
             //  Find a solution to the box-constrained real least squares problem

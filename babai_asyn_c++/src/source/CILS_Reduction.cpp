@@ -641,44 +641,33 @@ namespace cils {
 
     public:
         //R_A: no zeros, R_R: LLL reduced, R_Q: QR
-        b_matrix A_R, R_Q, R_R, Q, Z, P, I, G;
+        b_eye_matrix I;
+        b_matrix A_R, R_Q, R_R, Q, Z, P, G;
         b_vector y_a, y_q, y_r, p;
-        CILS <scalar, index> cils;
 
-        CILS_Reduction(CILS <scalar, index> &cils) {
-            this->cils = cils;
-            this->m = cils.m;
-            this->n = cils.n;
-
+        CILS_Reduction(b_matrix &A, b_vector &y, index lower, index upper) {
+            this->m = A.size1();
+            this->n = A.size2();
             this->A_R.resize(m, n);
-            this->R_R.resize(m, n);
-            this->A_R.assign(cils.A);
+            this->A_R.assign(A);
+            this->y_a.resize(y.size());
+            this->y_a.assign(y);
+
+            this->lower = lower;
+            this->upper = upper;
+
+            this->R_R.resize(m, n, false);
             this->R_Q.resize(m, n, false);
             this->Q.resize(m, m, false);
             this->y_q.resize(m);
             this->y_r.resize(m);
             this->y_a.resize(m);
-            this->y_a.assign(cils.y_a);
             this->p.resize(m);
-            this->I.resize(n, n, false);
-            this->Z.resize(n, n, false);
-            this->P.resize(n, n, false);
-            this->I.assign(cils.I);
-            this->Z.assign(cils.I);
-            this->P.assign(cils.I);
-        }
 
-        CILS_Reduction(index m, index n, b_matrix I) {
-            this->m = m;
-            this->n = n;
-            this->A_R.resize(m, n, false);
-            this->R_Q.resize(m, n, false);
-            this->Q.resize(m, m, false);
-            this->y_q.resize(m);
-            this->p.resize(m);
+            this->I.resize(n, n, true);
             this->Z.resize(n, n, false);
             this->P.resize(n, n, false);
-            this->I.assign(I);
+
             this->Z.assign(I);
             this->P.assign(I);
         }
@@ -956,8 +945,8 @@ namespace cils {
                     b_vector gi = subrange(column(G, i), i, k + 1);
                     b_vector y_t = subrange(y_r, i, k + 1);
                     alpha = inner_prod(y_t, gi);
-                    index x_i = max(min((int) round(alpha), cils.upper), cils.lower);
-                    if (alpha < cils.lower || alpha > cils.upper || alpha == x_i)
+                    index x_i = max(min((int) round(alpha), upper), lower);
+                    if (alpha < lower || alpha > upper || alpha == x_i)
                         dist = 1 + abs(alpha - x_i);
                     else
                         dist = 1 - abs(alpha - x_i);
