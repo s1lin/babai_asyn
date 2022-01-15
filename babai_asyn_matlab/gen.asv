@@ -1,4 +1,20 @@
-function [A, y, x_t] = gen(k, n, SNR)
+function [A, y, v, x_t, sigma_squared] = gen_problem(k, n, m, SNR)
+% [A, y, v, x_t, sigma_squared] = gen_problem(k, n, m, SNR) 
+% generates the y = A * x_t + v system
+% 
+% Inputs:
+%     SNR - integer scalar
+%     n   - integer scalar
+%     m   - integer scalar
+%     k   - integer scalar
+% 
+% Outputs:
+%     A   - m-by-n real matrix
+%     x_t - N-dimensional real vector
+%     v   - K-dimensional real vector
+%     y   - K-dimensional real vector
+%     sigma_squared - real scalar
+
 
 rng('shuffle')
 %Initialize Variables  

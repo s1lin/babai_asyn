@@ -134,7 +134,7 @@ function [R,Z,y] = sils_reduction(B,y)
 
 % QR factorization with minimum-column pivoting
 %[R,piv,y] = qrmcp(B,y);
-[Q, R] = qr(B);
+[Q, R, ~] = qrmgs_row(B, y);
 
 y_ = y;
 y = Q'*y;
@@ -194,7 +194,11 @@ while k <= n
         k = k + 1;
     end
 end
-y
+if n <= 16
+    Z
+    R
+    y
+end
 % Q = B*Z*inv(R)
 % Q'*Q
 % diff = Q'*y_ - y

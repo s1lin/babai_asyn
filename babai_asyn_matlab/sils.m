@@ -1,4 +1,4 @@
-function X = sils(B,y,p)
+function X = sils(B,y,l,u)
 %
 % X = sils(B,y,p) produces p optimal solutions to the standard integer 
 % least squares problem min_{x}||y-Bx||
@@ -36,30 +36,23 @@ if nargin < 2 % input error
     error('Not enough input arguments!')
 end
 
-if nargin < 3
-    p = 1;
-end
-
-if p <= 0 % input error
-    error('Third input argument must be an integer bigger than 0!')
-end
-
 [m,n] = size(B);
 
-if rank(B) < n
-	error('Matrix does not have full column rank!')
-end
-
-if m ~= size(y,1) || size(y,2) ~= 1  % Input error
+if m ~= size(y,1) || size(y,2) ~= 1 || ...
+      n ~= size(l,1) || size(l,2) ~= 1 || ...
+      n ~= size(u,1) || size(u,2) ~= 1     % Input error
     error('Input arguments have a matrix dimension error!')
 end
 
+if rank(B) < n
+    error('Matrix does not have full column rank, use ubils')
+end
 
 % Reduction - reduce the problem to the triangular form
 [R,Z,y] = sils_reduction(B,y);
 
 % Search - find the p optimal solustions to the reduced problem
-Zhat = sils_search(R,y(1:n),p);
+Zhat = sils_search(R,y(1:n),l,u);
 
 % Perform the unimodual transformation to obtain the solutions to
 %   the original problem
