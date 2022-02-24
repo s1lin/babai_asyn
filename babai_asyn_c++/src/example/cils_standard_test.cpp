@@ -2,7 +2,7 @@
 #include "../source/CILS.cpp"
 #include "../source/CILS_SECH_Search.cpp"
 #include "../source/CILS_Block_Babai.cpp"
-#include "../source/CILS_Babai.cpp"
+#include "../source/CILS_SO_OBILS.cpp"
 #include "../source/CILS_Reduction.cpp"
 #include "../source/CILS_Init_Point.cpp"
 #include <ctime>

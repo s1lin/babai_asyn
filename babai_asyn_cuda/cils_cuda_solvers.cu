@@ -1,5 +1,5 @@
 #include "../babai_asyn_c++/src/source/CILS.cpp"
-#include "../babai_asyn_c++/src/source/CILS_Babai.cpp"
+#include "../babai_asyn_c++/src/source/CILS_SO_OBILS.cpp"
 #include "../babai_asyn_c++/src/source/CILS_Block_Babai.cpp"
 #include "cils_cuda_solvers.cuh"
 #include "cuda_runtime_api.h"
