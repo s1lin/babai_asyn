@@ -251,6 +251,7 @@ namespace cils {
                                 diff += z_x[h] == z[h];
                                 z_x[h] = z[h];
                             }
+
                             if (i != 0) {
                                 if (diff == dx || iter > cils.search_iter || !check) {
                                     break;

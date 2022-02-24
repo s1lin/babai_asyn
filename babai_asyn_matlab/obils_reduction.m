@@ -1,4 +1,4 @@
-function [R,y,l,u,p] = obils_reduction(B,y,l,u)
+function [Q, R,y,l,u,p] = obils_reduction(B,y,l,u)
 %
 % [R,y,l,u,p] = obils_reduction(B,y,l,u) reduces the general overdetermined 
 % box-constrained integer least squares problem to an upper triangular one 
@@ -28,10 +28,17 @@ function [R,y,l,u,p] = obils_reduction(B,y,l,u)
 % Copyright (c) 2015-2018. Scientific Computing Lab, McGill University.
 % Last revision: December 2018
 
-[m,n] = size(B);
 
-% Transform B and y by using the QR factorization 
-[Q, R, y] = qrmgs(B,y);
+[~,n] = size(B);
+
+% Transform B and y by the QR factorization 
+% U = qr([B,y]);
+% R = triu(U(1:n,1:n));
+% y = U(1:n,n+1);
+% R0 = R;
+% y0 = y;
+
+[~, R, y] = qrmgs(B,y);
 %y = Q' * y;
 R0 = R;
 y0 = y;
@@ -85,9 +92,8 @@ end
 
 % Reorder the columns of R0 according to p  
 R0 = R0(:,p);
-% Compute the QR factorization of R0 and then transform y0
-[Q, R, y] = qrmgs(R0, y0);
-%y = Q' * y0;
 
-
-
+% Transform R0 and y0 by the QR factorization
+[Q, R] = qr([R0,y0]);
+y = R(:,n+1);
+R = R(:,1:n);

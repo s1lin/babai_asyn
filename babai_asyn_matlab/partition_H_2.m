@@ -1,89 +1,72 @@
-function [H_A, P_cum, z, Q_tilde, R_tilde, indicator] = partition_H_2(H, z_B, m, n)
+function [Ahat, P, t] = partition_H_2(A, m, n)
 
 %Corresponds to Algorithm 5 (Partition Strategy) in Report 10
 
-% [H_A, P_cum, z, Q_tilde, R_tilde, indicator] = partition_H(H, z_B, m, n)
-% permutes and partitions H_A so that the submatrices H_i are full-column rank 
-% 
+% [Ahat, P, t] = partition_H(A, m, n)
+% permutes and partitions Ahat so that the submatrices H_i are full-column rank
+%
 % Inputs:
-%     H - m-by-n real matrix
-%     z_B - n-dimensional integer vector
+%     A - m-by-n real matrix
 %     m - integer scalar
 %     n - integer scalar
 %
 % Outputs:
-%     P_cum - n-by-n real matrix, permutation such that H_A*P_cum=H
-%     z - n-dimensional integer vector (z_B permuted to correspond to H_A)
-%     Q_tilde - m-by-n real matrix (Q_qr factors)
-%     R_tilde - m-by-n real matrix (R_qr factors)
-%     indicator - 2-by-q integer matrix (indicates submatrices of H_A)
+%     Ahat - m-by-n real matrix
+%     P - n-by-n real matrix, permutation such that Ahat*P=A
+%     t - 2-by-q integer matrix (indicates submatrices of Ahat)
 
 
+Ahat = A;
+l = n;
+P = eye(n);
+t = zeros(2, n);
+k = 0;
 
-H_A = H;
-z = z_B;
-lastCol = n;
-P_cum = eye(n);
-R_tilde = zeros(m,n);
-Q_tilde = zeros(m,n);
-indicator = zeros(2, n);
-i = 0;
+while l >= 1
+    f = max(1, l-m+1);
+    A_l = Ahat(:, f:l);
+    P_l = eye(n);
 
-while lastCol >= 1    
-    firstCol = max(1, lastCol-m+1);
-    H_cur = H_A(:, firstCol:lastCol);
-    z_cur = z(firstCol:lastCol);
-    P_tmp = eye(n);
+    %Find the rank of A_l
+    [~, R, P_hat] = qr(A_l);
     
-    %Find the rank of H_cur
-    [Q_qr,R_qr,P_qr]=qr(H_cur);
-    
-    if size(R_qr,2)>1
-        r = sum( abs(diag(R_qr)) > 10^(-6) );
+    if size(R,2) > 1
+        r = sum(abs(diag(R)) > 10^(-6));
     else
-        r = sum( abs(R_qr(1,1)) > 10^(-6));
+        r = sum(abs(R(1,1)) > 10^(-6));
     end
-    H_P = H_cur * P_qr;     
-    z_p = P_qr' * z_cur;
+    A_P = A_l * P_hat;
+    
+    d = size(A_l, 2);
+    
+    %The case where A_l is rank deficient
+    if r < d
+        %Permute the columns of Ahat and the entries of        
+        %Ahat(:, f:f+d-1 -r ) = A_P(:, r+1:d);
+        %Ahat(:, f+d-r: l) = A_P(:, 1:r);
+        Ahat(:, f:l) = [A_P(:, r+1:d) A_P(:, 1:r)];
         
-    size_H_2 = size(H_cur, 2);
-
-    %The case where H_cur is rank deficient
-    if r < size_H_2
-        %Permute the columns of H_A and the entries of z
-        H_A(:, firstCol:firstCol+size_H_2-1 -r ) = H_P(:, r+1:size_H_2);
-        H_A(:, firstCol+size_H_2-r: lastCol) = H_P(:, 1:r);
-        z(firstCol:firstCol+size_H_2-1-r) = z_p(r+1:size_H_2);
-        z(firstCol+size_H_2-r: lastCol) = z_p(1:r);      
-        
-        %Update the permutation matrix P_tmp
-        I_K = eye(size_H_2);
-        Piv = eye(size_H_2);
-        Piv(:, size_H_2-r+1:size_H_2) = I_K(:, 1:r);
-        Piv(:, 1:size_H_2-r) = I_K(:, r+1:size_H_2);
-        P_tmp(firstCol:lastCol, firstCol:lastCol) = P_qr * Piv; 
+        %Update the permutation matrix P_l
+        I_d = eye(d);
+        P_d = [I_d(:, r+1:d), I_d(:, 1:r)];
+        P_hat = P_hat * P_d;
     else
-        %Permute the columns of H_A and the entries of z
-        H_A(:, firstCol:lastCol) = H_P;
-        z(firstCol:lastCol) = z_p;
-        
-        %Update the permutation matrix P_tmp
-        P_tmp(firstCol:lastCol, firstCol:lastCol) = P_qr;
+        %Permute the columns of Ahat and the entries of
+        Ahat(:, f:l) = A_P;        
     end
-    P_cum = P_cum * P_tmp;
-            
-    firstCol = lastCol - r + 1;
-    R_tilde(:, firstCol:lastCol) = R_qr(:, 1:r);
-    Q_tilde(:, firstCol:lastCol) = Q_qr(:, 1:r);
     
-    i = i + 1;
-    indicator(1, i) = firstCol;
-    indicator(2, i) = lastCol;
+    P_l(f:l, f:l) = P_hat;
+    P = P * P_l;
     
-    lastCol = lastCol - r;
+    f = l - r + 1;    
+    k = k + 1;
+    t(1, k) = f;
+    t(2, k) = l;
+    
+    l = l - r;
 end
 
-%Remove the extra columns of the indicator
-indicator = indicator(:, 1:i);
+%Remove the extra columns of the t
+t = t(:, 1:k);
 
 end

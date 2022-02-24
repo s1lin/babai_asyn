@@ -9,7 +9,7 @@
  *
  *   CILS is distributed in the hope that it will be useful,
  *   but WITAOUT ANY WARRANTY; without even the implied warranty of
- *   MERCA_tNTABILITY or FITNESS FOR this->A PARTICULAR PURPOSE.  See the
+ *   MERCB_tNTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
@@ -24,437 +24,6 @@ namespace cils {
         index m, n, upper, lower;
         bool verbose{}, eval{};
 
-        static scalar rt_hypotd_snf(scalar u0, scalar u1) {
-            scalar a;
-            scalar y;
-            a = std::abs(u0);
-            y = std::abs(u1);
-            if (a < y) {
-                a /= y;
-                y *= std::sqrt(a * a + 1.0);
-            } else if (a > y) {
-                y /= a;
-                y = a * std::sqrt(y * y + 1.0);
-            } else if (!std::isnan(y)) {
-                y = a * 1.4142135623730951;
-            }
-            return y;
-        }
-
-        static scalar xnrm2(index size_n, const scalar *x, index ix0) {
-            scalar y = 0.0;
-            if (size_n >= 1) {
-                if (size_n == 1) {
-                    y = std::abs(x[ix0 - 1]);
-                } else {
-                    scalar scale = 3.3121686421112381E-170;
-                    index kend = (ix0 + size_n) - 1;
-                    for (index k = ix0; k <= kend; k++) {
-                        scalar absxk;
-                        absxk = std::abs(x[k - 1]);
-                        if (absxk > scale) {
-                            scalar t;
-                            t = scale / absxk;
-                            y = y * t * t + 1.0;
-                            scale = absxk;
-                        } else {
-                            scalar t;
-                            t = absxk / scale;
-                            y += t * t;
-                        }
-                    }
-                    y = scale * std::sqrt(y);
-                }
-            }
-            return y;
-        }
-
-        void
-        xgerc(index size_m, index size_n, scalar alpha1, index ix0, const scalar *y, scalar *B, index ia0, index lda) {
-            if (!(alpha1 == 0.0)) {
-                int jA;
-                jA = ia0;
-                for (int j{0}; j < size_n; j++) {
-                    if (y[j] != 0.0) {
-                        double temp;
-                        int i;
-                        temp = y[j] * alpha1;
-                        i = size_m + jA;
-                        for (int ijA{jA}; ijA < i; ijA++) {
-                            B[ijA - 1] = B[ijA - 1] + B[((ix0 + ijA) - jA) - 1] * temp;
-                        }
-                    }
-                    jA += lda;
-                }
-            }
-        }
-
-        void xgeqp3(index size_m, index size_n, scalar *B, sd_vector &tau, si_vector &jpvt) {
-            std::vector<scalar> vn1, vn2, work;
-            int i;
-            int knt;
-            int minmana;
-            bool guard1{false};
-            knt = size_m;
-            minmana = size_n;
-            if (knt < minmana) {
-                minmana = knt;
-            }
-            tau.resize(minmana);
-            for (i = 0; i < minmana; i++) {
-                tau[i] = 0.0;
-            }
-            guard1 = false;
-            if ((size_m == 0) || (size_n == 0)) {
-                guard1 = true;
-            } else {
-                knt = size_m;
-                minmana = size_n;
-                if (knt < minmana) {
-                    minmana = knt;
-                }
-                if (minmana < 1) {
-                    guard1 = true;
-                } else {
-                    double smax;
-                    int k;
-                    int ma;
-                    int minmn;
-                    jpvt.resize(size_n);
-                    minmana = size_n;
-                    for (i = 0; i < minmana; i++) {
-                        jpvt[i] = 0;
-                    }
-                    for (k = 0; k < size_n; k++) {
-                        jpvt[k] = k + 1;
-                    }
-                    ma = size_m;
-                    knt = size_m;
-                    minmn = size_n;
-                    if (knt < minmn) {
-                        minmn = knt;
-                    }
-                    work.resize(size_n);
-                    minmana = size_n;
-                    for (i = 0; i < minmana; i++) {
-                        work[i] = 0.0;
-                    }
-                    vn1.resize(size_n);
-                    minmana = size_n;
-                    for (i = 0; i < minmana; i++) {
-                        vn1[i] = 0.0;
-                    }
-                    vn2.resize(size_n);
-                    minmana = size_n;
-                    for (i = 0; i < minmana; i++) {
-                        vn2[i] = 0.0;
-                    }
-                    for (knt = 0; knt < size_n; knt++) {
-                        smax = xnrm2(size_m, B, knt * ma + 1);
-                        vn1[knt] = smax;
-                        vn2[knt] = smax;
-                    }
-                    for (int b_i{0}; b_i < minmn; b_i++) {
-                        double s;
-                        double temp2;
-                        int ii;
-                        int ii_tmp;
-                        int ip1;
-                        int mmi;
-                        int nmi;
-                        int pvt;
-                        ip1 = b_i + 2;
-                        ii_tmp = b_i * ma;
-                        ii = ii_tmp + b_i;
-                        nmi = size_n - b_i;
-                        mmi = size_m - b_i;
-                        if (nmi < 1) {
-                            minmana = -1;
-                        } else {
-                            minmana = 0;
-                            if (nmi > 1) {
-                                smax = std::abs(vn1[b_i]);
-                                for (k = 2; k <= nmi; k++) {
-                                    s = std::abs(vn1[(b_i + k) - 1]);
-                                    if (s > smax) {
-                                        minmana = k - 1;
-                                        smax = s;
-                                    }
-                                }
-                            }
-                        }
-                        pvt = b_i + minmana;
-                        if (pvt + 1 != b_i + 1) {
-                            minmana = pvt * ma;
-                            for (k = 0; k < size_m; k++) {
-                                knt = minmana + k;
-                                smax = B[knt];
-                                i = ii_tmp + k;
-                                B[knt] = B[i];
-                                B[i] = smax;
-                            }
-                            minmana = jpvt[pvt];
-                            jpvt[pvt] = jpvt[b_i];
-                            jpvt[b_i] = minmana;
-                            vn1[pvt] = vn1[b_i];
-                            vn2[pvt] = vn2[b_i];
-                        }
-                        if (b_i + 1 < size_m) {
-                            temp2 = B[ii];
-                            minmana = ii + 2;
-                            tau[b_i] = 0.0;
-                            if (mmi > 0) {
-                                smax = xnrm2(mmi - 1, B, ii + 2);
-                                if (smax != 0.0) {
-                                    s = rt_hypotd_snf(B[ii], smax);
-                                    if (B[ii] >= 0.0) {
-                                        s = -s;
-                                    }
-                                    if (std::abs(s) < 1.0020841800044864E-292) {
-                                        knt = -1;
-                                        i = ii + mmi;
-                                        do {
-                                            knt++;
-                                            for (k = minmana; k <= i; k++) {
-                                                B[k - 1] = 9.9792015476736E+291 * B[k - 1];
-                                            }
-                                            s *= 9.9792015476736E+291;
-                                            temp2 *= 9.9792015476736E+291;
-                                        } while (!(std::abs(s) >= 1.0020841800044864E-292));
-                                        s = rt_hypotd_snf(temp2, xnrm2(mmi - 1, B, ii + 2));
-                                        if (temp2 >= 0.0) {
-                                            s = -s;
-                                        }
-                                        tau[b_i] = (s - temp2) / s;
-                                        smax = 1.0 / (temp2 - s);
-                                        for (k = minmana; k <= i; k++) {
-                                            B[k - 1] = smax * B[k - 1];
-                                        }
-                                        for (k = 0; k <= knt; k++) {
-                                            s *= 1.0020841800044864E-292;
-                                        }
-                                        temp2 = s;
-                                    } else {
-                                        tau[b_i] = (s - B[ii]) / s;
-                                        smax = 1.0 / (B[ii] - s);
-                                        i = ii + mmi;
-                                        for (k = minmana; k <= i; k++) {
-                                            B[k - 1] = smax * B[k - 1];
-                                        }
-                                        temp2 = s;
-                                    }
-                                }
-                            }
-                            B[ii] = temp2;
-                        } else {
-                            tau[b_i] = 0.0;
-                        }
-                        if (b_i + 1 < size_n) {
-                            int ia;
-                            temp2 = B[ii];
-                            B[ii] = 1.0;
-                            ii_tmp = (ii + ma) + 1;
-                            if (tau[b_i] != 0.0) {
-                                bool exitg2;
-                                pvt = mmi;
-                                minmana = (ii + mmi) - 1;
-                                while ((pvt > 0) && (B[minmana] == 0.0)) {
-                                    pvt--;
-                                    minmana--;
-                                }
-                                knt = nmi - 1;
-                                exitg2 = false;
-                                while ((!exitg2) && (knt > 0)) {
-                                    int exitg1;
-                                    minmana = ii_tmp + (knt - 1) * ma;
-                                    ia = minmana;
-                                    do {
-                                        exitg1 = 0;
-                                        if (ia <= (minmana + pvt) - 1) {
-                                            if (B[ia - 1] != 0.0) {
-                                                exitg1 = 1;
-                                            } else {
-                                                ia++;
-                                            }
-                                        } else {
-                                            knt--;
-                                            exitg1 = 2;
-                                        }
-                                    } while (exitg1 == 0);
-                                    if (exitg1 == 1) {
-                                        exitg2 = true;
-                                    }
-                                }
-                            } else {
-                                pvt = 0;
-                                knt = 0;
-                            }
-                            if (pvt > 0) {
-                                if (knt != 0) {
-                                    for (k = 0; k < knt; k++) {
-                                        work[k] = 0.0;
-                                    }
-                                    k = 0;
-                                    i = ii_tmp + ma * (knt - 1);
-                                    for (nmi = ii_tmp; ma < 0 ? nmi >= i : nmi <= i; nmi += ma) {
-                                        smax = 0.0;
-                                        minmana = (nmi + pvt) - 1;
-                                        for (ia = nmi; ia <= minmana; ia++) {
-                                            smax += B[ia - 1] * B[(ii + ia) - nmi];
-                                        }
-                                        work[k] = work[k] + smax;
-                                        k++;
-                                    }
-                                }
-                                xgerc(pvt, knt, -tau[b_i], ii + 1, work, B, ii_tmp, ma);
-                            }
-                            B[ii] = temp2;
-                        }
-                        for (knt = ip1; knt <= size_n; knt++) {
-                            minmana = b_i + (knt - 1) * ma;
-                            smax = vn1[knt - 1];
-                            if (smax != 0.0) {
-                                s = std::abs(B[minmana]) / smax;
-                                s = 1.0 - s * s;
-                                if (s < 0.0) {
-                                    s = 0.0;
-                                }
-                                temp2 = smax / vn2[knt - 1];
-                                temp2 = s * (temp2 * temp2);
-                                if (temp2 <= 1.4901161193847656E-8) {
-                                    if (b_i + 1 < size_m) {
-                                        smax = xnrm2(mmi - 1, B, minmana + 2);
-                                        vn1[knt - 1] = smax;
-                                        vn2[knt - 1] = smax;
-                                    } else {
-                                        vn1[knt - 1] = 0.0;
-                                        vn2[knt - 1] = 0.0;
-                                    }
-                                } else {
-                                    vn1[knt - 1] = smax * std::sqrt(s);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (guard1) {
-                jpvt.resize(size_n);
-                minmana = size_n;
-                for (i = 0; i < minmana; i++) {
-                    jpvt[i] = 0;
-                }
-                for (knt = 0; knt < size_n; knt++) {
-                    jpvt[knt] = knt + 1;
-                }
-            }
-        }
-
-        void xorgqr(index size_m, index size_n, index k, scalar *B, index lda, scalar *tau) {
-            std::vector<scalar> work;
-            if (size_n >= 1) {
-                int b_i;
-                int b_k;
-                int c_i;
-                int i;
-                int ia;
-                int itau;
-                i = size_n - 1;
-                for (b_i = k; b_i <= i; b_i++) {
-                    ia = b_i * lda;
-                    b_k = size_m - 1;
-                    for (c_i = 0; c_i <= b_k; c_i++) {
-                        B[ia + c_i] = 0.0;
-                    }
-                    B[ia + b_i] = 1.0;
-                }
-                itau = k - 1;
-                b_i = size_n;
-                work.resize(b_i);
-                for (i = 0; i < b_i; i++) {
-                    work[i] = 0.0;
-                }
-                for (c_i = k; c_i >= 1; c_i--) {
-                    int iaii;
-                    iaii = c_i + (c_i - 1) * lda;
-                    if (c_i < size_n) {
-                        int ic0;
-                        int lastc;
-                        int lastv;
-                        B[iaii - 1] = 1.0;
-                        ic0 = iaii + lda;
-                        if (tau[itau] != 0.0) {
-                            bool exitg2;
-                            lastv = (size_m - c_i) + 1;
-                            b_i = (iaii + size_m) - c_i;
-                            while ((lastv > 0) && (B[b_i - 1] == 0.0)) {
-                                lastv--;
-                                b_i--;
-                            }
-                            lastc = size_n - c_i;
-                            exitg2 = false;
-                            while ((!exitg2) && (lastc > 0)) {
-                                int exitg1;
-                                b_i = ic0 + (lastc - 1) * lda;
-                                ia = b_i;
-                                do {
-                                    exitg1 = 0;
-                                    if (ia <= (b_i + lastv) - 1) {
-                                        if (B[ia - 1] != 0.0) {
-                                            exitg1 = 1;
-                                        } else {
-                                            ia++;
-                                        }
-                                    } else {
-                                        lastc--;
-                                        exitg1 = 2;
-                                    }
-                                } while (exitg1 == 0);
-                                if (exitg1 == 1) {
-                                    exitg2 = true;
-                                }
-                            }
-                        } else {
-                            lastv = 0;
-                            lastc = 0;
-                        }
-                        if (lastv > 0) {
-                            if (lastc != 0) {
-                                for (b_i = 0; b_i < lastc; b_i++) {
-                                    work[b_i] = 0.0;
-                                }
-                                b_i = 0;
-                                i = ic0 + lda * (lastc - 1);
-                                for (int iac{ic0}; lda < 0 ? iac >= i : iac <= i; iac += lda) {
-                                    double c;
-                                    c = 0.0;
-                                    b_k = (iac + lastv) - 1;
-                                    for (ia = iac; ia <= b_k; ia++) {
-                                        c += B[ia - 1] * B[((iaii + ia) - iac) - 1];
-                                    }
-                                    work[b_i] = work[b_i] + c;
-                                    b_i++;
-                                }
-                            }
-                            xgerc(lastv, lastc, -tau[itau], iaii, work, B, ic0, lda);
-                        }
-                    }
-                    if (c_i < size_m) {
-                        b_i = iaii + 1;
-                        i = (iaii + size_m) - c_i;
-                        for (b_k = b_i; b_k <= i; b_k++) {
-                            B[b_k - 1] = -tau[itau] * B[b_k - 1];
-                        }
-                    }
-                    B[iaii - 1] = 1.0 - tau[itau];
-                    for (b_i = 0; b_i <= c_i - 2; b_i++) {
-                        B[(iaii - b_i) - 2] = 0.0;
-                    }
-                    itau--;
-                }
-            }
-        }
-
         /**
          * Evaluating the LLL decomposition
          * @return
@@ -463,24 +32,24 @@ namespace cils {
             printf("====================[ TEST | LLL_VALIDATE ]==================================\n");
             printf("[ INFO: in LLL validation]\n");
             scalar sum, error = 0, det;
-            b_matrix A_T = prod(A_R, Z);
+            b_matrix B_T = prod(B, Z);
             b_matrix R_I;
 
             helper::inv<scalar, index>(R_R, R_I);
 
-            b_matrix Q_Z = prod(A_T, R_I);
-            b_vector y_R = prod(trans(Q_Z), y_a);
+            b_matrix Q_Z = prod(B_T, R_I);
+            b_vector y_R = prod(trans(Q_Z), y);
             if (verbose && n <= 32) {
                 printf("\n[ Print R:]\n");
-                helper::display_matrix<scalar, index>(R_R, "R_R");
+                helper::display<scalar, index>(R_R, "R_R");
                 printf("\n[ Print Z:]\n");
-                helper::display_matrix<scalar, index>(Z, "Z");
+                helper::display<scalar, index>(Z, "Z");
                 printf("\n[ Print Q'Q:]\n");
-                helper::display_matrix<scalar, index>(prod(trans(Q_Z), Q_Z), "Q_Z");
+                helper::display<scalar, index>(prod(trans(Q_Z), Q_Z), "Q_Z");
                 printf("\n[ Print Q'y:]\n");
-                helper::display_vector<scalar, index>(m, y_R, "y_R");
+                helper::display<scalar, index>(m, y_R, "y_R");
                 printf("\n[ Print y_r:]\n");
-                helper::display_vector<scalar, index>(m, y_r, "y_r");
+                helper::display<scalar, index>(m, y_r, "y_r");
             }
 
             for (index i = 0; i < m; i++) {
@@ -522,7 +91,7 @@ namespace cils {
          * @tparam scalar
          * @tparam index
          * @tparam n
-         * @param A_R
+         * @param B
          * @param Q
          * @param R
          * @param eval
@@ -535,22 +104,22 @@ namespace cils {
             scalar sum, error = 0;
 
             if (eval == 1) {
-                //b_vector A_T(m * n, 0);
-                //helper::mtimes_v<scalar, index>(m, n, Q, R_Q, A_T);
-                b_matrix A_T = prod(Q, R_Q);
+                //b_vector B_T(m * n, 0);
+                //helper::mtimes_v<scalar, index>(m, n, Q, R, B_T);
+                b_matrix B_T = prod(Q, R);
                 if (verbose && n <= 16) {
                     printf("\n[ Print Q:]\n");
-                    helper::display_matrix<scalar, index>(Q, "Q");
+                    helper::display<scalar, index>(Q, "Q");
                     printf("\n[ Print R:]\n");
-                    helper::display_matrix<scalar, index>(R_Q, "R_Q");
-                    printf("\n[ Print A_R:]\n");
-                    helper::display_matrix<scalar, index>(A_R, "A_R");
+                    helper::display<scalar, index>(R, "R");
+                    printf("\n[ Print B:]\n");
+                    helper::display<scalar, index>(B, "B");
                     printf("\n[ Print Q*R:]\n");
-                    helper::display_matrix<scalar, index>(A_T, "Q*R");
+                    helper::display<scalar, index>(B_T, "Q*R");
                 }
 
                 for (i = 0; i < m * n; i++) {
-                    error += fabs(A_T(i) - A_R(i));
+                    error += fabs(B_T(i) - B(i));
                 }
             }
             printf("QR Error: %8.5f\n", error);
@@ -562,7 +131,7 @@ namespace cils {
         * @tparam scalar
         * @tparam index
         * @tparam n
-        * @param A_R
+        * @param B
         * @param Q
         * @param R
         * @param P
@@ -574,27 +143,27 @@ namespace cils {
             scalar sum, error = 0;
 
             if (eval == 1) {
-                b_matrix A_T = prod(Q, R_Q);//helper::mtimes_v<scalar, index>(m, n, Q, R_Q, A_T);
+                b_matrix B_T = prod(Q, R);//helper::mtimes_v<scalar, index>(m, n, Q, R, B_T);
 
-                b_matrix A_P = prod(A_R, P);//helper::mtimes_AP<scalar, index>(m, n, A_R, P, A_P.data());
+                b_matrix B_P = prod(B, P);//helper::mtimes_AP<scalar, index>(m, n, B, P, B_P.data());
 
                 if (verbose) {
                     printf("\n[ Print Q:]\n");
-                    helper::display_matrix<scalar, index>(Q, "Q");
+                    helper::display<scalar, index>(Q, "Q");
                     printf("\n[ Print R:]\n");
-                    helper::display_matrix<scalar, index>(R_Q, "R_Q");
+                    helper::display<scalar, index>(R, "R");
                     printf("\n[ Print P:]\n");
-                    helper::display_matrix<scalar, index>(P, "P");
-                    printf("\n[ Print A_R:]\n");
-                    helper::display_matrix<scalar, index>(A_R, "A_R");
-                    printf("\n[ Print A_P:]\n");
-                    helper::display_matrix<scalar, index>(A_P, "A_R*P");
+                    helper::display<scalar, index>(P, "P");
+                    printf("\n[ Print B:]\n");
+                    helper::display<scalar, index>(B, "B");
+                    printf("\n[ Print B_P:]\n");
+                    helper::display<scalar, index>(B_P, "B*P");
                     printf("\n[ Print Q*R:]\n");
-                    helper::display_matrix<scalar, index>(A_T, "Q*R");
+                    helper::display<scalar, index>(B_T, "Q*R");
                 }
 
                 for (i = 0; i < m * n; i++) {
-                    error += fabs(A_T(i) - A_P[i]);
+                    error += fabs(B_T(i) - B_P[i]);
                 }
             }
 
@@ -607,7 +176,7 @@ namespace cils {
          * @tparam scalar
          * @tparam index
          * @tparam n
-         * @param A_R
+         * @param B
          * @param Q
          * @param R
          * @param eval
@@ -618,21 +187,21 @@ namespace cils {
             scalar sum, error = 0;
 
             if (eval == 1) {
-                b_matrix A_T = prod(Q, R_Q); //helper::mtimes_col<scalar, index>(m, n, Q, R_Q, A_T);
+                b_matrix B_T = prod(Q, R); //helper::mtimes_col<scalar, index>(m, n, Q, R, B_T);
 
                 if (verbose) {
                     printf("\n[ Print Q:]\n");
-                    helper::display_matrix<scalar, index>(Q, "Q");
+                    helper::display<scalar, index>(Q, "Q");
                     printf("\n[ Print R:]\n");
-                    helper::display_matrix<scalar, index>(R_Q, "R_Q");
-                    printf("\n[ Print A_R:]\n");
-                    helper::display_matrix<scalar, index>(A_R, "A_R");
+                    helper::display<scalar, index>(R, "R");
+                    printf("\n[ Print B:]\n");
+                    helper::display<scalar, index>(B, "B");
                     printf("\n[ Print Q*R:]\n");
-                    helper::display_matrix<scalar, index>(A_T, "Q*R");
+                    helper::display<scalar, index>(B_T, "Q*R");
                 }
 
                 for (i = 0; i < m * n; i++) {
-                    error += fabs(A_T(i) - A_R(i));
+                    error += fabs(B_T(i) - B(i));
                 }
             }
 
@@ -640,164 +209,69 @@ namespace cils {
         }
 
     public:
-        //R_A: no zeros, R_R: LLL reduced, R_Q: QR
+        //B --> A
         b_eye_matrix I;
-        b_matrix A_R, R_Q, R_R, Q, Z, P, G;
-        b_vector y_a, y_q, y_r, p;
+        b_matrix B, R, R_R, Q, Z, P, G;
+        b_vector y, y_r, p;
 
-        CILS_Reduction(b_matrix &A, b_vector &y, index lower, index upper) {
-            this->m = A.size1();
-            this->n = A.size2();
-            this->A_R.resize(m, n);
-            this->A_R.assign(A);
-            this->y_a.resize(y.size());
-            this->y_a.assign(y);
+        CILS_Reduction(b_matrix &A, b_vector &_y, index lower, index upper) {
+            m = A.size1();
+            n = A.size2();
+            B.resize(m, n);
+            B.assign(A);
+            y.resize(_y.size());
+            y.assign(_y);
 
-            this->lower = lower;
-            this->upper = upper;
+            lower = lower;
+            upper = upper;
 
-            this->R_R.resize(m, n, false);
-            this->R_Q.resize(m, n, false);
-            this->Q.resize(m, m, false);
-            this->y_q.resize(m);
-            this->y_r.resize(m);
-            this->y_a.resize(m);
-            this->p.resize(m);
-
-            this->I.resize(n, n, true);
-            this->Z.resize(n, n, false);
-            this->P.resize(n, n, false);
-
-            this->Z.assign(I);
-            this->P.assign(I);
-        }
-
-
-        /**
-         * Serial version of QR-factorization with column pivoting
-         * Results are stored in the class object.
-         * @param B : m-by-n input matrix
-         */
-        returnType <scalar, index>
-        cils_eml_qr(const scalar *B) {
-            std::vector<scalar> A_t, tau;
-            std::vector<index> jpvt, jpvt1;
-            index i, j;
-            scalar error = -1, time, sum;
-
+            R_R.resize(m, n, false);
+            R.resize(m, n, false);
             Q.resize(m, m, false);
-            R_Q.resize(m, n, false);
-            Q.assign(m * m, 0);
-            R_Q.resize(m * n, 0);
+            y_r.resize(m);
+            p.resize(m);
 
-            index size_m = m - 1;
-            index size_n = n - 1;
-            if (m > n) {
-                for (i = 0; i <= size_n; i++) {
-                    for (j = 0; j <= size_m; j++) {
-                        Q[j + m * i] = B[j + m * i];
-                    }
-                }
-                for (i = n + 1; i <= size_m + 1; i++) {
-                    for (j = 0; j <= size_m; j++) {
-                        Q[j + m * (i - 1)] = 0.0;
-                    }
-                }
-                xgeqp3(m, m, Q, tau, jpvt1);
-                jpvt.resize(n);
-                for (i = 0; i <= size_n; i++) {
-                    jpvt[i] = jpvt1[i];
-                    for (j = 0; j <= i; j++) {
-                        R_Q[j + m * i] = Q[j + m * i];
-                    }
-                    for (j = i + 2; j <= size_m + 1; j++) {
-                        R_Q[(j + m * i) - 1] = 0.0;
-                    }
-                }
-                xorgqr(m, m, n, Q, m, tau.data());
-            } else {
-                A_t.resize(m, n, false);
-                A_t.clear();;
-                for (i = 0; i < m * n; i++) {
-                    A_t(i) = B[i];
-                }
-                xgeqp3(m, n, A_t, tau, jpvt);
-                for (i = 0; i <= size_m; i++) {
-                    for (j = 0; j <= i; j++) {
-                        R_Q[j + m * i] = A_t[j + m * i];
-                    }
-                    for (j = i + 2; j <= size_m + 1; j++) {
-                        R_Q[(j + m * i) - 1] = 0.0;
-                    }
-                }
-
-                for (i = m + 1; i <= size_n + 1; i++) {
-                    for (j = 0; j <= size_m; j++) {
-                        R_Q[j + m * (i - 1)] = A_t[j + m * (i - 1)];
-                    }
-                }
-
-                xorgqr(m, m, m, A_t, m, tau.data());
-                for (i = 0; i <= size_m; i++) {
-                    for (j = 0; j <= size_m; j++) {
-                        Q[j + m * i] = A_t[j + m * i];
-                    }
-                }
-            }
-
-            for (i = 0; i < m * n; i++) {
-                A_R(i) = B[i];
-            }
-
-            //Permutation matrix
+            I.resize(n, n, true);
+            Z.resize(n, n, false);
             P.resize(n, n, false);
-            P.clear();;
-            for (i = 0; i < n; i++) {
-                P[(jpvt[i] + n * i) - 1] = 1;
-            }
 
-            if (eval) {
-                error = qrp_validation();
-                if (verbose)
-                    cout << "[  QR ERROR SER:]" << error << endl;
-            }
-
-            return {{}, time, error};
+            Z.assign(I);
+            P.assign(I);
         }
+
 
         /**
          * Serial version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          */
-        returnType <scalar, index> cils_mgs_qr() {
-            //Initialize A_t = [A, y_a]:
-            b_matrix A_t(A_R);
-            A_t.resize(m, n + 1);
-            column(A_t, n) = y_a;
+        returnType <scalar, index> mgs_qr() {
+            //Initialize B_t = [A, y]:
+            b_matrix B_t(B);
+            B_t.resize(m, n + 1);
+            column(B_t, n) = y;
 
             //Clear Variables:
-            R_Q.resize(m, n + 1);
-            this->Q.clear();
-            this->R_Q.clear();
-            this->y_q.clear();
-            this->Z.assign(this->I);
+            R.resize(m, n + 1);
+            Q.clear();
+            R.clear();
+
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             scalar t_qr = omp_get_wtime();
             for (index j = 0; j < m; j++) {
                 for (index k = j; k < n + 1; k++) {
-                    R_Q(j, k) = inner_prod(column(Q, j), column(A_t, k));
-                    column(A_t, k) = column(A_t, k) - column(Q, j) * R_Q(j, k);
+                    R(j, k) = inner_prod(column(Q, j), column(B_t, k));
+                    column(B_t, k) = column(B_t, k) - column(Q, j) * R(j, k);
                     if (k == j) {
-                        R_Q(k, k) = norm_2(column(A_t, k));
-                        column(Q, k) = column(A_t, k) / R_Q(k, k);
+                        R(k, k) = norm_2(column(B_t, k));
+                        column(Q, k) = column(B_t, k) / R(k, k);
                     }
                 }
             }
             t_qr = omp_get_wtime() - t_qr;
-            y_q = column(R_Q, n);
-            R_Q.resize(m, n);
+            y = column(R, n);
+            R.resize(m, n);
 
             return {{}, t_qr, 0};
         }
@@ -807,16 +281,16 @@ namespace cils {
          * Parallel version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          */
-        returnType <scalar, index> cils_mgs_qr_omp(const index n_proc) {
+        returnType <scalar, index> mgs_qr_omp(const index n_proc) {
             scalar a_norm;
-            b_matrix A_t(A_R);
-            A_t.resize(m, n);
+            b_matrix B_t(B);
+            B_t.resize(m, n);
 
             //Clear Variables:
-            this->Q.clear();
-            this->R_Q.clear();
-            this->y_q.clear();
-            this->Z.assign(this->I);
+            Q.clear();
+            R.clear();
+            y.clear();
+            Z.assign(I);
             auto lock = new omp_lock_t[n]();
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
@@ -829,10 +303,10 @@ namespace cils {
                     omp_set_lock(&lock[i]);
                 }
                 if (omp_get_thread_num() == 0) {
-                    // Calculation of ||A_R||
-                    a_norm = norm_2(column(A_t, 0));
-                    R_Q(0, 0) = a_norm;
-                    column(Q, 0) = column(A_t, 0) / a_norm;
+                    // Calculation of ||B||
+                    a_norm = norm_2(column(B_t, 0));
+                    R(0, 0) = a_norm;
+                    column(Q, 0) = column(B_t, 0) / a_norm;
                     omp_unset_lock(&lock[0]);
                 }
 
@@ -842,20 +316,20 @@ namespace cils {
 #pragma omp for schedule(static, 1)
                     for (index k = 0; k < n; k++) {
                         if (k >= j) {
-                            R_Q(j - 1, k) = 0;
-                            R_Q(j - 1, k) = inner_prod(column(Q, j - 1), column(A_t, k));
-                            column(A_t, k) -= column(Q, j - 1) * R_Q(j - 1, k);
+                            R(j - 1, k) = 0;
+                            R(j - 1, k) = inner_prod(column(Q, j - 1), column(B_t, k));
+                            column(B_t, k) -= column(Q, j - 1) * R(j - 1, k);
                             if (k == j) {
-                                a_norm = norm_2(column(A_t, k));
-                                R_Q(k, k) = a_norm;
-                                column(Q, k) = column(A_t, k) / a_norm;
+                                a_norm = norm_2(column(B_t, k));
+                                R(k, k) = a_norm;
+                                column(Q, k) = column(B_t, k) / a_norm;
                                 omp_unset_lock(&lock[j]);
                             }
                         }
                     }
                 }
             }
-            y_q = prod(trans(Q), y_a);
+            y = prod(trans(Q), y);
             t_qr = omp_get_wtime() - t_qr;
             qr_validation();
             scalar error = -1;
@@ -875,62 +349,61 @@ namespace cils {
         /**
          * Serial version of REDUCED QR-factorization using modified Gram-Schmidt algorithm, col-oriented
          * Results are stored in the class object.
-         * R_Q is n by n, y is transformed from m by 1 to n by 1
+         * R is n by n, y is transformed from m by 1 to n by 1
          * @param B : m-by-n input matrix
          * @param y : m-by-1 input right hand vector
          */
-        returnType <scalar, index>
-        cils_mgs_qr_col(b_matrix &A, b_vector &y) {
+        returnType <scalar, index> mgs_qr_col() {
 
-            b_matrix A_t(A);
+            b_matrix B_t(B);
 
-            this->R_Q.resize(A.size2(), A.size2());
-            this->R_Q.clear();
-            this->Q.resize(A.size1(), A.size2());
-            this->Q.clear();
-            this->y_q.resize(y.size());
-            this->y_q.clear();
+            R.resize(B.size2(), B.size2());
+            R.clear();
+            Q.resize(B.size1(), B.size2());
+            Q.clear();
 
             scalar t_qr = omp_get_wtime();
             for (index k = 0; k < n; k++) {
                 for (index j = 0; j < k; j++) {
-                    R_Q(j, k) = inner_prod(column(Q, j), column(A_t, k));
-                    column(A_t, k) = column(A_t, k) - column(Q, j) * R_Q(j, k);
+                    R(j, k) = inner_prod(column(Q, j), column(B_t, k));
+                    column(B_t, k) = column(B_t, k) - column(Q, j) * R(j, k);
                 }
-                R_Q(k, k) = norm_2(column(A_t, k));
-                column(Q, k) = column(A_t, k) / R_Q(k, k);
+                R(k, k) = norm_2(column(B_t, k));
+                column(Q, k) = column(B_t, k) / R(k, k);
             }
-            y_q = prod(trans(Q), y);
+            y = prod(trans(Q), y);
 
             t_qr = omp_get_wtime() - t_qr;
 
             return {{}, t_qr, 0};
         }
 
-        returnType <scalar, index> cils_aip_reduction() {
+        /**
+         * @deprecated
+         * @return 
+         */
+        returnType <scalar, index> aip() {
             scalar alpha;
             scalar t_aip = omp_get_wtime();
 
-            //  ------------------------------------------------------------------
-            //  --------  Perform the QR factorization: MGS Column------------------
-            //  ------------------------------------------------------------------
-            cils_mgs_qr_col(A_R, y_a);
+            CILS_Reduction _reduction(B, y, lower, upper);
+            _reduction.mgs_qr_col();
 
-            b_vector y_0(y_q);
-            b_matrix R_0(R_Q);
+            b_vector y_0(_reduction.y);
+            b_matrix R_0(_reduction.R);
 
-            R_R.resize(A_R.size2(), A_R.size2());
-            R_R.assign(R_Q);
-            y_r.resize(y_q.size());
-            y_r.assign(y_q);
+            R_R.resize(B.size2(), B.size2());
+            R_R.assign(_reduction.R);
+            y_r.resize(_reduction.y.size());
+            y_r.assign(_reduction.y);
 
             //Permutation vector
-            p.resize(A_R.size2());
+            p.resize(B.size2());
             p.clear();
             for (index i = 0; i < n; i++) {
                 p[i] = i;
             }
-            index R_n = A_R.size2();
+            index _n = B.size2();
 
             //Inverse transpose of R
             helper::inv<scalar, index>(R_0, G);
@@ -967,15 +440,15 @@ namespace cils {
                 auto y_k = subrange(y_r, 0, k);
                 y_k = y_k - subrange(column(R_R, j), 0, k) * x_j;
                 //R(:,j) = []
-                auto R_temp_2 = subrange(R_R, 0, n, j + 1, R_n);
-                subrange(R_R, 0, n, j, R_n - 1) = R_temp_2;
-                R_R.resize(m, R_n - 1);
+                auto R_temp_2 = subrange(R_R, 0, n, j + 1, _n);
+                subrange(R_R, 0, n, j, _n - 1) = R_temp_2;
+                R_R.resize(m, _n - 1);
                 //G(:,j) = []
-                auto G_temp_2 = subrange(G, 0, n, j + 1, R_n);
-                subrange(G, 0, n, j, R_n - 1) = G_temp_2;
-                G.resize(m, R_n - 1);
+                auto G_temp_2 = subrange(G, 0, n, j + 1, _n);
+                subrange(G, 0, n, j, _n - 1) = G_temp_2;
+                G.resize(m, _n - 1);
                 //Size decrease 1
-                R_n--;
+                _n--;
                 for (index t = j; t <= k - 1; t++) {
                     index t1 = t + 1;
                     //Bring R back to an upper triangular matrix by a Givens rotation
@@ -1001,17 +474,21 @@ namespace cils {
             R_R.clear();
             //The permutation matrix
             P.resize(n, n);
-            P.assign(this->I);
+            P.assign(I);
             for (index i = 0; i < n; i++) {
                 for (index i1 = 0; i1 < n; i1++) {
                     R_R(i1, i) = R_0(i1, p[i]);
-                    P(i1, i) = this->I(i1, p[i]);
+                    P(i1, i) = I(i1, p[i]);
                 }
             }
 
             // Compute the QR factorization of R0 and then transform y0
             //[Q, R, y] = qrmgs(R0, y0);
-            cils_mgs_qr_col(R_R, y_0);
+            CILS_Reduction reduction_(R_R, y_0, lower, upper);
+            reduction_.mgs_qr_col();
+            R = reduction_.R;
+            y = reduction_.y;
+            Q = reduction_.Q;
 
             t_aip = omp_get_wtime() - t_aip;
             return {{}, 0, t_aip};
@@ -1023,21 +500,21 @@ namespace cils {
          * @return
          */
         returnType <scalar, index>
-        cils_plll_reduction_tester(const index n_proc) {
+        plll_tester(const index n_proc) {
             scalar time = 0, det = 0;
             returnType<scalar, index> reT, lll_val;
             eval = true;
             verbose = true;
 
-            cout << "[ In cils_plll_reduction_serial]\n";
-            reT = cils_plll_reduction_serial();
+            cout << "[ In plll_serial]\n";
+            reT = plll_serial();
             printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
                    reT.run_time, reT.info);
             time = reT.info;
             lll_val = lll_validation();
 
-            cout << "[ In cils_aspl_reduction_serial]\n";
-            reT = cils_aspl_reduction_serial();
+            cout << "[ In aspl_serial]\n";
+            reT = aspl_serial();
             printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
                    reT.run_time, reT.info);
             scalar t_qr = reT.run_time;
@@ -1045,8 +522,8 @@ namespace cils {
             lll_val = lll_validation();
 
             for (index i = 2; i <= 4; i += 2) {
-                cout << "[ In cils_aspl_reduction_omp]\n";
-                reT = cils_aspl_reduction_omp(i);
+                cout << "[ In aspl_omp]\n";
+                reT = aspl_omp(i);
                 printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f, QR SPU: %8.5f, LLL SPU:%8.2f]\n",
                        reT.run_time, reT.info, t_qr / reT.run_time, t_plll / reT.info);
                 lll_val = lll_validation();
@@ -1059,7 +536,7 @@ namespace cils {
         /**
          * Original PLLL algorithm
          * Description:
-         * [R,Z,y] = sils_reduction(B,y) reduces the general standard integer
+         * [R,Z,y] = sils(B,y) reduces the general standard integer
          *  least squares problem to an upper triangular one by the LLL-QRZ
          *  factorization Q'*B*Z = [R; 0]. The orthogonal matrix Q
          *  is not produced.
@@ -1081,34 +558,35 @@ namespace cils {
          *           Xiaohu Xie, Tianyang Zhou
          *  Copyright (c) 2006-2016. Scientific Computing Lab, McGill University.
          *  October 2006. Last revision: June 2016
-         *  See sils_reduction.m
+         *  See sils.m
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> cils_plll_reduction_serial() {
+        returnType <scalar, index> plll_serial() {
             scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
 
-            //Initialize A_t = [A, y_a]:
-            b_matrix A_t(A_R);
-            A_t.resize(m, n + 1);
-            column(A_t, n) = y_a;
+            //Initialize B_t = [A, y]:
+            b_matrix B_t(B);
+            B_t.resize(m, n + 1);
+            column(B_t, n) = y;
 
             //Clear Variables:
             R_R.resize(m, n + 1);
-            this->Q.clear();
-            this->R_R.clear();
-            this->y_r.clear();
-            this->Z.assign(this->I);
+            Q.clear();
+            R_R.clear();
+            y_r.clear();
+            Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
+
             for (index j = 0; j < m; j++) {
                 for (index k = j; k < n + 1; k++) {
-                    R_R(j, k) = inner_prod(column(Q, j), column(A_t, k));
-                    column(A_t, k) = column(A_t, k) - column(Q, j) * R_R(j, k);
+                    R_R(j, k) = inner_prod(column(Q, j), column(B_t, k));
+                    column(B_t, k) = column(B_t, k) - column(Q, j) * R_R(j, k);
                     if (k == j) {
-                        R_R(k, k) = norm_2(column(A_t, k));
-                        column(Q, k) = column(A_t, k) / R_R(k, k);
+                        R_R(k, k) = norm_2(column(B_t, k));
+                        column(Q, k) = column(B_t, k) / R_R(k, k);
                     }
                 }
             }
@@ -1177,8 +655,9 @@ namespace cils {
                 }
             }
 
-            y_r = column(R_R, n);
+            y = column(R_R, n);
             R_R.resize(m, n);
+            R.assign(R_R);
 
             t_plll = omp_get_wtime() - t_plll;
             return {{}, t_qr, t_plll};
@@ -1188,7 +667,7 @@ namespace cils {
         /**
          * All-Swap PLLL algorithm
          * Description:
-         * [R,Z,y] = sils_reduction(B,y) reduces the general standard integer
+         * [R,Z,y] = sils(B,y) reduces the general standard integer
          *  least squares problem to an upper triangular one by the LLL-QRZ
          *  factorization Q'*B*Z = [R; 0]. The orthogonal matrix Q
          *  is not produced.
@@ -1210,31 +689,31 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> cils_aspl_reduction_serial() {
+        returnType <scalar, index> aspl_serial() {
             scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
 
-            //Initialize A_t = [A, y_a]:
-            b_matrix A_t(A_R);
-            A_t.resize(m, n + 1);
-            column(A_t, n) = y_a;
+            //Initialize B_t = [A, y]:
+            b_matrix B_t(B);
+            B_t.resize(m, n + 1);
+            column(B_t, n) = y;
 
             //Clear Variables:
             R_R.resize(m, n + 1);
-            this->Q.clear();
-            this->R_R.clear();
-            this->y_r.clear();
-            this->Z.assign(this->I);
+            Q.clear();
+            R_R.clear();
+            y_r.clear();
+            Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
             for (index j = 0; j < m; j++) {
                 for (index k = j; k < n + 1; k++) {
-                    R_R(j, k) = inner_prod(column(Q, j), column(A_t, k));
-                    column(A_t, k) = column(A_t, k) - column(Q, j) * R_R(j, k);
+                    R_R(j, k) = inner_prod(column(Q, j), column(B_t, k));
+                    column(B_t, k) = column(B_t, k) - column(Q, j) * R_R(j, k);
                     if (k == j) {
-                        R_R(k, k) = norm_2(column(A_t, k));
-                        column(Q, k) = column(A_t, k) / R_R(k, k);
+                        R_R(k, k) = norm_2(column(B_t, k));
+                        column(Q, k) = column(B_t, k) / R_R(k, k);
                     }
                 }
             }
@@ -1333,7 +812,7 @@ namespace cils {
         /**
          * All-Swap LLL Permutation algorithm
          * Description:
-         * [R,P,y] = sils_reduction(B,y) reduces the general standard integer
+         * [R,P,y] = sils(B,y) reduces the general standard integer
          *  least squares problem to an upper triangular one by the LLL-QRZ
          *  factorization Q'*B*Z = [R; 0]. The orthogonal matrix Q
          *  is not produced.
@@ -1355,52 +834,40 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> cils_aspl_permutation_serial() {
+        returnType <scalar, index> aspl_p_serial() {
+
             scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
 
-            //Initialize A_t = [A, y_a]:
-            b_matrix A_t(A_R);
-            A_t.resize(m, n + 1);
-            column(A_t, n) = y_a;
-
-            //Clear Variables:
-            R_R.resize(m, n + 1);
-            this->Q.clear();
-            this->R_R.clear();
-            this->y_r.clear();
-            this->Z.assign(this->I);
-            //  ------------------------------------------------------------------
-            //  --------  Perform the QR factorization: MGS Row-------------------
-            //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
-            for (index j = 0; j < m; j++) {
-                for (index k = j; k < n + 1; k++) {
-                    R_R(j, k) = inner_prod(column(Q, j), column(A_t, k));
-                    column(A_t, k) = column(A_t, k) - column(Q, j) * R_R(j, k);
-                    if (k == j) {
-                        R_R(k, k) = norm_2(column(A_t, k));
-                        column(Q, k) = column(A_t, k) / R_R(k, k);
-                    }
-                }
-            }
+            CILS_Reduction<scalar, index> _reduction(B, y, lower, upper);
+//            if (m >= n) {
+//                _reduction.mgs_qr_col();
+//            } else {
+                _reduction.mgs_qr();
+//            }
+            R = _reduction.R;
+            y = _reduction.y;
             t_qr = omp_get_wtime() - t_qr;
+//            helper::display<scalar, index>(R, "R");
+            Z.assign(I);
 
             //  ------------------------------------------------------------------
-            //  --------  Perform the all-swap partial LLL reduction -------------------
+            //  ---  Perform the all-swap partial LLL permutation reduction ------
             //  ------------------------------------------------------------------
+            R.resize(m, n + 1);
+            column(R, n) = y;
 
-            index k = 1, k1, i, i1;
+            index k = 1, k1, i, i1, iter = 0;
             index f = true, swap[n] = {}, start = 1, even = true;
-//            std::vector<b_matrix> G_v(n);
             t_plll = omp_get_wtime();
-            while (f || !even) {
+            while ((f || !even) && (iter < 1000)) {
                 f = false;
                 for (k = start; k < n; k += 2) {
                     k1 = k - 1;
-                    zeta = round(R_R(k1, k) / R_R(k1, k1));
-                    alpha = R_R(k1, k) - zeta * R_R(k1, k1);
+                    zeta = round(R(k1, k) / R(k1, k1));
+                    alpha = R(k1, k) - zeta * R(k1, k1);
 
-                    if (pow(R_R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_R(k, k), 2))) {
+                    if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
                         swap[k] = 1;
                         f = true;
                     }
@@ -1410,20 +877,20 @@ namespace cils {
                     if (swap[k] == 1) {
                         //Permute columns k-1 and k of R and Z
                         k1 = k - 1;
-                        b_vector R_k1 = column(R_R, k1), R_k = column(R_R, k);
+                        b_vector R_k1 = column(R, k1), R_k = column(R, k);
                         b_vector Z_k1 = column(Z, k1), Z_k = column(Z, k);
-                        column(R_R, k1) = R_k;
-                        column(R_R, k) = R_k1;
+                        column(R, k1) = R_k;
+                        column(R, k) = R_k1;
                         column(Z, k1) = Z_k;
                         column(Z, k) = Z_k1;
 
                         scalar G_a[4] = {};
-                        scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
+                        scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
                         b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-                        R_R(k1, k1) = low_tmp[0];
-                        R_R(k, k1) = low_tmp[1];
-//                        G_v[k] = G_m;
-                        auto R_G = subrange(R_R, k1, k + 1, k, n + 1);
+                        R(k1, k1) = low_tmp[0];
+                        R(k, k1) = low_tmp[1];
+
+                        auto R_G = subrange(R, k1, k + 1, k, n + 1);
                         R_G = prod(G_m, R_G);
                         swap[k] = 0;
                     }
@@ -1435,10 +902,10 @@ namespace cils {
                     even = true;
                     start = 1;
                 }
+                iter++;
             }
-            y_r = column(R_R, n);
-            R_R.resize(m, n);
-
+            y = column(R, n);
+            R.resize(m, n);
             t_plll = omp_get_wtime() - t_plll;
             return {{}, t_qr, t_plll};
         }
@@ -1446,7 +913,7 @@ namespace cils {
         /**
          * All-Swap PLLL algorithm - parallel
          * Description:
-         * [R,Z,y] = sils_reduction(B,y) reduces the general standard integer
+         * [R,Z,y] = sils(B,y) reduces the general standard integer
          *  least squares problem to an upper triangular one by the LLL-QRZ
          *  factorization Q'*B*Z = [R; 0]. The orthogonal matrix Q
          *  is not produced.
@@ -1468,18 +935,18 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> cils_aspl_reduction_omp(index n_proc) {
+        returnType <scalar, index> aspl_omp(index n_proc) {
             scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
             scalar a_norm;
-            //Initialize A_t = [A, y_a]:
-            b_matrix A_t(A_R);
-            A_t.resize(m, n);
+            //Initialize B_t = [A, y]:
+            b_matrix B_t(B);
+            B_t.resize(m, n);
 
             //Clear Variables:
-            this->Q.clear();
-            this->R_R.clear();
-            this->y_r.clear();
-            this->Z.assign(this->I);
+            Q.clear();
+            R_R.clear();
+            y_r.clear();
+            Z.assign(I);
             auto lock = new omp_lock_t[n]();
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
@@ -1492,10 +959,10 @@ namespace cils {
                     omp_set_lock(&lock[i]);
                 }
                 if (omp_get_thread_num() == 0) {
-                    // Calculation of ||A_R||
-                    a_norm = norm_2(column(A_t, 0));
+                    // Calculation of ||B||
+                    a_norm = norm_2(column(B_t, 0));
                     R_R(0, 0) = a_norm;
-                    column(Q, 0) = column(A_t, 0) / a_norm;
+                    column(Q, 0) = column(B_t, 0) / a_norm;
                     omp_unset_lock(&lock[0]);
                 }
 
@@ -1506,12 +973,12 @@ namespace cils {
                     for (index k = 0; k < n; k++) {
                         if (k >= j) {
                             R_R(j - 1, k) = 0;
-                            R_R(j - 1, k) = inner_prod(column(Q, j - 1), column(A_t, k));
-                            column(A_t, k) -= column(Q, j - 1) * R_R(j - 1, k);
+                            R_R(j - 1, k) = inner_prod(column(Q, j - 1), column(B_t, k));
+                            column(B_t, k) -= column(Q, j - 1) * R_R(j - 1, k);
                             if (k == j) {
-                                a_norm = norm_2(column(A_t, k));
+                                a_norm = norm_2(column(B_t, k));
                                 R_R(k, k) = a_norm;
-                                column(Q, k) = column(A_t, k) / a_norm;
+                                column(Q, k) = column(B_t, k) / a_norm;
                                 omp_unset_lock(&lock[j]);
                             }
                         }
@@ -1520,9 +987,9 @@ namespace cils {
             }
 
             t_qr = omp_get_wtime() - t_qr;
-            R_Q.assign(R_R);
+            R.assign(R_R);
             qr_validation();
-            y_r = prod(trans(Q), y_a);
+            y_r = prod(trans(Q), y);
             //  ------------------------------------------------------------------
             //  --------  Perform the all-swap partial LLL reduction -------------
             //  ------------------------------------------------------------------

@@ -62,7 +62,8 @@ namespace cils {
 
             // Call the MATLAB addpath function
             matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/')");
-            matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem_convergence(k, m, n, SNR, max_iter);");
+//            matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem_convergence(k, m, n, SNR, max_iter);");
+            matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem(k, m, n, SNR, max_iter);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
             matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
@@ -90,17 +91,17 @@ namespace cils {
                 R0[i] = r;
                 ++i;
             }
-            cils.R.resize(cils.n, cils.n);
-            cils.R.clear();
+            cils.B.resize(cils.n, cils.n);
+            cils.B.clear();
             for (index col = 0; col < cils.n; col++) {
                 for (index row = 0; row < cils.n; row++) {
-                    cils.R(row, col) = R0[row + col * cils.n];
+                    cils.B(row, col) = R0[row + col * cils.n];
                 }
             }
 
             i = 0;
             for (auto r: y_M) {
-                cils.y_a[i] = r;
+                cils.y[i] = r;
                 ++i;
             }
             i = 0;

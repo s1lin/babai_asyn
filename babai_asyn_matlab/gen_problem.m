@@ -1,4 +1,4 @@
-function [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem(k, m, n, SNR, max_iter)
+function [A, x_t, v, y, sigma, res, permutation, max_iter, R0] = gen_problem(k, m, n, SNR, max_iter)
 % [A, y, v, x_t, sigma] = gen_problem(k, m, n, SNR)
 % generates linear model y = A * x_t + v
 %
@@ -51,7 +51,7 @@ y = A * x_t + v;
 
 res = norm(y - A * x_t);
 permutation = zeros(1,1);
-size_perm = 0;
+%max_iter = 0;
 R0 = A;
 %sils_reduction(A, y);
 if m > n    
@@ -60,24 +60,22 @@ if m > n
 end
 if m <= n
     permutation = zeros(max_iter, n);
-
-    if factorial(n) > 1e7
-        permutation(1,:) = 1:n;
-        for i = 2 : max_iter
-            permutation(i,:) = randperm(n);
-        end
-    else
-        permutation = perms(1:n);
-        if max_iter > factorial(n)
-            for i = factorial(n) : max_iter
-                permutation(i,:) = randperm(n);
-            end
-        end
-        permutation = permutation(randperm(max_iter), :);
-    end
-
-    [size_perm, ~] = size(permutation);
-    permutation = permutation';
+    %if factorial(n) > 1e7        
+    for i = 1 : max_iter
+        permutation(i,:) = randperm(n);
+    end        
+    %else
+    %    permutation = perms(1:n);
+    %   if max_iter > factorial(n)
+    %       for i = factorial(n) : max_iter
+    %           permutation(i,:) = randperm(n);
+    %        end
+    %   end        
+    %end 
+    
+    permutation = permutation';    
+    %permutation = permutation(: , randperm(max_iter));
+    permutation(:,1) = (1:n)';
     
     if m <= 12
         val = 1;
@@ -94,33 +92,34 @@ if m <= n
 
             %init_res = norm(y - H * s)
             % Initial Point Method: QRP
-            %HH = A;
-            %Piv = eye(n);
-            %v_norm1 = 100;
-            %s_bar_IP = zeros(n, 1);
+            HH = A;
+            Piv = eye(n);
+            v_norm = 100;
+            s_bar_IP = zeros(n, 1);
             %tic;
             [s_bar_IP, v_norm, HH, Piv] = SIC_IP(A, y, n, 2^k-1);            
             % gradproj(A, y, zeros(n, 1), ones(n, 1) * 2^k-1, s_bar_IP, 100);
-            s_bar_IP = round_int(s_bar_IP, 0, 2^k-1);
+            %s_bar_IP = round_int(s_bar_IP, 0, 2^k-1);
             %times(mm,1)=toc;
-            s_bar1 = Piv*s_bar_IP
-            R0 = A;
+            s_sic = Piv * s_bar_IP;
+            %R0 = partition_H_2(A, m, n);
 
             %tic;
             %[s_bar_cur, v_norm_cur, stopping] = SCP_Block_Babai_2(s_bar_IP, v_norm, HH, tolerance, factorial(n), 0, y, m, n, permutation', 3);
             %s_bar_babai = Piv*s_bar_cur;
 
             %tic;
-            size_perm
-            [s_bar_cur, v_norm_cur, stopping] = SCP_Block_Optimal_3(s_bar_IP, v_norm, HH, tolerance, size_perm, 0, y, m, n, permutation, 3);
-            s_bar_optim = Piv*s_bar_cur;
+            %max_iter
+            [s_bar_cur, v_norm_cur, stopping] = SCP_Block_Optimal_3(s_bar_IP, v_norm, HH, tolerance, 3000, y, m, n, permutation, 3);
+            s_bar_optim = Piv * s_bar_cur;
 
 
-            %s = x_t';
-            %s_bar_babai = s_bar_babai'
+            %s = x_t'
+            s_sic = s_sic'
             s_bar_optim = s_bar_optim'
             %e1 = e1 + norm(s - s_bar_babai);
             %e2 = e2 + norm(s - s_bar_optim);
+            %[~, ~, ~, Q_tilde, R_tilde, ~] = partition_H(HH, s_sic, m, n)
 
         end
         %e1/100

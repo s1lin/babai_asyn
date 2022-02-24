@@ -60,7 +60,7 @@ for i = 1 : n
 end
 
 % Reduction
-[R,y,l,u,p] = obils_reduction(B,y,l,u);
+[~, R,y,l,u,p] = obils_reduction(B,y,l,u);
 
 % Search 
 z = obils_search(R,y,l,u);

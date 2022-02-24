@@ -632,7 +632,7 @@ def plot_first_block(n, SNR, k, block_size, ser_tim, is_qr, d_s):
 
 def plot_babai_converge(n, nswp, snr, ber):
     print("\n----------PLOT BABAI CONVERGE--------------\n")
-    np.savez(f'./test_result/{n}_{snr}_convergence_report.npz',
+    np.savez(f'./test_result/{n}__convergence_report.npz',
              n=n, nswp=nswp, ber=ber, snr=snr)
     plt.rcParams["figure.figsize"] = (15, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=False)
@@ -647,7 +647,8 @@ def plot_babai_converge(n, nswp, snr, ber):
     # labels = ['$x^{babai}$' + ]
     labels = ['NT-' + str(proc) for proc in range(3, 15 + 1, 3)]
 
-    itr_label = [str(proc) for proc in range(1, nswp + 1)]
+    itr_label = [str(proc) for proc in range(1000, nswp + 1, 100)]
+    print(itr_label)
     init_range = [0, 3, 6]
     for init in range(0, 3):
         axes[init, 0].set_title('Initial Point $x=' + str(init_range[init]) + '$', fontsize=13)
@@ -659,12 +660,12 @@ def plot_babai_converge(n, nswp, snr, ber):
 
         if init == 0:
             for j in range(0, 5):
-                axes[init, 0].semilogy(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j], label=labels[j])
-                axes[init, 1].plot(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
+                axes[init, 0].semilogy(itr_label, np.array(ber[j][init][0:len(itr_label)]), color=color[j], marker=marker[j], label=labels[j])
+                axes[init, 1].plot(itr_label, np.array(ber[j][init][0:len(itr_label)]), color=color[j], marker=marker[j])
         else:
             for j in range(0, 5):
-                axes[init, 0].semilogy(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
-                axes[init, 1].plot(itr_label, np.array(ber[j][init]), color=color[j], marker=marker[j])
+                axes[init, 0].semilogy(itr_label, np.array(ber[j][init][0:len(itr_label)]), color=color[j], marker=marker[j])
+                axes[init, 1].plot(itr_label, np.array(ber[j][init][0:len(itr_label)]), color=color[j], marker=marker[j])
         # axes.set_xticklabels(itr_label, rotation=45)
 
     # axes[init, 0].legend(title="Legend", ncol=5)
@@ -673,8 +674,8 @@ def plot_babai_converge(n, nswp, snr, ber):
     fig.legend(bbox_to_anchor=(0.87, 0.94), title="Legend", ncol=5)
     fig.text(0.5, 0.04, 'The j-th iteration', ha='center', fontsize=15)
     fig.text(0.04, 0.5, 'Average BER between Babai Point(BP) and Parallel BP', va='center', rotation='vertical', fontsize=15)
-    plt.savefig(f'./test_result/{n}_{snr}_babai_convergence_report.eps', format='eps', dpi=1200)
-    plt.savefig(f'./test_result/{n}_{snr}_babai_convergence_report.png')
+    plt.savefig(f'./test_result/{n}__babai_convergence_report.eps', format='eps', dpi=1200)
+    plt.savefig(f'./test_result/{n}__babai_convergence_report.png')
     plt.close()
 
     print("\n----------END PLOT RUNTIME UD--------------\n")
@@ -707,8 +708,8 @@ if __name__ == "__main__":
     # plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu, tim_total, spu_total,
     #                      max_proc, min_proc, is_constrained, m)
 
-    n = 256
-    a = np.load(f'../../cmake-build-debug/test_result/{str(n)}_35_convergence_report.npz')
+    n = 32
+    a = np.load(f'../../cmake-build-release/test_result/{str(n)}__convergence_report.npz')
     nswp = a['nswp']
     ber = a['ber']
-    plot_babai_converge(n, nswp, 35, ber)
+    plot_babai_converge(n, 2000, 35, ber)

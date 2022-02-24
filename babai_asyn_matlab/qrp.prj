@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="1095732644" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/cmake-build-debug/qrp.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/cmake-build-debug" name="qrp" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="4040338280" file="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrp.prj" location="/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab" name="qrp" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -245,8 +245,8 @@
       <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
       <param.DeprecatedCRLFlag>false</param.DeprecatedCRLFlag>
       <param.SameHardware>true</param.SameHardware>
-      <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
-      <param.BuildConfiguration>Faster Runs</param.BuildConfiguration>
+      <param.Toolchain>GNU gcc/g++ | gmake (64-bit Linux)</param.Toolchain>
+      <param.BuildConfiguration>Debug</param.BuildConfiguration>
       <param.CustomToolchainOptions />
       <var.ToolchainSettingsVisible>true</var.ToolchainSettingsVisible>
       <param.target.Data>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;ctdata&gt;&lt;configuredHardware/&gt;&lt;/ctdata&gt;</param.target.Data>
@@ -436,8 +436,6 @@
         <param.CodeReplacementLibrary />
         <param.DeprecatedCRLFlag />
         <param.SameHardware />
-        <param.Toolchain />
-        <param.BuildConfiguration />
         <param.CustomToolchainOptions />
         <var.ToolchainSettingsVisible />
         <param.target.ActiveType />
@@ -864,7 +862,7 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
       <item>[Q, R, P] = qrp(A)</item>
     </param.TestSnippets>
@@ -894,13 +892,13 @@
     <param.unifiedParamStorage />
     <var.gc.lastOutputRoot>codegen/lib/qrp</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>C_CODE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3662317078</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>4003995387</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen/mex/qrp</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>3783343660</var.cfi.preBuildChecksum>
+    <var.cfi.preBuildChecksum>1251524969</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>[Q, R, P] = qrp(A)</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/cmake-build-debug/qrp.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1889986178&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/cmake-build-debug/qrp.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrp.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1889986178&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/qrp.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
     <param.configImportActive>false</param.configImportActive>
@@ -1141,7 +1139,7 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}/codegen/lib/qrp" name="qrp.a" optional="false">/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/cmake-build-debug/codegen/lib/qrp/qrp.a</file>
+      <file location="${PROJECT_ROOT}/codegen/lib/qrp" name="qrp.a" optional="false">/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/codegen/lib/qrp/qrp.a</file>
     </build-deliverables>
     <workflow />
     <matlab>
@@ -1164,7 +1162,7 @@
       <vista>false</vista>
       <linux>true</linux>
       <solaris>false</solaris>
-      <osver>5.11.0-37-generic</osver>
+      <osver>5.13.0-27-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>glnxa64</arch>

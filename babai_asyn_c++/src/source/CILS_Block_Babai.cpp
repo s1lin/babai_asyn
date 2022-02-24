@@ -240,7 +240,7 @@ namespace cils {
                                     y_B[row] = y_bar[row] - sum;
                                 }
                                 if (cils.is_constrained)
-                                    R_S_2[i] = _ils.obils_search_omp(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_x);
+                                    R_S_2[i] = _ils.obils_search_omp(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_bar, z_x);
                                 else
                                     R_S_2[i] = _ils.ils_search_omp(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_x);
                                 if (check) {
