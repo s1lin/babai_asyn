@@ -192,6 +192,44 @@ namespace helper {
         printf("SUM = %8.5f\n", sum);
     }
 
+    /**
+     * Simple function for displaying the a vector with name
+     * @tparam scalar : real number type
+     * @tparam index : integer type
+     * @param n : integer scalar, size of the vector
+     * @param x : vector, in pointer
+     * @param name: display name of the vector
+     */
+    template<typename scalar, typename index>
+    void display(const si_vector &x, const string &name) {
+        cout << name << ": ";
+        scalar sum = 0;
+        for (index i = 0; i < x.size(); i++) {
+            printf("%8d ", x[i]);
+            sum += x[i];
+        }
+        printf("SUM = %8.5f\n", sum);
+    }
+
+    /**
+     * Simple function for displaying the a vector with name
+     * @tparam scalar : real number type
+     * @tparam index : integer type
+     * @param n : integer scalar, size of the vector
+     * @param x : vector, in pointer
+     * @param name: display name of the vector
+     */
+    template<typename scalar, typename index>
+    void display(const index *x, const index n, const string &name) {
+        cout << name << ": ";
+        scalar sum = 0;
+        for (index i = 0; i < n; i++) {
+            printf("%8d ", x[i]);
+            sum += x[i];
+        }
+        printf("SUM = %8.5f\n", sum);
+    }
+
     template<typename scalar, typename index>
     void inv(b_matrix &input, b_matrix &output) {
         //Clear variable.

@@ -45,10 +45,7 @@ int main(int argc, char *argv[]) {
 
     }
 //    CILS cils = cils_driver<double, int>(argc, argv);
-    partition_test<double, int>(size, rank);
-//    plot_run<scalar, int, M, N>(size, rank);
-//    plot_run_grad_omp<double, int>(size, rank);
-//    block_optimal_test<scalar, int, M, N>(size, rank);
+    block_babai_test<double, int>(size, rank);
 
     if (rank == 0) {
         t = omp_get_wtime() - t;

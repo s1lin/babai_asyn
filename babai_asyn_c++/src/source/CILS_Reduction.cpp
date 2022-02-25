@@ -214,6 +214,8 @@ namespace cils {
         b_matrix B, R, R_R, Q, Z, P, G;
         b_vector y, y_r, p;
 
+        explicit CILS_Reduction(CILS <scalar, index> &cils) : CILS_Reduction(cils.A, cils.y, cils.lower, cils.upper) {}
+
         CILS_Reduction(b_matrix &A, b_vector &_y, index lower, index upper) {
             m = A.size1();
             n = A.size2();
@@ -289,7 +291,6 @@ namespace cils {
             //Clear Variables:
             Q.clear();
             R.clear();
-            y.clear();
             Z.assign(I);
             auto lock = new omp_lock_t[n]();
             //  ------------------------------------------------------------------
@@ -843,7 +844,7 @@ namespace cils {
 //            if (m >= n) {
 //                _reduction.mgs_qr_col();
 //            } else {
-                _reduction.mgs_qr();
+            _reduction.mgs_qr();
 //            }
             R = _reduction.R;
             y = _reduction.y;

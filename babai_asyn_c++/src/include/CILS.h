@@ -147,8 +147,8 @@ namespace cils {
             for (int i = 0; i < spilt_size; i++) {
                 d[i] = block_size / spilt_size;
             }
-            d[0] -= offset;
-            d[1] += offset;
+//            d[0] -= offset;
+//            d[1] += offset;
 
             cout << n << "," << block_size << endl;
             for (index i = d.size() - 2; i >= 0; i--) {
@@ -214,9 +214,9 @@ namespace cils {
             std::fill(u.begin(), u.end(), upper);
 
             this->is_init_success = false;
-            this->block_size = 2;
+            this->block_size = 32;
             this->spilt_size = 0;
-            this->offset = 0;
+            this->offset = 4;
             this->lower = 0;
         }
     };

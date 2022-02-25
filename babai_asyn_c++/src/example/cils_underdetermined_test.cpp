@@ -1,296 +1,356 @@
-//#include <Python.h>
+#include <Python.h>
 //#include <numpy/arrayobject.h>
 //#include <boost/python.hpp>
 
 #include "../source/CILS.cpp"
 #include "../source/CILS_Reduction.cpp"
-
-#include "../source/CILS_SO_UBILS.cpp"
-
+#include "../source/CILS_SECH_Search.cpp"
+//#include "../source/CILS_SO_UBILS.cpp"
 #include "../source/CILS_SO_OBILS.cpp"
-#include "../source/CILS_Block_Babai.cpp"
 
 #include <ctime>
 
 template<typename scalar, typename index>
-bool init_point_test(int size, int rank) {
-    index n = 1024, m = 1024, qam = 3, snr = 35, num_trials = 6;
+bool block_babai_test(int size, int rank) {
 
-    b_vector x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
-    auto *v_norm_qr = (double *) calloc(1, sizeof(double));
-    scalar v_norm;
-    cils::returnType<scalar, index> reT3;
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 1e5);
+    time_t t0 = time(nullptr);
+    struct tm *lt = localtime(&t0);
+    char time_str[20];
+    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+            lt->tm_hour, lt->tm_min, lt->tm_sec
+    );
+    printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
-    cils::init(cils);
+
+    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
+    scalar spu = 0, ser_ber = 0, omp_ber = 0;
+
+    cils::CILS<scalar, index> cils(m, n, qam, snr, 10000);
+
+    cils.init_d();
     cils.is_constrained = true;
 
-    if (rank == 0) {
-        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
-        printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
+    for (int t = 0; t < 100; t++) {
+        b_vector x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
+        cout.flush();
+        cils::init(cils);
 
-        time_t t0 = time(nullptr);
-        struct tm *lt = localtime(&t0);
-        char time_str[20];
-        sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
-                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
-                lt->tm_hour, lt->tm_min, lt->tm_sec
-        );
-        printf("====================[ TEST | INIT_POINT | %s ]==================================\n", time_str);
+        if (rank == 0) {
+            scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
 
-        cils::returnType<scalar, index> reT, reT2;
-//        //----------------------INIT POINT (SERIAL)--------------------------------//
-//        cils::CILS_Init_Point<scalar, index> IP(cils);
-//        reT = IP.sic_serial(x_q);
-//        x_tmp = prod(IP.P, x_q);
-//        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(cils.A, x_tmp, cils.y);
-//        scalar ber = helper::find_bit_error_rate<scalar, index>(x_tmp, cils.x_t, cils.qam);
-//        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
-//        printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
-//
-//
-//        cils::CILS_Block_SIC BSIC(cils);
-//        reT = BSIC.scp_block_optimal_serial(IP.H, x_q, v_norm, 0);
-//        x_tmp = prod(IP.P, x_q);
-//        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
-//        helper::display<scalar, index>(n, cils.x_t, "x_t");
-//        ber = helper::find_bit_error_rate<scalar, index>(x_tmp, cils.x_t, cils.qam);
-//        v_norm = helper::find_residual<scalar, index>(cils.A, x_tmp, cils.y);
-//        printf("SIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
-//        cils::CILS_Reduction<scalar, index> reduction(cils);
-//        reduction.plll_reduction_tester(1);
+            scalar ber, runtime, res;
+            cils::returnType<scalar, index> reT, reT2;
+            cils::CILS_Reduction<scalar, index> reduction(cils);
+            reduction.mgs_qr_omp(10);
 
-//        reduction.aip_reduction();
-//        helper::display<scalar, index>(n, reduction.y_q, "y");
-//        helper::display<scalar, index>(reduction.R_Q, "R");
-//        helper::display<scalar, index>(reduction.Q, "Q");
-//        cout << reduction.R_Q.size1() << "x" << reduction.R_Q.size2();
-//        cout << cils.R.size1() << "x" << cils.R.size2();
-//        cout << "Norm_1" << norm_1(reduction.R_Q - cils.R);
+            cils::CILS_SO_OBILS<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
 
-        cils::CILS_Reduction<scalar, index> reduction2(cils.A, cils.y, 0, cils.upper);
-        reduction2.mgs_qr_omp(10);
-        cils::CILS_Babai<scalar, index> babai(cils);
-        x_q.clear();
-        for (index ii = 0; ii < x_q.size(); ii++) {
-            x_q[ii] = 0; //random() % 10 - 5;
+            obils.z_hat.clear();
+            reT = obils.bocb(0);
+            ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+            ser_ber += ber;
+            res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+            printf("bocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+
+            obils.z_hat.clear();
+            reT2 = obils.pbocb_test(10, 10, 0);
+            obils.z_hat.clear();
+            reT2 = obils.pbocb_test(10, 10, 0);
+            ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+            omp_ber += ber;
+            res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+            printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
+            spu += reT.run_time / reT2.run_time;
         }
-        babai.z_hat.assign(x_q);
-        reT = babai.babai(reduction2.R_Q, reduction2.y_q);
-        scalar ser_time = reT.run_time;
-//        helper::display<scalar, index>(cils.R, "R");
-//        helper::display<scalar, index>(reduction2.Q, "Q");
-//        helper::display<scalar, index>(m, cils.y, "y");
-//        //cout << babai.z_hat;
-        x_ser.assign(babai.z_hat);
+//        PyObject * pName, *pModule, *pFunc;
+    }
+    printf("test result: ser_ber: %8.5f, omp_ber: %8.4f, time: %8.4f\n", ser_ber/100, omp_ber/100, spu/100);
+    return true;
+}
+
+
+
+
+
+
+//
+// template<typename scalar, typename index>
+//bool init_point_test(int size, int rank) {
+//    index n = 1024, m = 1024, qam = 3, snr = 35, num_trials = 6;
+//
+//    b_vector x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
+//    auto *v_norm_qr = (double *) calloc(1, sizeof(double));
+//    scalar v_norm;
+//    cils::returnType<scalar, index> reT3;
+//    cils::CILS<scalar, index> cils(m, n, qam, snr, 1e5);
+//    cout.flush();
+//    cils::init(cils);
+//    cils.is_constrained = true;
+//
+//    if (rank == 0) {
+//        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+//        printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
+//
+//        time_t t0 = time(nullptr);
+//        struct tm *lt = localtime(&t0);
+//        char time_str[20];
+//        sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+//                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+//                lt->tm_hour, lt->tm_min, lt->tm_sec
+//        );
+//        printf("====================[ TEST | INIT_POINT | %s ]==================================\n", time_str);
+//
+//        cils::returnType<scalar, index> reT, reT2;
+////        //----------------------INIT POINT (SERIAL)--------------------------------//
+////        cils::CILS_Init_Point<scalar, index> IP(cils);
+////        reT = IP.sic_serial(x_q);
+////        x_tmp = prod(IP.P, x_q);
+////        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(cils.A, x_tmp, cils.y);
+////        scalar ber = helper::find_bit_error_rate<scalar, index>(x_tmp, cils.x_t, cils.qam);
+////        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
+////        printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
+////
+////
+////        cils::CILS_Block_SIC BSIC(cils);
+////        reT = BSIC.scp_block_optimal_serial(IP.H, x_q, v_norm, 0);
+////        x_tmp = prod(IP.P, x_q);
+////        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
+////        helper::display<scalar, index>(n, cils.x_t, "x_t");
+////        ber = helper::find_bit_error_rate<scalar, index>(x_tmp, cils.x_t, cils.qam);
+////        v_norm = helper::find_residual<scalar, index>(cils.A, x_tmp, cils.y);
+////        printf("SIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
+////        cils::CILS_Reduction<scalar, index> reduction(cils);
+////        reduction.plll_reduction_tester(1);
+//
+////        reduction.aip_reduction();
+////        helper::display<scalar, index>(n, reduction.y_q, "y");
+////        helper::display<scalar, index>(reduction.R_Q, "R");
+////        helper::display<scalar, index>(reduction.Q, "Q");
+////        cout << reduction.R_Q.size1() << "x" << reduction.R_Q.size2();
+////        cout << cils.R.size1() << "x" << cils.R.size2();
+////        cout << "Norm_1" << norm_1(reduction.R_Q - cils.R);
+//
+//        cils::CILS_Reduction<scalar, index> reduction2(cils.A, cils.y, 0, cils.upper);
+//        reduction2.mgs_qr_omp(10);
+//        cils::CILS_Babai<scalar, index> babai(cils);
+//        x_q.clear();
+//        for (index ii = 0; ii < x_q.size(); ii++) {
+//            x_q[ii] = 0; //random() % 10 - 5;
+//        }
+//        babai.z_hat.assign(x_q);
+//        reT = babai.babai(reduction2.R_Q, reduction2.y_q);
+//        scalar ser_time = reT.run_time;
+////        helper::display<scalar, index>(cils.R, "R");
+////        helper::display<scalar, index>(reduction2.Q, "Q");
+////        helper::display<scalar, index>(m, cils.y, "y");
+////        //cout << babai.z_hat;
+//        x_ser.assign(babai.z_hat);
+//////        helper::display<scalar, index>(n, babai.z_hat, "z_hat");
+//////        helper::display<scalar, index>(n, x_ser, "x_ser");
+//////        helper::display<scalar, index>(n, cils.x_t, "x_t");
+//        scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
+//        scalar res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
+//        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//
+//        babai.z_hat.assign(x_q);
+//        reT = babai.babai_oomp(reduction2.R_Q, reduction2.y_q, 10, num_trials, 0);
+////        helper::display<scalar, index>(cils.R, "R");
+////        helper::display<scalar, index>(reduction2.Q, "Q");
+////        helper::display<scalar, index>(m, cils.y, "y");
+////        cout << babai.z_hat;
+//        x_ser.assign(babai.z_hat);
 ////        helper::display<scalar, index>(n, babai.z_hat, "z_hat");
 ////        helper::display<scalar, index>(n, x_ser, "x_ser");
 ////        helper::display<scalar, index>(n, cils.x_t, "x_t");
-        scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
-        scalar res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
-        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-
-        babai.z_hat.assign(x_q);
-        reT = babai.babai_oomp(reduction2.R_Q, reduction2.y_q, 10, num_trials, 0);
-//        helper::display<scalar, index>(cils.R, "R");
-//        helper::display<scalar, index>(reduction2.Q, "Q");
-//        helper::display<scalar, index>(m, cils.y, "y");
-//        cout << babai.z_hat;
-        x_ser.assign(babai.z_hat);
-//        helper::display<scalar, index>(n, babai.z_hat, "z_hat");
-//        helper::display<scalar, index>(n, x_ser, "x_ser");
-//        helper::display<scalar, index>(n, cils.x_t, "x_t");
-        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
-        res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
-        printf("O_BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f, iter %1f, spu: %8.4f\n", ber, res, reT.run_time,
-               reT.info, ser_time / reT.run_time);
-
-        babai.z_hat.assign(x_q);
-        reT = babai.babai_omp(reduction2.R_Q, reduction2.y_q, 10, num_trials, 0);
-//        helper::display<scalar, index>(cils.R, "R");
-//        helper::display<scalar, index>(reduction2.Q, "Q");
-//        helper::display<scalar, index>(m, cils.y, "y");
-//        cout << babai.z_hat;
-        x_ser.assign(babai.z_hat);
-//        helper::display<scalar, index>(n, babai.z_hat, "z_hat");
-//        helper::display<scalar, index>(n, x_ser, "x_ser");
-//        helper::display<scalar, index>(n, cils.x_t, "x_t");
-        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
-        res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
-        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f, iter %1f, spu: %8.4f\n", ber, res, reT.run_time,
-               reT.info, ser_time / reT.run_time);
+//        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
+//        res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
+//        printf("O_BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f, iter %1f, spu: %8.4f\n", ber, res, reT.run_time,
+//               reT.info, ser_time / reT.run_time);
 //
-//        scalar ber_npy[5][3][40] = {};
-//        for (index init = 0; init <= 6; init += 3) {
-//            for (index l = 0; l < num_trials; l++) {
-//                for (index i = 3; i <= 15; i += 3) {
-//                    index ll = 0;
-//                    for (index nswp = 1000; nswp <= 2000; nswp+=100) {
-//
-//                        for (index ii = 0; ii < x_q.size(); ii++){
-//                            x_q[ii] = 0; //random() % 10 - 5;
-//                        }
-//                        babai.z_hat.assign(x_q);
-//                        reT = babai.babai_sic_omp(cils.A, cils.y, nswp, i);
-//                        ber = helper::find_bit_error_rate<scalar, index>(x_ser, babai.z_hat, cils.qam);
-////                        if (nswp == 60 && ber > 1e-5) {
-////                            babai.z_hat.assign(x_q);
-////                            reT = babai.babai_sic_omp(cils.A, cils.y, nswp, i);
-////                            ber = helper::find_bit_error_rate<scalar, index>(x_ser, babai.z_hat, cils.qam);
-////                            if (ber > 1e-5) {
-////                                cout << endl;
-////                                helper::display<scalar, index>(n, babai.z_hat, "z_hat");
-////                                helper::display<scalar, index>(n, x_ser, "x_ser");
-////                                printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-////                            }
+//        babai.z_hat.assign(x_q);
+//        reT = babai.babai_omp(reduction2.R_Q, reduction2.y_q, 10, num_trials, 0);
+////        helper::display<scalar, index>(cils.R, "R");
+////        helper::display<scalar, index>(reduction2.Q, "Q");
+////        helper::display<scalar, index>(m, cils.y, "y");
+////        cout << babai.z_hat;
+//        x_ser.assign(babai.z_hat);
+////        helper::display<scalar, index>(n, babai.z_hat, "z_hat");
+////        helper::display<scalar, index>(n, x_ser, "x_ser");
+////        helper::display<scalar, index>(n, cils.x_t, "x_t");
+//        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_ser, cils.qam);
+//        res = helper::find_residual<scalar, index>(cils.A, x_ser, cils.y);
+//        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f, iter %1f, spu: %8.4f\n", ber, res, reT.run_time,
+//               reT.info, ser_time / reT.run_time);
+////
+////        scalar ber_npy[5][3][40] = {};
+////        for (index init = 0; init <= 6; init += 3) {
+////            for (index l = 0; l < num_trials; l++) {
+////                for (index i = 3; i <= 15; i += 3) {
+////                    index ll = 0;
+////                    for (index nswp = 1000; nswp <= 2000; nswp+=100) {
+////
+////                        for (index ii = 0; ii < x_q.size(); ii++){
+////                            x_q[ii] = 0; //random() % 10 - 5;
 ////                        }
-//                        ll++;
-//                        ber_npy[i / 3 - 1][init / 3][ll] += ber / num_trials;
-//                    }
-//                    printf("l: %4d, n_proc: %4d; ber: %1.2f; ", l, i, ber);
-//                }
-//                if (l % 20 == 0)
-//                    cout << endl;
-//            }
-//        }
-//        PyObject *pName, *pModule, *pFunc;
+////                        babai.z_hat.assign(x_q);
+////                        reT = babai.babai_sic_omp(cils.A, cils.y, nswp, i);
+////                        ber = helper::find_bit_error_rate<scalar, index>(x_ser, babai.z_hat, cils.qam);
+//////                        if (nswp == 60 && ber > 1e-5) {
+//////                            babai.z_hat.assign(x_q);
+//////                            reT = babai.babai_sic_omp(cils.A, cils.y, nswp, i);
+//////                            ber = helper::find_bit_error_rate<scalar, index>(x_ser, babai.z_hat, cils.qam);
+//////                            if (ber > 1e-5) {
+//////                                cout << endl;
+//////                                helper::display<scalar, index>(n, babai.z_hat, "z_hat");
+//////                                helper::display<scalar, index>(n, x_ser, "x_ser");
+//////                                printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//////                            }
+//////                        }
+////                        ll++;
+////                        ber_npy[i / 3 - 1][init / 3][ll] += ber / num_trials;
+////                    }
+////                    printf("l: %4d, n_proc: %4d; ber: %1.2f; ", l, i, ber);
+////                }
+////                if (l % 20 == 0)
+////                    cout << endl;
+////            }
+////        }
+////        PyObject *pName, *pModule, *pFunc;
+////
+////        Py_Initialize();
+////        if (_import_array() < 0)
+////            PyErr_Print();
+////        npy_intp dim[3] = {5, 3, 40};
+////        /*
+////         * scalar res[1][200][2] = {}, ber[1][200][2] = {}, tim[1][200][2] = {}, spu[1][200][2] = {}, spu2[1][200][2] = {};
+////            scalar tim_total[1][200][2] = {}, spu_total[1][200][2] = {};
+////         */
+////
+////        PyObject *pRes = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber_npy);
+////
+////        if (pRes == nullptr) printf("[ ERROR] pRes has a problem.\n");
+////
+////        PyObject *sys_path = PySys_GetObject("path");
+////        PyList_Append(sys_path, PyUnicode_FromString(
+////                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+////        pName = PyUnicode_FromString("plot_helper");
+////        pModule = PyImport_Import(pName);
+////
+////        if (pModule != nullptr) {
+////            pFunc = PyObject_GetAttrString(pModule, "plot_babai_converge");
+////            if (pFunc && PyCallable_Check(pFunc)) {
+////                PyObject *pArgs = PyTuple_New(4);
+////                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
+////                    return false;
+////                }
+////                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", 2000)) != 0) {
+////                    return false;
+////                }
+////                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", snr)) != 0) {
+////                    return false;
+////                }
+////                if (PyTuple_SetItem(pArgs, 3, pRes) != 0) {
+////                    return false;
+////                }
+////                PyObject *pValue = PyObject_CallObject(pFunc, pArgs);
+////
+////            } else {
+////                if (PyErr_Occurred())
+////                    PyErr_Print();
+////                fprintf(stderr, "Cannot find function qr\n");
+////            }
+////        } else {
+////            PyErr_Print();
+////            fprintf(stderr, "Failed to load file\n");
+////
+////        }
 //
-//        Py_Initialize();
-//        if (_import_array() < 0)
-//            PyErr_Print();
-//        npy_intp dim[3] = {5, 3, 40};
-//        /*
-//         * scalar res[1][200][2] = {}, ber[1][200][2] = {}, tim[1][200][2] = {}, spu[1][200][2] = {}, spu2[1][200][2] = {};
-//            scalar tim_total[1][200][2] = {}, spu_total[1][200][2] = {};
-//         */
+////        cils.block_size = 16;
+////
+////        cils.init_d();
+////        cils::CILS_Block_Babai<scalar, index> block_babai(cils);
+////        reT = block_babai.block_search_serial(reduction2.R_Q, reduction2.y_q);
+////        cout << block_babai.z_hat;
+////        x_hat = prod(reduction2.Z, block_babai.z_hat);
+////        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
+////        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
+////        printf("BLOCK: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+////
+////        reT = babai.babai_method_omp(reduction2.R_Q, reduction2.y_q, 2, 6);
+////        x_hat = prod(reduction2.Z, babai.z_hat);
+//////        helper::display<scalar, index>(n, x_hat, "x_hat");
+//////        helper::display<scalar, index>(n, cils.x_t, "x_t");
+////        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
+////        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
+////        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+////
+////        cils.block_size = 16;
+////        cils.spilt_size = 2;
+////        cils.offset = 0;
+////        cils.init_d();
+////        cils::CILS_Block_Babai<scalar, index> block_babai(cils);
+////        reT = block_babai.block_search_serial(0, reduction2.R_Q, reduction2.y_q);
+////        x_hat = prod(reduction2.Z, babai.z_hat);
+//////        helper::display<scalar, index>(n, x_hat, "x_hat");
+//////        helper::display<scalar, index>(n, cils.x_t, "x_t");
+////        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
+////        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
+////        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+////
+////        //----------------------INIT POINT (OMP)--------------------------------//
+////        //STEP 1: init point by QRP
+////        reT = cils.grad_proj_omp(x_omp, 1e4, 10);
+////        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
+////        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
+////                                                                     cils.y.data());
+////        ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
+////        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
+////        printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
+//    }
+//    return true;
+//}template<typename scalar, typename index>
+//bool partition_test(int size, int rank) {
+//    index n = 18, m = 12, qam = 3, snr = 35, num_trials = 6;
 //
-//        PyObject *pRes = PyArray_SimpleNewFromData(3, dim, NPY_DOUBLE, ber_npy);
+//    b_vector x_q(n, 0), x_tmp(n, 0), x_sic(n, 0), x_omp(n, 0), x_mpi(n, 0);
+//    cils::returnType<scalar, index> reT3;
+//    cils::CILS<scalar, index> cils(m, n, qam, snr, 3000);
+//    cout.flush();
+//    cils::init(cils);
+//    cils.is_constrained = true;
 //
-//        if (pRes == nullptr) printf("[ ERROR] pRes has a problem.\n");
+//    if (rank == 0) {
+//        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+////        printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
 //
-//        PyObject *sys_path = PySys_GetObject("path");
-//        PyList_Append(sys_path, PyUnicode_FromString(
-//                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
-//        pName = PyUnicode_FromString("plot_helper");
-//        pModule = PyImport_Import(pName);
+//        time_t t0 = time(nullptr);
+//        struct tm *lt = localtime(&t0);
+//        char time_str[20];
+//        sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+//                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+//                lt->tm_hour, lt->tm_min, lt->tm_sec
+//        );
+//        printf("====================[ TEST | Partition | %s ]==================================\n", time_str);
+//        cout.flush();
 //
-//        if (pModule != nullptr) {
-//            pFunc = PyObject_GetAttrString(pModule, "plot_babai_converge");
-//            if (pFunc && PyCallable_Check(pFunc)) {
-//                PyObject *pArgs = PyTuple_New(4);
-//                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
-//                    return false;
-//                }
-//                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", 2000)) != 0) {
-//                    return false;
-//                }
-//                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", snr)) != 0) {
-//                    return false;
-//                }
-//                if (PyTuple_SetItem(pArgs, 3, pRes) != 0) {
-//                    return false;
-//                }
-//                PyObject *pValue = PyObject_CallObject(pFunc, pArgs);
+//        cils::returnType<scalar, index> reT, reT2;
+//        cils::CILS_SO_UBILS<scalar, index> ubils(cils);
 //
-//            } else {
-//                if (PyErr_Occurred())
-//                    PyErr_Print();
-//                fprintf(stderr, "Cannot find function qr\n");
-//            }
-//        } else {
-//            PyErr_Print();
-//            fprintf(stderr, "Failed to load file\n");
+//        //Init point
+//        ubils.sic(x_sic);
+//        b_vector x_init = prod(ubils.P, x_sic);
+//        helper::display<scalar, index>(x_init, "x_sic");
+//        helper::display<scalar, index>(cils.x_t, "x_t");
 //
-//        }
-
-//        cils.block_size = 16;
-//
-//        cils.init_d();
-//        cils::CILS_Block_Babai<scalar, index> block_babai(cils);
-//        reT = block_babai.block_search_serial(reduction2.R_Q, reduction2.y_q);
-//        cout << block_babai.z_hat;
-//        x_hat = prod(reduction2.Z, block_babai.z_hat);
-//        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
-//        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
-//        printf("BLOCK: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-//
-//        reT = babai.babai_method_omp(reduction2.R_Q, reduction2.y_q, 2, 6);
-//        x_hat = prod(reduction2.Z, babai.z_hat);
-////        helper::display<scalar, index>(n, x_hat, "x_hat");
-////        helper::display<scalar, index>(n, cils.x_t, "x_t");
-//        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
-//        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
-//        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-//
-//        cils.block_size = 16;
-//        cils.spilt_size = 2;
-//        cils.offset = 0;
-//        cils.init_d();
-//        cils::CILS_Block_Babai<scalar, index> block_babai(cils);
-//        reT = block_babai.block_search_serial(0, reduction2.R_Q, reduction2.y_q);
-//        x_hat = prod(reduction2.Z, babai.z_hat);
-////        helper::display<scalar, index>(n, x_hat, "x_hat");
-////        helper::display<scalar, index>(n, cils.x_t, "x_t");
-//        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_hat, cils.qam);
-//        res = helper::find_residual<scalar, index>(cils.A, x_hat, cils.y);
-//        printf("BABAI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-//
-//        //----------------------INIT POINT (OMP)--------------------------------//
-//        //STEP 1: init point by QRP
-//        reT = cils.grad_proj_omp(x_omp, 1e4, 10);
-//        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
-//        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
-//                                                                     cils.y.data());
-//        ber = helper::find_bit_error_rate<scalar, index>(n, x_tmp.data(), cils.x_t.data(), cils.qam);
-//        helper::display<scalar, index>(n, x_tmp.data(), "x_q");
-//        printf("INI: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, v_norm, reT.run_time);
-    }
-    return true;
-}
-
-
-template<typename scalar, typename index>
-bool partition_test(int size, int rank) {
-    index n = 18, m = 12, qam = 3, snr = 35, num_trials = 6;
-
-    b_vector x_q(n, 0), x_tmp(n, 0), x_sic(n, 0), x_omp(n, 0), x_mpi(n, 0);
-    cils::returnType<scalar, index> reT3;
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 3000);
-    cout.flush();
-    cils::init(cils);
-    cils.is_constrained = true;
-
-    if (rank == 0) {
-        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
-//        printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
-
-        time_t t0 = time(nullptr);
-        struct tm *lt = localtime(&t0);
-        char time_str[20];
-        sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
-                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
-                lt->tm_hour, lt->tm_min, lt->tm_sec
-        );
-        printf("====================[ TEST | Partition | %s ]==================================\n", time_str);
-        cout.flush();
-
-        cils::returnType<scalar, index> reT, reT2;
-        cils::CILS_SO_UBILS<scalar, index> ubils(cils);
-
-        //Init point
-        ubils.sic(x_sic);
-        b_vector x_init = prod(ubils.P, x_sic);
-        helper::display<scalar, index>(x_init, "x_sic");
-        helper::display<scalar, index>(cils.x_t, "x_t");
-
-        r = helper::find_residual<scalar, index>(cils.A, x_init, cils.y);
-        ubils.block_sic_optimal(x_sic, r, 1);
-        cout << endl;
-        helper::display<scalar, index>(prod(ubils.P, x_sic), "xpser");
-        helper::display<scalar, index>(cils.x_t, "x_t");
-    }
-    return true;
-}
+//        r = helper::find_residual<scalar, index>(cils.A, x_init, cils.y);
+//        ubils.block_sic_optimal(x_sic, r, 1);
+//        cout << endl;
+//        helper::display<scalar, index>(prod(ubils.P, x_sic), "xpser");
+//        helper::display<scalar, index>(cils.x_t, "x_t");
+//    }
+//    return true;
+//}
 
 //template<typename scalar, typename index, index m, index n>
 //void block_optimal_test(int size, int rank) {
