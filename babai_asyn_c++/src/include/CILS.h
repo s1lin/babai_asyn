@@ -141,7 +141,7 @@ namespace cils {
         void init_d() {
             if (!is_init_success)
                 std::cout << "[INFO: ] You need to initialize the class by calling method init().";
-            d.resize(n / block_size);// + spilt_size - 1);
+            d.resize(n / block_size + spilt_size - 1);
             std::fill(d.begin(), d.end(), block_size);
 
             for (int i = 0; i < spilt_size; i++) {
@@ -154,6 +154,7 @@ namespace cils {
             for (index i = d.size() - 2; i >= 0; i--) {
                 d[i] += d[i + 1];
             }
+            helper::display<scalar, index>(d, "d");
         }
 
         /**
@@ -215,7 +216,7 @@ namespace cils {
 
             this->is_init_success = false;
             this->block_size = 32;
-            this->spilt_size = 0;
+            this->spilt_size = 2;
             this->offset = 4;
             this->lower = 0;
         }

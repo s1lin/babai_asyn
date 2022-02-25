@@ -225,8 +225,8 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
 
             //ILS search process
-            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
-                //while (1) {
+//            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+            while (1) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {
@@ -266,11 +266,11 @@ namespace cils {
                                 z_x[h] = z[h];
                             }
 
-                            if (i != 0) {
-                                if (diff == dx || iter > cils.search_iter || !check) {
-                                    break;
-                                }
-                            }
+//                            if (i != 0) {
+//                                if (diff == dx || iter > cils.search_iter || !check) {
+//                                    break;
+//                                }
+//                            }
                         }
                     } else {
                         dflag = 0;
@@ -303,7 +303,7 @@ namespace cils {
                     }
                 }
             }
-            return diff == dx;
+            return true;//diff == dx;
         }
 
         bool mch2(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,
