@@ -143,7 +143,7 @@ namespace cils {
                                 z_x[h] = z[h];
                             }
 //                            if (n_dx_q_1 != n) {
-//                                if (diff == dx || iter > search_iter || !check) {
+//                                if (diff == dx || iter > cils.search_iter || !check) {
 //                                    break;
 //                                }
 //                            }
@@ -225,8 +225,8 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
 
             //ILS search process
-            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
-//            while (1) {
+//            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+            while (1) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {
@@ -267,7 +267,7 @@ namespace cils {
                             }
 
                             if (i != 0) {
-                                if (diff == dx || iter > cils.search_iter || !check) {
+                                if (diff == dx || (iter > 1 && !check)) {
                                     break;
                                 }
                             }
@@ -348,8 +348,8 @@ namespace cils {
 
 
             //ILS search process
-            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
-//            while (true) {
+//            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+            while (true) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {
@@ -399,7 +399,7 @@ namespace cils {
                             }
 
                             if (i != 0) {
-                                if (diff == dx || (iter > 1 && !check)) {
+                                if (diff == dx || (iter > 1 && !check) || iter > cils.search_iter) {
                                     break;
                                 }
                             }

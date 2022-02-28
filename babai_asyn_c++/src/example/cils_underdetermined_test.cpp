@@ -23,11 +23,11 @@ bool block_babai_test(int size, int rank) {
     printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
 
-    index n = 128, m = 128, qam = 3, snr = 45, num_trials = 6;
+    index n = 512, m = 512, qam = 3, snr = 45, num_trials = 6;
     scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
     scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
 
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 4000);
+    cils::CILS<scalar, index> cils(m, n, qam, snr, 20000);
 
     cils.init_d();
     cils.is_constrained = true;
@@ -37,7 +37,7 @@ bool block_babai_test(int size, int rank) {
         cout.flush();
         cils::init(cils);
 
-        if (rank == 0) {
+//        if (rank == 0) {
             scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
 
             scalar ber, runtime, res;
@@ -48,7 +48,7 @@ bool block_babai_test(int size, int rank) {
             cils::CILS_SO_OBILS<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
 
             obils.z_hat.clear();
-            reT = obils.bbnp(10);
+            reT = obils.bnp();
             ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
             bnp_ber += ber;
             bnp_rt += reT.run_time;
@@ -61,7 +61,7 @@ bool block_babai_test(int size, int rank) {
             pbnp_ber += ber;
             pbnp_rt += reT2.run_time;
             res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
-            printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+            printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
             bnp_spu += reT.run_time / reT2.run_time;
 
             obils.z_hat.clear();
@@ -81,10 +81,10 @@ bool block_babai_test(int size, int rank) {
             res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
             printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
             spu += reT.run_time / reT2.run_time;
-        }
+//        }
         printf("ber result: bnp_ber: %8.5f, pbnp_ber: %8.5f, bob_ber: %8.5f, pbob_ber: %8.4f \n",
                bnp_ber / t, pbnp_ber / t, ser_ber / t, omp_ber / t);
-        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", ser_rt / omp_rt, bnp_rt / pbnp_rt);
+        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_rt / pbnp_rt,  ser_rt / omp_rt);
         printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_spu / t, spu / t);
     }
 

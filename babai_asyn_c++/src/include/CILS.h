@@ -97,8 +97,10 @@ namespace cils {
         b_matrix A, B; //B is a temporary matrix.
         b_eye_matrix I;
         b_vector x_t, y, l, u;
+
         //x_t: true parameter, y: original y
-        CILS(){}
+        CILS() {}
+
         /**
         *   omp_sched_static = 0x1,
         *   omp_sched_dynamic = 0x2,
@@ -141,7 +143,12 @@ namespace cils {
         void init_d() {
             if (!is_init_success)
                 std::cout << "[INFO: ] You need to initialize the class by calling method init().";
-            d.resize(n / block_size);// + spilt_size - 1);
+
+            d.resize(n / block_size);
+            if (spilt_size != 0) {
+                d.resize(n / block_size + spilt_size - 1);
+            }
+
             std::fill(d.begin(), d.end(), block_size);
 
             for (int i = 0; i < spilt_size; i++) {
@@ -154,6 +161,7 @@ namespace cils {
             for (index i = d.size() - 2; i >= 0; i--) {
                 d[i] += d[i + 1];
             }
+
             helper::display<scalar, index>(d, "d");
         }
 
@@ -215,8 +223,8 @@ namespace cils {
             std::fill(u.begin(), u.end(), upper);
 
             this->is_init_success = false;
-            this->block_size = 16;
-            this->spilt_size = 0;
+            this->block_size = 32;
+            this->spilt_size = 2;
             this->offset = 4;
             this->lower = 0;
         }
