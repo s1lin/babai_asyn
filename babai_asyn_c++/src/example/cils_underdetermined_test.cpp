@@ -1,7 +1,7 @@
-#include <Python.h>
+//#include <Python.h>
 //#include <numpy/arrayobject.h>
 //#include <boost/python.hpp>
-
+//
 #include "../source/CILS.cpp"
 #include "../source/CILS_Reduction.cpp"
 #include "../source/CILS_SECH_Search.cpp"
@@ -23,16 +23,17 @@ bool block_babai_test(int size, int rank) {
     printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
 
-    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
-    scalar spu = 0, ser_ber = 0, omp_ber = 0;
+    index n = 128, m = 128, qam = 3, snr = 45, num_trials = 6;
+    scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
+    scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
 
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 10000);
+    cils::CILS<scalar, index> cils(m, n, qam, snr, 4000);
 
     cils.init_d();
     cils.is_constrained = true;
 
-    for (int t = 0; t < 100; t++) {
-        b_vector x_q(n, 0), x_tmp(n, 0), x_ser(n, 0), x_omp(n, 0), x_mpi(n, 0);
+    for (int t = 1; t <= 100; t++) {
+        b_vector x_ser(n, 0);
         cout.flush();
         cils::init(cils);
 
@@ -47,25 +48,46 @@ bool block_babai_test(int size, int rank) {
             cils::CILS_SO_OBILS<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
 
             obils.z_hat.clear();
+            reT = obils.bbnp(10);
+            ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+            bnp_ber += ber;
+            bnp_rt += reT.run_time;
+            res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+            printf("bnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+
+            obils.z_hat.clear();
+            reT2 = obils.o_pbnp(8, 6, 0);
+            ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+            pbnp_ber += ber;
+            pbnp_rt += reT2.run_time;
+            res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+            printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+            bnp_spu += reT.run_time / reT2.run_time;
+
+            obils.z_hat.clear();
             reT = obils.bocb(0);
             ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
             ser_ber += ber;
+            ser_rt += reT.run_time;
             res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
             printf("bocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+            cout.flush();
 
             obils.z_hat.clear();
-            reT2 = obils.pbocb_test(10, 10, 0);
-            obils.z_hat.clear();
-            reT2 = obils.pbocb_test(10, 10, 0);
+            reT2 = obils.pbocb_test(8, 6, 0);
             ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
             omp_ber += ber;
+            omp_rt += reT2.run_time;
             res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
             printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
             spu += reT.run_time / reT2.run_time;
         }
-//        PyObject * pName, *pModule, *pFunc;
+        printf("ber result: bnp_ber: %8.5f, pbnp_ber: %8.5f, bob_ber: %8.5f, pbob_ber: %8.4f \n",
+               bnp_ber / t, pbnp_ber / t, ser_ber / t, omp_ber / t);
+        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", ser_rt / omp_rt, bnp_rt / pbnp_rt);
+        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_spu / t, spu / t);
     }
-    printf("test result: ser_ber: %8.5f, omp_ber: %8.4f, time: %8.4f\n", ser_ber/100, omp_ber/100, spu/100);
+
     return true;
 }
 

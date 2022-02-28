@@ -131,10 +131,8 @@ namespace cils {
             index num_iter = 0, idx = 0, end = 1, ni, nj, diff = 0, i = cils.n - 1, j, c_i;
             index z_p[cils.n] = {}, count[nstep] = {}, delta[nstep] = {};
             bool flag = false;
-            sd_vector ber(1, 0);
 
             scalar sum = 0;
-
 
 #pragma omp parallel default(shared) num_threads(n_t)
             {}
@@ -178,7 +176,7 @@ namespace cils {
             }
 
             run_time = omp_get_wtime() - run_time;
-            returnType<scalar, index> reT = {ber, run_time, num_iter};
+            returnType<scalar, index> reT = {{}, run_time, num_iter};
             return reT;
         }
 
@@ -195,6 +193,37 @@ namespace cils {
             }
             time = omp_get_wtime() - time;
             return {{}, time, 0};
+        }
+
+        returnType <scalar, index> bbnp(index init) {
+            scalar sum = 0;
+            index ds = cils.d.size(), n_dx_q_0, n_dx_q_1;
+            b_vector y_b(cils.n);
+
+            scalar run_time = omp_get_wtime();
+
+            for (index i = 0; i < ds; i++) {
+                n_dx_q_1 = cils.d[i];
+                n_dx_q_0 = i == ds - 1 ? 0 : cils.d[i + 1];
+
+                subrange(y_b, n_dx_q_0, n_dx_q_1) = subrange(y_bar, n_dx_q_0, n_dx_q_1) -
+                                                    prod(subrange(R, n_dx_q_0, n_dx_q_1, n_dx_q_1, cils.n),
+                                                         subrange(z_hat, n_dx_q_1, cils.n));
+
+                for (index row_k = n_dx_q_1 - 1; row_k >= n_dx_q_0; row_k--){
+                    sum = 0;
+                    for (index col = row_k + 1; col < n_dx_q_1; col++) {
+                        sum += R(row_k, col) * z_hat[col];
+                    }
+                    scalar R_kk = R(row_k, row_k);
+                    scalar c_i = y_b[row_k] / R_kk;
+                    z_hat[row_k] = !cils.is_constrained ? c_i : max(min((index) c_i, cils.upper), 0);
+                }
+
+            }
+            run_time = omp_get_wtime() - run_time;
+            returnType<scalar, index> reT = {{run_time}, run_time, 0};
+            return reT;
         }
 
         returnType <scalar, index> sic(const index nstep) {
@@ -235,8 +264,7 @@ namespace cils {
             return {{}, time, t};
         }
 
-        returnType <scalar, index>
-        psic(const index nstep, const index n_t) {
+        returnType <scalar, index> psic(const index nstep, const index n_t) {
             b_vector sum(cils.n, 0), z(z_hat);
             b_vector a_t(cils.n, 0), y_b(cils.y);
             index diff[nstep], flag = 0, num_iter = 0;
@@ -290,7 +318,6 @@ namespace cils {
             time = omp_get_wtime() - time;
             return {{}, time, 0};
         }
-
 
         returnType <scalar, index> bocb(index init) {
             scalar sum = 0;
@@ -351,13 +378,13 @@ namespace cils {
             y_B.clear();
             CILS_SECH_Search<scalar, index> _ils(cils.m, cils.n, cils.qam);
 //            omp_set_schedule((omp_sched_t) schedule, chunk_size);
-            auto lock = new omp_lock_t[ds]();
-            for (index i = 0; i < ds; i++) {
-                omp_set_lock(&lock[i]);
-            }
-
-            omp_unset_lock(&lock[0]);
-            omp_unset_lock(&lock[1]);
+//            auto lock = new omp_lock_t[ds]();
+//            for (index i = 0; i < ds; i++) {
+//                omp_set_lock(&lock[i]);
+//            }
+//
+//            omp_unset_lock(&lock[0]);
+//            omp_unset_lock(&lock[1]);
 
 
 #pragma omp parallel default(none) num_threads(n_proc)
@@ -517,7 +544,8 @@ namespace cils {
         returnType <scalar, index> pbocb_test(const index n_proc, const index nstep, const index init) {
 
             index ds = cils.d.size();
-            index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {}, count[nstep] = {}, delta[nstep] = {};
+            index diff = 0, num_iter = 0, flag = 0, temp;
+            si_vector R_S_1(ds, 0), count(nstep, 0), delta(nstep, 0);
             index row_n, check = 0, r, end = 0;
             index n_dx_q_1, n_dx_q_0;
             scalar sum = 0, start;
@@ -551,10 +579,10 @@ namespace cils {
                             //row_n = (n_dx_q_0 - 1) * (cils.n - n_dx_q_0 / 2);
 
                             if (cils.is_constrained)
-                                if(check)
-                                    R_S_1[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
-                                else
-                                    R_S_1[i] = search.mch2(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
+//                                if(check)
+                                R_S_1[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
+//                                else
+//                                    R_S_1[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
                             else
                                 R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
 

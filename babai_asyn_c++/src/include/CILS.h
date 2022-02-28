@@ -30,13 +30,13 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
-#include <netcdf.h>
+//#include <netcdf.h>
 #include <bitset>
 #include <cmath>
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
-#include "mpi.h"
+//#include "mpi.h"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -141,7 +141,7 @@ namespace cils {
         void init_d() {
             if (!is_init_success)
                 std::cout << "[INFO: ] You need to initialize the class by calling method init().";
-            d.resize(n / block_size + spilt_size - 1);
+            d.resize(n / block_size);// + spilt_size - 1);
             std::fill(d.begin(), d.end(), block_size);
 
             for (int i = 0; i < spilt_size; i++) {
@@ -215,8 +215,8 @@ namespace cils {
             std::fill(u.begin(), u.end(), upper);
 
             this->is_init_success = false;
-            this->block_size = 32;
-            this->spilt_size = 2;
+            this->block_size = 16;
+            this->spilt_size = 0;
             this->offset = 4;
             this->lower = 0;
         }

@@ -31,13 +31,13 @@ using namespace cils;
 
 int main(int argc, char *argv[]) {
     double t;
-    MPI_Comm comm;
+//    MPI_Comm comm;
     int rank, size;
-    MPI_Init(nullptr, nullptr);
-    comm = MPI_COMM_WORLD;
+//    MPI_Init(nullptr, nullptr);
+//    comm = MPI_COMM_WORLD;
     /* Determine the sender and receiver */
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
+//    MPI_Comm_rank(comm, &rank);
+//    MPI_Comm_size(comm, &size);
 
     if (rank == 0) {
         printf("\n====================[ Run | cils | Release ]==================================\n");
@@ -54,9 +54,9 @@ int main(int argc, char *argv[]) {
                t, t / 60, t / 3600);
     }
     /* do a zero length gather */
-    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
+//    MPI_Gather(NULL, 0, MPI_BYTE, NULL, 0, MPI_BYTE, 0, MPI_COMM_WORLD);
 
-    MPI_Finalize();
+//    MPI_Finalize();
 
     return 0;
 }

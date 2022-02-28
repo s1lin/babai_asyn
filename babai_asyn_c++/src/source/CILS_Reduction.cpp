@@ -338,9 +338,9 @@ namespace cils {
                 error = qr_validation();
                 cout << "[  QR ERROR OMP:]" << error << endl;
             }
-            for (index i = 0; i < n; i++) {
-                omp_destroy_lock(&lock[i]);
-            }
+//            for (index i = 0; i < n; i++) {
+//                omp_destroy_lock(&lock[i]);
+//            }
             delete[] lock;
             return {{}, t_qr, error};
 
