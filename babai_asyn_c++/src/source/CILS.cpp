@@ -61,7 +61,7 @@ namespace cils {
             matlabPtr->setVariable(u"max_iter", std::move(MIT));
 
             // Call the MATLAB addpath function
-            matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/')");
+            matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
 //            matlabPtr->eval(u"addpath('/Users/shileilin/CLionProjects/babai_asyn/babai_asyn_matlab/')");
 //            matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem_convergence(k, m, n, SNR, max_iter);");
             matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem(k, m, n, SNR, max_iter);");
@@ -78,7 +78,7 @@ namespace cils {
             index i = 0;
             for (auto r: A_A) {
                 A_v[i] = r;
-                ++i;
+                i++;
             }
             for (index col = 0; col < cils.n; col++) {
                 for (index row = 0; row < cils.m; row++) {

@@ -49,7 +49,7 @@ v = [vr; vi];
 %Get Upper triangular matrix
 y = A * x_t + v;
 
-res = norm(y - A * x_t);
+res = norm(y - A * x_t)
 permutation = zeros(1,1);
 %max_iter = 0;
 R0 = A;
@@ -130,7 +130,7 @@ end
 %if abs(init_res - res) < tolerance
 %    break
 %end
-
+[Q, R_, y_q] = qrmgs_row(A, y);
 %end
 
 

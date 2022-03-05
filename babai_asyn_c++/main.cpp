@@ -1,5 +1,6 @@
 //#include "src/example/cils_standard_test.cpp"
 #include "src/example/cils_underdetermined_test.cpp"
+//#include "src/example/cils_gen_test.cpp"
 
 using namespace std;
 using namespace cils;

@@ -1,7 +1,7 @@
 
 #include "../source/CILS.cpp"
 #include "../source/CILS_SECH_Search.cpp"
-#include "../source/CILS_SO_OBILS.cpp"
+#include "../source/CILS_OLM.cpp"
 #include "../source/CILS_Reduction.cpp"
 #include <ctime>
 

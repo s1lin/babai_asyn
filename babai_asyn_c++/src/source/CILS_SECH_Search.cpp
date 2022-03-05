@@ -23,36 +23,14 @@ namespace cils {
 
     private:
         index m, n, max_thre = 1e6;
-        index lower, upper;
+        index lower, upper, search_iter;
         b_vector p, c, z, d, l, u;
-        CILS <scalar, index> cils;
 
     public:
 
-        explicit CILS_SECH_Search(CILS <scalar, index> &cils) {
-            this->cils = cils;
-            this->m = cils.m;
-            this->n = cils.n;
-            //pow(2, qam) - 1;
-            this->p.resize(n);
-            this->p.clear();
-            this->c.resize(n);
-            this->c.clear();
-            this->z.resize(n);
-            this->z.clear();
-            this->d.resize(n);
-            this->d.clear();
-            this->l.resize(n);
-            this->u.resize(n);
-            this->l.clear();
-            this->u.clear();
-            this->lower = 0;
-            this->upper = cils.upper;
-        }
-
-        CILS_SECH_Search(index m, index n, index qam) {
-            this->m = cils.m;
-            this->n = cils.n;
+        CILS_SECH_Search(index m, index n, index qam, index search_iter) {
+            this->m = m;
+            this->n = n;
             //pow(2, qam) - 1;
             this->p.resize(n);
             this->p.clear();
@@ -102,7 +80,7 @@ namespace cils {
             //ILS search process
             while (true) {
 //            count++;
-//            for (count = 0; count < cils.search_iter || iter == 0; count++) {
+//            for (count = 0; count < search_iter || iter == 0; count++) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     //cout << "newprsd" << newprsd << endl;
@@ -143,7 +121,7 @@ namespace cils {
                                 z_x[h] = z[h];
                             }
 //                            if (n_dx_q_1 != n) {
-//                                if (diff == dx || iter > cils.search_iter || !check) {
+//                                if (diff == dx || iter > search_iter || !check) {
 //                                    break;
 //                                }
 //                            }
@@ -191,12 +169,12 @@ namespace cils {
             scalar newprsd, sum;
             b_vector y_B(m, 0);
 
-            index row_n = (n_dx_q_0 - 1) * (cils.n - n_dx_q_0 / 2);
+            index row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
             for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
                 sum = 0;
-                row_n += cils.n - row;
+                row_n += n - row;
 #pragma omp simd reduction(+:sum)
-                for (index col = n_dx_q_1; col < cils.n; col++) {
+                for (index col = n_dx_q_1; col < n; col++) {
                     sum += R_A[col + row_n] * z_x[col];
                 }
                 y_B[row] = y_bar[row] - sum;
@@ -225,7 +203,7 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
 
             //ILS search process
-//            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+//            for (index count = 0; count < search_iter || iter == 0; count++) {
             while (1) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
@@ -316,12 +294,12 @@ namespace cils {
             b_vector y_B(m, 0);
             scalar newprsd, sum, gamma;
             index row_n_start =
-                    (n_dx_q_0 - 1) * (cils.n - n_dx_q_0 / 2) + dx * cils.n - (n_dx_q_0 + n_dx_q_1 - 1) * dx / 2;
+                    (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2) + dx * n - (n_dx_q_0 + n_dx_q_1 - 1) * dx / 2;
             row_n = row_n_start;
             y_b = y_bar[row_k];
 
 
-            for (index col = n_dx_q_1; col < cils.n; col++) {
+            for (index col = n_dx_q_1; col < n; col++) {
                 y_b -= R_A[col + row_n] * z_x[col];
             }
 
@@ -348,7 +326,7 @@ namespace cils {
 
 
             //ILS search process
-//            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+//            for (index count = 0; count < search_iter || iter == 0; count++) {
             while (true) {
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
@@ -364,7 +342,7 @@ namespace cils {
 
                             y_b = y_bar[row_k];
 
-                            for (index col = n_dx_q_1; col < cils.n; col++) {
+                            for (index col = n_dx_q_1; col < n; col++) {
                                 y_b -= R_A[col + row_n] * z_x[col];
                             }
 
@@ -399,7 +377,7 @@ namespace cils {
                             }
 
                             if (i != 0) {
-                                if (diff == dx || (iter > 1 && !check) || iter > cils.search_iter) {
+                                if (diff == dx || (iter > 1 && !check) || iter > search_iter) {
                                     break;
                                 }
                             }
@@ -452,7 +430,7 @@ namespace cils {
             index row_kk = n * end_1 + end_1, count, iter = 0;
 
             //Initial squared search radius
-            scalar R_kk = R_R(n * end_1 + end_1);
+            scalar R_kk = R_R[n * end_1 + end_1];
             c[row_k] = y_B[row_k] / R_kk;
             z[row_k] = round(c[row_k]);
             gamma = R_kk * (c[row_k] - z[row_k]);
@@ -468,10 +446,10 @@ namespace cils {
                         k--;
                         row_k--;
                         sum = 0;
-                        R_kk = R_R(n * row_k + row_k);
+                        R_kk = R_R[n * row_k + row_k];
                         p[row_k] = newprsd;
                         for (index col = k + 1; col < dx; col++) {
-                            sum += R_R((col + n_dx_q_0) * n + row_k) * z[col + n_dx_q_0];
+                            sum += R_R[(col + n_dx_q_0) * n + row_k] * z[col + n_dx_q_0];
                         }
 
                         c[row_k] = (y_B[row_k] - sum) / R_kk;
@@ -488,12 +466,12 @@ namespace cils {
                             z_x[h] = z[h];
                         }
                         if (n_dx_q_1 != n) {
-                            if (diff == dx || iter > cils.search_iter || !check) {
+                            if (diff == dx || iter > search_iter || !check) {
                                 break;
                             }
                         }
                         z[row_k] += d[row_k];
-                        gamma = R_R(n * row_k + row_k) * (c[row_k] - z[row_k]);
+                        gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > row_k ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 } else {
@@ -502,7 +480,7 @@ namespace cils {
                         k++;
                         row_k++;
                         z[row_k] += d[row_k];
-                        gamma = R_R(n * row_k + row_k) * (c[row_k] - z[row_k]);
+                        gamma = R_R[n * row_k + row_k] * (c[row_k] - z[row_k]);
                         d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
                     }
                 }
@@ -533,7 +511,7 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
             scalar newprsd, sum;
             //ILS search process
-            for (index count = 0; count < cils.search_iter || iter == 0; count++) {
+            for (index count = 0; count < search_iter || iter == 0; count++) {
                 newprsd = p[row_k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -562,7 +540,7 @@ namespace cils {
                             z_x[h] = z[h];
                         }
                         if (i != 0) {
-                            if (diff == dx || iter > cils.search_iter || !check) {
+                            if (diff == dx || iter > search_iter || !check) {
                                 break;
                             }
                         }
@@ -590,15 +568,15 @@ namespace cils {
 }
 //Collectors:
 /*
- *  row_n = (n_dx_q_0 - 1) * (cils.n - n_dx_q_0 / 2) + dx * cils.n - (n_dx_q_0 + n_dx_q_1 - 1) * dx / 2;
+ *  row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2) + dx * n - (n_dx_q_0 + n_dx_q_1 - 1) * dx / 2;
  *  for (index row = row_k; row >= n_dx_q_0; row--) {
  *    sum = 0;
- *    for (index col = n_dx_q_1; col < cils.n; col++) {
+ *    for (index col = n_dx_q_1; col < n; col++) {
  *        sum += R_A[col + row_n] * z_x[col];
  *    }
  *    y_B[row] = y_bar[row] - sum;
  *    cout << row_n << ", ";
- *    row_n -= cils.n - row;
+ *    row_n -= n - row;
  *  }
  *  cout << endl;
  *  helper::display<scalar, index>(subrange(y_B, n_dx_q_0, n_dx_q_1), "backward");

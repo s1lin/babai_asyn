@@ -24,6 +24,18 @@
 #include <cmath>
 #include <cstring>
 
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
+#include <boost/numeric/ublas/vector_proxy.hpp>
+#include <boost/numeric/ublas/triangular.hpp>
+#include <boost/numeric/ublas/lu.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/math/tools/norms.hpp>
+
+using namespace boost::numeric::ublas;
+
+
 const double ZERO = 3.3121686421112381E-170;
 using namespace std;
 namespace helper {
@@ -73,10 +85,10 @@ namespace helper {
             G[3] = 1.0;
         }
         b_matrix G_m(2, 2);
-        G_m(0) = G[0];
-        G_m(1) = G[2];
-        G_m(2) = G[1];
-        G_m(3) = G[3];
+//        G_m(0) = G[0];
+//        G_m(1) = G[2];
+//        G_m(2) = G[1];
+//        G_m(3) = G[3];
         return G_m;
     }
 
@@ -127,7 +139,7 @@ namespace helper {
      * @return
      */
     template<typename scalar, typename index>
-    scalar find_bit_error_rate(const b_vector &x_b, const b_vector &x_t, const index k) {
+    scalar find_bit_error_rate(b_vector &x_b, b_vector &x_t, const index k) {
         index error = 0, n = x_t.size();
         for (index i = 0; i < n; i++) {
             std::string binary_x_b, binary_x_t;
@@ -162,7 +174,7 @@ namespace helper {
      * @param name: display name of the matrix
      */
     template<typename scalar, typename index>
-    void display(const b_matrix &A, const string &name) {
+    void display(b_matrix &A, const string &name) {
         cout << name << ": \n";
         for (index row = 0; row < A.size1(); row++) {
             for (index col = 0; col < A.size2(); col++) {
@@ -182,7 +194,7 @@ namespace helper {
      * @param name: display name of the vector
      */
     template<typename scalar, typename index>
-    void display(const b_vector &x, const string &name) {
+    void display(b_vector &x, const string &name) {
         cout << name << ": ";
         scalar sum = 0;
         for (index i = 0; i < x.size(); i++) {
@@ -237,17 +249,29 @@ namespace helper {
         output.clear();
 
         typedef permutation_matrix<std::size_t> pmatrix;
+        typedef boost::numeric::ublas::matrix<double> matrix;
+
         // create a working copy of the input
-        b_matrix M(input);
+        matrix M(input.size1(), input.size2());
+        for (int i = 0; i < input.size1() * input.size2(); i++) {
+            M(i) = input[i];
+        }
+
         // create a permutation matrix for the LU-factorization
         pmatrix pm(M.size1());
         // perform LU-factorization
         auto res = lu_factorize(M, pm);
 
         // create identity matrix of "inverse"
-        output.assign(identity_matrix<typename b_matrix::value_type>(M.size1()));
+        matrix M_I(identity_matrix<typename matrix::value_type>(M.size1()));
         // backsubstitute to get the inverse
-        lu_substitute(M, pm, output);
+        lu_substitute(M, pm, M_I);
+        output.resize(input.size1(), input.size2());
+        output.clear();
+
+        for (int i = 0; i < input.size1() * input.size2(); i++) {
+            output[i] = M_I(i);
+        }
     }
 
 
@@ -280,7 +304,7 @@ namespace helper {
      * @param b : output vector to store the results
      */
     template<typename scalar, typename index>
-    void unique_vector(const b_vector &a, std::vector<scalar> &b) {
+    void unique_vector(b_vector &a, std::vector<scalar> &b) {
         index t, e, i, l, j, k, size_a_1 = a.size() + 1, size_a = a.size(), jj, p, r, q, r_j;
         std::vector<index> i_x(size_a, 0), j_x(size_a, 0);
         scalar absx;
@@ -448,8 +472,10 @@ namespace helper {
      * @return residual : l2 norm
      */
     template<typename scalar, typename index>
-    inline scalar find_residual(const b_matrix &A, const b_vector &x, const b_vector &y) {
-        b_vector yAx = y - prod(A, x);
+    inline scalar find_residual(b_matrix &A, b_vector &x, b_vector &y) {
+        b_vector Ax;
+        prod(A, x, Ax);
+        b_vector yAx = y - Ax;
         return norm_2(yAx);
     }
 
@@ -862,7 +888,7 @@ namespace helper {
      * @param _q 
      * @param eval 
      */
-    void qrp(const b_matrix &A_A, b_matrix &Q_A, b_matrix &R_A, b_matrix &P_A, bool _q, bool eval) {
+    void qrp(b_matrix &A_A, b_matrix &Q_A, b_matrix &R_A, b_matrix &P_A, bool _q, bool eval) {
 
         int m = (int) A_A.size1(), n = (int) A_A.size2();
 
@@ -878,7 +904,7 @@ namespace helper {
 
         for (int col = 0; col < n; col++) {
             for (int row = 0; row < m; row++) {
-                A[row + col * m] = A_A(row * n + col);
+                A[row + col * m] = A_A[row * n + col];
             }
         }
 
@@ -941,14 +967,14 @@ namespace helper {
         P_A.resize(n, n);
         for (int col = 0; col < n; col++) {
             for (int row = 0; row < n; row++) {
-                P_A(row * P_A.size2() + col) = P[row + col * n];
+                P_A[row * P_A.size2() + col] = P[row + col * n];
             }
         }
 
         R_A.resize(m, n);
         for (int col = 0; col < m; col++) {
             for (int row = 0; row < n; row++) {
-                R_A(row + col * n) = R[row * m + col];
+                R_A[row + col * n] = R[row * m + col];
             }
         }
 
@@ -956,14 +982,17 @@ namespace helper {
             Q_A.resize(m, m);
             for (int col = 0; col < m; col++) {
                 for (int row = 0; row < m; row++) {
-                    Q_A(row * Q_A.size2() + col) = Q[row + col * Q_A.size1()];
+                    Q_A[row * Q_A.size2() + col] = Q[row + col * Q_A.size1()];
                 }
             }
         }
         if (eval) {
             //Verify QRP i.e., A = QRP.
-            b_matrix A_qr = prod(Q_A, R_A);
-            b_matrix A_pa = prod(A_qr, trans(P_A));
+            b_matrix A_qr;
+            prod(Q_A, R_A, A_qr);
+            b_matrix A_pa, PAT;
+            PAT = trans(P_A);
+            prod(A_qr, PAT, A_pa);
             helper::display<double, int>(A_A, "A_A");
             helper::display<double, int>(A_pa, "A");
         }

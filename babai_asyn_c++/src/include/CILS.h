@@ -36,30 +36,26 @@
 #include "MatlabDataArray.hpp"
 #include "MatlabEngine.hpp"
 #include <numeric>
-//#include "mpi.h"
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
-#include <boost/numeric/ublas/vector_proxy.hpp>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/math/tools/norms.hpp>
 #include <boost/program_options.hpp>
+
+#include "CILS_Iterator.h"
+#include "CILS_Vector.h"
+#include "CILS_Identity_Matrix.h"
+#include "CILS_Matrix.h"
+#include "CILS_Operations.h"
 
 using namespace std;
 
-using namespace boost::numeric::ublas;
 using namespace boost::program_options;
 
 typedef std::vector<double> sd_vector;
 typedef std::vector<bool> sb_vector;
 typedef std::vector<int> si_vector;
 
-typedef boost::numeric::ublas::vector<double> b_vector;
-typedef boost::numeric::ublas::matrix<double> b_matrix;
-typedef boost::numeric::ublas::identity_matrix<double> b_eye_matrix;
+typedef cils::CILS_Vector<int, double> b_vector;
+typedef cils::CILS_Matrix<int, double> b_matrix;
+typedef cils::CILS_Identity_Matrix<int, double> b_eye_matrix;
 
 #include "helper.h"
 
@@ -165,34 +161,6 @@ namespace cils {
             helper::display<scalar, index>(d, "d");
         }
 
-        /**
-         * Initialize block indicator matrix associated with underdetermined SCP block Babai(Optimal) algorithm
-         * Usage:
-         * 1. Call it after calling initialization method.
-         * 2. This method generate the indicator matrix.
-         */
-//        void init_indicator() {
-//            if (!is_init_success)
-//                std::cout << "[INFO: ] You need to initialize the class by calling method init().";
-//            // 'SCP_Block_Optimal_2:34' cur_end = n;
-//            index cur_end = n;
-//            // 'SCP_Block_Optimal_2:35' i = 1;
-//            index b_i = 1;
-//            // 'SCP_Block_Optimal_2:36' while cur_end > 0
-//            while (cur_end > 0) {
-//                // 'SCP_Block_Optimal_2:37' cur_1st = max(1, cur_end-m+1);
-//                index cur_1st = std::fmax(1, (cur_end - m) + 1);
-//                // 'SCP_Block_Optimal_2:38' indicator(1,i) = cur_1st;
-//                indicator[2 * (b_i - 1)] = cur_1st;
-//                // 'SCP_Block_Optimal_2:39' indicator(2,i) = cur_end;
-//                indicator[2 * (b_i - 1) + 1] = cur_end;
-//                // 'SCP_Block_Optimal_2:40' cur_end = cur_1st - 1;
-//                cur_end = cur_1st - 1;
-//                // 'SCP_Block_Optimal_2:41' i = i + 1;
-//                b_i++;
-//            }
-//        }
-
         CILS(index m, index n, index qam, index snr, index search_iter) {
             this->m = m;
             this->n = n;
@@ -208,7 +176,7 @@ namespace cils {
 
             this->I.resize(n, n, true);
             this->A.resize(m, n, false);
-            this->A.clear();
+            //this->A.clear();
 
             this->x_t.resize(n, false);
             this->y.resize(m, false);
@@ -220,10 +188,10 @@ namespace cils {
             this->l.clear();
             this->u.clear();
 
-            std::fill(u.begin(), u.end(), upper);
+            this->u.assign(upper);
 
             this->is_init_success = false;
-            this->block_size = 32;
+            this->block_size = 8;
             this->spilt_size = 2;
             this->offset = 4;
             this->lower = 0;
