@@ -7,7 +7,7 @@
 #include "../source/CILS_SECH_Search.cpp"
 //#include "../source/CILS_SO_UBILS.cpp"
 #include "../source/CILS_OLM.cpp"
-
+//
 #include <ctime>
 
 template<typename scalar, typename index>
@@ -23,7 +23,7 @@ bool block_babai_test(int size, int rank) {
     printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
 
-    index n = 512, m = 512, qam = 3, snr = 45, num_trials = 6;
+    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
     scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
     scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
 
@@ -55,7 +55,9 @@ bool block_babai_test(int size, int rank) {
         printf("bnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
         obils.z_hat.clear();
-        reT2 = obils.o_pbnp(8, 6, 0);
+        reT2 = obils.pbnp(8, 20);
+//        cout<<obils.z_hat;
+//        cout<<cils.x_t;
         ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
         pbnp_ber += ber;
         pbnp_rt += reT2.run_time;

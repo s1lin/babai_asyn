@@ -81,6 +81,14 @@ namespace cils {
             return x[i];
         }
 
+        Scalar &operator()(const Integer ni, const Integer col, const Integer size_n) const {
+            return x[ni * size_n - (ni * (ni + 1)) / 2 + col];
+        }
+
+        Scalar &operator()(const Integer nj, const Integer col) const {
+            return x[nj + col];
+        }
+
         Scalar operator+(const CILS_Vector &y) {
             std::transform(this->begin(), this->end(), y.begin(), y.begin(), std::plus<Scalar>());
         }

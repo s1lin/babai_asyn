@@ -724,29 +724,18 @@ namespace cils {
 
             //Initialize B_t = [A, y]:
             b_matrix B_t(B);
-            B_t.resize(m, n + 1);
-            column(B_t, n) = y;
 
             //Clear Variables:
-            R_R.resize(m, n + 1);
             Q.clear();
-            R_R.clear();
-            y_r.clear();
             Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
-            for (index j = 0; j < m; j++) {
-                for (index k = j; k < n + 1; k++) {
-                    R_R(j, k) = inner_prod(column(Q, j), column(B_t, k));
-                    column(B_t, k) = column(B_t, k) - column(Q, j) * R_R(j, k);
-                    if (k == j) {
-                        R_R(k, k) = norm_2(column(B_t, k));
-                        column(Q, k) = column(B_t, k) / R_R(k, k);
-                    }
-                }
-            }
+            CILS_Reduction reduction(B, y, lower, upper);
+            reduction.mgs_qr();
+            R = reduction.R;
+            y = reduction.y;
             t_qr = omp_get_wtime() - t_qr;
 
             //  ------------------------------------------------------------------

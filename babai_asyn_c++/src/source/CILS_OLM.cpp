@@ -1,5 +1,5 @@
 /** \file
- * \brief Computation of integer least square problem by constrained non-block Babai Estimator
+ * \brief Computation of overdetermined integer linear models
  * \author Shilei Lin
  * This file is part of 
  *   CILS is free software: you can redistribute it and/or modify
@@ -36,9 +36,9 @@ namespace cils {
 
     public:
         index n, m, is_constrained, upper, qam, offset, search_iter;
-        b_vector z_hat, R_A, y_bar, y;
+        b_vector z_hat{}, R_A{}, y_bar{}, y{};
         si_vector d;
-        b_matrix R, A;
+        b_matrix R{}, A{};
 
         CILS_OLM(CILS <scalar, index> &cils, const b_vector &z_hat, const b_matrix &R, const b_vector &y_bar) {
             this->n = cils.n;
@@ -50,90 +50,20 @@ namespace cils {
             this->is_constrained = cils.is_constrained;
             this->R = R;
             this->y_bar = y_bar;
-            this->y = y;
             this->z_hat = z_hat;
+            this->y = cils.y;
             this->A = cils.A;
             this->d = cils.d;
             init_R_A();
-        }
-        
 
-        returnType <scalar, index>
-        pbnp(const index n_t, const index nstep, const index init) {
-
-            index num_iter = 0, idx = 0, end = 1, ni, nj, diff = 0, i = n - 1, j, c_i;
-            index z_p[n] = {}, delta[n] = {};
-            bool flag = false, check = false;
-            sd_vector ber(1, 0);
-
-            scalar sum = 0, run_time;
-#pragma omp parallel default(shared) num_threads(n_t)
-            {}
-
-            scalar start = omp_get_wtime();
-            if (nstep != 0) {
-//            omp_set_schedule((omp_sched_t) this->schedule, this->chunk_size);
-
-                c_i = round(y_bar[i] / R(i, i));//R_A[n / 2 * (1 + n) - 1]);
-                z_hat[i] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
-                delta[i] = 1;
-
-#pragma omp parallel default(shared) num_threads(n_t) private(check, sum, i, j, ni, nj, c_i)
-                {
-                    for (index t = 0; t < nstep && !flag; t++) {
-#pragma omp for schedule(dynamic, 1) nowait
-                        for (ni = 1; ni < n; ni++) {
-                            if (!flag && !delta[ni]) {//
-                                i = n - ni - 1;
-//                                nj = i * n - (i * (i + 1)) / 2;
-
-//#pragma omp simd reduction(+ : sum)
-//                                for (index col = n - ni; col < n; col++) {
-//                                    sum += R_A[nj + col] * z_hat[col];
-//                                }
-                                for (index col = n - 1; col >= n - ni; col--) {
-                                    sum += R(i, col) * z_hat[col];
-                                }
-//                                for (j = n - ni; j < n; j++) {
-//                                    sum += R(i, j) * z_hat[j];
-//                                }
-
-//                                c_i = round((y_bar[i] - sum) / R(i, i));
-
-                                c_i = round((y_bar[i] - sum) / R(i, i));//R_A[nj + i]);
-                                z_p[i] = z_hat[i];
-                                z_hat[i] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
-                                delta[ni] = t > 2 && z_p[i] == z_hat[i];
-                                sum = 0;
-                            }
-                        }
-#pragma omp single
-                        {
-                            if (t > 2) {
-                                num_iter = t;
-                                diff = 0;
-#pragma omp simd reduction(+ : diff)
-                                for (index l = 0; l < n; l++) {
-                                    diff += delta[l];
-                                }
-                                flag = diff >= n - 5;
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            scalar run_time2 = omp_get_wtime() - start;
-            returnType<scalar, index> reT = {ber, run_time2, num_iter};
-            return reT;
         }
 
         returnType <scalar, index>
-        o_pbnp(const index n_t, const index nstep, const index init) {
+        pbnp(const index n_t, const index nstep) {
 
-            index num_iter = 0, idx = 0, end = 1, ni, nj, diff = 0, i = n - 1, j, c_i;
-            index z_p[n] = {}, count[nstep] = {}, delta[nstep] = {};
+            index idx = 0, ni, nj, diff = 0, c_i, t = 0;
+            index z_p[n] = {}, ct[nstep] = {}, df[nstep] = {}, z_n;
+            b_vector y_b(y_bar);
             bool flag = false;
 
             scalar sum = 0;
@@ -143,44 +73,54 @@ namespace cils {
 
             scalar run_time = omp_get_wtime();
             if (nstep != 0) {
-//            omp_set_schedule((omp_sched_t) this->schedule, this->chunk_size);
-
-                c_i = round(y_bar[i] / R_A[n / 2 * (1 + n) - 1]);//R_A[n / 2 * (1 + n) - 1]);
-                z_hat[i] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
+                c_i = round(y_b[n - 1] / R_A[n / 2 * (1 + n) - 1]);
+                z_n = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
+                z_hat[n - 1] = z_n;
                 idx = n - 2;
-#pragma omp parallel default(shared) num_threads(n_t) private(sum, i, j, ni, nj, c_i)
+
+#pragma omp parallel default(shared) num_threads(n_t) private(sum, ni, nj, c_i) firstprivate(z_n, t)
                 {
-                    for (index t = 0; t < nstep && !flag; t++) {
+#pragma omp barrier
+#pragma omp for schedule(static, 4) nowait
+                    for (index i = 0; i < n; i++) {
+                        y_b[i] -= z_n * R_A(i, n - 1, n);
+                    }
+                    for (t = 0; t < nstep && !flag; t++) {
 #pragma omp for schedule(dynamic, 1) nowait
-                        for (ni = 1; ni < n; ni++) {
-                            i = n - ni - 1;
-                            if (!flag && i <= idx) {
-                                nj = i * n - (i * (i + 1)) / 2;
-                                sum = y_bar[i];
+                        for (index i = 1; i < n; i++) {
+                            ni = n - 1 - i;
+                            if (!flag && ni <= idx) {
+                                sum = y_b[ni];
+                                nj = ni * n - (ni * (ni + 1)) / 2;
 #pragma omp simd reduction(- : sum)
-                                for (index col = n - 1; col >= n - ni; col--) {
-                                    sum -= R_A[nj + col] * z_hat[col];
+                                for (index j = n - 2; j >= n - i; j--) { //j < n - 1; j++) {
+                                    sum -= R_A(nj, j) * z_hat[j]; //[nj + j]
                                 }
-                                c_i = round(sum / R_A[nj + i]);
-                                z_p[i] = z_hat[i];
-                                z_hat[i] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
+
+                                c_i = round(sum / R_A(nj, ni));
+                                z_hat[ni] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
 #pragma omp atomic
-                                delta[t] += z_p[i] == z_hat[i];
-                                if (idx == i) idx--;
+                                df[t] += z_p[ni] != z_hat[ni];
+
+                                z_p[ni] = z_hat[ni];
+                                if (idx == ni) {
+                                    idx--;
+                                }
+
                             }
 #pragma omp atomic
-                            count[t]++;
+                            ct[t]++;
                         }
                         if (!flag) {
-                            flag = (delta[t] >= n * 0.6 || idx <= n_t) && count[t] == n - 1;
-                            num_iter = t;
+                            flag = (df[t] <= 100 || idx <= n_t) && ct[t] == n - 1;
                         }
                     }
                 }
             }
-
+            helper::display<index, index>(df, nstep, "df");
+            cout << idx << endl;
             run_time = omp_get_wtime() - run_time;
-            returnType<scalar, index> reT = {{}, run_time, (scalar) num_iter};
+            returnType<scalar, index> reT = {{}, run_time, (scalar) t};
             return reT;
         }
 
@@ -525,7 +465,7 @@ namespace cils {
 
             index ds = d.size();
             index diff = 0, num_iter = 0, flag = 0, temp;
-            si_vector R_S_1(ds, 0), count(nstep, 0), delta(nstep, 0);
+            si_vector R_S_1(ds, 0), ct(nstep, 0), df(nstep, 0);
             index row_n, check = 0, r, end = 0;
             index n_dx_q_1, n_dx_q_0;
             scalar sum = 0, start;
@@ -572,12 +512,12 @@ namespace cils {
                             }
                         }
 #pragma omp atomic
-                        delta[j] += R_S_1[i];
+                        df[j] += R_S_1[i];
 #pragma omp atomic
-                        count[j]++;
+                        ct[j]++;
                     }
                     if (!flag) {
-                        flag = (delta[j] >= ds - offset) && count[j] == ds - 1;
+                        flag = (df[j] >= ds - offset) && ct[j] == ds - 1;
                         num_iter = j;
                     }
 
@@ -599,8 +539,8 @@ namespace cils {
 //            if (mode == 0)
 //                reT = {{run_time3}, time, (scalar) diff + end};
 //            else {
-//            helper::display<scalar, index>(delta, nstep, "delta");
-//            helper::display<scalar, index>(count, nstep, "count");
+//            helper::display<scalar, index>(df, nstep, "df");
+//            helper::display<scalar, index>(ct, nstep, "ct");
 //
 //            cout << "n_proc:" << n_proc << "," << "init:" << init << ",end:" << end << ",ratio:"
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "," << num_iter << "||" << endl;
@@ -684,3 +624,13 @@ namespace cils {
 //                }
 //                prod_time2 = omp_get_wtime() - prod_time2;
 //                cout << "Ratio:" << prod_time / prod_time2 <<" ";
+
+
+//                                cout << sum << endl;
+//                                sum = y_bar[ni];
+//                                index nj = ni * n - (ni * (ni + 1)) / 2;
+//#pragma omp simd reduction(- : sum)
+//                                for (index col = n - 1; col >= n - i; col--){ //col < n - 1; col++) {
+//                                    sum -= R_A[nj + col] * z_hat[col];
+//                                }
+//                                cout << sum << endl;

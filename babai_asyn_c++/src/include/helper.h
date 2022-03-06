@@ -186,6 +186,22 @@ namespace helper {
     }
 
     /**
+     * Simple function for displaying a m-by-n matrix with name
+     * @tparam scalar : real number type
+     * @tparam index : integer type
+     * @param b : vector, in pointer
+     * @param name: display name of the matrix
+     */
+    template<typename scalar, typename index>
+    void display(scalar *b, const index size, const string &name) {
+        cout << name << ": \n";
+        for (index row = 0; row < size; row++) {
+            printf("%8.4d ", b[row]);
+        }
+        cout << endl;
+    }
+
+    /**
      * Simple function for displaying the a vector with name
      * @tparam scalar : real number type
      * @tparam index : integer type
