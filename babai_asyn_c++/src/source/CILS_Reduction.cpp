@@ -111,7 +111,7 @@ namespace cils {
             if (eval == 1) {
                 //b_vector B_T(m * n, 0);
                 //helper::mtimes_v<scalar, index>(m, n, Q, R, B_T);
-                b_matrix B_T;
+                b_matrix B_T(m, n);
                 prod(Q, R, B_T);
                 if (verbose && n <= 16) {
                     printf("\n[ Print Q:]\n");
@@ -219,9 +219,9 @@ namespace cils {
 
     public:
         //B --> A
-        b_eye_matrix I;
-        b_matrix B, R, R_R, Q, Z, P, G;
-        b_vector y, y_r, p;
+        b_eye_matrix I{};
+        b_matrix B{}, R{}, R_R{}, Q{}, Z{}, P{};
+        b_vector y{}, y_r{}, p{};
 
         explicit CILS_Reduction(CILS <scalar, index> &cils) : CILS_Reduction(cils.A, cils.y, cils.lower, cils.upper) {}
 
@@ -252,37 +252,43 @@ namespace cils {
 
 
         /**
-         * Serial version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
+         * Serial version of MGS QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          */
         returnType <scalar, index> mgs_qr() {
-            //Initialize B_t = [A, y]:
-            b_matrix B_t(B);
-            B_t.resize(m, n + 1);
-            column(B_t, n) = y;
-
             //Clear Variables:
-            R.resize(m, n + 1);
-            Q.clear();
             R.clear();
+            Q.assign(B);
 
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             scalar t_qr = omp_get_wtime();
-            for (index j = 0; j < m; j++) {
-                for (index k = j; k < n + 1; k++) {
-                    R(j, k) = inner_prod(column(Q, j), column(B_t, k));
-                    column(B_t, k) = column(B_t, k) - column(Q, j) * R(j, k);
-                    if (k == j) {
-                        R(k, k) = norm_2(column(B_t, k));
-                        column(Q, k) = column(B_t, k) / R(k, k);
+            for (index k = 0; k < n; k++) {
+                scalar sum = 0;
+                for (index i = 0; i < n; i++) {
+                    sum += pow(Q(i, k), 2);
+                }
+                R(k, k) = sqrt(sum);
+                for (index i = 0; i < n; i++) {
+                    Q(i, k) = Q(i, k) / R(k, k);
+                }
+                for (index j = 0; j < n; j++) {
+                    if (j > k) {
+                        R(k, j) = 0;
+                        for (index i = 0; i < n; i++) {
+                            R(k, j) += Q(i, k) * Q(i, j);
+                        }
+                        for (index i = 0; i < n; i++) {
+                            Q(i, j) -= R(k, j) * Q(i, k);
+                        }
                     }
                 }
             }
             t_qr = omp_get_wtime() - t_qr;
-            y = column(R, n);
-            R.resize(m, n);
+            b_matrix Q_T = trans(Q);
+            prod(Q_T, y, y_r);
+            y.assign(y_r);
 
             return {{}, t_qr, 0};
         }
@@ -294,10 +300,10 @@ namespace cils {
          */
         returnType <scalar, index> mgs_qr_omp(const index n_proc) {
 
-            b_matrix B_t(B);
+//            b_matrix B_t(B);
 
             R.clear();
-            Q.clear();
+            Q.assign(B);
 
             auto lock = new omp_lock_t[n]();
             for (index i = 0; i < n; i++) {
@@ -314,42 +320,42 @@ namespace cils {
                 if (omp_get_thread_num() == 0) {
                     // Calculation of ||A||
                     for (index i = 0; i < n; i++) {
-                        sum += B_t[i] * B_t[i];
+                        sum += Q[i] * Q[i];
                     }
                     R[0] = sqrt(sum);
                     for (index i = 0; i < n; i++) {
-                        Q[i] = B_t[i] / R[0];
+                        Q[i] = Q[i] / R[0];
                     }
                     omp_unset_lock(&lock[0]);
                 }
 
-                for (index k = 1; k < n; k++) {
+                for (index k = 0; k < n; k++) {
                     //Check if Q[][i-1] (the previous column) is computed.
-                    omp_set_lock(&lock[k - 1]);
-                    omp_unset_lock(&lock[k - 1]);
+                    omp_set_lock(&lock[k]);
+                    omp_unset_lock(&lock[k]);
 #pragma omp for schedule(static, 1) nowait
                     for (index j = 0; j < n; j++) {
-                        if (j >= k) {
-                            R[(k - 1) * n + j] = 0;
+                        if (j > k) {
+                            R(k, j) = 0;
                             for (index i = 0; i < n; i++) {
-                                R(k - 1, j) += Q(i, k - 1) * B_t(i, j);
+                                R(k, j) += Q(i, k) * Q(i, j);
                             }
                             for (index i = 0; i < n; i++) {
-                                B_t(i, j) -= R(k - 1, j) * Q(i, k - 1);
+                                Q(i, j) -= R(k, j) * Q(i, k);
                             }
 
                             //Only one thread calculates the norm(A)
                             //and unsets the lock for the next column.
-                            if (j == k) {
+                            if (j == k + 1) {
                                 sum = 0;
                                 for (index i = 0; i < n; i++) {
-                                    sum = sum + pow(B_t(i, k), 2);
+                                    sum = sum + pow(Q(i, j), 2);
                                 }
-                                R(k, k) = sqrt(sum);
+                                R(j, j) = sqrt(sum);
                                 for (index i = 0; i < n; i++) {
-                                    Q(i, k) = B_t(i, k) / R(k, k);
+                                    Q(i, j) = Q(i, j) / R(j, j);
                                 }
-                                omp_unset_lock(&lock[k]);
+                                omp_unset_lock(&lock[k + 1]);
                             }
                         }
                     }
@@ -361,6 +367,8 @@ namespace cils {
             y.assign(y_r);
             //R.assign(R);
             t_qr = omp_get_wtime() - t_qr;
+            eval = true;
+//            verbose = true;
             qr_validation();
             scalar error = -1;
             if (eval || verbose) {
@@ -506,9 +514,9 @@ namespace cils {
 //            P.resize(n, n);
 //            P.assign(I);
 //            for (index i = 0; i < n; i++) {
-//                for (index i1 = 0; i1 < n; i1++) {
-//                    R_R(i1, i) = R_0(i1, p[i]);
-//                    P(i1, i) = I(i1, p[i]);
+//                for (index j = 0; j < n; j++) {
+//                    R_R(j, i) = R_0(j, p[i]);
+//                    P(j, i) = I(j, p[i]);
 //                }
 //            }
 //
@@ -592,102 +600,88 @@ namespace cils {
          *  @return returnType: ~, time_qr, time_plll
          */
         returnType <scalar, index> plll_serial() {
-            scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
+            scalar zeta, alpha, t_qr, t_plll, sum = 0;
 
-            //Initialize B_t = [A, y]:
-            b_matrix B_t(B);
-            B_t.resize(m, n + 1);
-            column(B_t, n) = y;
-
-            //Clear Variables:
-            R_R.resize(m, n + 1);
-            Q.clear();
-            R_R.clear();
-            y_r.clear();
             Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
+            CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
+            reduction.mgs_qr();
+            R.assign(reduction.R);
+            y.assign(reduction.y);
 
-            for (index j = 0; j < m; j++) {
-                for (index k = j; k < n + 1; k++) {
-                    R_R(j, k) = inner_prod(column(Q, j), column(B_t, k));
-                    column(B_t, k) = column(B_t, k) - column(Q, j) * R_R(j, k);
-                    if (k == j) {
-                        R_R(k, k) = norm_2(column(B_t, k));
-                        column(Q, k) = column(B_t, k) / R_R(k, k);
-                    }
-                }
-            }
             t_qr = omp_get_wtime() - t_qr;
 
             //  ------------------------------------------------------------------
             //  --------  Perform the partial LLL reduction  ---------------------
             //  ------------------------------------------------------------------
-
-            index k = 1, k1, i, i1;
+            index k = 1, k1, i, j;
             t_plll = omp_get_wtime();
 
             while (k < n) {
                 k1 = k - 1;
-                zeta = round(R_R(k1, k) / R_R(k1, k1));
-                alpha = R_R(k1, k) - zeta * R_R(k1, k1);
+                zeta = round(R(k1, k) / R(k1, k1));
+                alpha = R(k1, k) - zeta * R(k1, k1);
 
-                if (pow(R_R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_R(k, k), 2))) {
-                    if (zeta != 0.0) {
+                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                    if (zeta != 0) {
                         //Perform a size reduction on R(k-1,k)
-                        R_R(k1, k) = alpha;
+                        R(k1, k) = alpha;
                         for (i = 0; i <= k - 2; i++) {
-                            R_R(i, k) = R_R(i, k) - zeta * R_R(i, k1);
+                            R(i, k) = R(i, k) - zeta * R(i, k1);
                         }
                         for (i = 0; i < n; i++) {
                             Z(i, k) -= zeta * Z(i, k1);
                         }
                         //Perform size reductions on R(1:k-2,k)
                         for (i = k - 2; i >= 0; i--) {
-                            zeta = round(R_R(i, k) / R_R(i, i));
-                            if (zeta != 0.0) {
-                                for (i1 = 0; i1 <= i; i1++) {
-                                    R_R(i1, k) = R_R(i1, k) - zeta * R_R(i1, i);
+                            zeta = round(R(i, k) / R(i, i));
+                            if (zeta != 0) {
+                                for (j = 0; j <= i; j++) {
+                                    R(j, k) = R(j, k) - zeta * R(j, i);
                                 }
-                                for (i1 = 0; i1 < n; i1++) {
-                                    Z(i1, k) -= zeta * Z(i1, i);
+                                for (j = 0; j < n; j++) {
+                                    Z(j, k) -= zeta * Z(j, i);
                                 }
                             }
                         }
                     }
+
                     //Permute columns k-1 and k of R and Z
-                    b_vector R_k1 = column(R_R, k1), R_k = column(R_R, k);
-                    b_vector Z_k1 = column(Z, k1), Z_k = column(Z, k);
-                    column(R_R, k1) = R_k;
-                    column(R_R, k) = R_k1;
-                    column(Z, k1) = Z_k;
-                    column(Z, k) = Z_k1;
+                    for (i = 0; i < R.size1(); i++) {
+                        std::swap(R(i, k1), R(i, k));
+                        std::swap(Z(i, k1), Z(i, k));
+                    }
 
                     //Bring R back to an upper triangular matrix by a Givens rotation
-                    scalar G_a[4] = {};
-                    scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
-                    b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-                    R_R(k1, k1) = low_tmp[0];
-                    R_R(k, k1) = low_tmp[1];
+                    scalar G[4] = {};
+                    scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
+                    b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G);
+                    R(k1, k1) = low_tmp[0];
+                    R(k, k1) = low_tmp[1];
 
                     //Combined Rotation.
-                    //R([k1,k],k:n) = G * R([k1,k],k:n);
-                    //y([k1,k]) = G * y([k1,k]);
-                    auto R_G = subrange(R_R, k1, k + 1, k, n + 1);
-                    R_G = prod(G_m, R_G);
+                    for (i = k; i < n; i++) {
+                        low_tmp[0] = R(k1, i);
+                        low_tmp[1] = R(k, i);
+                        R(k1, i) = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                        R(k, i) = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                    }
 
-                    if (k > 1) k--;
+                    low_tmp[0] = y[k1];
+                    low_tmp[1] = y[k];
+                    y[k1] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                    y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
+
+                    if (k > 1)
+                        k--;
 
                 } else {
                     k++;
                 }
             }
-
-            y = column(R_R, n);
-            R_R.resize(m, n);
-            R.assign(R_R);
 
             t_plll = omp_get_wtime() - t_plll;
             return {{}, t_qr, t_plll};
@@ -720,61 +714,42 @@ namespace cils {
          *  @return returnType: ~, time_qr, time_plll
          */
         returnType <scalar, index> aspl_serial() {
-            scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
-
-            //Initialize B_t = [A, y]:
-            b_matrix B_t(B);
-
+            scalar zeta, alpha, t_qr, t_plll, sum = 0;
             //Clear Variables:
-            Q.clear();
             Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             t_qr = omp_get_wtime();
-            CILS_Reduction reduction(B, y, lower, upper);
+            CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
             reduction.mgs_qr();
-            R = reduction.R;
-            y = reduction.y;
+            R.assign(reduction.R);
+            y.assign(reduction.y);
             t_qr = omp_get_wtime() - t_qr;
 
             //  ------------------------------------------------------------------
             //  --------  Perform the all-swap partial LLL reduction -------------------
             //  ------------------------------------------------------------------
 
-            index k = 1, k1, i, i1;
-            index f = true, swap[n] = {}, start = 1, even = true;
-            std::vector<b_matrix> G_v(n);
+            index k, k1, i, j, e;
+            index f = true, start = 1, even = true;
             t_plll = omp_get_wtime();
             while (f || !even) {
                 f = false;
-                for (index e = 0; e < n; e++) {
-                    for (k = n - 1; k >= n - e; k--) {
-                        k1 = k - 1;
-                        zeta = round(R_R(k1, k) / R_R(k1, k1));
-                        alpha = R_R(k1, k) - zeta * R_R(k1, k1);
-                        if (pow(R_R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_R(k, k), 2))) {
-                            swap[k] = 1;
-                            f = true;
-                            if (zeta != 0.0) {
-                                //Perform a size reduction on R(k-1,k)
-                                R_R(k1, k) = alpha;
-                                for (i = 0; i <= k - 2; i++) {
-                                    R_R(i, k) = R_R(i, k) - zeta * R_R(i, k1);
-                                }
-                                for (i = 0; i < n; i++) {
-                                    Z(i, k) -= zeta * Z(i, k1);
-                                }
-                                //Perform size reductions on R(1:k-2,k)
-                                for (i = k - 2; i >= 0; i--) {
-                                    zeta = round(R_R(i, k) / R_R(i, i));
-                                    if (zeta != 0.0) {
-                                        for (i1 = 0; i1 <= i; i1++) {
-                                            R_R(i1, k) = R_R(i1, k) - zeta * R_R(i1, i);
-                                        }
-                                        for (i1 = 0; i1 < n; i1++) {
-                                            Z(i1, k) -= zeta * Z(i1, i);
-                                        }
+                for (e = 0; e <= n - 2; e++) {
+                    for (k = 0; k < e + 1; k++) {
+                        k1 = n - k;
+                        if (std::round(R[k1 + n * (k1 - 1) - 2] /
+                                       R[k1 + n * (k1 - 2) - 2]) != 0) {
+                            for (i = 0; i < k1 - 1; i++) {
+                                index _m = (k1 - i) - 2;
+                                zeta = std::round(R[_m + n * (k1 - 1)] / R[_m + n * _m]);
+                                if (zeta != 0) {
+                                    for (j = 0; j <= _m; j++) {
+                                        R[j + n * (k1 - 1)] -= zeta * R[j + n * _m];
+                                    }
+                                    for (j = 0; j < n; j++) {
+                                        Z[j + n * (k1 - 1)] -= zeta * Z[j + n * _m];
                                     }
                                 }
                             }
@@ -782,34 +757,36 @@ namespace cils {
                     }
                 }
                 for (k = start; k < n; k += 2) {
-                    if (swap[k] == 1) {
-                        //Permute columns k-1 and k of R and Z
-                        k1 = k - 1;
-                        b_vector R_k1 = column(R_R, k1), R_k = column(R_R, k);
-                        b_vector Z_k1 = column(Z, k1), Z_k = column(Z, k);
-                        column(R_R, k1) = R_k;
-                        column(R_R, k) = R_k1;
-                        column(Z, k1) = Z_k;
-                        column(Z, k) = Z_k1;
+                    k1 = k - 1;
+                    zeta = round(R(k1, k) / R(k1, k1));
+                    alpha = R(k1, k) - zeta * R(k1, k1);
 
-                        scalar G_a[4] = {};
-                        scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
-                        b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-                        R_R(k1, k1) = low_tmp[0];
-                        R_R(k, k1) = low_tmp[1];
-                        G_v[k] = G_m;
-                    }
-                }
-                for (k = start; k < n; k += 2) {
-                    if (swap[k] == 1) {
-                        k1 = k - 1;
+                    if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                        f = true;
+                        for (i = 0; i < R.size1(); i++) {
+                            std::swap(R(i, k1), R(i, k));
+                            std::swap(Z(i, k1), Z(i, k));
+                        }
+
                         //Bring R back to an upper triangular matrix by a Givens rotation
+                        scalar G[4] = {};
+                        scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
+                        b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G);
+                        R(k1, k1) = low_tmp[0];
+                        R(k, k1) = low_tmp[1];
+
                         //Combined Rotation.
-                        //R([k1,k],k:n) = G * R([k1,k],k:n);
-                        //y([k1,k]) = G * y([k1,k]);
-                        auto R_G = subrange(R_R, k1, k + 1, k, n + 1);
-                        R_G = prod(G_v[k], R_G);
-                        swap[k] = 0;
+                        for (i = k; i < n; i++) {
+                            low_tmp[0] = R(k1, i);
+                            low_tmp[1] = R(k, i);
+                            R(k1, i) = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                            R(k, i) = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                        }
+
+                        low_tmp[0] = y[k1];
+                        low_tmp[1] = y[k];
+                        y[k1] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                        y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
                     }
                 }
                 if (even) {
@@ -820,10 +797,21 @@ namespace cils {
                     start = 1;
                 }
             }
-            y_r = column(R_R, n);
-            R_R.resize(m, n);
-
             t_plll = omp_get_wtime() - t_plll;
+
+            k = 1;
+            while (k < n) {
+                k1 = k - 1;
+                zeta = round(R(k1, k) / R(k1, k1));
+                alpha = R(k1, k) - zeta * R(k1, k1);
+
+                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                    cout << "Failed:" << k1 << endl;
+                }
+                k++;
+            }
+
+            cout << "t_plll:" << t_plll + t_qr << endl;
             return {{}, t_qr, t_plll};
         }
 
@@ -876,53 +864,9 @@ namespace cils {
             R.resize(m, n + 1);
             column(R, n) = y;
 
-            index k = 1, k1, i, i1, iter = 0;
+            index k = 1, k1, i, j, iter = 0;
             index f = true, swap[n] = {}, start = 1, even = true;
             t_plll = omp_get_wtime();
-            while ((f || !even) && (iter < 1000)) {
-                f = false;
-                for (k = start; k < n; k += 2) {
-                    k1 = k - 1;
-                    zeta = round(R(k1, k) / R(k1, k1));
-                    alpha = R(k1, k) - zeta * R(k1, k1);
-
-                    if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
-                        swap[k] = 1;
-                        f = true;
-                    }
-                }
-
-                for (k = start; k < n; k += 2) {
-                    if (swap[k] == 1) {
-                        //Permute columns k-1 and k of R and Z
-                        k1 = k - 1;
-                        b_vector R_k1 = column(R, k1), R_k = column(R, k);
-                        b_vector Z_k1 = column(Z, k1), Z_k = column(Z, k);
-                        column(R, k1) = R_k;
-                        column(R, k) = R_k1;
-                        column(Z, k1) = Z_k;
-                        column(Z, k) = Z_k1;
-
-                        scalar G_a[4] = {};
-                        scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
-                        b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-                        R(k1, k1) = low_tmp[0];
-                        R(k, k1) = low_tmp[1];
-
-                        auto R_G = subrange(R, k1, k + 1, k, n + 1);
-                        R_G = prod(G_m, R_G);
-                        swap[k] = 0;
-                    }
-                }
-                if (even) {
-                    even = false;
-                    start = 2;
-                } else {
-                    even = true;
-                    start = 1;
-                }
-                iter++;
-            }
             y = column(R, n);
             R.resize(m, n);
             t_plll = omp_get_wtime() - t_plll;
@@ -954,177 +898,121 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-//        returnType <scalar, index> aspl_omp(index n_proc) {
-//            scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
-//            scalar a_norm;
-//            //Initialize B_t = [A, y]:
-//            b_matrix B_t(B);
-//            B_t.resize(m, n);
-//
-//            //Clear Variables:
-//            Q.clear();
-//            R_R.clear();
-//            y_r.clear();
-//            Z.assign(I);
-//            auto lock = new omp_lock_t[n]();
-//            //  ------------------------------------------------------------------
-//            //  --------  Perform the QR factorization: MGS Row-------------------
-//            //  ------------------------------------------------------------------
-//            t_qr = omp_get_wtime();
-//#pragma omp parallel default(shared) num_threads(n_proc) private(a_norm)
-//            {
-//#pragma omp for schedule(static, 1)
-//                for (index i = 0; i < n; i++) {
-//                    omp_set_lock(&lock[i]);
-//                }
-//                if (omp_get_thread_num() == 0) {
-//                    // Calculation of ||B||
-//                    a_norm = norm_2(column(B_t, 0));
-//                    R_R(0, 0) = a_norm;
-//                    column(Q, 0) = column(B_t, 0) / a_norm;
-//                    omp_unset_lock(&lock[0]);
-//                }
-//
-//                for (index j = 1; j < m; j++) {
-//                    omp_set_lock(&lock[j - 1]);
-//                    omp_unset_lock(&lock[j - 1]);
-//#pragma omp for schedule(static, 1)
-//                    for (index k = 0; k < n; k++) {
-//                        if (k >= j) {
-//                            R_R(j - 1, k) = 0;
-//                            R_R(j - 1, k) = inner_prod(column(Q, j - 1), column(B_t, k));
-//                            column(B_t, k) -= column(Q, j - 1) * R_R(j - 1, k);
-//                            if (k == j) {
-//                                a_norm = norm_2(column(B_t, k));
-//                                R_R(k, k) = a_norm;
-//                                column(Q, k) = column(B_t, k) / a_norm;
-//                                omp_unset_lock(&lock[j]);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            t_qr = omp_get_wtime() - t_qr;
-//            R.assign(R_R);
-//            qr_validation();
-//            y_r = prod(trans(Q), y);
-//            //  ------------------------------------------------------------------
-//            //  --------  Perform the all-swap partial LLL reduction -------------
-//            //  ------------------------------------------------------------------
-//
-//            index k = 1, k1, i, i1, i2;
-//            index f = true, swap[n] = {}, start = 1, even = true, end = n / 2;
-//            std::vector<b_matrix> G_v(n);
-//            b_vector R_k1, Z_k1, R_k, Z_k;
-//            b_matrix R_G, G_m;
-//#pragma omp parallel default(shared) num_threads(n_proc)
-//            {}
-//            t_plll = omp_get_wtime();
-//#pragma omp parallel default(shared) num_threads(n_proc) private(k1, k, i, i1, i2, zeta, alpha, R_k1, Z_k1, G_m, R_G, R_k, Z_k)
-//            {
-//                while (f || !even) {
-//#pragma omp barrier
-//#pragma omp atomic write
-//                    f = false;
-//                    for (index e = 0; e < n; e++) {
-//#pragma omp for schedule(static, 1)
-//                        for (k = n - 1; k >= n - e; k--) {
-//                            k1 = k - 1;
-//                            zeta = round(R_R(k1, k) / R_R(k1, k1));
-//                            alpha = R_R(k1, k) - zeta * R_R(k1, k1);
-//                            if (pow(R_R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_R(k, k), 2))) {
-//                                swap[k] = 1;
-//                                f = true;
-//                                if (zeta != 0.0) {
-//                                    //Perform a size reduction on R(k-1,k)
-//                                    R_R(k1, k) = alpha;
-//                                    for (i = 0; i <= k - 2; i++) {
-//                                        R_R(i, k) = R_R(i, k) - zeta * R_R(i, k1);
-//                                    }
-//                                    for (i = 0; i < n; i++) {
-//                                        Z(i, k) -= zeta * Z(i, k1);
-//                                    }
-//                                    //Perform size reductions on R(1:k-2,k)
-//                                    for (i = k - 2; i >= 0; i--) {
-//                                        zeta = round(R_R(i, k) / R_R(i, i));
-//                                        if (zeta != 0.0) {
-//                                            for (i1 = 0; i1 <= i; i1++) {
-//                                                R_R(i1, k) = R_R(i1, k) - zeta * R_R(i1, i);
-//                                            }
-//                                            for (i1 = 0; i1 < n; i1++) {
-//                                                Z(i1, k) -= zeta * Z(i1, i);
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//#pragma omp for schedule(static, 1)
-//                    for (i2 = 0; i2 < end; i2++) {
-//                        k = i2 * 2 + start;
-//                        if (swap[k] == 1) {
-//                            //Permute columns k-1 and k of R and Z
-//                            k1 = k - 1;
-//                            R_k1 = column(R_R, k1);
-//                            R_k = column(R_R, k);
-//                            Z_k1 = column(Z, k1);
-//                            Z_k = column(Z, k);
-//                            column(R_R, k1) = R_k;
-//                            column(R_R, k) = R_k1;
-//                            column(Z, k1) = Z_k;
-//                            column(Z, k) = Z_k1;
-//
-//                            scalar G_a[4] = {};
-//                            scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
-//                            G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-//                            R_R(k1, k1) = low_tmp[0];
-//                            R_R(k, k1) = low_tmp[1];
-//                            G_v[k] = G_m;
-//                        }
-//                    }
-//
-//#pragma omp for schedule(static, 1)
-//                    for (i2 = 0; i2 < end; i2++) {
-//                        k = i2 * 2 + start;
-//                        if (swap[k] == 1) {
-//                            k1 = k - 1;
-//                            //Bring R back to an upper triangular matrix by a Givens rotation
-//                            //Combined Rotation.
-//                            //R([k1,k],k:n) = G * R([k1,k],k:n);
-//                            //y([k1,k]) = G * y([k1,k]);
-////                            scalar G_a[4] = {};
-////                            scalar low_tmp[2] = {R_R(k1, k1), R_R(k, k1)};
-////                            G_m = helper::planerot<scalar, index>(low_tmp, G_a);
-////                            R_R(k1, k1) = low_tmp[0];
-////                            R_R(k, k1) = low_tmp[1];
-////                            G_v[k] = G_m;
-//                            R_G = subrange(R_R, k1, k + 1, k, n);
-//                            subrange(R_R, k1, k + 1, k, n) = prod(G_v[k], R_G);
-//                            subrange(y_r, k1, k + 1) = prod(G_v[k], subrange(y_r, k1, k + 1));
-//                            swap[k] = 0;
-//                        }
-//                    }
-//#pragma omp master
-//                    {
-//                        if (even) {
-//                            even = false;
-//                            start = 2;
-//                            end = n / 2 - 1;
-//                        } else {
-//                            even = true;
-//                            start = 1;
-//                            end = n / 2;
-//                        }
-//                    }
-//#pragma omp barrier
-//                }
-//            }
-//            t_plll = omp_get_wtime() - t_plll;
-//            return {{}, t_qr, t_plll};
-//        }
+        returnType <scalar, index> aspl_omp(index n_c) {
+            scalar zeta, alpha, t_qr, t_plll;
+            //Clear Variables:
+            Z.assign(I);
+            //  ------------------------------------------------------------------
+            //  --------  Perform the QR factorization: MGS Row-------------------
+            //  ------------------------------------------------------------------
+
+            CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
+            cils::returnType<scalar, index> reT = reduction.mgs_qr_omp(n_c);
+            R.assign(reduction.R);
+            y.assign(reduction.y);
+            t_qr = reT.run_time;
+
+            //  ------------------------------------------------------------------
+            //  --------  Perform the all-swap partial LLL reduction -------------------
+            //  ------------------------------------------------------------------
+
+            index k, k1, i, j, e;
+            index f = true, start = 1, even = true;
+            t_plll = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(1) private(zeta, alpha, e, k, k1, i, j)
+            {
+                while (f || !even) {
+#pragma omp barrier
+                    f = false;
+                    for (e = 0; e <= n - 2; e++) {
+#pragma omp for
+                        for (k = 0; k < e + 1; k++) {
+                            k1 = n - k;
+                            zeta = std::round(R[k1 + n * (k1 - 1) - 2] / R[k1 + n * (k1 - 2) - 2]);
+                            scalar t = R[(k1 + n * (k1 - 1)) - 2] - zeta * R[(k1 + n * (k1 - 2)) - 2];
+                            scalar a = R[(k1 + n * (k1 - 2)) - 2];
+                            scalar absxk = R[(k1 + n * (k1 - 1)) - 1];
+                            if ((a * a > 1.0000000001 * (t * t + absxk * absxk)) && (zeta != 0.0)) {
+                                for (i = 0; i < k1 - 1; i++) {
+                                    index _m = (k1 - i) - 2;
+                                    zeta = std::round(R[_m + n * (k1 - 1)] / R[_m + n * _m]);
+                                    if (zeta != 0) {
+                                        for (j = 0; j <= _m; j++) {
+                                            R[j + n * (k1 - 1)] -= zeta * R[j + n * _m];
+                                        }
+                                        for (j = 0; j < n; j++) {
+                                            Z[j + n * (k1 - 1)] -= zeta * Z[j + n * _m];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+#pragma omp for
+                    for (k = start; k < n; k += 2) {
+                        k1 = k - 1;
+                        zeta = round(R(k1, k) / R(k1, k1));
+                        alpha = R(k1, k) - zeta * R(k1, k1);
+
+                        if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                            f = true;
+                            for (i = 0; i < R.size1(); i++) {
+                                std::swap(R(i, k1), R(i, k));
+                                std::swap(Z(i, k1), Z(i, k));
+                            }
+
+                            //Bring R back to an upper triangular matrix by a Givens rotation
+                            scalar G[4] = {};
+                            scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
+                            b_matrix G_m = helper::planerot<scalar, index>(low_tmp, G);
+                            R(k1, k1) = low_tmp[0];
+                            R(k, k1) = low_tmp[1];
+
+                            //Combined Rotation.
+                            for (i = k; i < n; i++) {
+                                low_tmp[0] = R(k1, i);
+                                low_tmp[1] = R(k, i);
+                                R(k1, i) = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                R(k, i) = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                            }
+
+                            low_tmp[0] = y[k1];
+                            low_tmp[1] = y[k];
+                            y[k1] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                            y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
+                        }
+                    }
+#pragma omp single
+                    {
+                        if (even) {
+                            even = false;
+                            start = 2;
+                        } else {
+                            even = true;
+                            start = 1;
+                        }
+                    }
+#pragma omp barrier
+                }
+            }
+
+            t_plll = omp_get_wtime() - t_plll;
+
+            k = 1;
+            while (k < n) {
+                k1 = k - 1;
+                zeta = round(R(k1, k) / R(k1, k1));
+                alpha = R(k1, k) - zeta * R(k1, k1);
+
+                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                    cout << "Failed:" << k1 << endl;
+                }
+                k++;
+            }
+
+            cout << "t_plll:" << t_plll + t_qr << endl;
+            return {{}, t_qr, t_plll};
+        }
 
     };
 }

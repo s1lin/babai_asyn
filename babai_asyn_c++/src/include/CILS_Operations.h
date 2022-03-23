@@ -15,7 +15,7 @@ namespace cils {
 
     template<typename Integer, typename Scalar>
     CILS_Matrix <Integer, Scalar> trans(CILS_Matrix <Integer, Scalar> &A) {
-        CILS_Matrix <Integer, Scalar> A_T(A.size2(), A.size1());
+        CILS_Matrix<Integer, Scalar> A_T(A.size2(), A.size1());
         for (int i = 0; i < A.size1(); i++)
             for (int j = 0; j < A.size2(); j++)
                 A_T(j, i) = A(i, j);
@@ -33,6 +33,20 @@ namespace cils {
                 sum += A(row, col) * x[col];
             }
             b[row] = sum;
+        }
+    }
+
+    template<typename Integer, typename Scalar>
+    void projection(CILS_Matrix <Integer, Scalar> &A, CILS_Vector <Integer, Scalar> &x, CILS_Vector <Integer, Scalar> &b,
+                    Integer lower, Integer upper) {
+        Scalar sum;
+        b.clear();
+        for (Integer row = 0; row < A.size1(); row++) {
+            sum = 0;
+            for (Integer col = 0; col < A.size2(); col++) {
+                sum += A(row, col) * x[col];
+            }
+            b[row] = std::max(std::min((Integer) sum, upper), lower);
         }
     }
 

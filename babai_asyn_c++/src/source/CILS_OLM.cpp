@@ -55,7 +55,6 @@ namespace cils {
             this->A = cils.A;
             this->d = cils.d;
             init_R_A();
-
         }
 
         returnType <scalar, index>
@@ -67,6 +66,11 @@ namespace cils {
             bool flag = false;
 
             scalar sum = 0;
+
+            auto lock = new omp_lock_t[n]();
+            for (index i = 0; i < n; i++) {
+                omp_init_lock((&lock[i]));
+            }
 
 #pragma omp parallel default(shared) num_threads(n_t)
             {}
@@ -80,20 +84,21 @@ namespace cils {
 
 #pragma omp parallel default(shared) num_threads(n_t) private(sum, ni, nj, c_i) firstprivate(z_n, t)
                 {
-#pragma omp barrier
-#pragma omp for schedule(static, 4) nowait
-                    for (index i = 0; i < n; i++) {
-                        y_b[i] -= z_n * R_A(i, n - 1, n);
-                    }
+//#pragma omp barrier
+//#pragma omp for schedule(static, 4) nowait
+//                    for (index i = 0; i < n; i++) {
+//                        y_b[i] -= z_n * R_A(i, n - 1, n);
+//                    }
                     for (t = 0; t < nstep && !flag; t++) {
-#pragma omp for schedule(dynamic, 1) nowait
+#pragma omp for nowait schedule(dynamic)
                         for (index i = 1; i < n; i++) {
                             ni = n - 1 - i;
                             if (!flag && ni <= idx) {
+                                omp_set_lock(&lock[i]);
                                 sum = y_b[ni];
                                 nj = ni * n - (ni * (ni + 1)) / 2;
 #pragma omp simd reduction(- : sum)
-                                for (index j = n - 2; j >= n - i; j--) { //j < n - 1; j++) {
+                                for (index j = n - 1; j >= n - i; j--) { //j < n - 1; j++) {
                                     sum -= R_A(nj, j) * z_hat[j]; //[nj + j]
                                 }
 
@@ -104,9 +109,10 @@ namespace cils {
 
                                 z_p[ni] = z_hat[ni];
                                 if (idx == ni) {
+#pragma omp atomic
                                     idx--;
                                 }
-
+                                omp_unset_lock(&lock[i]);
                             }
 #pragma omp atomic
                             ct[t]++;
@@ -121,6 +127,10 @@ namespace cils {
             cout << idx << endl;
             run_time = omp_get_wtime() - run_time;
             returnType<scalar, index> reT = {{}, run_time, (scalar) t};
+            for (index i = 0; i < n; i++) {
+                omp_destroy_lock(&lock[i]);
+            }
+            delete[] lock;
             return reT;
         }
 

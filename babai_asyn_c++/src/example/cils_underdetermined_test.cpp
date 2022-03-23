@@ -30,10 +30,10 @@ bool block_babai_test(int size, int rank) {
     cils::CILS<scalar, index> cils(m, n, qam, snr, 20000);
 
     cils.init_d();
-    cils.is_constrained = true;
+    cils.is_constrained = false;
 
-    for (int t = 1; t <= 100; t++) {
-        b_vector x_ser(n, 0);
+    for (int t = 1; t <= 1; t++) {
+        b_vector x_ser(n, 0), x_lll(n, 0);
         cout.flush();
         cils::init(cils);
 
@@ -43,43 +43,66 @@ bool block_babai_test(int size, int rank) {
         scalar ber, runtime, res;
         cils::returnType<scalar, index> reT, reT2;
         cils::CILS_Reduction<scalar, index> reduction(cils);
-        reduction.mgs_qr_omp(10);
+//        reduction.mgs_qr_omp(10);
+
+        reduction.aspl_serial();
+//        cout << reduction.R;
+        cout << reduction.y;
+
+        cils::CILS_Reduction<scalar, index> reduction2(cils);
+//        reduction.mgs_qr_omp(10);
+        reduction2.aspl_omp(10);
+//        cout << reduction2.R;
+        cout << reduction2.y;
+
         cils::CILS_OLM<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
+        cils::CILS_OLM<scalar, index> obils2(cils, x_ser, reduction2.R, reduction2.y);
 
         obils.z_hat.clear();
         reT = obils.bnp();
-        ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
         bnp_ber += ber;
         bnp_rt += reT.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
-        printf("bnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+        printf("bnp1: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+
+        obils.z_hat.clear();
+        reT = obils2.bnp();
+        projection(reduction2.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//        bnp_ber += ber;
+//        bnp_rt += reT.run_time;
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+        printf("bnp2: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
         obils.z_hat.clear();
         reT2 = obils.pbnp(8, 20);
-//        cout<<obils.z_hat;
-//        cout<<cils.x_t;
-        ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
         pbnp_ber += ber;
         pbnp_rt += reT2.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
         printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
         bnp_spu += reT.run_time / reT2.run_time;
 
         obils.z_hat.clear();
         reT = obils.bocb(0);
-        ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
         ser_ber += ber;
         ser_rt += reT.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
         printf("bocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
         cout.flush();
 
         obils.z_hat.clear();
         reT2 = obils.pbocb_test(8, 6, 0);
-        ber = helper::find_bit_error_rate<scalar, index>(obils.z_hat, cils.x_t, cils.qam);
+        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
         omp_ber += ber;
         omp_rt += reT2.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, obils.z_hat, cils.y);
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
         printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
         spu += reT.run_time / reT2.run_time;
 //        }
@@ -256,7 +279,7 @@ bool block_babai_test(int size, int rank) {
 ////
 ////        PyObject *sys_path = PySys_GetObject("path");
 ////        PyList_Append(sys_path, PyUnicode_FromString(
-////                "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+////                "/home/shilei/CLionprojectionects/babai_asyn/babai_asyn_c++/src/example"));
 ////        pName = PyUnicode_FromString("plot_helper");
 ////        pModule = PyImport_Import(pName);
 ////
@@ -323,7 +346,7 @@ bool block_babai_test(int size, int rank) {
 ////
 ////        //----------------------INIT POINT (OMP)--------------------------------//
 ////        //STEP 1: init point by QRP
-////        reT = cils.grad_proj_omp(x_omp, 1e4, 10);
+////        reT = cils.grad_projection_omp(x_omp, 1e4, 10);
 ////        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_omp.data(), x_tmp.data());
 ////        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
 ////                                                                     cils.y.data());
@@ -407,7 +430,7 @@ bool block_babai_test(int size, int rank) {
 //        cils::returnType<scalar, index> reT, reT2;
 //        //----------------------INIT POINT (OPTIONAL)--------------------------------//
 //        //STEP 1: init point by QRP
-//        reT = cils.grad_proj(x_q, 100);
+//        reT = cils.grad_projection(x_q, 100);
 //        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), x_q.data(), x_tmp.data());
 //        v_norm_qr[0] = v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x_tmp.data(),
 //                                                                     cils.y.data());
@@ -593,7 +616,7 @@ bool block_babai_test(int size, int rank) {
 //                    reT = cils.sic_serial(z_ini);
 //                    cout << "1b. Method: INIT_SIC, ";
 //                } else if (init == 1) {
-//                    reT = cils.grad_proj(z_ini, search_iter);
+//                    reT = cils.grad_projection(z_ini, search_iter);
 //                    cout << "1c. Method: INIT_GRD, ";
 //                } else {
 //                    cout << "1d. Method: INIT_VT0, ";
@@ -834,7 +857,7 @@ bool block_babai_test(int size, int rank) {
 //
 //            PyObject *sys_path = PySys_GetObject("path");
 //            PyList_Append(sys_path, PyUnicode_FromString(
-//                    "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//                    "/home/shilei/CLionprojectionects/babai_asyn/babai_asyn_c++/src/example"));
 //            pName = PyUnicode_FromString("plot_helper");
 //            pModule = PyImport_Import(pName);
 //
@@ -965,7 +988,7 @@ bool block_babai_test(int size, int rank) {
 //                    reT = cils.sic_serial(z_ini);
 //                    cout << "1b. Method: INIT_SIC, ";
 //                } else if (init == 1) {
-//                    reT = cils.grad_proj(z_ini, search_iter);
+//                    reT = cils.grad_projection(z_ini, search_iter);
 //                    cout << "1c. Method: INIT_GRD, ";
 //                } else {
 //                    cout << "1d. Method: INIT_VT0, ";
@@ -1061,7 +1084,7 @@ bool block_babai_test(int size, int rank) {
 //                         */
 //
 //                        z_ini.assign(n, 0);
-//                        reT = cils.grad_proj_omp(z_ini, search_iter, n_proc);
+//                        reT = cils.grad_projection_omp(z_ini, search_iter, n_proc);
 //                        cout << "1d. Method: INIT_PGP, ";
 //
 //                        helper::mtimes_Axy<scalar, index>(n, n, cils.P.data(), z_ini.data(), z_tmp.data());
@@ -1233,7 +1256,7 @@ bool block_babai_test(int size, int rank) {
 //
 //            PyObject *sys_path = PySys_GetObject("path");
 //            PyList_Append(sys_path, PyUnicode_FromString(
-//                    "/home/shilei/CLionProjects/babai_asyn/babai_asyn_c++/src/example"));
+//                    "/home/shilei/CLionprojectionects/babai_asyn/babai_asyn_c++/src/example"));
 //            pName = PyUnicode_FromString("plot_helper");
 //            pModule = PyImport_Import(pName);
 //

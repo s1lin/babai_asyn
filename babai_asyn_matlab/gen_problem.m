@@ -52,11 +52,26 @@ y = A * x_t + v;
 res = norm(y - A * x_t)
 permutation = zeros(1,1);
 %max_iter = 0;
-R0 = A;
+[R0,Z,yL] = aspl(A,y);
+upper = 2^k - 1;
+z_B = ones(n, 1) .* 4;
+tStart = tic;
+for j = n:-1:1
+    z_B(j) = (yL(j) - R0(j, j + 1:n) * z_B(j + 1:n)) / R0(j, j);
+    z_B(j) = round(z_B(j));
+end
+z_B = Z * z_B;
+for j = n:-1:1
+    z_B(j) = max(min(z_B(j), upper), 0);
+end
+tEnd = toc(tStart);         
+res_LLL = norm(y - A * z_B);
+        
 %sils_reduction(A, y);
 if m > n    
     upper = 2^k - 1;
     [R0,y0,l0,u0,p0] = obils_reduction(A,y,zeros(n,1), upper * ones(n,1));
+    
 end
 if m <= n
     permutation = zeros(max_iter, n);

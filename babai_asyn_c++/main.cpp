@@ -1,6 +1,5 @@
 //#include "src/example/cils_standard_test.cpp"
 #include "src/example/cils_underdetermined_test.cpp"
-//#include "src/example/cils_gen_test.cpp"
 
 using namespace std;
 using namespace cils;
@@ -61,31 +60,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-//#include <boost/numeric/ublas/matrix.hpp>
-//#include <boost/numeric/ublas/vector.hpp>
-//#include <boost/numeric/ublas/io.hpp>
-//
-//int main () {
-//    using namespace boost::numeric::ublas;
-//    identity_matrix<double> m;
-//    matrix<double> m2(3,3);
-//    m.resize(3, 3, false);
-//    m2.assign(m);
-//    m2(1,2) = m2(1, 1) + m2(2, 2);
-//    std::cout << m2 << std::endl;
-//
-//    m2.resize(5, 5, true);
-//    std::cout << m2 << std::endl;
-//
-////    m2.resize(3, 3, false);
-//    std::cout << m2(7)  << std::endl;
-//
-//    subrange(m2, 0, 2, 0, 1) = subrange(m2, 0, 2, 1, 0);
-//    std::cout << m2 << std::endl;
-////    vector<double> v1(3);
-////    std::fill(v1.begin(),v1.end(),3);
-//
-////    std::cout << v1 << std::endl;
-//}
-

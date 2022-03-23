@@ -18,7 +18,7 @@ namespace cils {
     class CILS_Matrix {
 
     private:
-        Scalar *x;
+        std::vector<Scalar> x;
         Integer s1, s2;
 
     public:
@@ -36,13 +36,13 @@ namespace cils {
         CILS_Matrix(Integer size1, Integer size2) {
             this->s1 = size1;
             this->s2 = size2;
-            this->x = new Scalar[512 * 512]();
+            this->x.resize(s1 * s2);
         }
 
         CILS_Matrix(CILS_Matrix &B) {
             this->s1 = B.s1;
             this->s2 = B.s2;
-            this->x = new Scalar[512 * 512]();
+            this->x.resize(s1 * s2);
             std::copy(B.begin(), B.end(), this->begin());
         }
 
@@ -59,17 +59,9 @@ namespace cils {
         }
 
         void resize(Integer new_size1, Integer new_size2, bool keep = false) {
-            if (keep) {
-                this->s1 = new_size1;
-                this->s2 = new_size2;
-            } else {
-                if(this->x == NULL)
-                    this->x = new Scalar[512 * 512]();
-
-                std::fill_n(this->begin(), s1 * s2, 0);
-                this->s1 = new_size1;
-                this->s2 = new_size2;
-            }
+            this->s1 = new_size1;
+            this->s2 = new_size2;
+            this->x.resize(s1 * s2, keep);
         }
 
         void assign(Scalar value) {
@@ -91,11 +83,11 @@ namespace cils {
             return x[row + col * s2];
         }
 
-        Scalar &at_element(const Integer row, const Integer col) const {
+        const Scalar &at_element(const Integer row, const Integer col) const {
             return x[row + col * s2];
         }
 
-        void assign(CILS_Vector <Integer, Scalar> &y, Integer col) {
+        void assign(Integer col, CILS_Vector <Integer, Scalar> &y) {
             for (unsigned int i = 0; i < s1; i++) {
                 at_element(i, col) = y[i];
             }
@@ -107,7 +99,6 @@ namespace cils {
                 y[i] = at_element(i, col);
             }
         }
-
 
         void clear() {
             std::fill_n(this->begin(), s1 * s2, 0);
@@ -121,7 +112,7 @@ namespace cils {
             return at_element(row, col);
         }
 
-        Scalar &operator()(const Integer row, const Integer col) const {
+        const Scalar &operator()(const Integer row, const Integer col) const {
             return at_element(row, col);
         }
 
@@ -130,8 +121,8 @@ namespace cils {
             return x[index];
         }
 
-        Scalar &operator[](const Integer index) const {
-            return x[index];
+        const Scalar &operator[](const Integer index) const {
+            return x.data()[index];
         }
 
 
