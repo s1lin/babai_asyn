@@ -23,7 +23,7 @@ bool block_babai_test(int size, int rank) {
     printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
 
-    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
+    index n = 16, m = 16, qam = 3, snr = 35, num_trials = 6;
     scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
     scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
 
@@ -43,16 +43,11 @@ bool block_babai_test(int size, int rank) {
         scalar ber, runtime, res;
         cils::returnType<scalar, index> reT, reT2;
         cils::CILS_Reduction<scalar, index> reduction(cils);
-//        reduction.mgs_qr_omp(10);
-
         reduction.aspl_serial();
-//        cout << reduction.R;
         cout << reduction.y;
 
         cils::CILS_Reduction<scalar, index> reduction2(cils);
-//        reduction.mgs_qr_omp(10);
         reduction2.aspl_omp(10);
-//        cout << reduction2.R;
         cout << reduction2.y;
 
         cils::CILS_OLM<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);

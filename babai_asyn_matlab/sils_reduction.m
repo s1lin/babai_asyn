@@ -48,9 +48,10 @@ Z = eye(n);
 % ------------------------------------------------------------------
 
 k = 2;
+iter = 0;
 tic
 while k <= n
-    
+    iter = iter + 1;
     k1 = k-1;
     zeta = round(R(k1,k) / R(k1,k1));  
     alpha = R(k1,k) - zeta * R(k1,k1);  
@@ -92,6 +93,7 @@ while k <= n
     end
 end
 toc
+iter
 if n <= 16
     Z
     R

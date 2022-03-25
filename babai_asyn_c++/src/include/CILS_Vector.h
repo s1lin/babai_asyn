@@ -13,7 +13,7 @@ namespace cils {
 
     public:
 
-        Scalar *x;
+        std::vector<Scalar> x;
         Integer n;
 
         Iterator <Integer, Scalar> begin() {
@@ -28,18 +28,19 @@ namespace cils {
 
         explicit CILS_Vector(Integer size) {
             this->n = size;
-            this->x = new Scalar[size]();
+            this->x.resize(size);
+            this->x.clear();
         }
 
         CILS_Vector(CILS_Vector &y) {
             this->n = y.size();
-            this->x = new Scalar[512]();
+            this->x.resize(n);
             std::copy(y.begin(), y.end(), this->begin());
         }
 
         CILS_Vector(Integer size, Integer value) {
             this->n = size;
-            this->x = new Scalar[512]();
+            this->x.resize(n);
             std::fill_n(this->begin(), n, value);
         }
 
@@ -47,22 +48,20 @@ namespace cils {
             return n;
         }
 
-        ~CILS_Vector() {
-//            delete[] x;
+        Integer size() const {
+            return n;
         }
 
         void resize(Integer new_size, bool keep = false) {
-            if (keep) {
-                this->n = new_size;
-            } else {
-                this->x = new Scalar[new_size]();
-                this->n = new_size;
-                std::fill_n(this->begin(), new_size, 0);
+            this->n = new_size;
+            this->x.resize(new_size);
+            if (!keep) {
+                this->clear();
             }
         }
 
         void clear() {
-            std::fill_n(this->begin(), n, 0);
+            this->x.clear();
         }
 
         void assign(Integer new_value) {
@@ -77,21 +76,31 @@ namespace cils {
             return x[i];
         }
 
-        Scalar &operator[](const Integer i) const {
+        Scalar const &operator[](const Integer i) const {
             return x[i];
         }
 
-        Scalar &operator()(const Integer ni, const Integer col, const Integer size_n) const {
+        Scalar const &operator()(const Integer ni, const Integer col, const Integer size_n) const {
             return x[ni * size_n - (ni * (ni + 1)) / 2 + col];
         }
 
-        Scalar &operator()(const Integer nj, const Integer col) const {
+        Scalar const &operator()(const Integer nj, const Integer col) const {
             return x[nj + col];
         }
 
         Scalar operator+(const CILS_Vector &y) {
             std::transform(this->begin(), this->end(), y.begin(), y.begin(), std::plus<Scalar>());
         }
+
+        CILS_Vector &operator=(CILS_Vector const &y) {
+            this->n = y.size();
+            this->x.resize(y.size());
+            for (int i = 0; i < y.size(); i++) {
+                this->x[i] = y[i];
+            }
+            return *this;
+        }
+
 
         CILS_Vector operator-(CILS_Vector &y) {
             CILS_Vector b(n);

@@ -58,6 +58,14 @@ namespace cils {
             return s2;
         }
 
+        Integer size1() const {
+            return s1;
+        }
+
+        Integer size2() const {
+            return s2;
+        }
+
         void resize(Integer new_size1, Integer new_size2, bool keep = false) {
             this->s1 = new_size1;
             this->s2 = new_size2;
@@ -125,6 +133,15 @@ namespace cils {
             return x.data()[index];
         }
 
+        CILS_Matrix &operator=(CILS_Matrix const &A) {
+            this->s1 = A.size1();
+            this->s2 = A.size2();
+            this->x.resize(A.x.size());
+            for (int i = 0; i < A.x.size(); i++) {
+                this->x[i] = A[i];
+            }
+            return *this;
+        }
 
     };
 

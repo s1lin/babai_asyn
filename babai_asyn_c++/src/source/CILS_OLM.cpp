@@ -23,8 +23,7 @@ namespace cils {
     private:
 
         void init_R_A() {
-            R_A.resize(n / 2 * (1 + n));
-            R_A.clear();
+            R_A.resize(n / 2 * (1 + n), false);
             index idx = 0;
             for (index row = 0; row < R.size1(); row++) {
                 for (index col = row; col < R.size2(); col++) {
@@ -62,7 +61,8 @@ namespace cils {
 
             index idx = 0, ni, nj, diff = 0, c_i, t = 0;
             index z_p[n] = {}, ct[nstep] = {}, df[nstep] = {}, z_n;
-            b_vector y_b(y_bar);
+            b_vector y_b;
+            y_b = y_bar;
             bool flag = false;
 
             scalar sum = 0;

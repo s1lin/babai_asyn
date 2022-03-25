@@ -49,7 +49,7 @@ namespace helper {
      * @param G : A 2-by-2 orthogonal matrix G so that y = G*x has y(2) = 0.
      */
     template<typename scalar, typename index>
-    b_matrix planerot(scalar x[2], scalar G[4]) {
+    void planerot(scalar x[2], scalar G[4]) {
         if (x[1] != 0.0) {
             scalar absxk, r, scale, t;
             scale = ZERO;
@@ -84,12 +84,6 @@ namespace helper {
             G[0] = 1.0;
             G[3] = 1.0;
         }
-        b_matrix G_m(2, 2);
-//        G_m(0) = G[0];
-//        G_m(1) = G[2];
-//        G_m(2) = G[1];
-//        G_m(3) = G[3];
-        return G_m;
     }
 
 //
