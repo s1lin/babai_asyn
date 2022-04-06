@@ -64,13 +64,7 @@ namespace cils {
             b_vector y_b;
             y_b = y_bar;
             bool flag = false;
-
             scalar sum = 0;
-
-            auto lock = new omp_lock_t[n]();
-            for (index i = 0; i < n; i++) {
-                omp_init_lock((&lock[i]));
-            }
 
 #pragma omp parallel default(shared) num_threads(n_t)
             {}
@@ -94,7 +88,6 @@ namespace cils {
                         for (index i = 1; i < n; i++) {
                             ni = n - 1 - i;
                             if (!flag && ni <= idx) {
-                                omp_set_lock(&lock[i]);
                                 sum = y_b[ni];
                                 nj = ni * n - (ni * (ni + 1)) / 2;
 #pragma omp simd reduction(- : sum)
@@ -112,7 +105,6 @@ namespace cils {
 #pragma omp atomic
                                     idx--;
                                 }
-                                omp_unset_lock(&lock[i]);
                             }
 #pragma omp atomic
                             ct[t]++;
@@ -123,9 +115,87 @@ namespace cils {
                     }
                 }
             }
+            run_time = omp_get_wtime() - run_time;
             helper::display<index, index>(df, nstep, "df");
             cout << idx << endl;
+            returnType<scalar, index> reT = {{}, run_time, (scalar) t};
+            return reT;
+        }
+
+        returnType <scalar, index>
+        pbnp2(const index n_t, const index nstep) {
+
+            index idx = 0, ni, nj, diff = 0, c_i, t = 0;
+            index z_p[n] = {}, ct[nstep] = {}, df[nstep] = {}, z_n, delta[n] = {};
+            b_vector y_b;
+            y_b = y_bar;
+            bool flag = false;
+
+            scalar sum = 0;
+
+            auto lock = new omp_lock_t[n]();
+            for (index i = 0; i < n; i++) {
+                omp_init_lock((&lock[i]));
+            }
+
+#pragma omp parallel default(shared) num_threads(n_t)
+            {}
+
+            scalar run_time = omp_get_wtime();
+            if (nstep != 0) {
+                c_i = round(y_b[n - 1] / R_A[n / 2 * (1 + n) - 1]);
+                z_n = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
+                z_hat[n - 1] = z_n;
+                idx = n - 2;
+
+#pragma omp parallel default(shared) num_threads(n_t) private(sum, ni, nj, c_i) firstprivate(z_n, t)
+                {
+                    for (t = 0; t < nstep && !flag; t++) {
+#pragma omp for nowait schedule(dynamic)
+                        for (index i = 1; i < n; i++) {
+                            ni = n - 1 - i;
+                            if (!flag && ni <= idx) {
+                                omp_set_lock(&lock[i]);
+                                sum = y_b[ni];
+                                nj = ni * n - (ni * (ni + 1)) / 2;
+#pragma omp simd reduction(- : sum)
+                                for (index j = n - 1; j >= n - i; j--) {
+                                    sum -= R_A(nj, j) * z_hat[j];
+                                }
+                                c_i = round(sum / R_A(nj, ni));
+                                z_hat[ni] = !is_constrained ? c_i : max(min((index) c_i, upper), 0);
+                                delta[ni] = z_p[ni] != z_hat[ni];
+                                z_p[ni] = z_hat[ni];
+                                if (idx == ni) {
+#pragma omp atomic
+                                    idx--;
+                                }
+                                omp_unset_lock(&lock[i]);
+                            }
+                        }
+                        if (!flag || idx <= n_t) {
+#pragma omp for nowait
+                            for (index i = 1; i < idx; i++) {
+                                ni = n - 1 - i;
+                                diff += delta[ni];
+#pragma omp atomic
+                                ct[t]++;
+                            }
+                            if (ct[t] >= idx - 2) {
+                                flag = diff <= 100 || idx <= n_t;
+#pragma omp atomic write
+                                diff = 0;
+                            }
+                        } else
+                            flag = true;
+                    }
+                }
+            }
             run_time = omp_get_wtime() - run_time;
+
+            helper::display<index, index>(ct, nstep, "ct");
+            cout << diff << "," << idx << t << endl;
+
             returnType<scalar, index> reT = {{}, run_time, (scalar) t};
             for (index i = 0; i < n; i++) {
                 omp_destroy_lock(&lock[i]);

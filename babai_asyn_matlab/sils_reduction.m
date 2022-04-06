@@ -93,12 +93,15 @@ while k <= n
     end
 end
 toc
+Q = B*Z*inv(R);
 iter
 if n <= 16
     Z
     R
+    Q
     y
 end
+diff = norm(Q'*y_ - y, 2)
 % Q = B*Z*inv(R)
 % Q'*Q
 % diff = Q'*y_ - y

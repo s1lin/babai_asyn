@@ -538,8 +538,8 @@ namespace cils {
             time = reT.info;
             lll_val = lll_validation();
 
-            cout << "[ In aspl_serial]\n";
-            reT = aspl_serial();
+            cout << "[ In aspl]\n";
+            reT = aspl();
             printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f]\n",
                    reT.run_time, reT.info);
             scalar t_qr = reT.run_time;
@@ -700,7 +700,7 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> aspl_serial() {
+        returnType <scalar, index> aspl() {
             scalar zeta, alpha, t_qr, t_plll, sum = 0;
             //Clear Variables:
             Z.assign(I);

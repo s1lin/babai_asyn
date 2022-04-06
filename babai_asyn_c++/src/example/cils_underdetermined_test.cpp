@@ -23,7 +23,7 @@ bool block_babai_test(int size, int rank) {
     printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
     cout.flush();
 
-    index n = 16, m = 16, qam = 3, snr = 35, num_trials = 6;
+    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
     scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
     scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
 
@@ -43,7 +43,7 @@ bool block_babai_test(int size, int rank) {
         scalar ber, runtime, res;
         cils::returnType<scalar, index> reT, reT2;
         cils::CILS_Reduction<scalar, index> reduction(cils);
-        reduction.aspl_serial();
+        reduction.aspl();
         cout << reduction.y;
 
         cils::CILS_Reduction<scalar, index> reduction2(cils);
@@ -62,6 +62,7 @@ bool block_babai_test(int size, int rank) {
         res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
         printf("bnp1: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
+
         obils.z_hat.clear();
         reT = obils2.bnp();
         projection(reduction2.Z, obils.z_hat, x_lll, 0, cils.upper);
@@ -72,7 +73,7 @@ bool block_babai_test(int size, int rank) {
         printf("bnp2: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
         obils.z_hat.clear();
-        reT2 = obils.pbnp(8, 20);
+        reT2 = obils.pbnp2(8, 20);
         projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
         ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
         pbnp_ber += ber;
@@ -80,6 +81,16 @@ bool block_babai_test(int size, int rank) {
         res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
         printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
         bnp_spu += reT.run_time / reT2.run_time;
+
+        obils.z_hat.clear();
+        reT2 = obils.pbnp(8, 20);
+        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//        pbnp_ber += ber;
+//        pbnp_rt += reT2.run_time;
+        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+        printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
+//        bnp_spu += reT.run_time / reT2.run_time;
 
         obils.z_hat.clear();
         reT = obils.bocb(0);
