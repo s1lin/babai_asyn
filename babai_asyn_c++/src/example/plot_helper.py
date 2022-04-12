@@ -287,64 +287,7 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
     print("\n----------END PLOT RUNTIME UD--------------\n")
 
 
-def plot_runtime_lll(n, qr_l, i, max_proc, min_proc, qrT, lll, lll_qr, qr_spu, lll_spu, lll_qr_spu, qlll_spu):
-    print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (14, 6)
-    fig, axes = plt.subplots(1, 3, constrained_layout=True)
-    color = ['r', 'g', 'b', 'r']
-    marker = ['o', '+', 'x', 'o']
 
-    axes[0].set_title('QR/LLL Solve Time', fontsize=13)
-    axes[1].set_title('QR/LLL Solve Time (log)', fontsize=13)
-    axes[2].set_title('QR/LLL Speed Up', fontsize=13)
-    # axes[1, 0].set_title('LLL Solve Time', fontsize=13)
-    # axes[1, 1].set_title('LLL Speed Up', fontsize=13)
-
-    axes[0].set_ylabel('QR/LLL Solve Time (s)', fontsize=13)
-    axes[1].set_ylabel('QR/LLL Solve Time (log)', fontsize=13)
-    axes[2].set_ylabel('QR/LLL Speed Up x times', fontsize=13)
-    # axes[1, 0].set_ylabel('LLL  Solve Time (s)', fontsize=13)
-    # axes[1, 1].set_ylabel('LLL Speed Up x times', fontsize=13)
-    ax_zoom = fig.add_axes([0.52, 0.51, 0.12, 0.3])
-
-    # proc_num = proc_num.astype(int)
-    itr_label = ['SEQ'] + ['NT-' + str(proc) for proc in range(min_proc, max_proc + 1, min_proc)]
-
-    axes[0].plot(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0], label='QR')
-    axes[1].semilogy(itr_label, np.array(qrT[0:len(itr_label)]) / i, color=color[0], marker=marker[0])
-    axes[2].plot(itr_label, np.array(qr_spu[0:len(itr_label)]) / i, color=color[0], marker=marker[0])
-    axes[0].plot(itr_label, np.array(lll_qr[0:len(itr_label)]) / i, color=color[2], marker=marker[2],
-                 label='LLL_QR(new)')
-    axes[1].semilogy(itr_label, np.array(lll_qr[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
-    axes[2].plot(itr_label, np.array(lll_qr_spu[0:len(itr_label)]) / i, color=color[2], marker=marker[2])
-    axes[0].plot(itr_label, (np.array(lll[0:len(itr_label)]) + np.array(qrT[0:len(itr_label)])) / i, color=color[1],
-                 marker=marker[1], label='QR+LLL')
-    axes[1].semilogy(itr_label, (np.array(lll[0:len(itr_label)]) + np.array(qrT[0:len(itr_label)])) / i, color=color[1],
-                     marker=marker[1])
-    axes[2].plot(itr_label, np.array(qlll_spu[0:len(itr_label)]) / i, color=color[1], marker=marker[1])
-
-    axes[0].set_xticklabels(itr_label, rotation=45)
-    axes[1].set_xticklabels(itr_label, rotation=45)
-    axes[2].set_xticklabels(itr_label, rotation=45)
-    # axes[1, 0].set_xticklabels(itr_label, rotation=45)
-    # axes[1, 1].set_xticklabels(itr_label, rotation=45)
-
-    ax_zoom.semilogy([itr_label[m] for m in [1, 3, 5]], np.array([qrT[m] for m in [1, 3, 5]]) / i, color=color[0],
-                     marker=marker[0])
-    ax_zoom.semilogy([itr_label[m] for m in [1, 3, 5]], np.array([lll_qr[m] for m in [1, 3, 5]]) / i, color=color[2],
-                     marker=marker[2])
-    ax_zoom.semilogy([itr_label[m] for m in [1, 3, 5]],
-                     (np.array([lll[m] for m in [1, 3, 5]]) + np.array([qrT[m] for m in [1, 3, 5]])) / i,
-                     color=color[1], marker=marker[1])
-    ax_zoom_title = itr_label[1] + ' ' + itr_label[3] + ' ' + itr_label[5] + ' Zoom'
-    ax_zoom.set_title(ax_zoom_title, fontsize=13)
-    title = 'Solve Time with Speed Up for \n Solving QR and LLL with Problem Size ' + str(n)
-
-    fig.suptitle(title, fontsize=15)
-    fig.legend(bbox_to_anchor=(1, 1), title="Legend", ncol=3)
-
-    plt.savefig(f'./{n}_report_plot_{int(i / 100)}_QR_LLL')
-    plt.close()
 
 
 def plot_runtime(n, SNR, k, l_max, block_size, max_iter, is_qr, res, ber, tim, itr, ser_tim, d_s, proc_num, spu, time,
@@ -708,7 +651,7 @@ if __name__ == "__main__":
     # plot_runtime_ud_grad(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu, tim_total, spu_total,
     #                      max_proc, min_proc, is_constrained, m)
 
-    n = 32
+    n = 200
     a = np.load(f'../../cmake-build-release/test_result/{str(n)}__convergence_report.npz')
     nswp = a['nswp']
     ber = a['ber']

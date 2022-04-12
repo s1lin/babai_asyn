@@ -1,5 +1,6 @@
 //#include "src/example/cils_standard_test.cpp"
-#include "src/example/cils_underdetermined_test.cpp"
+//#include "src/example/cils_underdetermined_test.cpp"
+#include "src/example/cils_LLL_test.cpp"
 
 using namespace std;
 using namespace cils;
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     }
 //    CILS cils = cils_driver<double, int>(argc, argv);
-    block_babai_test<double, int>(size, rank);
+    plot_LLL<double, int>();
 
     if (rank == 0) {
         t = omp_get_wtime() - t;

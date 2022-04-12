@@ -5,121 +5,121 @@
 #include "../source/CILS.cpp"
 #include "../source/CILS_Reduction.cpp"
 #include "../source/CILS_SECH_Search.cpp"
-//#include "../source/CILS_SO_UBILS.cpp"
-#include "../source/CILS_OLM.cpp"
+#include "../source/CILS_UBLM.cpp"
+//#include "../source/CILS_OLM.cpp"
 //
-#include <ctime>
-
-template<typename scalar, typename index>
-bool block_babai_test(int size, int rank) {
-
-    time_t t0 = time(nullptr);
-    struct tm *lt = localtime(&t0);
-    char time_str[20];
-    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
-            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
-            lt->tm_hour, lt->tm_min, lt->tm_sec
-    );
-    printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
-    cout.flush();
-
-    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
-    scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
-    scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
-
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 20000);
-
-    cils.init_d();
-    cils.is_constrained = false;
-
-    for (int t = 1; t <= 1; t++) {
-        b_vector x_ser(n, 0), x_lll(n, 0);
-        cout.flush();
-        cils::init(cils);
-
-//        if (rank == 0) {
-        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
-
-        scalar ber, runtime, res;
-        cils::returnType<scalar, index> reT, reT2;
-        cils::CILS_Reduction<scalar, index> reduction(cils);
-        reduction.aspl();
-        cout << reduction.y;
-
-        cils::CILS_Reduction<scalar, index> reduction2(cils);
-        reduction2.aspl_omp(10);
-        cout << reduction2.y;
-
-        cils::CILS_OLM<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
-        cils::CILS_OLM<scalar, index> obils2(cils, x_ser, reduction2.R, reduction2.y);
-
-        obils.z_hat.clear();
-        reT = obils.bnp();
-        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-        bnp_ber += ber;
-        bnp_rt += reT.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("bnp1: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-
-
-        obils.z_hat.clear();
-        reT = obils2.bnp();
-        projection(reduction2.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//#include <ctime>
+//
+//template<typename scalar, typename index>
+//bool block_babai_test(int size, int rank) {
+//
+//    time_t t0 = time(nullptr);
+//    struct tm *lt = localtime(&t0);
+//    char time_str[20];
+//    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+//            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+//            lt->tm_hour, lt->tm_min, lt->tm_sec
+//    );
+//    printf("====================[ TEST | BLOCBABAI | %s ]==================================\n", time_str);
+//    cout.flush();
+//
+//    index n = 512, m = 512, qam = 3, snr = 35, num_trials = 6;
+//    scalar bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
+//    scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
+//
+//    cils::CILS<scalar, index> cils(m, n, qam, snr, 20000);
+//
+//    cils.init_d();
+//    cils.is_constrained = false;
+//
+//    for (int t = 1; t <= 1; t++) {
+//        b_vector x_ser(n, 0), x_lll(n, 0);
+//        cout.flush();
+//        cils::init(cils);
+//
+////        if (rank == 0) {
+//        scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+//
+//        scalar ber, runtime, res;
+//        cils::returnType<scalar, index> reT, reT2;
+//        cils::CILS_Reduction<scalar, index> reduction(cils);
+//        reduction.aspl();
+//        cout << reduction.y;
+//
+//        cils::CILS_Reduction<scalar, index> reduction2(cils);
+//        reduction2.aspl_omp(10);
+//        cout << reduction2.y;
+//
+//        cils::CILS_OLM<scalar, index> obils(cils, x_ser, reduction.R, reduction.y);
+//        cils::CILS_OLM<scalar, index> obils2(cils, x_ser, reduction2.R, reduction2.y);
+//
+//        obils.z_hat.clear();
+//        reT = obils.bnp();
+//        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
 //        bnp_ber += ber;
 //        bnp_rt += reT.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("bnp2: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-
-        obils.z_hat.clear();
-        reT2 = obils.pbnp2(8, 20);
-        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-        pbnp_ber += ber;
-        pbnp_rt += reT2.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
-        bnp_spu += reT.run_time / reT2.run_time;
-
-        obils.z_hat.clear();
-        reT2 = obils.pbnp(8, 20);
-        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("bnp1: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//
+//
+//        obils.z_hat.clear();
+//        reT = obils2.bnp();
+//        projection(reduction2.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+////        bnp_ber += ber;
+////        bnp_rt += reT.run_time;
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("bnp2: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//
+//        obils.z_hat.clear();
+//        reT2 = obils.pbnp2(8, 20);
+//        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
 //        pbnp_ber += ber;
 //        pbnp_rt += reT2.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
 //        bnp_spu += reT.run_time / reT2.run_time;
-
-        obils.z_hat.clear();
-        reT = obils.bocb(0);
-        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-        ser_ber += ber;
-        ser_rt += reT.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("bocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-        cout.flush();
-
-        obils.z_hat.clear();
-        reT2 = obils.pbocb_test(8, 6, 0);
-        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
-        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-        omp_ber += ber;
-        omp_rt += reT2.run_time;
-        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-        printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
-        spu += reT.run_time / reT2.run_time;
-//        }
-        printf("ber result: bnp_ber: %8.5f, pbnp_ber: %8.5f, bob_ber: %8.5f, pbob_ber: %8.4f \n",
-               bnp_ber / t, pbnp_ber / t, ser_ber / t, omp_ber / t);
-        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_rt / pbnp_rt, ser_rt / omp_rt);
-        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_spu / t, spu / t);
-    }
-
-    return true;
-}
+//
+//        obils.z_hat.clear();
+//        reT2 = obils.pbnp(8, 20);
+//        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+////        pbnp_ber += ber;
+////        pbnp_rt += reT2.run_time;
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("opbnp: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
+////        bnp_spu += reT.run_time / reT2.run_time;
+//
+//        obils.z_hat.clear();
+//        reT = obils.bocb(0);
+//        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//        ser_ber += ber;
+//        ser_rt += reT.run_time;
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("bocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//        cout.flush();
+//
+//        obils.z_hat.clear();
+//        reT2 = obils.pbocb_test(8, 6, 0);
+//        projection(reduction.Z, obils.z_hat, x_lll, 0, cils.upper);
+//        ber = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+//        omp_ber += ber;
+//        omp_rt += reT2.run_time;
+//        res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+//        printf("pbocb: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT2.run_time);
+//        spu += reT.run_time / reT2.run_time;
+////        }
+//        printf("ber result: bnp_ber: %8.5f, pbnp_ber: %8.5f, bob_ber: %8.5f, pbob_ber: %8.4f \n",
+//               bnp_ber / t, pbnp_ber / t, ser_ber / t, omp_ber / t);
+//        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_rt / pbnp_rt, ser_rt / omp_rt);
+//        printf("spu result: pbnp_spu: %8.5f, pbob_spu: %8.5f\n", bnp_spu / t, spu / t);
+//    }
+//
+//    return true;
+//}
 
 
 

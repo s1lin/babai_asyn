@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="157432054" file="/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.prj" location="/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab" name="aspl" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="1048549675" file="/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.prj" location="/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab" name="aspl" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex />
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -894,12 +894,12 @@
     <param.unifiedParamStorage />
     <var.gc.lastOutputRoot>codegen/lib/aspl</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>C_CODE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>157432054</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>161227319</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot />
     <var.cfi.preBuildChecksum />
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3451524091&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/qrmgs_row.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3531025291&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/aspl.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/qrmgs_row.m&lt;/file&gt;&lt;file&gt;/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/sils_reduction.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
     <param.configImportActive>false</param.configImportActive>
@@ -937,8 +937,8 @@
     <param.deeplearning.EnableDeepLearning>false</param.deeplearning.EnableDeepLearning>
     <param.deeplearning.TargetLib>option.deeplearning.targetlibrary.none</param.deeplearning.TargetLib>
     <var.cfiTargetLibSuppression>false</var.cfiTargetLibSuppression>
-    <var.hasMatlabDeepLearningSupportPackage>false</var.hasMatlabDeepLearningSupportPackage>
-    <var.hasGpuDeepLearningSupportPackage>false</var.hasGpuDeepLearningSupportPackage>
+    <var.hasMatlabDeepLearningSupportPackage>true</var.hasMatlabDeepLearningSupportPackage>
+    <var.hasGpuDeepLearningSupportPackage>true</var.hasGpuDeepLearningSupportPackage>
     <param.tensorrt.DataType>option.tensorrt.datatype.fp32</param.tensorrt.DataType>
     <param.tensorrt.DataPath />
     <param.tensorrt.NumCalibrationBatches>0</param.tensorrt.NumCalibrationBatches>
@@ -1060,6 +1060,8 @@
       <param.deeplearning.EnableDeepLearning />
       <param.deeplearning.TargetLib />
       <var.cfiTargetLibSuppression />
+      <var.hasMatlabDeepLearningSupportPackage />
+      <var.hasGpuDeepLearningSupportPackage />
       <param.tensorrt.DataType />
       <param.tensorrt.DataPath />
       <param.tensorrt.NumCalibrationBatches />
@@ -1175,7 +1177,7 @@
       <vista>false</vista>
       <linux>true</linux>
       <solaris>false</solaris>
-      <osver>5.13.0-35-generic</osver>
+      <osver>5.13.0-39-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>glnxa64</arch>

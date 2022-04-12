@@ -88,10 +88,6 @@ namespace cils {
             return x[nj + col];
         }
 
-        Scalar operator+(const CILS_Vector &y) {
-            std::transform(this->begin(), this->end(), y.begin(), y.begin(), std::plus<Scalar>());
-        }
-
         CILS_Vector &operator=(CILS_Vector const &y) {
             this->n = y.size();
             this->x.resize(y.size());
@@ -101,15 +97,19 @@ namespace cils {
             return *this;
         }
 
-
-        CILS_Vector operator-(CILS_Vector &y) {
-            CILS_Vector b(n);
-            for (unsigned int i = 0; i < n; i++) {
-                b[i] = x[i] - y[i];
+        CILS_Vector &operator-(CILS_Vector const &y) {
+            for (int i = 0; i < y.size(); i++) {
+                this->x[i] -= y[i];
             }
-            return b;
+            return *this;
         }
 
+        CILS_Vector &operator+(CILS_Vector const &y) {
+            for (int i = 0; i < y.size(); i++) {
+                this->x[i] += y[i];
+            }
+            return *this;
+        }
     };
 
     template<typename Integer, typename Scalar>

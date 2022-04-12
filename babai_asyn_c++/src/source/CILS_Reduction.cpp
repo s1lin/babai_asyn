@@ -58,25 +58,17 @@ namespace cils {
             index k = 1, k1;
             scalar zeta, alpha;
 
-//            while (k < n) {
-//                k1 = k - 1;
-//                zeta = round(R_R(k1, k) / R_R(k1, k1));
-//                alpha = R_R(k1, k) - zeta * R_R(k1, k1);
-//
-//                if (pow(R_R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_R(k, k), 2))) {
-//                    pass = false;
-//                    fail_index[k] = 1;
-//                }
-//                k++;
-//            }
-//            if (!pass) {
-//                cout << "[ERROR: LLL Failed on index:";
-//                for (index i = 0; i < n; i++) {
-//                    if (fail_index[i] != 0)
-//                        cout << i << ",";
-//                }
-//                cout << "]" << endl;
-//            }
+            k = 1;
+            while (k < n) {
+                k1 = k - 1;
+                zeta = round(R(k1, k) / R(k1, k1));
+                alpha = R(k1, k) - zeta * R(k1, k1);
+
+                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                    cout << "Failed:" << k1 << endl;
+                }
+                k++;
+            }
 
             printf("====================[ END | LLL_VALIDATE ]==================================\n");
             return {fail_index, det, (scalar) pass};
@@ -237,10 +229,16 @@ namespace cils {
             Z.resize(n, n, false);
             P.resize(n, n, false);
 
+            I.reset();
             Z.assign(I);
             P.assign(I);
         }
 
+        void reset(CILS <scalar, index> &cils) {
+            this->B = cils.A;
+            this->Z.clear();
+            this->Z.assign(I);
+        }
 
         /**
          * Serial version of MGS QR-factorization using modified Gram-Schmidt algorithm, row-oriented
@@ -291,9 +289,8 @@ namespace cils {
          */
         returnType <scalar, index> mgs_qr_omp(const index n_proc) {
 
-//            b_matrix B_t(B);
-
             R.clear();
+            Q.clear();
             Q.assign(B);
 
             auto lock = new omp_lock_t[n]();
@@ -301,68 +298,73 @@ namespace cils {
                 omp_init_lock((&lock[i]));
                 omp_set_lock(&lock[i]);
             }
+            index i, j, k;
+#pragma omp parallel default(shared) num_threads(n_proc)
+            {}
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             scalar t_qr = omp_get_wtime(), sum;
-#pragma omp parallel default(shared) num_threads(n_proc) private(sum)
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, i, j, k)
             {
                 sum = 0;
                 if (omp_get_thread_num() == 0) {
                     // Calculation of ||A||
-                    for (index i = 0; i < n; i++) {
+                    for (i = 0; i < n; i++) {
                         sum += Q[i] * Q[i];
                     }
                     R[0] = sqrt(sum);
-                    for (index i = 0; i < n; i++) {
+                    for (i = 0; i < n; i++) {
                         Q[i] = Q[i] / R[0];
                     }
                     omp_unset_lock(&lock[0]);
                 }
 
-                for (index k = 0; k < n; k++) {
+                for (k = 1; k < n; k++) {
                     //Check if Q[][i-1] (the previous column) is computed.
-                    omp_set_lock(&lock[k]);
-                    omp_unset_lock(&lock[k]);
+                    omp_set_lock(&lock[k - 1]);
+                    omp_unset_lock(&lock[k - 1]);
 #pragma omp for schedule(static, 1) nowait
-                    for (index j = 0; j < n; j++) {
-                        if (j > k) {
-                            R(k, j) = 0;
-                            for (index i = 0; i < n; i++) {
-                                R(k, j) += Q(i, k) * Q(i, j);
+                    for (j = 0; j < n; j++) {
+                        if (j >= k) {
+                            R(k - 1, j) = 0;
+                            for (i = 0; i < n; i++) {
+                                R(k - 1, j) += Q(i, k - 1) * Q(i, j);
                             }
-                            for (index i = 0; i < n; i++) {
-                                Q(i, j) -= R(k, j) * Q(i, k);
+                            for (i = 0; i < n; i++) {
+                                Q(i, j) -= R(k - 1, j) * Q(i, k - 1);
                             }
 
                             //Only one thread calculates the norm(A)
                             //and unsets the lock for the next column.
-                            if (j == k + 1) {
+                            if (j == k) {
                                 sum = 0;
-                                for (index i = 0; i < n; i++) {
+                                for (i = 0; i < n; i++) {
                                     sum = sum + pow(Q(i, j), 2);
                                 }
                                 R(j, j) = sqrt(sum);
-                                for (index i = 0; i < n; i++) {
+                                for (i = 0; i < n; i++) {
                                     Q(i, j) = Q(i, j) / R(j, j);
                                 }
-                                omp_unset_lock(&lock[k + 1]);
+                                omp_unset_lock(&lock[k]);
                             }
                         }
                     }
                 }
             }
+            t_qr = omp_get_wtime() - t_qr;
+
             b_matrix Q_T = trans(Q);
             prod(Q_T, y, y_r);
             y.assign(y_r);
 
-            t_qr = omp_get_wtime() - t_qr;
+
             scalar error = -1;
             if (eval || verbose) {
                 error = qr_validation();
                 cout << "[  QR ERROR OMP:]" << error << endl;
             }
-            for (index i = 0; i < n; i++) {
+            for (i = 0; i < n; i++) {
                 omp_destroy_lock(&lock[i]);
             }
             delete[] lock;
@@ -547,8 +549,8 @@ namespace cils {
             lll_val = lll_validation();
 
             for (index i = 2; i <= 4; i += 2) {
-                cout << "[ In aspl_omp]\n";
-                reT = aspl_omp(i);
+                cout << "[ In paspl]\n";
+                reT = paspl(i);
                 printf("[ INFO: QR TIME: %8.5f, PLLL TIME: %8.5f, QR SPU: %8.5f, LLL SPU:%8.2f]\n",
                        reT.run_time, reT.info, t_qr / reT.run_time, t_plll / reT.info);
                 lll_val = lll_validation();
@@ -669,8 +671,7 @@ namespace cils {
             }
 
             t_plll = omp_get_wtime() - t_plll;
-            cout << "t_plll:" << t_plll << endl;
-            cout << "t_qr:" << t_qr << endl;
+
             return {{}, t_qr, t_plll};
         }
 
@@ -724,6 +725,23 @@ namespace cils {
             t_plll = omp_get_wtime();
             while (f) {
                 f = false;
+                for (e = 0; e <= n - 2; e++) {
+                    k1 = (n - e) - 2;
+                    for (k = 0; k < n - k1 - 1; k++) {
+                        index b_k = n - k - 1;
+                        zeta = std::round(R(k1, b_k) / R(k1, k1));
+                        alpha = R(k1, b_k) - zeta * R(k1, k1);
+                        if ((pow(R(k1, k1), 2) > 1.0000000001 * (pow(alpha, 2) + pow(R(b_k, b_k), 2))) &&
+                            (zeta != 0.0)) {
+                            for (j = 0; j <= k1; j++) {
+                                R(j, b_k) -= zeta * R(j, k1);
+                            }
+                            for (j = 0; j < n; j++) {
+                                Z(j, b_k) -= zeta * Z(j, k1);
+                            }
+                        }
+                    }
+                }
                 for (k = start; k < n; k += 2) {
                     k1 = k - 1;
                     zeta = round(R(k1, k) / R(k1, k1));
@@ -757,28 +775,6 @@ namespace cils {
                         y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
                     }
                 }
-                for (e = 0; e <= n - 2; e++) {
-                    for (k = 0; k < e + 1; k++) {
-                        k1 = n - k - 1;
-                        zeta = std::round(R(k1 - 1, k1) / R(k1 - 1, k1 - 1));
-                        alpha = R(k1 - 1, k1) - zeta * R(k1 - 1, k1 - 1);
-                        if (pow(R(k1 - 1, k1 - 1), 2) > (1 + 1e-10) * (pow(alpha, 2) + pow(R(k1, k1), 2)))
-                            if (zeta != 0) {
-                                for (i = 0; i < k1; i++) {
-                                    index i1 = (k1 - i) - 1;
-                                    zeta = std::round(R(i1, k1) / R(i1, i1));
-                                    if (zeta != 0) {
-                                        for (j = 0; j <= i1; j++) {
-                                            R(j, k1) -= zeta * R(j, i1);
-                                        }
-                                        for (j = 0; j < n; j++) {
-                                            Z(j, k1) -= zeta * Z(j, i1);
-                                        }
-                                    }
-                                }
-                            }
-                    }
-                }
                 if (even) {
                     even = false;
                     start = 2;
@@ -786,23 +782,47 @@ namespace cils {
                     even = true;
                     start = 1;
                 }
+                if (!f) {
+                    for (k = start; k < n; k += 2) {
+                        k1 = k - 1;
+                        zeta = round(R(k1, k) / R(k1, k1));
+                        alpha = R(k1, k) - zeta * R(k1, k1);
+
+                        if (pow(R(k1, k1), 2) > (1 + 1e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                            f = true;
+                            for (i = 0; i < R.size1(); i++) {
+                                std::swap(R(i, k1), R(i, k));
+                                std::swap(Z(i, k1), Z(i, k));
+                            }
+
+                            //Bring R back to an upper triangular matrix by a Givens rotation
+                            scalar G[4] = {};
+                            scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
+                            helper::planerot<scalar, index>(low_tmp, G);
+                            R(k1, k1) = low_tmp[0];
+                            R(k, k1) = low_tmp[1];
+
+                            //Combined Rotation.
+                            for (i = k; i < n; i++) {
+                                low_tmp[0] = R(k1, i);
+                                low_tmp[1] = R(k, i);
+                                R(k1, i) = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                R(k, i) = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                            }
+
+                            low_tmp[0] = y[k1];
+                            low_tmp[1] = y[k];
+                            y[k1] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                            y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
+                        }
+                    }
+                }
             }
             t_plll = omp_get_wtime() - t_plll;
 
-            k = 1;
-            while (k < n) {
-                k1 = k - 1;
-                zeta = round(R(k1, k) / R(k1, k1));
-                alpha = R(k1, k) - zeta * R(k1, k1);
 
-                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
-                    cout << "Failed:" << k1 << endl;
-                }
-                k++;
-            }
+            verbose = true;
 //            lll_validation();
-            cout << "t_plll:" << t_plll << endl;
-            cout << "t_qr:" << t_qr << endl;
             return {{}, t_qr, t_plll};
         }
 
@@ -885,7 +905,7 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> aspl_omp(index n_c) {
+        returnType <scalar, index> paspl(index n_c) {
             scalar zeta, alpha, t_qr, t_plll;
             //Clear Variables:
             Z.assign(I);
@@ -916,6 +936,25 @@ namespace cils {
                 while (f) {
 #pragma omp barrier
                     f = false;
+                    for (e = 0; e <= n - 2; e++) {
+                        k1 = (n - e) - 2;
+#pragma omp for schedule(static)
+                        for (k = 0; k < n - k1 - 1; k++) {
+                            index b_k = n - k - 1;
+                            zeta = std::round(R(k1, b_k) / R(k1, k1));
+                            alpha = R(k1, b_k) - zeta * R(k1, k1);
+                            if ((pow(R(k1, k1), 2) > 1.0000000001 * (pow(alpha, 2) + pow(R(b_k, b_k), 2))) &&
+                                (zeta != 0.0)) {
+                                for (j = 0; j <= k1; j++) {
+                                    R(j, b_k) -= zeta * R(j, k1);
+                                }
+                                for (j = 0; j < n; j++) {
+                                    Z(j, b_k) -= zeta * Z(j, k1);
+                                }
+                            }
+                        }
+                    }
+
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         k1 = k - 1;
@@ -957,29 +996,6 @@ namespace cils {
                             y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
                         }
                     }
-                    for (e = 0; e <= n - 2; e++) {
-#pragma omp for schedule(static)
-                        for (k = 0; k < e + 1; k++) {
-                            k1 = n - k - 1;
-                            zeta = std::round(R(k1 - 1, k1) / R(k1 - 1, k1 - 1));
-                            alpha = R(k1 - 1, k1) - zeta * R(k1 - 1, k1 - 1);
-                            if (pow(R(k1 - 1, k1 - 1), 2) > (1 + 1e-10) * (pow(alpha, 2) + pow(R(k1, k1), 2)))
-                                if (zeta != 0) {
-                                    for (i = 0; i < k1; i++) {
-                                        i1 = (k1 - i) - 1;
-                                        zeta = std::round(R(i1, k1) / R(i1, i1));
-                                        if (zeta != 0) {
-                                            for (j = 0; j <= i1; j++) {
-                                                R(j, k1) -= zeta * R(j, i1);
-                                            }
-                                            for (j = 0; j < n; j++) {
-                                                Z(j, k1) -= zeta * Z(j, i1);
-                                            }
-                                        }
-                                    }
-                                }
-                        }
-                    }
 #pragma omp single
                     {
                         if (even) {
@@ -988,6 +1004,50 @@ namespace cils {
                         } else {
                             even = true;
                             start = 1;
+                        }
+                    }
+                    if (!f) {
+#pragma omp barrier
+#pragma omp for schedule(static)
+                        for (k = start; k < n; k += 2) {
+                            k1 = k - 1;
+                            zeta = round(R(k1, k) / R(k1, k1));
+                            alpha = R(k1, k) - zeta * R(k1, k1);
+
+                            if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                                f = true;
+                                s[k] = 1;
+                                for (i = 0; i < R.size1(); i++) {
+                                    std::swap(R(i, k1), R(i, k));
+                                    std::swap(Z(i, k1), Z(i, k));
+                                }
+                            }
+                        }
+#pragma omp for schedule(static)
+                        for (k = start; k < n; k += 2) {
+                            if (s[k]) {
+                                s[k] = 0;
+                                k1 = k - 1;
+                                //Bring R back to an upper triangular matrix by a Givens rotation
+
+                                scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
+                                helper::planerot<scalar, index>(low_tmp, G);
+                                R(k1, k1) = low_tmp[0];
+                                R(k, k1) = low_tmp[1];
+
+                                //Combined Rotation.
+                                for (i = k; i < n; i++) {
+                                    low_tmp[0] = R(k1, i);
+                                    low_tmp[1] = R(k, i);
+                                    R(k1, i) = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                    R(k, i) = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                                }
+
+                                low_tmp[0] = y[k1];
+                                low_tmp[1] = y[k];
+                                y[k1] = G[0] * low_tmp[0] + low_tmp[1] * G[2];
+                                y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
+                            }
                         }
                     }
                 }
@@ -1002,14 +1062,11 @@ namespace cils {
                 alpha = R(k1, k) - zeta * R(k1, k1);
 
                 if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
-                    cout << "Failed:" << k1 << endl;
+                    cerr << "Failed:" << k1 << endl;
                 }
                 k++;
             }
 //            lll_validation();
-
-            cout << "t_plll:" << t_plll << endl;
-            cout << "t_qr:" << t_qr << endl;
             return {{}, t_qr, t_plll};
         }
 

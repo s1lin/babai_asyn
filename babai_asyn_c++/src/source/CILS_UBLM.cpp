@@ -19,28 +19,35 @@
 
 namespace cils {
     template<typename scalar, typename index>
-    class CILS_SO_UBILS {
-    private:
-        CILS<scalar, index> cils;
+    class CILS_UBLM {
 
     public:
-        index m, n;
-        b_vector z_hat, y;
-        b_matrix A, P, t;
+        index m, n, upper, lower;
+        scalar tolerance;
+        b_vector z_hat, y, l, u;
+        b_matrix A, I, P;
+        si_vector permutation;
 
-        explicit CILS_SO_UBILS(CILS<scalar, index> &cils) {
-            this->m = cils.m;
+        explicit CILS_UBLM(CILS <scalar, index> &cils) {
             this->n = cils.n;
+            this->m = cils.m;
+            this->upper = cils.upper;
+            this->search_iter = cils.search_iter;
+
             this->z_hat.resize(n);
             this->z_hat.clear();
-            this->A.resize(m, n);
-            this->A.assign(cils.A);
+            this->A = cils.A;
+            this->I = cils.I;
             this->P.resize(n, n);
             this->P.assign(cils.I);
-            this->y.resize(m);
-            this->y.assign(cils.y);
-            this->cils.tolerance = cils.tolerance;
-            this->cils = cils;
+
+            this->y = cils.y;
+            this->l = cils.l;
+            this->u = cils.u;
+            this->tolerance = cils.tolerance;
+            this->permutation = cils.permutation;
+            this->upper = cils.upper;
+            this->lower = cils.lower;
         }
 
         /** 
@@ -64,7 +71,7 @@ namespace cils {
          * @return
          */
 
-        returnType<scalar, index> sic(b_vector &x) {
+        returnType <scalar, index> sic(b_vector &x) {
 
             x.clear();
 
@@ -82,7 +89,7 @@ namespace cils {
                     aiy = inner_prod(Ai, y_bar);
                     aih = inner_prod(Ai, Ai);
                     x_tmp = aiy / aih;
-                    x_round = max(min((index) round(x_tmp), cils.upper), cils.lower);
+                    x_round = max(min((index) round(x_tmp), upper), lower);
                     res = norm_2(y_bar - x_round * Ai);
                     if (res < max_res) {
                         k = i;
@@ -113,7 +120,7 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> gp(b_vector &x, const index search_iter) {
+        returnType <scalar, index> gp(b_vector &x, const index search_iter) {
             b_vector ex;
 
             sd_vector t_bar, t_seq;
@@ -127,20 +134,27 @@ namespace cils {
 
             scalar time = omp_get_wtime();
 
-            b_vector c = prod(trans(cils.A), y);
+            b_vector c;
+            b_matrix A_T = trans(A);
+            prod(A_T, y, c);
 
             // 'ubils:225' for iter = 1:search_iter
             for (index iter = 0; iter < search_iter; iter++) {
-                // 'ubils:227' g = cils.A'*(cils.A*x_cur-y);
-                b_vector r0 = -y;
-                r0 = r0 + prod(cils.A, x_cur);
-                b_vector g = prod(trans(cils.A), r0);
+                // 'ubils:227' g = A'*(A*x_cur-y);
+                b_vector r0(y.size());
+                for (i = 0; i < y.size(); i++) {
+                    r0[i] = -y[i];
+                }
+                b_vector Ax, g;
+                prod(A, x_cur, Ax);
+                r0 = r0 + Ax;
+                prod(A_T, r0, g);
 
                 //  Check KKT conditions
                 // 'ubils:230' if (x_cur==cils.l) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = !(x_cur[i] == cils.l[i]);
+                    b_x_0[i] = !(x_cur[i] == l[i]);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:231' k1 = 1;
@@ -148,14 +162,14 @@ namespace cils {
                 } else {
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == cils.l[i]) {
+                        if (x_cur[i] == l[i]) {
                             k3++;
                         }
                     }
                     r1.resize(k3, 0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == cils.l[i]) {
+                        if (x_cur[i] == l[i]) {
                             r1[k3] = i + 1;
                             k3++;
                         }
@@ -166,7 +180,7 @@ namespace cils {
                         b_x_0[i] = (g[r1[i] - 1] > -1.0E-5);
                     }
                     if (helper::if_all_x_true<index>(b_x_0)) {
-                        // 'ubils:232' elseif (g(x_cur==cils.l) > -1.e-5) == 1
+                        // 'ubils:232' elseif (g(x_cur==l) > -1.e-5) == 1
                         // 'ubils:233' k1 = 1;
                         k1 = 1;
                     } else {
@@ -175,10 +189,10 @@ namespace cils {
                         k1 = 0;
                     }
                 }
-                // 'ubils:236' if (x_cur==cils.u) == 0
+                // 'ubils:236' if (x_cur==u) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = !(x_cur[i] == cils.u[i]);
+                    b_x_0[i] = !(x_cur[i] == u[i]);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:237' k2 = 1;
@@ -186,14 +200,14 @@ namespace cils {
                 } else {
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == cils.u[i]) {
+                        if (x_cur[i] == u[i]) {
                             k3++;
                         }
                     }
                     r2.resize(k3, 0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == cils.u[i]) {
+                        if (x_cur[i] == u[i]) {
                             r2[k3] = i + 1;
                             k3++;
                         }
@@ -204,7 +218,7 @@ namespace cils {
                         b_x_0[i] = (g[r2[i] - 1] < 1.0E-5);
                     }
                     if (helper::if_all_x_true<index>(b_x_0)) {
-                        // 'ubils:238' elseif (g(x_cur==cils.u) < 1.e-5) == 1
+                        // 'ubils:238' elseif (g(x_cur==u) < 1.e-5) == 1
                         // 'ubils:239' k2 = 1;
                         k2 = 1;
                     } else {
@@ -213,10 +227,10 @@ namespace cils {
                         k2 = 0;
                     }
                 }
-                // 'ubils:242' if (cils.l<x_cur & x_cur<cils.u) == 0
+                // 'ubils:242' if (l<x_cur & x_cur<u) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = ((!(cils.l[i] < x_cur[i])) || (!(x_cur[i] < cils.u[i])));
+                    b_x_0[i] = ((!(l[i] < x_cur[i])) || (!(x_cur[i] < u[i])));
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:243' k3 = 1;
@@ -224,8 +238,8 @@ namespace cils {
                 } else {
                     b_x_0.resize(n, 0);
                     for (i = 0; i < n; i++) {
-                        b_x_0[i] = (cils.l[i] < x_cur[i]);
-                        b_x_1[i] = (x_cur[i] < cils.u[i]);
+                        b_x_0[i] = (l[i] < x_cur[i]);
+                        b_x_1[i] = (x_cur[i] < u[i]);
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -247,7 +261,7 @@ namespace cils {
                         b_x_0[i] = (g[r3[i] - 1] < 1.0E-5);
                     }
                     if (helper::if_all_x_true<index>(b_x_0)) {
-                        // 'ubils:244' elseif (g(cils.l<x_cur & x_cur<cils.u) < 1.e-5) == 1
+                        // 'ubils:244' elseif (g(l<x_cur & x_cur<u) < 1.e-5) == 1
                         // 'ubils:245' k3 = 1;
                         k3 = 1;
                     } else {
@@ -256,7 +270,7 @@ namespace cils {
                         k3 = 0;
                     }
                 }
-                scalar v_norm_cur = helper::find_residual<scalar, index>(cils.A, x_cur, y);
+                scalar v_norm_cur = helper::find_residual<scalar, index>(A, x_cur, y);
                 // 'ubils:248' if (k1 & k2 & k3)
                 if ((k1 != 0) && (k2 != 0) && (k3 != 0) && (v_norm > v_norm_cur)) {
                     k1 = k2 = k3 = 0;
@@ -265,8 +279,8 @@ namespace cils {
                         //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
                         if (x_est < 0) {
                             x_est = 0;
-                        } else if (x_est > cils.upper) {
-                            x_est = cils.upper;
+                        } else if (x_est > upper) {
+                            x_est = upper;
                         }
                         x[i] = x_est;
                     }
@@ -276,7 +290,7 @@ namespace cils {
                     //  Find the Cauchy poindex
                     // 'ubils:253' t_bar = 1.e5*ones(n,1);
                     t_bar.resize(n, 1e5);
-                    // 'ubils:254' t_bar(g<0) = (x_cur(g<0)-cils.u(g<0))./g(g<0);
+                    // 'ubils:254' t_bar(g<0) = (x_cur(g<0)-u(g<0))./g(g<0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
                         if (g[i] < 0.0) {
@@ -294,7 +308,7 @@ namespace cils {
                     r0.resize(r4.size());
                     k3 = r4.size();
                     for (i = 0; i < k3; i++) {
-                        r0[i] = (x_cur[r4[i] - 1] - cils.u[r4[i] - 1]) / g[r4[i] - 1];
+                        r0[i] = (x_cur[r4[i] - 1] - u[r4[i] - 1]) / g[r4[i] - 1];
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -303,7 +317,7 @@ namespace cils {
                             k3++;
                         }
                     }
-                    // 'ubils:255' t_bar(g>0) = (x_cur(g>0)-cils.l(g>0))./g(g>0);
+                    // 'ubils:255' t_bar(g>0) = (x_cur(g>0)-l(g>0))./g(g>0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
                         if (g[i] > 0.0) {
@@ -321,7 +335,7 @@ namespace cils {
                     r0.resize(r5.size());
                     k3 = r5.size();
                     for (i = 0; i < k3; i++) {
-                        r0[i] = (x_cur[r5[i] - 1] - cils.l[r5[i] - 1]) / g[r5[i] - 1];
+                        r0[i] = (x_cur[r5[i] - 1] - l[r5[i] - 1]) / g[r5[i] - 1];
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -361,15 +375,16 @@ namespace cils {
                             }
                         }
                         //  Compute coefficients
-                        // 'ubils:270' q = cils.A*pj_1;
-                        b_vector q = prod(cils.A, pj_1);
+                        // 'ubils:270' q = A*pj_1;
+                        b_vector q;
+                        prod(A, pj_1, q);
 //                        q.clear();
 //                        for (j = 0; j < n; j++) {
 //                            for (i = 0; i < m; i++) {
-//                                q[i] += cils.A[j * m + i] * pj_1[j];
+//                                q[i] += A[j * m + i] * pj_1[j];
 //                            }
 //                        }
-                        // 'ubils:271' fj_1d = (cils.A*xt_j_1)'*q - c'*pj_1;
+                        // 'ubils:271' fj_1d = (A*xt_j_1)'*q - c'*pj_1;
                         ex.resize(t_bar.size());
                         for (j = 0; j < t_bar.size(); j++) {
                             ex[j] = std::fmin(tj_1, t_bar[j]);
@@ -379,10 +394,11 @@ namespace cils {
                             ex[i] = x_cur[i] - ex[i] * g[i];
                         }
                         r0.resize(m);
-                        r0 = prod(cils.A, ex);
+                        r0.clear();
+                        prod(A, ex, r0);
 //                        for (j = 0; j < n; j++) {
 //                            for (i = 0; i < m; i++) {
-//                                r0[i] += cils.A[j * m + i] * ex[j];
+//                                r0[i] += A[j * m + i] * ex[j];
 //                            }
 //                        }
                         scalar delta_t = 0.0;
@@ -433,91 +449,431 @@ namespace cils {
 //            //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
 //            if (x_est < 0) {
 //                x_est = 0;
-//            } else if (x_est > cils.upper) {
-//                x_est = cils.upper;
+//            } else if (x_est > upper) {
+//                x_est = upper;
 //            }
 //            x[i] = x_est;
 //        }
 
-            //scalar v_norm = helper::find_residual<scalar, index>(m, n, cils.A.data(), x.data(), y.data());
+            //scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y.data());
             time = omp_get_wtime() - time;
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> pd(b_matrix &A_t, b_matrix &P_cur, b_matrix &Q_t, b_matrix &R_t, b_matrix &t_i) {
-            index l = n, k = 0, f = 0, r = 0;
 
-            Q_t.resize(m, n, false);
-            R_t.resize(m, n, false);
-            t.resize(2, n, false);
-
-            while (l >= 1) {
-                f = max(0, l - m);
-                b_matrix A_l = subrange(A_t, 0, m, f, l);
-
-                b_matrix P_l(cils.I);
-                b_matrix Q, R, P_hat;
-
-                helper::qrp(A_l, Q, R, P_hat, true, false);
-
-//                helper::display<scalar, index>(R, "R");
-//                helper::display<scalar, index>(P_hat, "P_hat");
-                r = 0;
-                if (R.size2() > 1) {
-                    for (index i = 0; i < R.size2(); i++) {
-                        r += abs(R(i, i)) > 1e-6;
-                    }
-                } else
-                    r = (abs(R(0)) > 1e-6);
-
-                b_matrix A_P(A_l.size1(), A_l.size2());
-                axpy_prod(A_l, P_hat, A_P);
-//                helper::display<scalar, index>(A_P, "A_P");
-
-                index d = A_l.size2();
-
-                //The case where A_l is rank deficient
-                if (r < d) {
-                    //Permute the columns of Ahat and the entries of
-                    //Ahat(:, f:f+d-1 -r ) = A_P(:, r+1:d);
-                    //Ahat(:, f+d-r: l) = A_P(:, 1:r);
-                    subrange(A_t, 0, m, f, f + d - r) = subrange(A_P, 0, m, r, d);
-                    subrange(A_t, 0, m, f + d - r, l) = subrange(A_P, 0, m, 0, r);
-
-                    //Update the permutation matrix P_l
-                    identity_matrix I_d(d, d);
-                    b_matrix P_d(d, d);
-                    subrange(P_d, 0, m, 0, r) = subrange(I_d, 0, m, r, d);
-                    subrange(P_d, 0, m, r, d) = subrange(I_d, 0, m, 0, r);
-                    P_hat = prod(P_hat, P_d);
-                } else {
-                    //Permute the columns of Ahat and the entries of
-                    subrange(A_t, 0, m, f, l) = A_P;
-                }
-//                helper::display<scalar, index>(A_t, "A_t");
-
-                f = l - r;
-
-                subrange(R_t, 0, R.size1(), f, l) = subrange(R, 0, R.size1(), 0, r);
-                subrange(Q_t, 0, Q.size1(), f, l) = subrange(Q, 0, Q.size1(), 0, r);
-                subrange(P_l, f, l, f, l) = P_hat;
-                P_cur = prod(P_cur, P_l);
-
-                t_i(0, k) = f;
-                t_i(1, k) = l - 1;
-                k = k + 1;
-                l = l - r;
+        returnType <scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_matrix &Q_t, b_matrix &R_t, b_vector &d) {
+            b_matrix A_bar_p, P_tmp, P_hat, P_tilde, Q, R, b_A_bar_p, b_A_tilde, b_p;
+            b_vector b_d, y_tmp;
+            si_vector b_x;
+            int q, i, input_sizes_idx_1, k, loop_ub, sizes_idx_1, t, vlen;
+            // Corresponds to Algorithm 5 (Partition Strategy) in Report 10
+            //  [A_t, P_tmp, x_tilde, Q_t, R_t, t] = partition_H(A, x, m, n)
+            //  permutes and partitions A_t so that the submatrices H_i are
+            //  full-column rank
+            //
+            //  Inputs:
+            //      A - m-by-n real matrix
+            //      x - n-dimensional integer vector
+            //      m - integer scalar
+            //      n - integer scalar
+            //
+            //  Outputs:
+            //      P_tmp - n-by-n real matrix, permutation such that A_t*P_tmp=A
+            //      x_tilde - n-dimensional integer vector (x permuted to correspond to
+            //      A_t) Q_t - m-by-n real matrix (Q factors) R_t - m-by-n
+            //      real matrix (R factors) t - 2-by-q integer matrix (indicates
+            //      submatrices of A_t)
+            //  A_ = A;
+            //  x_ = x;
+            // 'partition:23' [m, n] = size(A);
+            // 'partition:24' A_t = A;
+            A_t = A;
+            // 'partition:25' q = n;
+            q = A.size2();
+            // 'partition:26' P_tmp = eye(n);
+            t = A.size2();
+            P_tmp.resize(A.size2(), A.size2(), false);
+            for (i = 0; i < t; i++) {
+                P_tmp[i + P_tmp.size1() * i] = 1.0;
             }
-            t.resize(2, k);
-            //cils.indicator = subrange(t, 0, 2, 0, k);
-            return {{}, 0, 0};
+
+            // 'partition:27' R_t = zeros(m,n);
+            R_t.resize(A.size1(), A.size2(), false);
+
+            // 'partition:28' Q_t = zeros(m,n);
+            Q_t.resize(A.size1(), A.size2(), false);
+
+            // 'partition:29' d = zeros(n, 1);
+            d.resize(A.size2(), false);
+            // 'partition:30' k = 0;
+            k = 0;
+            // 'partition:32' while q >= 1
+            while (q >= 1) {
+                double c_d;
+                int b_loop_ub, i1, i2, i3, r, p;
+                // 'partition:33' k = k + 1;
+                k++;
+                // 'partition:34' p = max(1, q-m+1);
+                p = std::max(1, q - A.size1() + 1);
+                // 'partition:35' A_bar = A_t(:, p:q);
+                if (p > q) {
+                    i = 0;
+                    i1 = 0;
+                } else {
+                    i = p - 1;
+                    i1 = q;
+                }
+                // 'partition:36' P_tilde = eye(n);
+                t = A.size2();
+                P_tilde.resize(A.size2(), A.size2(), false);
+                for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
+                    P_tilde[sizes_idx_1 + P_tilde.size1() * sizes_idx_1] = 1.0;
+                }
+
+                // Find the rank of A_bar
+                // 'partition:39' [Q,R,P_hat]=qr(A_bar);
+                loop_ub = A_t.size1();
+                b_loop_ub = i1 - i;
+                b_A_tilde.resize(A_t.size1(), b_loop_ub);
+                for (i1 = 0; i1 < b_loop_ub; i1++) {
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+                                A_t[i2 + A_t.size1() * (i + i1)];
+                    }
+                }
+                helper::qrp(b_A_tilde, Q, R, b_p, true, true);
+                P_hat.resize(b_p.size1(), b_p.size2());
+                loop_ub = b_p.size1() * b_p.size2();
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    P_hat[i1] = b_p[i1];
+                }
+                // 'partition:40' if size(R,2)>1
+                if (R.size2() > 1) {
+                    // 'partition:41' r = sum(abs(diag(R)) > 10^(-6));
+                    t = R.size1();
+                    vlen = R.size2();
+                    if (t < vlen) {
+                        vlen = t;
+                    }
+                    b_d.resize(vlen);
+                    i1 = vlen - 1;
+                    for (sizes_idx_1 = 0; sizes_idx_1 <= i1; sizes_idx_1++) {
+                        b_d[sizes_idx_1] = R[sizes_idx_1 + R.size1() * sizes_idx_1];
+                    }
+                    t = b_d.size();
+                    y_tmp.resize(b_d.size());
+                    for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
+                        y_tmp[sizes_idx_1] = std::abs(b_d[sizes_idx_1]);
+                    }
+                    b_x.resize(y_tmp.size());
+                    loop_ub = y_tmp.size();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        b_x[i1] = (y_tmp[i1] > 1.0E-6);
+                    }
+                    vlen = b_x.size();
+                    if (b_x.size() == 0) {
+                        r = 0;
+                    } else {
+                        r = b_x[0];
+                        for (sizes_idx_1 = 2; sizes_idx_1 <= vlen; sizes_idx_1++) {
+                            r += b_x[sizes_idx_1 - 1];
+                        }
+                    }
+                } else {
+                    // 'partition:42' else
+                    // 'partition:43' r = sum(abs(R(1,1)) > 10^(-6));
+                    r = (std::abs(R[0]) > 1.0E-6);
+                }
+                // 'partition:45' A_bar_p = A_bar * P_hat;
+                loop_ub = A_t.size1();
+                b_A_tilde.resize(A_t.size1(), b_loop_ub);
+                for (i1 = 0; i1 < b_loop_ub; i1++) {
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+                                A_t[i2 + A_t.size1() * (i + i1)];
+                    }
+                }
+                prod(b_A_tilde, b_p, A_bar_p);
+                // 'partition:46' d(k) = size(A_bar, 2);
+                d[k - 1] = b_loop_ub;
+                // The case where A_bar is rank deficient
+                // 'partition:49' if r < d(k)
+                c_d = d[k - 1];
+                if (r < c_d) {
+                    double b_t;
+                    bool empty_non_axis_sizes;
+                    // Permute the columns of A_t and the entries of x_tilde
+                    // 'partition:51' A_t(:, p:q) = [A_bar_p(:,r+1:d(k)), A_bar_p(:,
+                    // 1:r)];
+                    if (r + 1.0 > c_d) {
+                        i = -1;
+                        i1 = -1;
+                    } else {
+                        i = r - 1;
+                        i1 = static_cast<int>(c_d) - 1;
+                    }
+                    if (1 > r) {
+                        loop_ub = 0;
+                    } else {
+                        loop_ub = r;
+                    }
+                    if (p > q) {
+                        i2 = 0;
+                    } else {
+                        i2 = p - 1;
+                    }
+                    b_loop_ub = i1 - i;
+                    if ((A_bar_p.size1() != 0) && (b_loop_ub != 0)) {
+                        t = A_bar_p.size1();
+                    } else if ((A_bar_p.size1() != 0) && (loop_ub != 0)) {
+                        t = A_bar_p.size1();
+                    } else {
+                        if (A_bar_p.size1() > 0) {
+                            t = A_bar_p.size1();
+                        } else {
+                            t = 0;
+                        }
+                        if (A_bar_p.size1() > t) {
+                            t = A_bar_p.size1();
+                        }
+                    }
+                    empty_non_axis_sizes = (t == 0);
+                    if (empty_non_axis_sizes ||
+                        ((A_bar_p.size1() != 0) && (b_loop_ub != 0))) {
+                        input_sizes_idx_1 = i1 - i;
+                    } else {
+                        input_sizes_idx_1 = 0;
+                    }
+                    if (empty_non_axis_sizes || ((A_bar_p.size1() != 0) && (loop_ub != 0))) {
+                        sizes_idx_1 = loop_ub;
+                    } else {
+                        sizes_idx_1 = 0;
+                    }
+                    vlen = A_bar_p.size1();
+                    b_A_tilde.resize(A_bar_p.size1(), b_loop_ub);
+                    for (i1 = 0; i1 < b_loop_ub; i1++) {
+                        for (i3 = 0; i3 < vlen; i3++) {
+                            b_A_tilde[i3 + b_A_tilde.size1() * i1] =
+                                    A_bar_p[i3 + A_bar_p.size1() * ((i + i1) + 1)];
+                        }
+                    }
+                    b_loop_ub = A_bar_p.size1();
+                    b_A_bar_p.resize(A_bar_p.size1(), loop_ub);
+                    for (i = 0; i < loop_ub; i++) {
+                        for (i1 = 0; i1 < b_loop_ub; i1++) {
+                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] =
+                                    A_bar_p[i1 + A_bar_p.size1() * i];
+                        }
+                    }
+                    for (i = 0; i < input_sizes_idx_1; i++) {
+                        for (i1 = 0; i1 < t; i1++) {
+                            A_t[i1 + A_t.size1() * (i2 + i)] = b_A_tilde[i1 + t * i];
+                        }
+                    }
+                    for (i = 0; i < sizes_idx_1; i++) {
+                        for (i1 = 0; i1 < t; i1++) {
+                            A_t[i1 + A_t.size1() * ((i2 + i) + input_sizes_idx_1)] =
+                                    b_A_bar_p[i1 + t * i];
+                        }
+                    }
+                    // Update the permutation matrix P_tilde
+                    // 'partition:54' I_d = eye(d(k));
+                    if (c_d < 0.0) {
+                        b_t = 0.0;
+                    } else {
+                        b_t = c_d;
+                    }
+                    t = static_cast<int>(b_t);
+                    P_hat.resize(t, t);
+                    loop_ub = static_cast<int>(b_t) * static_cast<int>(b_t);
+                    for (i = 0; i < loop_ub; i++) {
+                        P_hat[i] = 0.0;
+                    }
+                    if (static_cast<int>(b_t) > 0) {
+                        for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
+                            P_hat[sizes_idx_1 + P_hat.size1() * sizes_idx_1] = 1.0;
+                        }
+                    }
+                    // 'partition:55' P_d = [I_d(:, r+1:d(k)), I_d(:, 1:r)];
+                    if (r + 1.0 > c_d) {
+                        i = -1;
+                        i1 = -1;
+                    } else {
+                        i = r - 1;
+                        i1 = static_cast<int>(d[k - 1]) - 1;
+                    }
+                    if (1 > r) {
+                        loop_ub = 0;
+                    } else {
+                        loop_ub = r;
+                    }
+                    b_loop_ub = i1 - i;
+                    if ((P_hat.size1() != 0) && (b_loop_ub != 0)) {
+                        t = P_hat.size1();
+                    } else if ((P_hat.size1() != 0) && (loop_ub != 0)) {
+                        t = P_hat.size1();
+                    } else {
+                        if (P_hat.size1() > 0) {
+                            t = P_hat.size1();
+                        } else {
+                            t = 0;
+                        }
+                        if (P_hat.size1() > t) {
+                            t = P_hat.size1();
+                        }
+                    }
+                    empty_non_axis_sizes = (t == 0);
+                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (b_loop_ub != 0))) {
+                        input_sizes_idx_1 = i1 - i;
+                    } else {
+                        input_sizes_idx_1 = 0;
+                    }
+                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (loop_ub != 0))) {
+                        sizes_idx_1 = loop_ub;
+                    } else {
+                        sizes_idx_1 = 0;
+                    }
+                    // 'partition:56' P_hat = P_hat * P_d;
+                    vlen = P_hat.size1() - 1;
+                    b_A_tilde.resize(P_hat.size1(), b_loop_ub);
+                    for (i1 = 0; i1 < b_loop_ub; i1++) {
+                        for (i2 = 0; i2 <= vlen; i2++) {
+                            b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+                                    P_hat[i2 + P_hat.size1() * ((i + i1) + 1)];
+                        }
+                    }
+                    vlen = P_hat.size1() - 1;
+                    b_A_bar_p.resize(P_hat.size1(), loop_ub);
+                    for (i = 0; i < loop_ub; i++) {
+                        for (i1 = 0; i1 <= vlen; i1++) {
+                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] = P_hat[i1 + P_hat.size1() * i];
+                        }
+                    }
+                    A_bar_p.resize(t, input_sizes_idx_1 + sizes_idx_1);
+                    for (i = 0; i < input_sizes_idx_1; i++) {
+                        for (i1 = 0; i1 < t; i1++) {
+                            A_bar_p[i1 + A_bar_p.size1() * i] = b_A_tilde[i1 + t * i];
+                        }
+                    }
+                    for (i = 0; i < sizes_idx_1; i++) {
+                        for (i1 = 0; i1 < t; i1++) {
+                            A_bar_p[i1 + A_bar_p.size1() * (i + input_sizes_idx_1)] =
+                                    b_A_bar_p[i1 + t * i];
+                        }
+                    }
+                    prod(b_p, A_bar_p, P_hat);
+                    // 'partition:58' d(k) = r;
+                    d[k - 1] = r;
+                } else {
+                    // 'partition:59' else
+                    // Permute the columns of A_t and the entries of x_tilde
+                    // 'partition:61' A_t(:, p:q) = A_bar_p;
+                    if (p > q) {
+                        i = 1;
+                    } else {
+                        i = p;
+                    }
+                    loop_ub = A_bar_p.size2();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        b_loop_ub = A_bar_p.size1();
+                        for (i2 = 0; i2 < b_loop_ub; i2++) {
+                            A_t[i2 + A_t.size1() * ((i + i1) - 1)] =
+                                    A_bar_p[i2 + A_bar_p.size1() * i1];
+                        }
+                    }
+                }
+                // Update the permutation matrix P_tilde
+                // 'partition:64' P_tilde(p:q, p:q) = P_hat;
+                if (p > q) {
+                    i = 1;
+                    i1 = 1;
+                } else {
+                    i = p;
+                    i1 = p;
+                }
+                loop_ub = P_hat.size2();
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    b_loop_ub = P_hat.size1();
+                    for (i3 = 0; i3 < b_loop_ub; i3++) {
+                        P_tilde[((i + i3) + P_tilde.size1() * ((i1 + i2) - 1)) - 1] =
+                                P_hat[i3 + P_hat.size1() * i2];
+                    }
+                }
+                // 'partition:65' P_tmp = P_tmp * P_tilde;
+                b_A_tilde.resize(P_tmp.size1(), P_tmp.size2());
+                loop_ub = P_tmp.size1() * P_tmp.size2() - 1;
+                for (i = 0; i <= loop_ub; i++) {
+                    b_A_tilde[i] = P_tmp[i];
+                }
+                prod(b_A_tilde, P_tilde, P_tmp);
+                // 'partition:67' p = q - r + 1;
+                p = q - r + 1;
+                // 'partition:68' R_t(:, p:q) = R(:, 1:r);
+                if (1 > r) {
+                    loop_ub = 0;
+                } else {
+                    loop_ub = r;
+                }
+                if (p > q) {
+                    i = 1;
+                } else {
+                    i = p;
+                }
+                b_loop_ub = R.size1();
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    for (i2 = 0; i2 < b_loop_ub; i2++) {
+                        R_t[i2 + R_t.size1() * ((i + i1) - 1)] = R[i2 + R.size1() * i1];
+                    }
+                }
+                // 'partition:69' Q_t(:, p:q) = Q(:, 1:r);
+                if (1 > r) {
+                    loop_ub = 0;
+                } else {
+                    loop_ub = r;
+                }
+                if (p > q) {
+                    i = 1;
+                } else {
+                    i = p;
+                }
+                b_loop_ub = Q.size1();
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    for (i2 = 0; i2 < b_loop_ub; i2++) {
+                        Q_t[i2 + Q_t.size1() * ((i + i1) - 1)] = Q[i2 + Q.size1() * i1];
+                    }
+                }
+                // 'partition:71' q = q - r;
+                q -= r;
+            }
+            // 'partition:73' d = d(1:k);
+            if (1 > k) {
+                i = 0;
+            } else {
+                i = k;
+            }
+            d.resize(i);
+            // Remove the extra columns of the d
+
+            //  %Test
+            //  [H, P_H, x_H, Q_H, R_H, i_H] = partition_H(A_, x_, m, n);
+            //  size(A_t)
+            //  size(H)
+            //  AD=norm(A_t-H, 2)
+            //  PD=norm(P_tmp-P_H,2)
+            //  xD=norm(x_H-x_tilde,2)
+            //  QD=norm(Q_t-Q_H,2)
+            //  RD=norm(R_t-R_H,2)
+            //
+
+            //  dk
+            //  i_H
         }
 
-        returnType<scalar, index>
+        returnType <scalar, index>
         block_sic_optimal(b_vector &x_cur, scalar v_norm_cur, index mode) {
 
             b_vector x_tmp(x_cur), x_per(n, 0), y_bar(m, 0);
-            b_matrix A_T, A_P(A), P_tmp, P_par(cils.I), Q_t, R_t, P_fin; //A could be permuted based on the init point
+            b_matrix A_T, A_P(A), P_tmp, P_par(I), Q_t, R_t, P_fin; //A could be permuted based on the init point
 
             b_vector stopping(3, 0);
 
@@ -526,39 +882,49 @@ namespace cils {
 
             index b_count = 0;
 
-            if (v_norm_cur <= cils.tolerance) {
+            if (v_norm_cur <= tolerance) {
                 stopping[0] = 1;
                 time = omp_get_wtime() - time;
                 return {{}, time, v_norm_cur};
             }
 
-            index cur_1st, cur_end, i, j, l, k1, per = -1, best_per = -1, iter = 0, p;
+            index cur_1st, cur_end, i, j, ll, k1, per = -1, best_per = -1, iter = 0, p;
             scalar v_norm = v_norm_cur;
             P_tmp.resize(A_P.size2(), A_P.size2(), false);
 
             time = omp_get_wtime();
             for (index itr = 0; itr < 3000; itr++) {
-                iter = itr; //mode ? rand() % cils.search_iter : itr;
+                iter = itr; //mode ? rand() % search_iter : itr;
 
                 A_P.clear();
                 x_tmp.clear();
                 for (i = 0; i < n; i++) {
-                    p = cils.permutation[iter][i] - 1;
+                    p = permutation[iter][i] - 1;
                     column(A_P, i) = column(A, p);
                     x_tmp[i] = x_per[p];
                 }
 
                 // 'SCP_Block_Optimal_2:104' per = true;
                 P_tmp.clear();
-                P_tmp.assign(cils.I);
-                pd(A_P, P_tmp, Q_t, R_t,t);
-                prod(P_tmp, x_tmp);
+                P_tmp.assign(I);
+                si_vector d;
+                partition(A_P, P_tmp, Q_t, R_t, d);
+                b_vector x_t;
+                prod(P_tmp, x_tmp, x_t);
                 per = iter;
-
+                //  dk = zeros(2,k);
+                //  s = 0;
+                //  for i=1:k
+                //      dk(2,i)=n-s;
+                //      dk(1,i)=n-s-t(i)+1;
+                //      s = s + t(i);
+                //  end
                 // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
-                for (j = 0; j < t.size2(); j++) {
-                    cur_1st = t(0, j);
-                    cur_end = t(1, j);
+                index s = 0;
+                for (j = 0; j < d.size(); j++) {
+                    cur_1st = n - s - 1;//t(0, j);
+                    cur_end = n - s - d(j) + 1;//t(1, j);
+                    s += d(j);
                     y_bar.clear();
                     if (cur_end == n - 1) {
                         auto a1 = subrange(A_P, 0, m, 0, cur_1st);
@@ -574,8 +940,8 @@ namespace cils {
                     }
 
                     //  Compute optimal solution
-                    l = cur_end - cur_1st + 1;
-                    A_T.resize(m, l, false);
+                    ll = cur_end - cur_1st + 1;
+                    A_T.resize(m, ll, false);
 
                     for (i = cur_1st; i <= cur_end; i++) {
                         column(A_T, i - cur_1st) = column(A_P, i);
@@ -587,21 +953,21 @@ namespace cils {
                     auto y_t = prod(trans(Q_j), y_bar);
                     auto R_j = subrange(R_t, 0, y_t.size(), cur_1st, cur_end + 1);
 //                    helper::display<scalar, index>(R_j, "R_j");
-//                    z.resize(l, false);
-//                    CILS_Reduction<scalar, index> reduction(A_T, y_bar, 0, cils.upper);
+//                    z.resize(ll, false);
+//                    CILS_Reduction<scalar, index> reduction(A_T, y_bar, 0, upper);
 //                    reduction.aip();
 //                    helper::display<scalar, index>(reduction.R, "R_R");
 //                    helper::display<scalar, index>(reduction.y, "y_R");
 //                    helper::display<scalar, index>(y_t, "y_t");
 //                    reduction.aspl_p_serial();
 
-                    CILS_SECH_Search<scalar, index> ils(l, l, cils.qam);
-//                    ils.obils_search(0, l, 1, reduction.R, reduction.y, z);
-                    ils.obils_search(0, l, 1, R_j, y_t, z);
+                    CILS_SECH_Search<scalar, index> ils(ll, ll, qam);
+//                    ils.obils_search(0, ll, 1, reduction.R, reduction.y, z);
+                    ils.obils_search(0, ll, 1, R_j, y_t, z);
 
-//                    subrange(x_tmp, cur_1st, cur_1st + l) = z;
+//                    subrange(x_tmp, cur_1st, cur_1st + ll) = z;
 //                    axpy_prod(reduction.P, z, x, true);
-                    for (i = 0; i < l; i++) {
+                    for (i = 0; i < ll; i++) {
                         x_tmp[cur_1st + i] = z[i];
                     }
 
@@ -612,16 +978,16 @@ namespace cils {
                 if (v_norm_cur < v_norm) {
                     // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
                     x_per.clear();
-                    for (l = 0; l < n; l++) {
-                        x_per[l] = x_tmp[l];
+                    for (ll = 0; ll < n; ll++) {
+                        x_per[ll] = x_tmp[ll];
                     }
                     P_par.assign(P_tmp);
                     // 'SCP_Block_Optimal_2:88' v_norm_cur = v_norm_temp;
                     //  v_norm_cur = v_norm_temp;
                     // 'SCP_Block_Optimal_2:89' if per
                     best_per = per;
-                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-                    if (v_norm_cur <= cils.tolerance) {
+                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+                    if (v_norm_cur <= tolerance) {
                         // 'SCP_Block_Optimal_2:95' stopping(2)=1;
                         stopping[1] = 1;
                     }
@@ -631,15 +997,15 @@ namespace cils {
                 // If we don't decrease the residual, keep trying permutations
             }
             // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
-            b_matrix P_cur(cils.I);
+            b_matrix P_cur(I);
 
-            //cils.I(:, permutation(:, best_per))
+            //I(:, permutation(:, best_per))
             if (best_per >= 0) {
                 for (i = 0; i < n; i++) {
-                    column(P_cur, i) = column(cils.I, cils.permutation[best_per][i] - 1);
+                    column(P_cur, i) = column(I, permutation[best_per][i] - 1);
                 }
 
-                P_tmp.assign(cils.I);
+                P_tmp.assign(I);
                 axpy_prod(P_cur, P_par, P_tmp, true);
                 axpy_prod(P_tmp, x_per, x_cur, true);
             }
@@ -652,7 +1018,7 @@ namespace cils {
 //        returnType <scalar, index>
 //        block_sic_babai(b_vector &x_cur, scalar v_norm_cur, index mode) {
 //            b_vector x_tmp(x_cur), x_per(n, 0), y_bar(m, 0);
-//            b_matrix A_T, A_P(A), P_tmp, P_par(cils.I), P_fin; //A could be permuted based on the init point
+//            b_matrix A_T, A_P(A), P_tmp, P_par(I), P_fin; //A could be permuted based on the init point
 //
 //            b_vector stopping(3, 0);
 //
@@ -661,7 +1027,7 @@ namespace cils {
 //
 //            index b_count = 0;
 //
-//            if (v_norm_cur <= cils.tolerance) {
+//            if (v_norm_cur <= tolerance) {
 //                stopping[0] = 1;
 //                time = omp_get_wtime() - time;
 //                return {{}, time, v_norm_cur};
@@ -672,20 +1038,20 @@ namespace cils {
 //            P_tmp.resize(A_P.size2(), A_P.size2(), false);
 //
 //            time = omp_get_wtime();
-//            for (index itr = 0; itr < cils.search_iter; itr++) {
-//                iter = itr; //mode ? rand() % cils.search_iter : itr;
+//            for (index itr = 0; itr < search_iter; itr++) {
+//                iter = itr; //mode ? rand() % search_iter : itr;
 //
 //                A_P.clear();
 //                x_tmp.clear();
 //                for (i = 0; i < n; i++) {
-//                    p = cils.permutation[iter][i] - 1;
+//                    p = permutation[iter][i] - 1;
 //                    column(A_P, i) = column(A, p);
 //                    x_tmp[i] = x_per[p];
 //                }
 //
 //                // 'SCP_Block_Optimal_2:104' per = true;
 //                P_tmp.clear();
-//                P_tmp.assign(cils.I);
+//                P_tmp.assign(I);
 //                pd(A_P, P_tmp, t);
 //                prod(P_tmp, x_tmp);
 //                per = iter;
@@ -717,7 +1083,7 @@ namespace cils {
 //                    }
 //
 //                    z.resize(l, false);
-//                    CILS_Reduction<scalar, index> reduction(A_T, y_bar, 0, cils.upper);
+//                    CILS_Reduction<scalar, index> reduction(A_T, y_bar, 0, upper);
 //                    reduction.aip();
 //
 //                    //  Find the Babai poindex
@@ -737,15 +1103,15 @@ namespace cils {
 //                        x_est = std::round(x_est);
 //                        if (x_est < 0.0) {
 //                            x_est = 0.0;
-//                        } else if (x_est > cils.upper) {
-//                            x_est = cils.upper;
+//                        } else if (x_est > upper) {
+//                            x_est = upper;
 //                        }
 //                        x_tmp[(c_i + cur_end - l) - 1] = x_est;
 //                    }
 //
 //                }
 //
-//                if (cils.verbose) {
+//                if (verbose) {
 //                    helper::display<scalar, index>(n, x_tmp.data(), "x_tmp_" + std::to_string(iter));
 //                }
 //                v_norm_cur = norm_2(y - prod(A_P, x_tmp));
@@ -761,8 +1127,8 @@ namespace cils {
 //                    //  v_norm_cur = v_norm_temp;
 //                    // 'SCP_Block_Optimal_2:89' if per
 //                    best_per = per;
-//                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-//                    if (v_norm_cur <= cils.tolerance) {
+//                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+//                    if (v_norm_cur <= tolerance) {
 //                        // 'SCP_Block_Optimal_2:95' stopping(2)=1;
 //                        stopping[1] = 1;
 //                    }
@@ -772,14 +1138,14 @@ namespace cils {
 //                // If we don't decrease the residual, keep trying permutations
 //            }
 //            // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
-//            b_matrix P_cur(cils.I);
+//            b_matrix P_cur(I);
 //
 //            if (best_per >= 0) {
 //                for (i = 0; i < n; i++) {
-//                    column(P_cur, i) = column(cils.I, cils.permutation[best_per][i] - 1);
+//                    column(P_cur, i) = column(I, permutation[best_per][i] - 1);
 //                }
 //
-//                P_tmp.assign(cils.I);
+//                P_tmp.assign(I);
 //                axpy_prod(P_cur, P_par, P_tmp, true);
 //                axpy_prod(P_tmp, x_per, x_cur, true);
 //            }
@@ -809,8 +1175,8 @@ namespace cils {
 //            // 'SCP_Block_Optimal_2:25' b_count = 0;
 //            index b_count = 0;
 //            index best_proc = -1;
-//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= cils.tolerance
-//            if (v_norm_cur <= cils.tolerance) {
+//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+//            if (v_norm_cur <= tolerance) {
 //                // 'SCP_Block_Optimal_2:28' stopping(1)=1;
 //                stopping[0] = 1;
 //                time = omp_get_wtime() - time;
@@ -825,19 +1191,19 @@ namespace cils {
 //#pragma omp parallel default(shared) num_threads(n_proc) private(z, z_z, cur_1st, cur_end, i, j, t, k1) firstprivate(R_t, Q_t, Piv_cum, A_P, x_tmp, v_norm, y_bar, y)
 //            {
 //                index t_num = omp_get_thread_num(), per = -1;
-//                index start = omp_get_thread_num() * cils.search_iter / n_proc;
-//                index end = (omp_get_thread_num() + 1) * cils.search_iter / n_proc;
+//                index start = omp_get_thread_num() * search_iter / n_proc;
+//                index end = (omp_get_thread_num() + 1) * search_iter / n_proc;
 //
 //                for (index itr = start; itr < end; itr++) {
-//                    index iter = mode ? rand()// cils.search_iter : itr;
-//                    // H_Apply cils.permutation strategy to update x_cur and v_norm_cur
-//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, cils.indicator);
+//                    index iter = mode ? rand()// search_iter : itr;
+//                    // H_Apply permutation strategy to update x_cur and v_norm_cur
+//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, indicator);
 //                    // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
 //                    for (i = 0; i < n; i++) {
 //                        for (j = 0; j < m; j++) {
-//                            A_P[j + m * i] = H[j + m * (cils.permutation[iter][i] - 1)];
+//                            A_P[j + m * i] = H[j + m * (permutation[iter][i] - 1)];
 //                        }
-//                        x_tmp[i] = x_per[cils.permutation[iter][i] - 1];
+//                        x_tmp[i] = x_per[permutation[iter][i] - 1];
 //                    }
 //
 //                    R_t.assign(m * n, 0);
@@ -848,9 +1214,9 @@ namespace cils {
 //                    per = iter;
 //                    // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
 //                    for (j = 0; j < t.size2(); j++) {
-//                        // 'Babai_Gen:27' R = R_t(:, cils.indicator(1, j):cils.indicator(2, j));
-//                        cur_1st = cils.indicator[2 * j];
-//                        cur_end = cils.indicator[2 * j + 1];
+//                        // 'Babai_Gen:27' R = R_t(:, indicator(1, j):indicator(2, j));
+//                        cur_1st = indicator[2 * j];
+//                        cur_end = indicator[2 * j + 1];
 //                        //  Compute y_bar
 //                        // 'Babai_Gen:39' if lastCol == n
 //                        y_bar.clear();
@@ -871,7 +1237,7 @@ namespace cils {
 //                        }
 //
 //                        // 'Babai_Gen:46' y_bar = Q' * y_bar;
-//                        if (cils.verbose)
+//                        if (verbose)
 //                            helper::display(m, y_bar.data(), "y_bar");
 //
 //                        // 'Babai_Gen:46' y_bar = Q' * y_bar;
@@ -884,7 +1250,7 @@ namespace cils {
 //                            }
 //                        }
 //
-//                        if (cils.verbose)
+//                        if (verbose)
 //                            helper::display(t, y.data(), "y");
 //
 //                        for (index p = 0; p < 6; p++) {
@@ -907,17 +1273,17 @@ namespace cils {
 //                                x_est = std::round(x_est);
 //                                if (x_est < 0.0) {
 //                                    x_est = 0.0;
-//                                } else if (x_est > cils.upper) {
-//                                    x_est = cils.upper;
+//                                } else if (x_est > upper) {
+//                                    x_est = upper;
 //                                }
 //                                x_tmp[(c_i + cur_end - t) - 1] = x_est;
 //                            }
 //                        }
-//                        if (cils.verbose)
+//                        if (verbose)
 //                            helper::display(n, x_tmp.data(), "x_tmp");
 //                    }
 //
-//                    if (cils.verbose) {
+//                    if (verbose) {
 //                        helper::display<scalar, index>(n, x_tmp.data(), "x_tmp_" + std::to_string(iter));
 //                    }
 //                    // x_tmp
@@ -938,17 +1304,17 @@ namespace cils {
 //                        best_per_proc[t_num] = per;
 //                        best_piv[t_num].assign(Piv_cum.begin(), Piv_cum.end());
 //                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-//                        if (v_norm_cur_proc[t_num] <= cils.tolerance) {
+//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+//                        if (v_norm_cur_proc[t_num] <= tolerance) {
 //                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
 //                            stopping[1] = 1;
-//                            iter = cils.search_iter;
+//                            iter = search_iter;
 //                            best_proc = t_num;
 //                        }
 //                        v_norm = v_norm_cur_proc[t_num];
 //                    }
 //                    if (stopping[1])
-//                        iter = cils.search_iter;
+//                        iter = search_iter;
 //                    // If we don't decrease the residual, keep trying permutations
 //                }
 //
@@ -970,7 +1336,7 @@ namespace cils {
 //
 //            for (k1 = 0; k1 < n; k1++) {
 //                for (i = 0; i < n; i++) {
-//                    P_cur[i + n * k1] = P_tmp[i + n * (cils.permutation[best_per_proc[best_proc]][k1] - 1)];
+//                    P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];
 //                }
 //            }
 //
@@ -1001,8 +1367,8 @@ namespace cils {
 //            // 'SCP_Block_Optimal_2:25' b_count = 0;
 //            index b_count = 0;
 //            index best_proc = -1;
-//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= cils.tolerance
-//            if (v_norm_cur <= cils.tolerance) {
+//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+//            if (v_norm_cur <= tolerance) {
 //                // 'SCP_Block_Optimal_2:28' stopping(1)=1;
 //                stopping[0] = 1;
 //                time = omp_get_wtime() - time;
@@ -1010,7 +1376,7 @@ namespace cils {
 //            }
 //            index cur_1st, cur_end, i, t, k1;
 //            // 'SCP_Block_Optimal_2:32' t.size2() = ceil(n/m);
-//            // 'SCP_Block_Optimal_2:33' cils.indicator = zeros(2, t.size2());
+//            // 'SCP_Block_Optimal_2:33' indicator = zeros(2, t.size2());
 //
 //            scalar v_norm = v_norm_cur;
 //            // 'SCP_Block_Optimal_2:50' per = false;
@@ -1026,27 +1392,27 @@ namespace cils {
 //#pragma omp parallel default(shared) num_threads(n_proc) private(z, z_z, A_T, cur_1st, cur_end, i, t, k1) firstprivate(A_P, x_tmp, v_norm, y_bar, y)
 //            {
 //                index t_num = omp_get_thread_num(), per = -1;
-//                index start = omp_get_thread_num() * cils.search_iter / n_proc;
-//                index end = (omp_get_thread_num() + 1) * cils.search_iter / n_proc;
+//                index start = omp_get_thread_num() * search_iter / n_proc;
+//                index end = (omp_get_thread_num() + 1) * search_iter / n_proc;
 //
 //                for (index itr = start; itr < end; itr++) {
-//                    index iter = mode ? rand()// cils.search_iter : itr;
-//                    // H_Apply cils.permutation strategy to update x_cur and v_norm_cur
-//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, cils.indicator);
+//                    index iter = mode ? rand()// search_iter : itr;
+//                    // H_Apply permutation strategy to update x_cur and v_norm_cur
+//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, indicator);
 //                    // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
 //                    // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
 //                    for (k1 = 0; k1 < n; k1++) {
 //                        for (i = 0; i < m; i++) {
-//                            A_P[i + m * k1] = H[i + m * (cils.permutation[iter][k1] - 1)];
+//                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
 //                        }
-//                        x_tmp[k1] = x[t_num][cils.permutation[iter][k1] - 1];
+//                        x_tmp[k1] = x[t_num][permutation[iter][k1] - 1];
 //                    }
 //                    // 'SCP_Block_Optimal_2:104' per = true;
 //                    per = iter;
 //
 //                    for (index j = 0; j < t.size2(); j++) {
-//                        cur_1st = cils.indicator[2 * j];
-//                        cur_end = cils.indicator[2 * j + 1];
+//                        cur_1st = indicator[2 * j];
+//                        cur_end = indicator[2 * j + 1];
 //                        y_bar.clear();
 //                        for (k1 = 0; k1 <= cur_1st - 2; k1++) {
 //                            for (i = 0; i < m; i++) {
@@ -1076,10 +1442,10 @@ namespace cils {
 //                        z.assign(t, 0);
 //                        z_z.assign(t, 0);
 //
-//                        CILS_Reduction<scalar, index> reduction(m, t, 0, cils.upper, 0, 0);
+//                        CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
 //                        reduction.aip(A_T, y_bar);
 //
-//                        CILS_SECH_Search<scalar, index> ils(t, t, cils.qam);
+//                        CILS_SECH_Search<scalar, index> ils(t, t, qam);
 //                        ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 //
 //                        // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
@@ -1105,17 +1471,17 @@ namespace cils {
 //                        // 'SCP_Block_Optimal_2:89' if per
 //                        best_per_proc[t_num] = per;
 //                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-//                        if (v_norm_cur_proc[t_num] <= cils.tolerance) {
+//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+//                        if (v_norm_cur_proc[t_num] <= tolerance) {
 //                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
 //                            stopping[1] = 1;
-//                            iter = cils.search_iter;
+//                            iter = search_iter;
 //                            best_proc = t_num;
 //                        }
 //                        v_norm = v_norm_cur_proc[t_num];
 //                    }
 //                    if (stopping[1])
-//                        iter = cils.search_iter;
+//                        iter = search_iter;
 //                }
 //            }
 //
@@ -1136,7 +1502,7 @@ namespace cils {
 //
 //            for (k1 = 0; k1 < n; k1++) {
 //                for (i = 0; i < n; i++) {
-//                    P_cur[i + n * k1] = P_tmp[i + n * (cils.permutation[best_per_proc[best_proc]][k1] - 1)];
+//                    P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];
 //                }
 //            }
 //
@@ -1163,8 +1529,8 @@ namespace cils {
 //            // 'SCP_Block_Optimal_2:25' b_count = 0;
 //            index b_count = 0;
 //            index best_proc = -1;
-//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= cils.tolerance
-//            if (v_norm_cur <= cils.tolerance) {
+//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+//            if (v_norm_cur <= tolerance) {
 //                // 'SCP_Block_Optimal_2:28' stopping(1)=1;
 //                stopping[0] = 1;
 //                time = omp_get_wtime() - time;
@@ -1174,7 +1540,7 @@ namespace cils {
 //            index diff = 0, num_iter = 0, flag = 0, temp;
 //
 //            // 'SCP_Block_Optimal_2:32' t.size2() = ceil(n/m);
-//            // 'SCP_Block_Optimal_2:33' cils.indicator = zeros(2, t.size2());
+//            // 'SCP_Block_Optimal_2:33' indicator = zeros(2, t.size2());
 //
 //            scalar v_norm = v_norm_cur, sum;
 //            // 'SCP_Block_Optimal_2:50' per = false;
@@ -1190,28 +1556,28 @@ namespace cils {
 //#pragma omp parallel default(shared) num_threads(n_proc) private(sum, n_dx_q_2, n_dx_q_0, A_T, cur_1st, cur_end, i, t, k1) firstprivate(check, z, z_z, A_P, x_tmp, v_norm, y_bar, y)
 //            {
 //                index t_num = omp_get_thread_num(), per = -1;
-//                index start = omp_get_thread_num() * cils.search_iter / n_proc;
-//                index end = (omp_get_thread_num() + 1) * cils.search_iter / n_proc;
+//                index start = omp_get_thread_num() * search_iter / n_proc;
+//                index end = (omp_get_thread_num() + 1) * search_iter / n_proc;
 //                //#pragma omp for schedule(static, chunk)
 //                for (index itr = start; itr < end; itr++) {
-////            for (index itr = 0; itr < cils.search_iter; itr++) {
-//                    index iter = mode ? rand()// cils.search_iter : itr;
-//                    // H_Apply cils.permutation strategy to update x_cur and v_norm_cur
-//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, cils.indicator);
+////            for (index itr = 0; itr < search_iter; itr++) {
+//                    index iter = mode ? rand()// search_iter : itr;
+//                    // H_Apply permutation strategy to update x_cur and v_norm_cur
+//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, indicator);
 //                    // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
 //                    // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
 //                    for (k1 = 0; k1 < n; k1++) {
 //                        for (i = 0; i < m; i++) {
-//                            A_P[i + m * k1] = H[i + m * (cils.permutation[iter][k1] - 1)];
+//                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
 //                        }
-//                        x_tmp[k1] = x[t_num][cils.permutation[iter][k1] - 1];
+//                        x_tmp[k1] = x[t_num][permutation[iter][k1] - 1];
 //                    }
 //                    // 'SCP_Block_Optimal_2:104' per = true;
 //                    per = iter;
 //
 //                    for (index j = 0; j < t.size2(); j++) {
-//                        cur_1st = cils.indicator[2 * j];
-//                        cur_end = cils.indicator[2 * j + 1];
+//                        cur_1st = indicator[2 * j];
+//                        cur_end = indicator[2 * j + 1];
 //                        y_bar.clear();
 //                        for (k1 = 0; k1 <= cur_1st - 2; k1++) {
 //                            for (i = 0; i < m; i++) {
@@ -1239,16 +1605,16 @@ namespace cils {
 //                        z.assign(t, 0);
 //                        z_z.assign(t, 0);
 //
-//                        CILS_Reduction<scalar, index> reduction(m, t, 0, cils.upper, 0, 0);
+//                        CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
 //                        reduction.aip(A_T, y_bar);
 //
-//                        CILS_SECH_Search<scalar, index> ils(t, t, cils.qam);
+//                        CILS_SECH_Search<scalar, index> ils(t, t, qam);
 //
-//                        index ds = t / cils.block_size;
-//                        if (t// cils.block_size != 0 || ds == 1) {
+//                        index ds = t / block_size;
+//                        if (t// block_size != 0 || ds == 1) {
 //                            ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 //                        } else {
-//                            si_vector d(ds, cils.block_size);
+//                            si_vector d(ds, block_size);
 //                            b_vector y_b(reduction.y_q);
 //                            for (index s = d.size() - 2; s >= 0; s--) {
 //                                d[s] += d[s + 1];
@@ -1305,17 +1671,17 @@ namespace cils {
 //                        // 'SCP_Block_Optimal_2:89' if per
 //                        best_per_proc[t_num] = per;
 //                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-//                        if (v_norm_cur_proc[t_num] <= cils.tolerance) {
+//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+//                        if (v_norm_cur_proc[t_num] <= tolerance) {
 //                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
 //                            stopping[1] = 1;
-//                            iter = cils.search_iter;
+//                            iter = search_iter;
 //                            best_proc = t_num;
 //                        }
 //                        v_norm = v_norm_cur_proc[t_num];
 //                    }
 //                    if (stopping[1])
-//                        iter = cils.search_iter;
+//                        iter = search_iter;
 //                }
 //            }
 //
@@ -1337,7 +1703,7 @@ namespace cils {
 //            //        helper::display<scalar, index>(n_proc, v_norm_cur_proc.data(), "v_norm_cur_proc");
 //            for (k1 = 0; k1 < n; k1++) {
 //                for (i = 0; i < n; i++) {
-//                    P_cur[i + n * k1] = P_tmp[i + n * (cils.permutation[best_per_proc[best_proc]][k1] - 1)];
+//                    P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];
 //                }
 //            }
 //
@@ -1354,7 +1720,7 @@ namespace cils {
 //
         returnType <scalar, index>
         block_sic_optimal_mpi(b_vector &x_cur, scalar *v_norm_cur,
-                                   index size, index rank) {
+                              index size, index rank) {
 
             // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
             b_vector stopping(3, 0);
@@ -1363,8 +1729,8 @@ namespace cils {
             //  Subfunctions: SCP_opt
             scalar flag = 0.0;
             // 'SCP_Block_Optimal_2:25' b_count = 0;
-            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= cils.tolerance
-            if (v_norm_cur[0] <= cils.tolerance) {
+            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
+            if (v_norm_cur[0] <= tolerance) {
                 // 'SCP_Block_Optimal_2:28' stopping(1)=1;
                 stopping[0] = 1;
                 time = omp_get_wtime() - time;
@@ -1372,7 +1738,7 @@ namespace cils {
             }
             index cur_1st, cur_end, i, t, k1, per = -1, best_per = -1;
             // 'SCP_Block_Optimal_2:32' t.size2() = ceil(n/m);
-            // 'SCP_Block_Optimal_2:33' cils.indicator = zeros(2, t.size2());
+            // 'SCP_Block_Optimal_2:33' indicator = zeros(2, t.size2());
             auto v_norm = (double *) malloc(2 * sizeof(double));
             auto v_norm_rank = (double *) malloc(2 * sizeof(double));
             v_norm_rank[0] = v_norm_cur[0];
@@ -1380,17 +1746,17 @@ namespace cils {
             v_norm[1] = rank;
 
             b_vector x_per(x_cur), x(n, 0);
-            if (cils.verbose) {
-                cout << "here: " << rank * cils.search_iter / size << "," << (rank + 1) * cils.search_iter / size
+            if (verbose) {
+                cout << "here: " << rank * search_iter / size << "," << (rank + 1) * search_iter / size
                      << endl;
                 if (rank != 0) {
                     helper::display<scalar, index>(m, n, H.data(), "H" + to_string(rank));
-                    helper::display<scalar, index>(1, n, cils.permutation[0].data(), "Per" + to_string(rank));
+                    helper::display<scalar, index>(1, n, permutation[0].data(), "Per" + to_string(rank));
                 }
             }
 
-//        index start = rank * cils.search_iter / size;
-//        index end = (rank + 1) * cils.search_iter / size;
+//        index start = rank * search_iter / size;
+//        index end = (rank + 1) * search_iter / size;
 //        index slice = (end - start) / t.size2();
 //        index iter = start;
 //        b_matrix A_P(H);
@@ -1410,9 +1776,9 @@ namespace cils {
                 if (omp_get_thread_num() == 0) {
                     for (k1 = 0; k1 < n; k1++) {
                         for (i = 0; i < m; i++) {
-                            A_P[i + m * k1] = H[i + m * (cils.permutation[iter][k1] - 1)];
+                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
                         }
-                        x_tmp[k1] = x_per[cils.permutation[iter][k1] - 1];
+                        x_tmp[k1] = x_per[permutation[iter][k1] - 1];
                     }
                     per = iter;
                 }
@@ -1422,8 +1788,8 @@ namespace cils {
                     for (index j = 0; j < t.size2(); j++) {
 //                        if (rank == 0 && inner == 0)
 //                            cout << omp_get_thread_num() << " " << endl;
-                        cur_1st = cils.indicator[2 * j];
-                        cur_end = cils.indicator[2 * j + 1];
+                        cur_1st = indicator[2 * j];
+                        cur_end = indicator[2 * j + 1];
                         y_bar.clear();
                         for (k1 = 0; k1 <= cur_1st - 2; k1++) {
                             for (i = 0; i < m; i++) {
@@ -1453,10 +1819,10 @@ namespace cils {
                         z.assign(t, 0);
                         z_z.assign(t, 0);
 
-                        CILS_Reduction<scalar, index> reduction(m, t, 0, cils.upper, 0, 0);
+                        CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
                         reduction.aip(A_T, y_bar);
 
-                        CILS_SECH_Search<scalar, index> ils(t, t, cils.qam);
+                        CILS_SECH_Search<scalar, index> ils(t, t, qam);
                         ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 
                         // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
@@ -1486,8 +1852,8 @@ namespace cils {
                         // 'SCP_Block_Optimal_2:89' if per
                         best_per = per;
                         per = -1;
-                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-                        if (v_norm_cur[0] <= cils.tolerance) {
+                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+                        if (v_norm_cur[0] <= tolerance) {
                             // 'SCP_Block_Optimal_2:95' stopping(2)=1;
                             stopping[1] = 1;
                             iter = end;
@@ -1510,22 +1876,22 @@ namespace cils {
 //                b_vector A_T, z, z_z; //z_z = Z * z;
 ////#pragma omp for schedule(static, chunk)
 //                index t_num = omp_get_thread_num(), per = -1;
-//                index start = omp_get_thread_num() * cils.search_iter / t.size2();
-//                index end = (omp_get_thread_num() + 1) * cils.search_iter / t.size2();
+//                index start = omp_get_thread_num() * search_iter / t.size2();
+//                index end = (omp_get_thread_num() + 1) * search_iter / t.size2();
 //                for (index iter = start; iter < end; iter++) {
 //                    for (k1 = 0; k1 < n; k1++) {
 //                        for (i = 0; i < m; i++) {
-//                            A_P[i + m * k1] = H[i + m * (cils.permutation[iter][k1] - 1)];
+//                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
 //                        }
-//                        x_tmp[k1] = x_per[cils.permutation[iter][k1] - 1];
+//                        x_tmp[k1] = x_per[permutation[iter][k1] - 1];
 //                    }
 //                    per = iter;
 //#pragma omp barrier
 //                    for (index inner = 0; inner < 4; inner++) {
 //#pragma omp for schedule(dynamic) nowait
 //                        for (index j = 0; j < t.size2(); j++) {
-//                            cur_1st = cils.indicator[2 * j];
-//                            cur_end = cils.indicator[2 * j + 1];
+//                            cur_1st = indicator[2 * j];
+//                            cur_end = indicator[2 * j + 1];
 //                            y_bar.clear();
 //                            for (k1 = 0; k1 <= cur_1st - 2; k1++) {
 //                                for (i = 0; i < m; i++) {
@@ -1555,10 +1921,10 @@ namespace cils {
 //                            z.assign(t, 0);
 //                            z_z.assign(t, 0);
 //
-//                            CILS_Reduction<scalar, index> reduction(m, t, 0, cils.upper, 0, 0);
+//                            CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
 //                            reduction.aip(A_T, y_bar);
 //
-//                            CILS_SECH_Search<scalar, index> ils(t, t, cils.qam);
+//                            CILS_SECH_Search<scalar, index> ils(t, t, qam);
 //                            ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
 //
 //                            // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
@@ -1584,15 +1950,15 @@ namespace cils {
 //                        // 'SCP_Block_Optimal_2:89' if per
 //                        best_per = per;
 //                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= cils.tolerance
-//                        if (v_norm_cur[0] <= cils.tolerance) {
+//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
+//                        if (v_norm_cur[0] <= tolerance) {
 //                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
 //                            stopping[1] = 1;
 //                        }
 //                        v_norm[0] = v_norm_cur[0];
 //                    }
 //                    if (stopping[1]) {
-//                        iter = cils.search_iter;
+//                        iter = search_iter;
 //                    }
 //                }
 //            }
@@ -1611,7 +1977,7 @@ namespace cils {
 //                if (best_per >= 0) {
 //                    for (k1 = 0; k1 < n; k1++) {
 //                        for (i = 0; i < n; i++) {
-//                            P_cur[i + n * k1] = P_tmp[i + n * (cils.permutation[best_per][k1] - 1)];
+//                            P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per][k1] - 1)];
 //                        }
 //                    }
 //                }
@@ -1626,11 +1992,11 @@ namespace cils {
 //            if (rank == 0)
 //                time = MPI_Wtime() - time;
 //
-//            if (cils.verbose)
+//            if (verbose)
 //                helper::display(n, x.data(), "x:" + std::to_string(rank));
 //
 //            return {stopping, time, v_norm[0]};
 //        }
 
-    };
-}
+        };
+    }

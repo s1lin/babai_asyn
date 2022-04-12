@@ -29,29 +29,21 @@ Q_tilde = zeros(K,N);
 indicator = zeros(2, N);
 i = 0;
 
-
 while lastCol >= 1    
     firstCol = max(1, lastCol-K+1);
     H_cur = H(:, firstCol:lastCol);
-    %s_cur = s_bar_output(firstCol:lastCol);
+    s_cur = s_bar_output(firstCol:lastCol);
     Piv_total = eye(N);
     
     %Find the rank of H_cur
     [Q,R,P]=qr(H_cur);
-    Q
-    l = repelem(0, N)';
-    u = repelem(7, N)';
-    [Q, R, ~, ~, ~, p] = obils_reduction(H_cur,ones(K,1),l,u);
-    I = eye(size(H_cur, 2));
-    P = I(:, p);
-    
     if size(R,2)>1
         r = sum( abs(diag(R)) > 10^(-6) );
     else
         r = sum( abs(R(1,1)) > 10^(-6));
     end
     H_permuted = H_cur * P;     
-    %s_cur_permuted = P' * s_cur;
+    s_cur_permuted = P' * s_cur;
         
     K_cur = size(H_cur, 2);
 
@@ -60,8 +52,8 @@ while lastCol >= 1
         %Permute the columns of H and the entries of s_bar_output
         H(:, firstCol:firstCol+K_cur-1 -r ) = H_permuted(:, r+1:K_cur);
         H(:, firstCol+K_cur-r: lastCol) = H_permuted(:, 1:r);
-        %s_bar_output(firstCol:firstCol+K_cur-1-r) = s_cur_permuted(r+1:K_cur);
-        %s_bar_output(firstCol+K_cur-r: lastCol) = s_cur_permuted(1:r);      
+        s_bar_output(firstCol:firstCol+K_cur-1-r) = s_cur_permuted(r+1:K_cur);
+        s_bar_output(firstCol+K_cur-r: lastCol) = s_cur_permuted(1:r);      
         
         %Update the permutation matrix Piv_total
         I_K = eye(K_cur);
@@ -72,7 +64,7 @@ while lastCol >= 1
     else
         %Permute the columns of H and the entries of s_bar_output
         H(:, firstCol:lastCol) = H_permuted;
-        %s_bar_output(firstCol:lastCol) = s_cur_permuted;
+        s_bar_output(firstCol:lastCol) = s_cur_permuted;
         
         %Update the permutation matrix Piv_total
         Piv_total(firstCol:lastCol, firstCol:lastCol) = P;
@@ -80,8 +72,8 @@ while lastCol >= 1
     Piv_cum = Piv_cum * Piv_total;
             
     firstCol = lastCol - r + 1;
-    R_tilde(1:size(R,1), firstCol:lastCol) = R(:, 1:r);
-    Q_tilde(1:size(R,1), firstCol:lastCol) = Q(:, 1:r);
+    R_tilde(:, firstCol:lastCol) = R(:, 1:r);
+    Q_tilde(:, firstCol:lastCol) = Q(:, 1:r);
     
     i = i + 1;
     indicator(1, i) = firstCol;

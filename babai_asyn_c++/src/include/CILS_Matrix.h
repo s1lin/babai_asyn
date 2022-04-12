@@ -69,7 +69,9 @@ namespace cils {
         void resize(Integer new_size1, Integer new_size2, bool keep = false) {
             this->s1 = new_size1;
             this->s2 = new_size2;
-            this->x.resize(s1 * s2, keep);
+            this->x.resize(s1 * s2);
+            if (!keep)
+                this->x.clear();
         }
 
         void assign(Scalar value) {
@@ -80,12 +82,6 @@ namespace cils {
         void assign(CILS_Matrix &B) {
             std::copy(B.begin(), B.end(), this->begin());
         }
-
-
-        void assign(CILS_Identity_Matrix <Integer, Scalar> &I) {
-            std::copy(I.begin(), I.end(), this->begin());
-        }
-
 
         Scalar &at_element(const Integer row, const Integer col) {
             return x[row + col * s2];
@@ -113,7 +109,7 @@ namespace cils {
         }
 
         Scalar *data() {
-            return x;
+            return x.data();
         }
 
         Scalar &operator()(const Integer row, const Integer col) {

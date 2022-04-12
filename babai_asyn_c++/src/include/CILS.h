@@ -42,7 +42,6 @@
 #include "CILS_Iterator.h"
 #include "CILS_Vector.h"
 #include "CILS_Identity_Matrix.h"
-#include "CILS_Matrix.h"
 #include "CILS_Operations.h"
 
 using namespace std;
@@ -91,7 +90,7 @@ namespace cils {
         std::vector<std::vector<scalar>> permutation;
 
         b_matrix A, B; //B is a temporary matrix.
-        b_eye_matrix I;
+        b_eye_matrix I{};
         b_vector x_t, y, l, u;
 
         //x_t: true parameter, y: original y
@@ -196,6 +195,16 @@ namespace cils {
             this->offset = 4;
             this->lower = 0;
         }
+
+
+        CILS(index m, index n) {
+            this->m = m;
+            this->n = n;
+            this->A.resize(m, n, false);
+            this->y.resize(m, false);
+            this->y.clear();
+        }
+
     };
 }
 #endif
