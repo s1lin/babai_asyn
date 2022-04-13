@@ -23,7 +23,7 @@ long plot_LLL() {
     cils::CILS<scalar, index> cils;
     cils.is_local = 0;
 
-    for (int t = 0; t < 1; t++) {
+    for (int t = 0; t < num_trial; t++) {
         d = 0;
         run_time = omp_get_wtime();
         for (int n = 40; n <= 200; n += 40) {
