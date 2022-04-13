@@ -23,13 +23,11 @@ long plot_LLL() {
     cils::CILS<scalar, index> cils;
     cils.is_local = 0;
 
-    for (int t = 0; t < num_trial; t++) {
+    for (int t = 0; t < 1; t++) {
         d = 0;
         run_time = omp_get_wtime();
         for (int n = 40; n <= 200; n += 40) {
-            d++;
-            printf("++++++++++++++++++++++++++++++++++++++ Dimension %d"
-                   "++++++++++++++++++++++++++++++++++++++\n", n);
+            printf("+++++++++++ Dimension %d ++++++++++++++++++++\n", n);
             for (int k = 0; k <= 1; k++) {
                 l = 0;
                 cils::init_LLL(cils, n, k);
@@ -60,6 +58,7 @@ long plot_LLL() {
                 }
 
             }
+            d++;
         }
         run_time = omp_get_wtime() - run_time;
         printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
@@ -93,7 +92,10 @@ long plot_LLL() {
             pModule = PyImport_Import(pName);
 
             if (pModule != nullptr) {
-                pFunc = PyObject_GetAttrString(pModule, "plot_lll");
+                pFunc = PyObject_GetAttrString(pModule, "save_data");
+                if(cils.is_local)
+                    pFunc = PyObject_GetAttrString(pModule, "plot_lll");
+
                 if (pFunc && PyCallable_Check(pFunc)) {
                     pArgs = PyTuple_New(7);
                     if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", 5)) != 0) {
