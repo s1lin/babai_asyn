@@ -179,7 +179,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index>
-    static void init_LLL(CILS<scalar, index> &cils, index n, index k) {
+    void init_LLL(CILS<scalar, index> &cils, index n, index k) {
         try {
             cils.m = n;
             cils.n = n;

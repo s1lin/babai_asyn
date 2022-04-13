@@ -13,9 +13,9 @@ else
     A = U*D*V';
     y = randn(m,1);
 end
-
-[R0,~,~] = aspl(A,y);
-[R0,~,~] = asplk1(A,y);
+R0 = 0;
+%[R0,~,~] = aspl(A,y);
+%[R0,~,~] = asplk1(A,y);
 end
 
 
