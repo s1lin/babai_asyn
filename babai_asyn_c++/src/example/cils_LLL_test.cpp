@@ -28,7 +28,8 @@ long plot_LLL() {
         run_time = omp_get_wtime();
         for (int n = 40; n <= 200; n += 40) {
             d++;
-
+            printf("++++++++++++++++++++++++++++++++++++++ Dimension %d"
+                   "++++++++++++++++++++++++++++++++++++++\n", n);
             for (int k = 0; k <= 1; k++) {
                 l = 0;
                 cils::init_LLL(cils, n, k);
@@ -43,7 +44,7 @@ long plot_LLL() {
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 3; n_proc <= 18; n_proc += 3) {
+                for (index n_proc = 3; n_proc <= 21; n_proc += 3) {
                     l++;
                     cils::CILS_Reduction<scalar, index> reduction2(cils);
                     reT = reduction2.paspl(n_proc);
