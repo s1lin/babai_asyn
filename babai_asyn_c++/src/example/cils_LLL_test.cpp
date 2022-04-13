@@ -43,7 +43,7 @@ long plot_LLL() {
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 2; n_proc <= 10; n_proc += 2) {
+                for (index n_proc = 3; n_proc <= 18; n_proc += 3) {
                     l++;
                     cils::CILS_Reduction<scalar, index> reduction2(cils);
                     reT = reduction2.paspl(n_proc);

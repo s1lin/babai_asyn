@@ -796,9 +796,8 @@ namespace cils {
             }
             t_plll = omp_get_wtime() - t_plll;
 
-
-            verbose = true;
-            lll_validation();
+//            verbose = true;
+//            lll_validation();
             return {{}, t_qr, t_plll};
         }
 
