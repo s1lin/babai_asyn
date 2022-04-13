@@ -18,7 +18,7 @@ long plot_LLL() {
     printf("====================[ TEST | LLL | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 200;
+    index d = 0, l = 0, num_trial = 1;
     scalar t_qr[5][200][20][2] = {}, t_aspl[5][200][20][2] = {}, t_total[5][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
     cils.is_local = 0;

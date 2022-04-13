@@ -725,11 +725,17 @@ namespace cils {
 
                     if (pow(R(k1, k1), 2) > (1 + 1e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
                         f = true;
+                        s[k] = 1;
                         for (i = 0; i < n; i++) {
                             std::swap(R(i, k1), R(i, k));
                             std::swap(Z(i, k1), Z(i, k));
                         }
-
+                    }
+                }
+                for (k = start; k < n; k += 2) {
+                    if (s[k]) {
+                        s[k] = 0;
+                        k1 = k - 1;
                         //Bring R back to an upper triangular matrix by a Givens rotation
                         scalar G[4] = {};
                         scalar low_tmp[2] = {R(k1, k1), R(k, k1)};
@@ -900,11 +906,15 @@ namespace cils {
             //  ------------------------------------------------------------------
 #pragma omp parallel default(shared) num_threads(n_c)
             {}
+            auto lock = new omp_lock_t[n]();
+            for (index i = 0; i < n; i++) {
+                omp_init_lock((&lock[i]));
 
+            }
             auto s = new int[n]();
             scalar G[4] = {};
-            auto R_d = R.data();
-            auto Z_d = Z.data();
+//            auto R_d = R.data();
+//            auto Z_d = Z.data();
             index k, k1, i, j, e, i1, b_k, k2;
             index f = true, start = 1, even = true;
             t_plll = omp_get_wtime();
@@ -914,36 +924,42 @@ namespace cils {
 #pragma omp barrier
                     f = false;
                     for (e = 0; e < n - 1; e++) {
-#pragma omp for schedule(static, 1)
-                        for (k = 0; k < e + 1; k++) {
-                            b_k = n - k;
-                            k1 = b_k - 1;
-                            zeta = std::round(R_d[(b_k + n * (k1)) - 2] /
-                                              R_d[(b_k + n * (b_k - 2)) - 2]);
-                            alpha = R_d[(b_k + n * (k1)) - 2] -
-                                    zeta * R_d[(b_k + n * (b_k - 2)) - 2];
-                            scalar t = R_d[(b_k + n * (b_k - 2)) - 2];
-                            scalar scale = R_d[(b_k + n * (k1)) - 1];
-                            if ((t * t > 1.0000000001 * (alpha * alpha + scale * scale)) &&
-                                (zeta != 0.0)) {
-                                for (j = 0; j < k1; j++) {
-                                    R_d[j + n * (k1)] -= zeta * R_d[j + n * (b_k - 2)];
-                                }
-                                for (j = 0; j < n; j++) {
-                                    Z_d[j + n * (k1)] -= zeta * Z_d[j + n * (b_k - 2)];
-                                }
-                                for (int b_i{0}; b_i < b_k - 2; b_i++) {
-                                    index b_n = (b_k - b_i) - 3;
-                                    zeta = std::round(R_d[b_n + n * (k1)] / R_d[b_n + n * b_n]);
-                                    if (zeta != 0.0) {
-                                        for (j = 0; j <= b_n; j++) {
-                                            R_d[j + n * (k1)] -= zeta * R_d[j + n * b_n];
-                                        }
-                                        for (j = 0; j < n; j++) {
-                                            Z_d[j + n * (k1)] -= zeta * Z_d[j + n * b_n];
+#pragma omp for schedule(static, 1) nowait
+                        for (k = 0; k < n; k++) {
+                            if (k < e + 1) {
+
+                                b_k = n - k;
+                                k1 = b_k - 1;
+                                zeta = std::round(R[(b_k + n * (k1)) - 2] /
+                                                  R[(b_k + n * (b_k - 2)) - 2]);
+                                alpha = R[(b_k + n * (k1)) - 2] -
+                                        zeta * R[(b_k + n * (b_k - 2)) - 2];
+                                scalar t = R[(b_k + n * (b_k - 2)) - 2];
+                                scalar scale = R[(b_k + n * (k1)) - 1];
+                                if ((t * t > 1.0000000001 * (alpha * alpha + scale * scale)) &&
+                                    (zeta != 0.0)) {
+                                    omp_set_lock(&lock[k]);
+                                    for (j = 0; j < k1; j++) {
+                                        R[j + n * (k1)] -= zeta * R[j + n * (b_k - 2)];
+                                    }
+                                    for (j = 0; j < n; j++) {
+                                        Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
+                                    }
+                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
+                                        index b_n = (b_k - b_i) - 3;
+                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+                                        if (zeta != 0.0) {
+                                            for (j = 0; j <= b_n; j++) {
+                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
+                                            }
+                                            for (j = 0; j < n; j++) {
+                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+                                            }
                                         }
                                     }
+                                    omp_unset_lock(&lock[k]);
                                 }
+
                             }
                         }
                     }
@@ -952,10 +968,10 @@ namespace cils {
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         k1 = k - 1;
-                        zeta = round(R_d[k1 + k * n] / R_d[k1 + k1 * n]);
-                        alpha = R_d[k1 + k * n] - zeta * R_d[k1 + k1 * n];
+                        zeta = round(R[k1 + k * n] / R[k1 + k1 * n]);
+                        alpha = R[k1 + k * n] - zeta * R[k1 + k1 * n];
 
-                        if (pow(R_d[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R_d[k + k * n], 2))) {
+                        if (pow(R[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R[k + k * n], 2))) {
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {
@@ -971,17 +987,17 @@ namespace cils {
                             k1 = k - 1;
                             //Bring R back to an upper triangular matrix by a Givens rotation
 
-                            scalar low_tmp[2] = {R_d[k1 + k1 * n], R_d[k + k1 * n]};
+                            scalar low_tmp[2] = {R[k1 + k1 * n], R[k + k1 * n]};
                             helper::planerot<scalar, index>(low_tmp, G);
-                            R_d[k1 + k1 * n] = low_tmp[0];
-                            R_d[k + k1 * n] = low_tmp[1];
+                            R[k1 + k1 * n] = low_tmp[0];
+                            R[k + k1 * n] = low_tmp[1];
 
                             //Combined Rotation.
                             for (i = k; i < n; i++) {
-                                low_tmp[0] = R_d[k1 + i * n];
-                                low_tmp[1] = R_d[k + i * n];
-                                R_d[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
-                                R_d[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                                low_tmp[0] = R[k1 + i * n];
+                                low_tmp[1] = R[k + i * n];
+                                R[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                R[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
                             }
 
                             low_tmp[0] = y[k1];
@@ -1061,7 +1077,8 @@ namespace cils {
                 }
                 k++;
             }
-//            lll_validation();
+            verbose = true;
+            lll_validation();
             return {{}, t_qr, t_plll};
         }
 
