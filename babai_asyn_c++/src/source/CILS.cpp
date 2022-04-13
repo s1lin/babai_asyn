@@ -179,9 +179,13 @@ namespace cils {
     }
 
     template<typename scalar, typename index>
-    static void init_LLL(CILS<scalar, index> &cils, index k) {
+    static void init_LLL(CILS<scalar, index> &cils, index n, index k) {
         try {
-
+            cils.m = n;
+            cils.n = n;
+            cils.A.resize(n, n, false);
+            cils.y.resize(n, false);
+            cils.y.clear();
             matlab::data::ArrayFactory factory;
 
             // Call the MATLAB movsum function
@@ -210,7 +214,7 @@ namespace cils {
                 A_v[i] = r;
                 i++;
             }
-            cils.A.clear();
+            cils.A.resize(n, n);
             for (index col = 0; col < cils.n; col++) {
                 for (index row = 0; row < cils.m; row++) {
                     cils.A(row, col) = A_v[row + col * cils.m];

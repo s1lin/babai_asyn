@@ -20,38 +20,39 @@ long plot_LLL() {
 
     index d = 0, l = 0, num_trial = 200;
     scalar t_qr[5][200][20][2] = {}, t_aspl[5][200][20][2] = {}, t_total[5][200][20][2] = {}, run_time;
+    cils::CILS<scalar, index> cils;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;
         run_time = omp_get_wtime();
         for (int n = 40; n <= 200; n += 40) {
             d++;
-            cils::CILS<scalar, index> cils(n, n);
+
             for (int k = 0; k <= 1; k++) {
                 l = 0;
-                cils::init_LLL(cils, k);
+                cils::init_LLL(cils, n, k);
                 cout.flush();
 
                 cils::returnType<scalar, index> reT;
                 cils::CILS_Reduction<scalar, index> reduction(cils);
                 reT = reduction.aspl();
-                t_qr[d][t][0][k] = reT.info;
-                t_aspl[d][t][0][k] = reT.run_time;
+                t_qr[d][t][0][k] = reT.run_time;
+                t_aspl[d][t][0][k] = reT.info;
                 t_total[d][t][0][k] = t_qr[d][t][0][k] + t_aspl[d][t][0][k];
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
-                       reT.info, reT.run_time, reT.info + reT.run_time);
+                       reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 3; n_proc <= 20; n_proc += 3) {
+                for (index n_proc = 2; n_proc <= 10; n_proc += 2) {
                     l++;
                     cils::CILS_Reduction<scalar, index> reduction2(cils);
                     reT = reduction2.paspl(n_proc);
-                    t_qr[d][t][l][k] = reT.info;
-                    t_aspl[d][t][l][k] = reT.run_time;
+                    t_qr[d][t][l][k] = reT.run_time;
+                    t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
-                    printf("PASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
+                    printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                            "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
-                           reT.info, reT.run_time, reT.info + reT.run_time,
-                           t_qr[d][t][0][k] / reT.info, t_aspl[d][t][0][k] / reT.run_time,
+                           n_proc, reT.run_time, reT.info, reT.info + reT.run_time,
+                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info,
                            t_total[d][t][0][k] / t_total[d][t][l][k]
                     );
                 }
