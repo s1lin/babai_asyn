@@ -2,7 +2,6 @@
 
 using namespace std;
 
-static std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr = matlab::engine::startMATLAB();
 
 namespace cils {
 
@@ -180,7 +179,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index>
-    static void init_LLL(CILS<scalar, index> &cils, index n, index k) {
+    void init_LLL(CILS<scalar, index> &cils, index n, index k) {
         try {
             cils.m = n;
             cils.n = n;
@@ -193,6 +192,9 @@ namespace cils {
             matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(cils.m);
             matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(cils.n);
             matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(k);
+
+            std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
+            matlabPtr = matlab::engine::startMATLAB();
 
             matlabPtr->setVariable(u"m", std::move(m_M));
             matlabPtr->setVariable(u"n", std::move(n_M));
@@ -241,7 +243,7 @@ namespace cils {
             }
             i = 0;
             cils.is_init_success = true;
-//            matlabPtr.get_deleter();
+            matlabPtr.get_deleter();
 
         } catch (const std::exception &e) {
             std::cout << e.what();
