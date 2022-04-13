@@ -82,7 +82,7 @@ namespace cils {
 
     public:
         index qam, snr, upper, lower, search_iter, m, n;
-        index block_size, spilt_size, offset, is_constrained, verbose = 0;
+        index block_size, spilt_size, offset, is_constrained, is_local=1, verbose = 0;
         scalar init_res, sigma, tolerance;
 
         si_vector d;

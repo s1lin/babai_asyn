@@ -201,7 +201,8 @@ namespace cils {
             matlabPtr->setVariable(u"k", std::move(k_M));
 
             // Call the MATLAB addpath function
-            matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
+            if (cils.is_local)
+                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
             matlabPtr->eval(u" [A, y, R0] = gen_lll_problem(k, m, n);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");

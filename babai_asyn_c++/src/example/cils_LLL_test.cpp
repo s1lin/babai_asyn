@@ -21,6 +21,7 @@ long plot_LLL() {
     index d = 0, l = 0, num_trial = 200;
     scalar t_qr[5][200][20][2] = {}, t_aspl[5][200][20][2] = {}, t_total[5][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
+    cils.is_local = 0;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;
@@ -81,8 +82,11 @@ long plot_LLL() {
             if (pTOT == nullptr) printf("[ ERROR] pTOT has a problem.\n");
 
             PyObject *sys_path = PySys_GetObject("path");
-            PyList_Append(sys_path, PyUnicode_FromString(
-                    "/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_c++/src/plot"));
+            if (cils.is_local)
+                PyList_Append(sys_path, PyUnicode_FromString(
+                        "/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_c++/src/plot"));
+            else
+                PyList_Append(sys_path, PyUnicode_FromString("./"));
 
             pName = PyUnicode_FromString("plot_lll");
             pModule = PyImport_Import(pName);
