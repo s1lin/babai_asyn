@@ -4,10 +4,15 @@ import numpy as np
 from matplotlib import rcParams
 
 rc = {"font.family": "serif", "mathtext.fontset": "stix"}
-legend_properties = {'weight':'bold'}
+legend_properties = {'weight': 'bold'}
 plt.rcParams.update(rc)
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams.update({'font.size': 20})
+
+
+def save_data(n, i, max_proc, min_proc, qrT, asplT, totalT):
+    np.savez(f'./test_result/{n}_report_plot_{i}_ASPL.npz', n=n, i=i, max_proc=max_proc, min_proc=min_proc,
+             qrT=qrT, asplT=asplT, totalT=totalT)
 
 
 def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
@@ -58,7 +63,8 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             # print(a_t)
             if k == 0:
-                axes[k, 0].semilogy(itr_label, np.array(a_t), color=color[d], marker=marker[d], markersize=12, label=labels[d])
+                axes[k, 0].semilogy(itr_label, np.array(a_t), color=color[d], marker=marker[d], markersize=12,
+                                    label=labels[d])
             else:
                 axes[k, 0].semilogy(itr_label, np.array(a_t), color=color[d], marker=marker[d], markersize=12)
 
@@ -66,8 +72,8 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             d = d + 1
 
-        axes[k, 0].set_xticklabels(itr_label)#, rotation=45)
-        axes[k, 1].set_xticklabels(itr_label[1:len(itr_label)])#, rotation=45)
+        axes[k, 0].set_xticklabels(itr_label)  # , rotation=45)
+        axes[k, 1].set_xticklabels(itr_label[1:len(itr_label)])  # , rotation=45)
         axes[k, 0].grid(color='b', ls='-.', lw=0.25)
         axes[k, 1].grid(color='b', ls='-.', lw=0.25)
         axes[k, 0].patch.set_edgecolor('black')
@@ -75,7 +81,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
         axes[k, 1].patch.set_edgecolor('black')
         axes[k, 1].patch.set_linewidth('1')
 
-# axes[1, 0].set_xticklabels(itr_label, rotation=45)
+    # axes[1, 0].set_xticklabels(itr_label, rotation=45)
     # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
     # ax_zoom.semilogy([itr_label[m] for m in [1, 3, 5]], np.array([qrT[m] for m in [1, 3, 5]]) / i, color=color[0],
