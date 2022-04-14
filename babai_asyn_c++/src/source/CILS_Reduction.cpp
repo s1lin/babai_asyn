@@ -203,7 +203,7 @@ namespace cils {
     public:
         //B --> A
         b_eye_matrix I{};
-        b_matrix B{}, R{}, R_R{}, Q{}, Z{}, P{};
+        b_matrix B{}, R{}, Q{}, Z{}, P{};
         b_vector y{}, y_r{}, p{};
 
         explicit CILS_Reduction(CILS <scalar, index> &cils) : CILS_Reduction(cils.A, cils.y, cils.lower, cils.upper) {}
@@ -219,7 +219,6 @@ namespace cils {
             lower = lower;
             upper = upper;
 
-            R_R.resize(m, n, false);
             R.resize(m, n, false);
             Q.resize(m, m, false);
             y_r.resize(m);
@@ -235,9 +234,25 @@ namespace cils {
         }
 
         void reset(CILS <scalar, index> &cils) {
-            this->B = cils.A;
-            this->Z.clear();
-            this->Z.assign(I);
+            m = cils.A.size1();
+            n = cils.A.size2();
+            B.resize(m, n);
+            B.assign(cils.A);
+            y.resize(cils.y.size());
+            y.assign(cils.y);
+
+            R.resize(m, n, false);
+            Q.resize(m, m, false);
+            y_r.resize(m);
+            p.resize(m);
+
+            I.resize(n, n, false);
+            Z.resize(n, n, false);
+            P.resize(n, n, false);
+
+            I.reset();
+            Z.assign(I);
+            P.assign(I);
         }
 
         /**
@@ -703,18 +718,18 @@ namespace cils {
                             for (j = 0; j < n; j++) {
                                 Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
                             }
-                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
-                                index b_n = (b_k - b_i) - 3;
-                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-                                if (zeta != 0.0) {
-                                    for (j = 0; j <= b_n; j++) {
-                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
-                                    }
-                                    for (j = 0; j < n; j++) {
-                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-                                    }
-                                }
-                            }
+//                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
+//                                index b_n = (b_k - b_i) - 3;
+//                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+//                                if (zeta != 0.0) {
+//                                    for (j = 0; j <= b_n; j++) {
+//                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
+//                                    }
+//                                    for (j = 0; j < n; j++) {
+//                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+//                                    }
+//                                }
+//                            }
                         }
                     }
                 }
@@ -833,7 +848,7 @@ namespace cils {
          *  Dec 2021. Last revision: Dec 2021
          *  @return returnType: ~, time_qr, time_plll
          */
-        returnType <scalar, index> aspl_p_serial() {
+        returnType <scalar, index> aspl_p() {
 
             scalar zeta, alpha, s, t_qr, t_plll, sum = 0;
             Z.assign(I);
@@ -904,8 +919,7 @@ namespace cils {
             //  ------------------------------------------------------------------
             //  --------  Perform the all-swap partial LLL reduction -------------------
             //  ------------------------------------------------------------------
-#pragma omp parallel default(shared) num_threads(n_c)
-            {}
+
 //            auto lock = new omp_lock_t[n]();
 //            for (index i = 0; i < n; i++) {
 //                omp_init_lock((&lock[i]));
@@ -917,17 +931,21 @@ namespace cils {
 //            auto Z_d = Z.data();
             index k, k1, i, j, e, i1, b_k, k2;
             index f = true, start = 1, even = true;
+
+#pragma omp parallel default(shared) num_threads(n_c)
+            {}
+
             t_plll = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_c) private(zeta, alpha, e, k, k1, i, j, i1, b_k) firstprivate(G)
             {
-                while (f) {
+                while(f) {
 #pragma omp barrier
+#pragma omp atomic write
                     f = false;
                     for (e = 0; e < n - 1; e++) {
 #pragma omp for schedule(static, 1) nowait
-                        for (k = 0; k < n; k++) {
-                            if (k < e + 1) {
-
+                        for (k = 0; k < e + 1; k++) {
+//                            if (k < e + 1) {
                                 b_k = n - k;
                                 k1 = b_k - 1;
                                 zeta = std::round(R[(b_k + n * (k1)) - 2] /
@@ -945,20 +963,20 @@ namespace cils {
                                     for (j = 0; j < n; j++) {
                                         Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
                                     }
-                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
-                                        index b_n = (b_k - b_i) - 3;
-                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-                                        if (zeta != 0.0) {
-                                            for (j = 0; j <= b_n; j++) {
-                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
-                                            }
-                                            for (j = 0; j < n; j++) {
-                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-                                            }
-                                        }
-                                    }
+//                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
+//                                        index b_n = (b_k - b_i) - 3;
+//                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+//                                        if (zeta != 0.0) {
+//                                            for (j = 0; j <= b_n; j++) {
+//                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
+//                                            }
+//                                            for (j = 0; j < n; j++) {
+//                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+//                                            }
+//                                        }
+//                                    }
 //                                    omp_unset_lock(&lock[k]);
-                                }
+//                                }
 
                             }
                         }
@@ -972,6 +990,7 @@ namespace cils {
                         alpha = R[k1 + k * n] - zeta * R[k1 + k1 * n];
 
                         if (pow(R[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R[k + k * n], 2))) {
+#pragma omp atomic write
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {
@@ -1017,8 +1036,8 @@ namespace cils {
                             start = 1;
                         }
                     }
-                    if (!f) {
 #pragma omp barrier
+                    if (!f) {
 #pragma omp for schedule(static)
                         for (k = start; k < n; k += 2) {
                             k1 = k - 1;

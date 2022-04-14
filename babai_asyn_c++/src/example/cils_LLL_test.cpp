@@ -21,7 +21,8 @@ long plot_LLL() {
     index d = 0, l = 0, num_trial = 200;
     scalar t_qr[4][200][20][2] = {}, t_aspl[4][200][20][2] = {}, t_total[4][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
-    cils.is_local = 0;
+    cils::CILS_Reduction<scalar, index> reduction(cils);
+    cils.is_local = 1;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;
@@ -34,7 +35,7 @@ long plot_LLL() {
                 cout.flush();
 
                 cils::returnType<scalar, index> reT;
-                cils::CILS_Reduction<scalar, index> reduction(cils);
+                reduction.reset(cils);
                 reT = reduction.aspl();
                 t_qr[d][t][0][k] = reT.run_time;
                 t_aspl[d][t][0][k] = reT.info;
@@ -44,8 +45,8 @@ long plot_LLL() {
 
                 for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                     l++;
-                    cils::CILS_Reduction<scalar, index> reduction2(cils);
-                    reT = reduction2.paspl(n_proc);
+                    reduction.reset(cils);
+                    reT = reduction.paspl(n_proc);
                     t_qr[d][t][l][k] = reT.run_time;
                     t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
