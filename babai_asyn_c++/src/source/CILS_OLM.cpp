@@ -125,7 +125,7 @@ namespace cils {
         returnType <scalar, index>
         pbnp2(const index n_t, const index nstep) {
 
-            index idx = 0, ni, nj, diff = 0, c_i, t = 0;
+            index idx = 0, ni, nj, diff = 0, c_i, t = 0, s = 0;
             index z_p[n] = {}, ct[nstep] = {}, df[nstep] = {}, z_n, delta[n] = {};
             b_vector y_b;
             y_b = y_bar;
@@ -171,6 +171,8 @@ namespace cils {
                                     idx--;
                                 }
                                 omp_unset_lock(&lock[i]);
+#pragma omp atomic
+                                s++;
                             }
                         }
                         if (!flag || idx <= n_t) {
@@ -196,7 +198,7 @@ namespace cils {
 //            helper::display<index, index>(ct, nstep, "ct");
 //            cout << diff << "," << idx << t << endl;
 
-            returnType<scalar, index> reT = {{}, run_time, (scalar) t};
+            returnType<scalar, index> reT = {{}, run_time, (scalar) s};
             for (index i = 0; i < n; i++) {
                 omp_destroy_lock(&lock[i]);
             }
