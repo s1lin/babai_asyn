@@ -19,14 +19,14 @@ long plot_LLL() {
     cout.flush();
 
     index d = 0, l = 0, num_trial = 200;
-    scalar t_qr[5][200][20][2] = {}, t_aspl[5][200][20][2] = {}, t_total[5][200][20][2] = {}, run_time;
+    scalar t_qr[4][200][20][2] = {}, t_aspl[4][200][20][2] = {}, t_total[4][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
     cils.is_local = 0;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;
         run_time = omp_get_wtime();
-        for (int n = 40; n <= 200; n += 40) {
+        for (int n = 50; n <= 400; n *= 2) {
             printf("+++++++++++ Dimension %d ++++++++++++++++++++\n", n);
             for (int k = 0; k <= 1; k++) {
                 l = 0;
@@ -42,7 +42,7 @@ long plot_LLL() {
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 3; n_proc <= 21; n_proc += 3) {
+                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                     l++;
                     cils::CILS_Reduction<scalar, index> reduction2(cils);
                     reT = reduction2.paspl(n_proc);
@@ -71,7 +71,7 @@ long plot_LLL() {
             Py_Initialize();
             if (_import_array() < 0)
                 PyErr_Print();
-            npy_intp dim[4] = {5, num_trial, 20, 2};
+            npy_intp dim[4] = {4, num_trial, 20, 2};
 
             PyObject *pQRT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_qr);
             PyObject *pLLL = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_aspl);
@@ -104,10 +104,10 @@ long plot_LLL() {
                     if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
                         return false;
                     }
-                    if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", 18)) != 0) {
+                    if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", 20)) != 0) {
                         return false;
                     }
-                    if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 3)) != 0) {
+                    if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 5)) != 0) {
                         return false;
                     }
                     if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
