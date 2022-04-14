@@ -718,18 +718,18 @@ namespace cils {
                             for (j = 0; j < n; j++) {
                                 Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
                             }
-//                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
-//                                index b_n = (b_k - b_i) - 3;
-//                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-//                                if (zeta != 0.0) {
-//                                    for (j = 0; j <= b_n; j++) {
-//                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
-//                                    }
-//                                    for (j = 0; j < n; j++) {
-//                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-//                                    }
-//                                }
-//                            }
+                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
+                                index b_n = (b_k - b_i) - 3;
+                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+                                if (zeta != 0.0) {
+                                    for (j = 0; j <= b_n; j++) {
+                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
+                                    }
+                                    for (j = 0; j < n; j++) {
+                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -963,18 +963,18 @@ namespace cils {
                                     for (j = 0; j < n; j++) {
                                         Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
                                     }
-//                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
-//                                        index b_n = (b_k - b_i) - 3;
-//                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-//                                        if (zeta != 0.0) {
-//                                            for (j = 0; j <= b_n; j++) {
-//                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
-//                                            }
-//                                            for (j = 0; j < n; j++) {
-//                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-//                                            }
-//                                        }
-//                                    }
+                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
+                                        index b_n = (b_k - b_i) - 3;
+                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+                                        if (zeta != 0.0) {
+                                            for (j = 0; j <= b_n; j++) {
+                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
+                                            }
+                                            for (j = 0; j < n; j++) {
+                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+                                            }
+                                        }
+                                    }
 //                                    omp_unset_lock(&lock[k]);
 //                                }
 
