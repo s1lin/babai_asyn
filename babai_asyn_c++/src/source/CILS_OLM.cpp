@@ -39,7 +39,7 @@ namespace cils {
         si_vector d;
         b_matrix R{}, A{};
 
-        CILS_OLM(CILS <scalar, index> &cils, const b_vector &z_hat, const b_matrix &R, const b_vector &y_bar) {
+        CILS_OLM(CILS <scalar, index> &cils, b_vector &z_hat, b_matrix &R, b_vector &y_bar) {
             this->n = cils.n;
             this->m = cils.m;
             this->upper = cils.upper;
@@ -47,11 +47,11 @@ namespace cils {
             this->qam = cils.qam;
             this->offset = cils.offset;
             this->is_constrained = cils.is_constrained;
-            this->R = R;
-            this->y_bar = y_bar;
-            this->z_hat = z_hat;
-            this->y = cils.y;
-            this->A = cils.A;
+            this->R.assign(R);
+            this->y_bar.assign(y_bar);
+            this->z_hat.assign(z_hat);
+            this->y.assign(cils.y);
+            this->A.assign(cils.A);
             this->d = cils.d;
             init_R_A();
         }
@@ -193,8 +193,8 @@ namespace cils {
             }
             run_time = omp_get_wtime() - run_time;
 
-            helper::display<index, index>(ct, nstep, "ct");
-            cout << diff << "," << idx << t << endl;
+//            helper::display<index, index>(ct, nstep, "ct");
+//            cout << diff << "," << idx << t << endl;
 
             returnType<scalar, index> reT = {{}, run_time, (scalar) t};
             for (index i = 0; i < n; i++) {

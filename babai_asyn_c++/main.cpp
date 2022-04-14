@@ -1,6 +1,7 @@
 //#include "src/example/cils_standard_test.cpp"
 //#include "src/example/cils_underdetermined_test.cpp"
 #include "src/example/cils_LLL_test.cpp"
+//#include "src/example/cils_PBNP_test.cpp"
 
 using namespace std;
 using namespace cils;
@@ -47,6 +48,8 @@ int main(int argc, char *argv[]) {
     }
 //    CILS cils = cils_driver<double, int>(argc, argv);
     plot_LLL<double, int>();
+//    test_PBNP<double, int>();
+
 
     if (rank == 0) {
         t = omp_get_wtime() - t;

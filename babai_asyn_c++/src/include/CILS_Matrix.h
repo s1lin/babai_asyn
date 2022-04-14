@@ -80,6 +80,7 @@ namespace cils {
 
 
         void assign(CILS_Matrix &B) {
+            this->resize(B.size1(), B.size2(), false);
             std::copy(B.begin(), B.end(), this->begin());
         }
 

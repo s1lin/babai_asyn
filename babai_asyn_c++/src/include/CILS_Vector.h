@@ -69,6 +69,7 @@ namespace cils {
         }
 
         void assign(CILS_Vector &y) {
+            this->resize(y.size(), false);
             std::copy(y.begin(), y.end(), this->begin());
         }
 

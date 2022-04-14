@@ -485,7 +485,10 @@ namespace helper {
     inline scalar find_residual(b_matrix &A, b_vector &x, b_vector &y) {
         b_vector Ax;
         prod(A, x, Ax);
-        b_vector yAx = y - Ax;
+        b_vector yAx(y.size());
+        for (index i = 0; i < y.size(); i++){
+            yAx[i] = y[i] - Ax[i];
+        }
         return norm_2(yAx);
     }
 
