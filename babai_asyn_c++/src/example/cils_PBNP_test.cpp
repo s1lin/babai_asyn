@@ -51,17 +51,18 @@ long test_PBNP() {
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 0;
-                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 35; n_proc += 5) {
                     l++;
                     reduction2.reset(cils);
-                    reT = reduction2.paspl(n_proc);
+                    reT = reduction2.paspl(n_proc < 30? n_proc : 25);
                     t_qr[d][t][l][k] = reT.run_time;
                     t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
                     printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
-                           "SPUQR: %8.4f, SPULLL: %8.4f\n",
-                           n_proc, reT.run_time, reT.info, reT.info + reT.run_time,
-                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info
+                           "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
+                           n_proc < 30? n_proc : 25, reT.run_time, reT.info, reT.info + reT.run_time,
+                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info,
+                           t_total[d][t][0][k] / t_total[d][t][l][k]
                     );
                 }
 
@@ -77,11 +78,11 @@ long test_PBNP() {
 
                 l = 0;
                 scalar total = t_bnp[d][t][0][k] + t_qr[d][t][0][k] + t_aspl[d][t][0][k];
-                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 35; n_proc += 5) {
                     l++;
                     olm.z_hat.clear();
                     x_lll.clear();
-                    reT = olm.pbnp2(n_proc, 20);
+                    reT = olm.pbnp2(n_proc < 30? n_proc : 25, 20);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[d][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[d][t][l][k] = reT.run_time;
@@ -89,7 +90,7 @@ long test_PBNP() {
                     res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
                     printf("PBNP: CORE: %3d, ITER: %4d, BER: %8.5f, RES: %8.4f, TIME: %8.4f, "
                            "BNP SPU: %8.4f, TOTAL SPU: %8.4f, LLL SPU:%8.4f\n",
-                           n_proc, (int) reT.info, t_ber[d][t][l][k], res, t_bnp[d][t][l][k],
+                           n_proc < 30? n_proc : 25, (int) reT.info, t_ber[d][t][l][k], res, t_bnp[d][t][l][k],
                            t_bnp[d][t][0][k] / t_bnp[d][t][l][k],
                            total / (t_bnp[d][t][l][k] + t_qr[d][t][l][k] + t_aspl[d][t][l][k]),
                            (t_qr[d][t][0][k] + t_aspl[d][t][0][k]) / (t_qr[d][t][l][k] + t_aspl[d][t][l][k]));
