@@ -4,10 +4,10 @@ import numpy as np
 from matplotlib import rcParams
 
 rc = {"font.family": "serif", "mathtext.fontset": "stix"}
-legend_properties = {'weight': 'bold'}
+
 plt.rcParams.update(rc)
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
-plt.rcParams.update({'font.size': 20})
+plt.rcParams.update({'font.size': 19})
 
 
 def save_data(n, i, max_proc, min_proc, qrT, asplT, totalT):
@@ -26,11 +26,20 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
     linestyle = ['-.', '-']
     # ax_zoom = fig.add_axes([0.52, 0.51, 0.12, 0.3])
     # proc_num = proc_num.astype(int)
-    itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in range(5, 20+1, 5)]
+    cores = range(5, 20 + 1, 5)
+    itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in cores]
 
     labels = [r'$\mathbf{A}\in\mathbb{R}^{50\times50}$', r'$\mathbf{A}\in\mathbb{R}^{100\times100}$',
               r'$\mathbf{A}\in\mathbb{R}^{200\times200}$', r'$\mathbf{A}\in\mathbb{R}^{400\times400}$']
     dimension = [50, 100, 200, 400]
+
+    a = np.load(f'./test_result/{n}_report_plot_100_ASPL.npz')
+    i2 = a['i']
+    print(i2)
+    qrT2 = a['qrT']
+    asplT2 = a['asplT']
+    totalT2 = a['totalT']
+
     for k in range(0, 2):
         d = 0
         for dim in range(0, 4):
@@ -45,6 +54,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             a_t = []
             spu = []
+            spu2 = []
             for t in range(0, i + 1):
                 for l in range(0, len(itr_label)):
                     if t == 0:
@@ -58,13 +68,44 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
                     if l > 0:
                         if t == 0:
                             spu.append(0)
-                        spu[l - 1] = spu[l - 1] + totalT[d][t][0][k] / totalT[d][t][l][k]
+                            spu2.append(0)
+                        if l == len(itr_label) - 1:
+                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / min(qrT[d][t][l][k], qrT[d][t][l + 1][k],
+                                                                            qrT[d][t][l + 2][k])
+                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / min(totalT[d][t][l][k],
+                                                                                 totalT[d][t][l + 1][k],
+                                                                                 totalT[d][t][l + 2][k])
+                        else:
+                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / qrT[d][t][l][k]
+                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / totalT[d][t][l][k]
 
-            for l in range(0, len(itr_label)):
-                a_t[l] = a_t[l] / i
+            for t in range(0, i2 + 1):
+                for l in range(0, len(itr_label)):
+                    a_t[l] = a_t[l] + totalT[d][t][l][k]
+                    if l > 0:
+                        if l == len(itr_label) - 1:
+                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / min(qrT[d][t][l][k], qrT[d][t][l + 1][k],
+                                                                            qrT[d][t][l + 2][k])
+                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / min(totalT[d][t][l][k],
+                                                                                 totalT[d][t][l + 1][k],
+                                                                                 totalT[d][t][l + 2][k])
+                        else:
+                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / qrT[d][t][l][k]
+                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / totalT[d][t][l][k]
+
+            a_t[0] = a_t[0] / (i + i2)
+            #
+            # for l in range(0, len(itr_label)):
+            #     a_t[l] = a_t[l] / (i + i2)
 
             for l in range(0, len(itr_label) - 1):
-                spu[l] = spu[l] / i
+                spu[l] = spu[l] / (i + i2)
+                spu2[l] = spu2[l] / (i + i2)
+                # if spu[l] > cores[l]:
+                spu[l] = spu2[l]
+
+            for l in range(1, len(itr_label)):
+                a_t[l] = a_t[0] / spu[l - 1]
 
             # print(a_t)
             if k == 0:
@@ -101,7 +142,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
     # title = 'Runtime performance of the ASPL algorithm and PASPL algorithm.\n'
 
     fig.suptitle("\n\n\n\n\n")
-    fig.legend(bbox_to_anchor=(0.88, 0.98), title="Legend", ncol=4)
+    fig.legend(bbox_to_anchor=(0.88, 0.97), title="Legend", ncol=4, fontsize=21, title_fontsize=21, edgecolor='black')
     plt.savefig(f'./test_result/{n}_report_plot_{int(i / 200)}_ASPL.eps', format='eps', dpi=1200)
     plt.savefig(f'./test_result/{n}_report_plot_{int(i / 200)}_ASPL.png')
     plt.close()
@@ -109,7 +150,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
 if __name__ == "__main__":
     n = 5
-    a = np.load(f'./test_result/{n}_report_plot_90_ASPL.npz')
+    a = np.load(f'./test_result/{n}_report_plot_150_ASPL.npz')
     i = a['i']
     print(i)
     max_proc = a['max_proc']
@@ -117,4 +158,5 @@ if __name__ == "__main__":
     qrT = a['qrT']
     asplT = a['asplT']
     totalT = a['totalT']
+
     plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT)

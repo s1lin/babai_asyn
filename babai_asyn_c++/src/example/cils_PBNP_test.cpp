@@ -6,6 +6,12 @@
 #include "../source/CILS_SECH_Search.cpp"
 #include "../source/CILS_OLM.cpp"
 
+void init_z_hat(b_vector &z_hat, b_vector &x, int init, int mean) {
+    z_hat.clear();
+    if (init == 1) z_hat.assign(mean);
+    if (init == 2) z_hat.assign(x);
+}
+
 template<typename scalar, typename index>
 long test_PBNP() {
 
@@ -19,9 +25,9 @@ long test_PBNP() {
     printf("====================[ TEST | LLL | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 200, snr = 35, k;
-    scalar t_qr[4][200][20][2] = {}, t_aspl[4][200][20][2] = {}, t_itr[4][200][20][2] = {};
-    scalar t_bnp[4][200][20][2], t_ber[4][200][20][2] = {}, t_total[4][200][20][2] = {}, run_time;
+    index d = 0, l = 0, num_trial = 2, snr = 35, k, n = 512;
+    scalar t_qr[200][20][2] = {}, t_aspl[200][20][2] = {}, t_itr[3][200][20][2] = {};
+    scalar t_bnp[3][200][20][2], t_ber[3][200][20][2] = {}, run_time;
     scalar ber, res, bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
     scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
     cils::CILS<scalar, index> cils;
@@ -30,74 +36,74 @@ long test_PBNP() {
     cils.is_local = 1;
 
     for (int t = 0; t < num_trial; t++) {
-        d = 0;
         run_time = omp_get_wtime();
-        for (int n = 128; n <= 512; n *= 2) {
-            printf("+++++++++++ Dimension %d ++++++++++++\n", n);
-            k = 0;
-            for (int qam = 1; qam <= 3; qam+=2) {
-                printf("--------QAM: %d-------\n", (int) pow(4, qam));
+        b_vector x_ser(n, 0), x_lll(n, 0), x_r(n, 0);
+        k = 0;
+        for (int qam = 1; qam <= 3; qam += 2) {
+            printf("--------QAM: %d-------\n", (int) pow(4, qam));
+            cils::init_PBNP(cils, n, snr, qam);
+            cils::returnType<scalar, index> reT;
+            reduction.reset(cils);
+            reT = reduction.aspl();
+            t_qr[t][0][k] = reT.run_time;
+            t_aspl[t][0][k] = reT.info;
+            printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
+                   reT.run_time, reT.info, reT.info + reT.run_time);
 
-                b_vector x_ser(n, 0), x_lll(n, 0);
-                cils::init_PBNP(cils, n, snr, qam);
-                cils::returnType<scalar, index> reT;
-                reduction.reset(cils);
-                reT = reduction.aspl();
-                t_qr[d][t][0][k] = reT.run_time;
-                t_aspl[d][t][0][k] = reT.info;
-                printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
-                       reT.run_time, reT.info, reT.info + reT.run_time);
+            cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
-                cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
+            l = 0;
+            for (index n_proc = 2; n_proc <= 32; n_proc *= 2) {
+                l++;
+                reduction2.reset(cils);
+                reT = reduction2.paspl(n_proc < 20? n_proc:16);
+                t_qr[t][l][k] = reT.run_time;
+                t_aspl[t][l][k] = reT.info;
+                printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
+                       "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
+                       n_proc < 20? n_proc:16, reT.run_time, reT.info, reT.info + reT.run_time,
+                       t_qr[t][0][k] / reT.run_time, t_aspl[t][0][k] / reT.info,
+                       (t_qr[t][0][k] + t_aspl[t][0][k]) / (reT.run_time + reT.info)
+                );
+            }
 
-                l = 0;
-                for (index n_proc = 5; n_proc <= 35; n_proc += 5) {
-                    l++;
-                    reduction2.reset(cils);
-                    reT = reduction2.paspl(n_proc < 30? n_proc : 25);
-                    t_qr[d][t][l][k] = reT.run_time;
-                    t_aspl[d][t][l][k] = reT.info;
-                    t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
-                    printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
-                           "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
-                           n_proc < 30? n_proc : 25, reT.run_time, reT.info, reT.info + reT.run_time,
-                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info,
-                           t_total[d][t][0][k] / t_total[d][t][l][k]
-                    );
-                }
+            scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+            olm.z_hat.clear();
+            olm.backsolve();
+            x_r.assign(olm.z_hat);
 
-                scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+            for (index init = 0; init < 3; init++) {
+                printf("+++++++++++ Init value %d ++++++++++++\n", init);
 
-                olm.z_hat.clear();
+                init_z_hat(olm.z_hat, x_r, init, round(cils.upper / 2));
+
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
-                t_ber[d][t][0][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-                t_bnp[d][t][0][k] = reT.run_time;
+                t_ber[init][t][0][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+                t_bnp[init][t][0][k] = reT.run_time;
                 res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-                printf("BNP: BER: %8.5f, RES: %8.4f, TIME: %8.4f\n", t_ber[d][t][0][k], res, t_bnp[d][t][0][k]);
+                printf("BNP: BER: %8.5f, RES: %8.4f, TIME: %8.4f\n", t_ber[init][t][0][k], res,
+                       t_bnp[init][t][0][k]);
 
                 l = 0;
-                scalar total = t_bnp[d][t][0][k] + t_qr[d][t][0][k] + t_aspl[d][t][0][k];
-                for (index n_proc = 5; n_proc <= 35; n_proc += 5) {
+                scalar total = t_bnp[init][t][0][k] + t_qr[t][0][k] + t_aspl[t][0][k];
+                for (index n_proc = 2; n_proc <= 32; n_proc *= 2) {
                     l++;
-                    olm.z_hat.clear();
-                    x_lll.clear();
-                    reT = olm.pbnp2(n_proc < 20? n_proc : 20, 20);
+                    init_z_hat(olm.z_hat, x_r, init, (int) cils.upper / 2);
+                    reT = olm.pbnp2(n_proc < 20? n_proc:16, 20);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
-                    t_ber[d][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
-                    t_bnp[d][t][l][k] = reT.run_time;
-                    t_itr[d][t][l][k] = reT.info;
+                    t_ber[init][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
+                    t_bnp[init][t][l][k] = reT.run_time;
+                    t_itr[init][t][l][k] = reT.info;
                     res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
                     printf("PBNP: CORE: %3d, ITER: %4d, BER: %8.5f, RES: %8.4f, TIME: %8.4f, "
-                           "BNP SPU: %8.4f, TOTAL SPU: %8.4f, LLL SPU:%8.4f\n",
-                           n_proc < 30? n_proc : 20, (int) reT.info, t_ber[d][t][l][k], res, t_bnp[d][t][l][k],
-                           t_bnp[d][t][0][k] / t_bnp[d][t][l][k],
-                           total / (t_bnp[d][t][l][k] + t_qr[d][t][l][k] + t_aspl[d][t][l][k]),
-                           (t_qr[d][t][0][k] + t_aspl[d][t][0][k]) / (t_qr[d][t][l][k] + t_aspl[d][t][l][k]));
+                           "BNP SPU: %8.4f, TOTAL SPU: %8.4f\n",
+                           n_proc < 20? n_proc:16, (int) reT.info, t_ber[init][t][l][k], res, t_bnp[init][t][l][k],
+                           t_bnp[init][t][0][k] / t_bnp[init][t][l][k],
+                           total / (t_bnp[init][t][l][k] + t_qr[t][l][k] + t_aspl[t][l][k]));
                 }
-                k++;
             }
-            d++;
+            k++;
 
         }
         run_time = omp_get_wtime() - run_time;
@@ -105,24 +111,23 @@ long test_PBNP() {
                "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
         cout.flush();
         printf("\n---------------------\nITER:%d\n---------------------\n", t);
-        if (t % 10 == 0) {
+        if (true) {//t % 10 == 0
             PyObject *pName, *pModule, *pFunc;
             PyObject *pArgs, *pValue;
             Py_Initialize();
             if (_import_array() < 0)
                 PyErr_Print();
-            npy_intp dim[4] = {4, num_trial, 20, 2};
+            npy_intp di4[4] = {3, 200, 20, 2};
+            npy_intp di3[3] = {200, 20, 2};
 
-            PyObject *pQRT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_qr);
-            PyObject *pLLL = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_aspl);
-            PyObject *pTOT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_total);
-            PyObject *pBNP = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_bnp);
-            PyObject *pBER = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_ber);
-            PyObject *pITR = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_itr);
+            PyObject *pQRT = PyArray_SimpleNewFromData(3, di3, NPY_DOUBLE, t_qr);
+            PyObject *pLLL = PyArray_SimpleNewFromData(3, di3, NPY_DOUBLE, t_aspl);
+            PyObject *pBNP = PyArray_SimpleNewFromData(4, di4, NPY_DOUBLE, t_bnp);
+            PyObject *pBER = PyArray_SimpleNewFromData(4, di4, NPY_DOUBLE, t_ber);
+            PyObject *pITR = PyArray_SimpleNewFromData(4, di4, NPY_DOUBLE, t_itr);
 
             if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
             if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
-            if (pTOT == nullptr) printf("[ ERROR] pTOT has a problem.\n");
             if (pBNP == nullptr) printf("[ ERROR] pBNP has a problem.\n");
             if (pBER == nullptr) printf("[ ERROR] pBER has a problem.\n");
             if (pITR == nullptr) printf("[ ERROR] pITR has a problem.\n");
@@ -143,8 +148,8 @@ long test_PBNP() {
                     pFunc = PyObject_GetAttrString(pModule, "plot_bnp");
 
                 if (pFunc && PyCallable_Check(pFunc)) {
-                    pArgs = PyTuple_New(10);
-                    if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", 5)) != 0) {
+                    pArgs = PyTuple_New(9);
+                    if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                         return false;
                     }
                     if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
@@ -165,13 +170,10 @@ long test_PBNP() {
                     if (PyTuple_SetItem(pArgs, 6, pBNP) != 0) {
                         return false;
                     }
-                    if (PyTuple_SetItem(pArgs, 7, pTOT) != 0) {
+                    if (PyTuple_SetItem(pArgs, 7, pBER) != 0) {
                         return false;
                     }
-                    if (PyTuple_SetItem(pArgs, 8, pBER) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 9, pITR) != 0) {
+                    if (PyTuple_SetItem(pArgs, 8, pITR) != 0) {
                         return false;
                     }
                     pValue = PyObject_CallObject(pFunc, pArgs);
@@ -196,3 +198,4 @@ long test_PBNP() {
     return 0;
 
 }
+
