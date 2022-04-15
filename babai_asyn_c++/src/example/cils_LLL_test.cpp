@@ -43,17 +43,17 @@ long plot_LLL() {
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 5; n_proc <= 35; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
 
                     l++;
                     reduction.reset(cils);
-                    reT = reduction.paspl(n_proc < 30? n_proc : 25);
+                    reT = reduction.paspl(n_proc < 20? n_proc : 19);
                     t_qr[d][t][l][k] = reT.run_time;
                     t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
                     printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                            "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
-                           n_proc < 30? n_proc : 25, reT.run_time, reT.info, reT.info + reT.run_time,
+                           n_proc < 20? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
                            t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info,
                            t_total[d][t][0][k] / t_total[d][t][l][k]
                     );

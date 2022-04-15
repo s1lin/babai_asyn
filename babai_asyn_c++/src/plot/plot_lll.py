@@ -26,7 +26,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
     linestyle = ['-.', '-']
     # ax_zoom = fig.add_axes([0.52, 0.51, 0.12, 0.3])
     # proc_num = proc_num.astype(int)
-    itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in range(5, 20+1, min_proc)]
+    itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in range(5, 20+1, 5)]
 
     labels = [r'$\mathbf{A}\in\mathbb{R}^{50\times50}$', r'$\mathbf{A}\in\mathbb{R}^{100\times100}$',
               r'$\mathbf{A}\in\mathbb{R}^{200\times200}$', r'$\mathbf{A}\in\mathbb{R}^{400\times400}$']
@@ -86,9 +86,6 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
         axes[k, 1].patch.set_edgecolor('black')
         axes[k, 1].patch.set_linewidth('1')
 
-        axes[k, 0].set_rasterized(True)
-        axes[k, 1].set_rasterized(True)
-
     # axes[1, 0].set_xticklabels(itr_label, rotation=45)
     # axes[1, 1].set_xticklabels(itr_label, rotation=45)
 
@@ -112,7 +109,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
 if __name__ == "__main__":
     n = 5
-    a = np.load(f'./test_result/{n}_report_plot_60_ASPL.npz')
+    a = np.load(f'./test_result/{n}_report_plot_90_ASPL.npz')
     i = a['i']
     print(i)
     max_proc = a['max_proc']
