@@ -692,7 +692,7 @@ namespace cils {
             returnType<scalar, index> reT = {time, run_time, 0};
             return reT;
         }
-    }
+    };
 }
 
 //                scalar prod_time = omp_get_wtime();
