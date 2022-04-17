@@ -183,11 +183,11 @@ namespace cils {
 #pragma omp atomic
                                 ct[t]++;
                             }
-                            if (ct[t] >= idx - 2) {
+                            if (ct[t] >= idx - 2 || s > 700) {
                                 if (init == 1)
                                     flag = diff == 0;
                                 if (init != 1)
-                                    flag = diff <= 100 || idx <= n_t || s > 700;
+                                    flag = diff <= 100 || idx <= n_t ;
 #pragma omp atomic write
                                 diff = 0;
                             }
