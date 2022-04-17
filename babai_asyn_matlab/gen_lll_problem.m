@@ -1,21 +1,26 @@
 function [A, y, R0] = gen_lll_problem(k, m, n)
 rng('shuffle')
 if k==0
-    A = randn(m,n);
-    y = randn(m,1);
+    Ar = randn(n/2);
+    Ai = randn(n/2);    
 else
-    [U, ~] = qr(randn(m,n));
-    [V, ~] = qr(randn(m,n));
-    D = zeros(n,n);
-    for i = 1:n
-        D(i,i) = 10^(3*(n/2-i)/(n-1));
+    phi = rand(n/2);
+    PHI = rand(n/2);
+    for i = 1:n/2
+        for j = 1:n/2
+            phi(i, j) = phi(i, j)^abs(i-j);
+            PHI(i, j) = PHI(i, j)^abs(i-j);
+        end
     end
-    A = U*D*V';
-    y = randn(m,1);
+    Ar = sqrt(phi) * randn(n/2) * sqrt(PHI);
+    Ai = sqrt(phi) * randn(n/2) * sqrt(PHI);
 end
+Abar = [Ar -Ai; Ai, Ar];
+A = Abar;
+y = randn(m,1);
 R0 = 0;
-%[R0,~,~] = aspl(A,y);
-%[R0,~,~] = asplk1(A,y);
+% [R0,~,~] = aspl(A,y);
+% [R0,~,~] = asplk1(A,y);
 end
 
 

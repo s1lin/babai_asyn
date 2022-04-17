@@ -27,7 +27,7 @@ long plot_LLL() {
     for (int t = 0; t < num_trial; t++) {
         d = 0;
         run_time = omp_get_wtime();
-        for (int n = 50; n <= 400; n *= 2) {
+        for (int n = 50; n <= 200; n += 50) {
             printf("+++++++++++ Dimension %d ++++++++++++++++++++\n", n);
             for (int k = 0; k <= 1; k++) {
                 l = 0;

@@ -6,9 +6,9 @@
 #include "../source/CILS_SECH_Search.cpp"
 #include "../source/CILS_OLM.cpp"
 
-void init_z_hat(b_vector &z_hat, b_vector &x, int init, int mean) {
+void init_z_hat(b_vector &z_hat, b_vector &x, int init, double mean) {
     z_hat.clear();
-    if (init == 1) z_hat.assign(mean);
+    if (init == 1) std::fill(z_hat.x.begin(), z_hat.x.end(), mean);
     if (init == 2) z_hat.assign(x);
 }
 
@@ -25,7 +25,7 @@ long test_PBNP() {
     printf("====================[ TEST | LLL | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 2, snr = 35, k, n = 512;
+    index d = 0, l = 0, num_trial = 200, snr = 35, k, n = 512;
     scalar t_qr[200][20][2] = {}, t_aspl[200][20][2] = {}, t_itr[3][200][20][2] = {};
     scalar t_bnp[3][200][20][2], t_ber[3][200][20][2] = {}, run_time;
     scalar ber, res, bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
@@ -75,7 +75,7 @@ long test_PBNP() {
             for (index init = 0; init < 3; init++) {
                 printf("+++++++++++ Init value %d ++++++++++++\n", init);
 
-                init_z_hat(olm.z_hat, x_r, init, round(cils.upper / 2));
+                init_z_hat(olm.z_hat, x_r, init, (scalar)cils.upper / 2.0);
 
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
@@ -90,7 +90,7 @@ long test_PBNP() {
                 for (index n_proc = 2; n_proc <= 32; n_proc *= 2) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, init, (int) cils.upper / 2);
-                    reT = olm.pbnp2(n_proc < 20? n_proc:16, 20);
+                    reT = olm.pbnp2(n_proc < 20? n_proc:16, 10, init);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[init][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[init][t][l][k] = reT.run_time;
@@ -111,7 +111,7 @@ long test_PBNP() {
                "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
         cout.flush();
         printf("\n---------------------\nITER:%d\n---------------------\n", t);
-        if (true) {//t % 10 == 0
+        if (t % 10 == 0) {//
             PyObject *pName, *pModule, *pFunc;
             PyObject *pArgs, *pValue;
             Py_Initialize();
@@ -144,8 +144,8 @@ long test_PBNP() {
 
             if (pModule != nullptr) {
                 pFunc = PyObject_GetAttrString(pModule, "save_data");
-                if (cils.is_local)
-                    pFunc = PyObject_GetAttrString(pModule, "plot_bnp");
+//                if (cils.is_local)
+//                    pFunc = PyObject_GetAttrString(pModule, "plot_bnp");
 
                 if (pFunc && PyCallable_Check(pFunc)) {
                     pArgs = PyTuple_New(9);

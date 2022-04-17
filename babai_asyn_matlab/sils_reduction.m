@@ -29,19 +29,19 @@ function [R,Z,y] = sils_reduction(B,y)
 
 [m,n] = size(B);
 
-% QR factorization with minimum-column pivoting
-%[R,piv,y] = qrmcp(B,y);
-[Q, R, ~] = qrmgs_row(B, y);
-
 y_ = y;
-y = Q'*y;
-R_ = R;
+% QR factorization with minimum-column pivoting
+[R,piv,y] = qrmcp(B,y);
+%[Q, R, ~] = qr(B, y);
+
+%y = Q'*y;
+%R_ = R;
 % Obtain the permutation matrix Z
-% Z = zeros(n,n);
-Z = eye(n);
-% for j = 1 : n
-%     Z(piv(j),j) = 1;
-% end
+Z = zeros(n,n);
+%Z = eye(n);
+for j = 1 : n
+    Z(piv(j),j) = 1;
+end
 
 % ------------------------------------------------------------------
 % --------  Perfome the partial LLL reduction  ---------------------

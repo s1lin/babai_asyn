@@ -123,7 +123,7 @@ namespace cils {
         }
 
         returnType <scalar, index>
-        pbnp2(const index n_t, const index nstep) {
+        pbnp2(const index n_t, const index nstep, const index init) {
 
             index idx = 0, ni, nj, diff = 0, c_i, t = 0, s = 0;
             index z_p[n] = {}, ct[nstep] = {}, df[nstep] = {}, z_n, delta[n] = {};
@@ -184,7 +184,10 @@ namespace cils {
                                 ct[t]++;
                             }
                             if (ct[t] >= idx - 2) {
-                                flag = diff <= 100 || idx <= n_t;
+                                if (init == 1)
+                                    flag = diff == 0;
+                                if (init != 1)
+                                    flag = diff <= 100 || idx <= n_t;
 #pragma omp atomic write
                                 diff = 0;
                             }

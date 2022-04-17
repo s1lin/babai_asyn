@@ -920,11 +920,11 @@ namespace cils {
             //  --------  Perform the all-swap partial LLL reduction -------------------
             //  ------------------------------------------------------------------
 
-//            auto lock = new omp_lock_t[n]();
-//            for (index i = 0; i < n; i++) {
-//                omp_init_lock((&lock[i]));
-//
-//            }
+            auto lock = new omp_lock_t[n]();
+            for (index i = 0; i < n; i++) {
+                omp_init_lock((&lock[i]));
+
+            }
             auto s = new int[n]();
             scalar G[4] = {};
 //            auto R = R.data();
@@ -944,8 +944,8 @@ namespace cils {
                     f = false;
                     for (e = 0; e < n - 1; e++) {
 #pragma omp for schedule(static, 1) nowait
-                        for (k = 0; k < e + 1; k++) {
-//                            if (k < e + 1) {
+                        for (k = 0; k < n; k++) {
+                            if (k < e + 1) {
                                 b_k = n - k;
                                 k1 = b_k - 1;
                                 zeta = std::round(R[(b_k + n * (k1)) - 2] /
@@ -976,7 +976,7 @@ namespace cils {
                                         }
                                     }
 //                                    omp_unset_lock(&lock[k]);
-//                                }
+                                }
 
                             }
                         }

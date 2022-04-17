@@ -26,7 +26,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
     linestyle = ['-.', '-']
     # ax_zoom = fig.add_axes([0.52, 0.51, 0.12, 0.3])
     # proc_num = proc_num.astype(int)
-    cores = range(5, 20 + 1, 5)
+    cores = [5, 10, 15, 20, 25]
     itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in cores]
 
     labels = [r'$\mathbf{A}\in\mathbb{R}^{50\times50}$', r'$\mathbf{A}\in\mathbb{R}^{100\times100}$',
@@ -81,17 +81,17 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             for t in range(0, i2 + 1):
                 for l in range(0, len(itr_label)):
-                    a_t[l] = a_t[l] + totalT[d][t][l][k]
+                    a_t[l] = a_t[l] + totalT2[d][t][l][k]
                     if l > 0:
                         if l == len(itr_label) - 1:
-                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / min(qrT[d][t][l][k], qrT[d][t][l + 1][k],
-                                                                            qrT[d][t][l + 2][k])
-                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / min(totalT[d][t][l][k],
-                                                                                 totalT[d][t][l + 1][k],
-                                                                                 totalT[d][t][l + 2][k])
+                            spu[l - 1] = spu[l - 1] + qrT2[d][t][0][k] / min(qrT2[d][t][l][k], qrT2[d][t][l + 1][k],
+                                                                            qrT2[d][t][l + 2][k])
+                            spu2[l - 1] = spu2[l - 1] + totalT2[d][t][0][k] / min(totalT2[d][t][l][k],
+                                                                                 totalT2[d][t][l + 1][k],
+                                                                                 totalT2[d][t][l + 2][k])
                         else:
-                            spu[l - 1] = spu[l - 1] + qrT[d][t][0][k] / qrT[d][t][l][k]
-                            spu2[l - 1] = spu2[l - 1] + totalT[d][t][0][k] / totalT[d][t][l][k]
+                            spu[l - 1] = spu[l - 1] + qrT2[d][t][0][k] / qrT2[d][t][l][k]
+                            spu2[l - 1] = spu2[l - 1] + totalT2[d][t][0][k] / totalT2[d][t][l][k]
 
             a_t[0] = a_t[0] / (i + i2)
             #
@@ -109,10 +109,10 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             # print(a_t)
             if k == 0:
-                axes[k, 0].semilogy(itr_label, np.array(a_t), color=color[d], marker=marker[d], markersize=12,
+                axes[k, 0].semilogy(itr_label[0:len(itr_label)-1], a_t[0:len(itr_label)-1], color=color[d], marker=marker[d], markersize=12,
                                     label=labels[d])
             else:
-                axes[k, 0].semilogy(itr_label, np.array(a_t), color=color[d], marker=marker[d], markersize=12)
+                axes[k, 0].semilogy(itr_label[0:len(itr_label)-1], a_t[0:len(itr_label)-1], color=color[d], marker=marker[d], markersize=12)
 
             axes[k, 1].plot(itr_label[1:len(itr_label)], spu, color=color[d], marker=marker[d], markersize=12)
 
