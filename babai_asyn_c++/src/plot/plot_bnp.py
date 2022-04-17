@@ -20,16 +20,16 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
     print("\n----------PLOT RUNTIME--------------\n")
     color = ['r', 'g', 'b', 'm']
     marker = ['o', '+', 'x', '*']
-    procs = [2, 4, 8, 16]
+    procs = [5, 10, 15, 20]
     labels = [r'$\mathbf{z}^{(0)} = \mathbf{0}$', r'$\mathbf{z}^{(0)} = avg$',
               r'$\mathbf{z}^{(0)} = \lfloor\mathbf{z}_r\rceil$', 'Reduction']
     itr_label = ['$1$'] + ['$' + str(proc) + '$' for proc in procs]
 
-    a = np.load(f'./test_result/{n}_report_plot_200_BNP.npz')
-    i = a['i']
-    ber = a['ber']
-    qrT = a['qrT']
-    asplT = a['asplT']
+    # a = np.load(f'./test_result/{n}_report_plot_200_BNP.npz')
+    # i = a['i']
+    # ber = a['ber']
+    # qrT = a['qrT']
+    # asplT = a['asplT']
 
     for j in range(0, 2):
         if j == 0:
@@ -112,10 +112,10 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
                     tot = qrT[t][l][j] + asplT[t][l][j] + bnp[x][t][l][j]
 
                     if l == len(itr_label) - 1:
-                        omp_stm[l] = omp_stm[l] + min(bnp[x][t][l][j], bnp[x][t][l + 1][j])
+                        omp_stm[l] = omp_stm[l] + min(bnp[x][t][l][j], bnp[x][t][l + 1][j], bnp[x][t][l + 2][j])
                         tot = min(qrT[t][l][j], qrT[t][l + 1][j]) + \
                               min(asplT[t][l][j], asplT[t][l + 1][j]) + \
-                              min(bnp[x][t][l][j], bnp[x][t][l + 1][j])
+                              min(bnp[x][t][l][j], bnp[x][t][l + 1][j], bnp[x][t][l + 2][j])
                     else:
                         omp_stm[l] = omp_stm[l] + bnp[x][t][l][j]
 
@@ -127,7 +127,7 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
                             omp_spu2.append(0)
                         if l == len(itr_label) - 1:
                             omp_spu[l - 1] = omp_spu[l - 1] + bnp[x][t][0][j] / min(bnp[x][t][l][j],
-                                                                                    bnp[x][t][l + 1][j])
+                                                                                    bnp[x][t][l + 1][j], bnp[x][t][l + 2][j])
                         else:
                             omp_spu[l - 1] = omp_spu[l - 1] + bnp[x][t][0][j] / bnp[x][t][l][j]
                         omp_spu2[l - 1] = omp_spu2[l - 1] + to0 / tot
@@ -190,7 +190,7 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
 
 if __name__ == "__main__":
     n = 512
-    a = np.load(f'./test_result/{n}_report_plot_199_BNP.npz')
+    a = np.load(f'./test_result/{n}_report_plot_10_BNP.npz')
     i = a['i']
     max_proc = a['max_proc']
     min_proc = a['min_proc']

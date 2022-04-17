@@ -33,7 +33,7 @@ long test_PBNP() {
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
 
-    cils.is_local = 1;
+    cils.is_local = 0;
 
     for (int t = 0; t < num_trial; t++) {
         run_time = omp_get_wtime();
@@ -53,15 +53,15 @@ long test_PBNP() {
             cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
             l = 0;
-            for (index n_proc = 2; n_proc <= 32; n_proc *= 2) {
+            for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                 l++;
                 reduction2.reset(cils);
-                reT = reduction2.paspl(n_proc < 20? n_proc:16);
+                reT = reduction2.paspl(n_proc < 20 ? n_proc : 20);
                 t_qr[t][l][k] = reT.run_time;
                 t_aspl[t][l][k] = reT.info;
                 printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                        "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
-                       n_proc < 20? n_proc:16, reT.run_time, reT.info, reT.info + reT.run_time,
+                       n_proc < 20 ? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
                        t_qr[t][0][k] / reT.run_time, t_aspl[t][0][k] / reT.info,
                        (t_qr[t][0][k] + t_aspl[t][0][k]) / (reT.run_time + reT.info)
                 );
@@ -75,7 +75,7 @@ long test_PBNP() {
             for (index init = 0; init < 3; init++) {
                 printf("+++++++++++ Init value %d ++++++++++++\n", init);
 
-                init_z_hat(olm.z_hat, x_r, init, (scalar)cils.upper / 2.0);
+                init_z_hat(olm.z_hat, x_r, init, (scalar) cils.upper / 2.0);
 
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
@@ -87,10 +87,10 @@ long test_PBNP() {
 
                 l = 0;
                 scalar total = t_bnp[init][t][0][k] + t_qr[t][0][k] + t_aspl[t][0][k];
-                for (index n_proc = 2; n_proc <= 32; n_proc *= 2) {
+                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, init, (int) cils.upper / 2);
-                    reT = olm.pbnp2(n_proc < 20? n_proc:16, 10, init);
+                    reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, init);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[init][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[init][t][l][k] = reT.run_time;
@@ -98,7 +98,7 @@ long test_PBNP() {
                     res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
                     printf("PBNP: CORE: %3d, ITER: %4d, BER: %8.5f, RES: %8.4f, TIME: %8.4f, "
                            "BNP SPU: %8.4f, TOTAL SPU: %8.4f\n",
-                           n_proc < 20? n_proc:16, (int) reT.info, t_ber[init][t][l][k], res, t_bnp[init][t][l][k],
+                           n_proc < 20 ? n_proc : 20, (int) reT.info, t_ber[init][t][l][k], res, t_bnp[init][t][l][k],
                            t_bnp[init][t][0][k] / t_bnp[init][t][l][k],
                            total / (t_bnp[init][t][l][k] + t_qr[t][l][k] + t_aspl[t][l][k]));
                 }
