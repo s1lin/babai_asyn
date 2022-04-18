@@ -138,10 +138,15 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
                 omp_ber[l] = omp_ber[l] / (i + 1)
                 omp_red[l] = omp_red[l] / (i + 1)
                 omp_stm[l] = omp_stm[l] / (i + 1)
-                omp_total[l] = omp_total[l] / (i + 1)
+
                 if l < len(itr_label) - 1:
                     omp_spu[l] = omp_spu[l] / (i + 1)
                     omp_spu2[l] = omp_spu2[l] / (i + 1)
+
+
+            omp_total[0] = omp_total[0] / ((i + 1)*10)
+            for l in range(1, len(itr_label)):
+                omp_total[l] = omp_total[0] / omp_spu2[l - 1]
 
             axes[0, 1].plot(itr_label[1:len(itr_label)], omp_itr[1:len(itr_label)], color=color[x], marker=marker[x], label=labels[x], markersize=12)
             axes[0, 0].plot(itr_label, omp_ber, color=color[x], marker=marker[x], markersize=12)
@@ -190,7 +195,7 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
 
 if __name__ == "__main__":
     n = 512
-    a = np.load(f'./test_result/{n}_report_plot_80_BNP.npz')
+    a = np.load(f'./test_result/{n}_report_plot_190_BNP.npz')
     i = a['i']
     max_proc = a['max_proc']
     min_proc = a['min_proc']

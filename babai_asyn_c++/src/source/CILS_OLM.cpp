@@ -154,7 +154,7 @@ namespace cils {
 #pragma omp for nowait schedule(dynamic)
                         for (index i = 1; i < n; i++) {
                             ni = n - 1 - i;
-                            if (!flag && ni <= idx) {
+                            if (!flag && ni <= idx && s < 700) {
                                 omp_set_lock(&lock[i]);
                                 sum = y_b[ni];
                                 nj = ni * n - (ni * (ni + 1)) / 2;
