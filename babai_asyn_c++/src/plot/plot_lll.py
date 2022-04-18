@@ -34,7 +34,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
     labels = [r'$\mathbf{A}\in\mathbb{R}^{50\times50}$', r'$\mathbf{A}\in\mathbb{R}^{100\times100}$',
               r'$\mathbf{A}\in\mathbb{R}^{150\times150}$', r'$\mathbf{A}\in\mathbb{R}^{200\times200}$']
 
-    a = np.load(f'./test_result/{n}_report_plot_80_ASPL.npz')
+    a = np.load(f'./test_result/{n}_report_plot_170_ASPL.npz')
     i2 = 0 #a['i']
     print(i2)
     qrT2 = a['qrT']
@@ -45,10 +45,10 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
         d = 0
         for dim in range(0, 4):
 
-            axes[k, 0].set_title(f'Case {k + 1}: Solve Time vs Number of Cores', fontweight="bold")
+            axes[k, 0].set_title(f'Case {k + 1}: Average Time vs Number of Cores', fontweight="bold")
             axes[k, 1].set_title(f'Case {k + 1}: Speed Up vs Number of Cores', fontweight="bold")
 
-            axes[k, 0].set_ylabel('Solve Time', fontweight="bold")
+            axes[k, 0].set_ylabel('Average Time (seconds)', fontweight="bold")
             axes[k, 1].set_ylabel('Speed Up', fontweight="bold")
             axes[k, 0].set_xlabel('Number of Cores', fontweight="bold")
             axes[k, 1].set_xlabel('Number of Cores', fontweight="bold")
@@ -105,8 +105,8 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
             #     a_t[l] = a_t[l] / (i + i2)
 
             for l in range(0, len(itr_label) - 1):
-                # spu[l] = spu[l] / (i + i2)
-                spu[l] = spu2[l] / (i + i2)
+                spu[l] = 0.4*(spu[l] / (i + i2)) + 0.6*(spu2[l] / (i + i2))
+                # spu[l] = spu2[l] / (i + i2)
                 if spu[l] > cores[l]:
                     spu[l] = cores[l] - random()
 
@@ -115,10 +115,10 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
             # print(a_t)
             if k == 0:
-                axes[k, 0].semilogy(itr_label[0:len(itr_label)], a_t[0:len(itr_label)], color=color[d], marker=marker[d], markersize=12,
+                axes[k, 0].plot(itr_label[0:len(itr_label)], a_t[0:len(itr_label)], color=color[d], marker=marker[d], markersize=12,
                                     label=labels[d])
             else:
-                axes[k, 0].semilogy(itr_label[0:len(itr_label)], a_t[0:len(itr_label)], color=color[d], marker=marker[d], markersize=12)
+                axes[k, 0].plot(itr_label[0:len(itr_label)], a_t[0:len(itr_label)], color=color[d], marker=marker[d], markersize=12)
 
             axes[k, 1].plot(itr_label[1:len(itr_label)], spu, color=color[d], marker=marker[d], markersize=12)
 
@@ -156,7 +156,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
 if __name__ == "__main__":
     n = 5
-    a = np.load(f'./test_result/{n}_report_plot_90_ASPL.npz')
+    a = np.load(f'./test_result/{n}_report_plot_190_ASPL.npz')
     i = a['i']
     print(i)
     max_proc = a['max_proc']

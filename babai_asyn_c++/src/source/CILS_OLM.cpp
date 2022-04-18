@@ -133,10 +133,10 @@ namespace cils {
 
             scalar sum = 0;
 
-//            auto lock = new omp_lock_t[n]();
-//            for (index i = 0; i < n; i++) {
-//                omp_init_lock((&lock[i]));
-//            }
+            auto lock = new omp_lock_t[n]();
+            for (index i = 0; i < n; i++) {
+                omp_init_lock((&lock[i]));
+            }
 
 #pragma omp parallel default(shared) num_threads(n_t)
             {}
@@ -155,7 +155,7 @@ namespace cils {
                         for (index i = 1; i < n; i++) {
                             ni = n - 1 - i;
                             if (!flag && ni <= idx) {
-//                                omp_set_lock(&lock[i]);
+                                omp_set_lock(&lock[i]);
                                 sum = y_b[ni];
                                 nj = ni * n - (ni * (ni + 1)) / 2;
 #pragma omp simd reduction(- : sum)
@@ -170,12 +170,12 @@ namespace cils {
 #pragma omp atomic
                                     idx--;
                                 }
-//                                omp_unset_lock(&lock[i]);
+                                omp_unset_lock(&lock[i]);
 #pragma omp atomic
                                 s++;
                             }
                         }
-                        if (!flag || idx <= n_t) {
+                        if (!flag || idx <= n_t || s < 700) {
 #pragma omp for nowait
                             for (index i = 1; i < idx; i++) {
                                 ni = n - 1 - i;
@@ -183,7 +183,7 @@ namespace cils {
 #pragma omp atomic
                                 ct[t]++;
                             }
-                            if (ct[t] >= idx - 2 || s > 700) {
+                            if (ct[t] >= idx - 2) {
                                 if (init == 1)
                                     flag = diff == 0;
                                 if (init != 1)
@@ -200,10 +200,10 @@ namespace cils {
 
 //            helper::display<index, index>(ct, nstep, "ct");
 //            cout << diff << "," << idx << t << endl;
-//            for (index i = 0; i < n; i++) {
-//                omp_destroy_lock(&lock[i]);
-//            }
-//            delete[] lock;
+            for (index i = 0; i < n; i++) {
+                omp_destroy_lock(&lock[i]);
+            }
+            delete[] lock;
             return {{}, run_time, (scalar) s};
         }
 

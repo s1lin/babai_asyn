@@ -49,9 +49,9 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
 
         axes[0, 1].set_ylabel('Avg. Iterations', fontweight="bold")
         axes[0, 0].set_ylabel('Avg. BER', fontweight="bold")
-        axes[1, 0].set_ylabel('Avg. Time (s)', fontweight="bold")
+        axes[1, 0].set_ylabel('Avg. Time (seconds)', fontweight="bold")
         axes[1, 1].set_ylabel('Speed Up', fontweight="bold")
-        axes[2, 0].set_ylabel('Avg. Time (s)', fontweight="bold")
+        axes[2, 0].set_ylabel('Avg. Time (seconds)', fontweight="bold")
         axes[2, 1].set_ylabel('Speed Up', fontweight="bold")
 
         # reduction:
@@ -190,7 +190,7 @@ def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
 
 if __name__ == "__main__":
     n = 512
-    a = np.load(f'./test_result/{n}_report_plot_10_BNP.npz')
+    a = np.load(f'./test_result/{n}_report_plot_80_BNP.npz')
     i = a['i']
     max_proc = a['max_proc']
     min_proc = a['min_proc']
