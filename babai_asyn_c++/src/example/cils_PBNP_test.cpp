@@ -35,7 +35,7 @@ long test_PBNP(int start, int end) {
 
     cils.is_local = 0;
 
-    for (int t = start; t < end; t++) {
+    for (int t = 0; t < 10; t++) {
         run_time = omp_get_wtime();
         k = 0;
         for (int snr = 5; snr <= 50; snr += 10) {
