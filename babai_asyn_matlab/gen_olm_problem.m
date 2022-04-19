@@ -1,4 +1,4 @@
-function [A, x_t, y, R0] = gen_olm_problem(k, m, n, SNR)
+function [A, x_t, y, R0] = gen_olm_problem(k, m, n, SNR, c)
 % [A, y, v, x_t, sigma] = gen_problem(k, m, n, SNR)
 % generates linear model y = A * x_t + v
 %
@@ -27,14 +27,31 @@ function [A, x_t, y, R0] = gen_olm_problem(k, m, n, SNR)
  
 rng('shuffle')
 %Initialize Variables
-sigma = sqrt(((4^k-1))/(3*k*10^(SNR/10)));
+sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
 
-Ar = normrnd(0, sqrt(1/2), m/2, n/2);
-Ai = normrnd(0, sqrt(1/2), m/2, n/2);
-Abar = [Ar -Ai; Ai, Ar];
-A = 2 * Abar;
+if c==0
+    A = randn(n, n);
+elseif c==1
+    Ar = randn(n/2);
+    Ai = randn(n/2);    
+else 
+    phi = rand(n/2);
+    PHI = rand(n/2);
+    for i = 1:n/2
+        for j = 1:n/2
+            phi(i, j) = phi(i, j)^abs(i-j);
+            PHI(i, j) = PHI(i, j)^abs(i-j);
+        end
+    end
+    Ar = sqrt(phi) * randn(n/2) * sqrt(PHI);
+    Ai = sqrt(phi) * randn(n/2) * sqrt(PHI);
+end
+if c >= 1
+    Abar = [Ar -Ai; Ai, Ar];
+    A = 2*Abar;
+end
 
-%True parameter x:
+ %True parameter x:
 low = -2^(k-1);
 upp = 2^(k-1) - 1;
 xr = 1 + 2 * randi([low upp], n/2, 1);
@@ -51,7 +68,6 @@ v = [vr; vi];
 y = A * x_t + v;
 
 R0 = 0;
-
 end
 
 
