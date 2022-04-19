@@ -14,7 +14,7 @@ def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
              n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
 
 
-def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
+def plot_bnp():
     np.savez(f'./test_result/{n}_report_plot_{start}_{end}BNP.npz', n=n, i=i, start=start, end=end,
              qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
     print("\n----------PLOT RUNTIME--------------\n")
@@ -33,10 +33,10 @@ def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
 
     for j in range(0, 2):
         if j == 0:
-            plt.rcParams["figure.figsize"] = (16, 16)
+            plt.rcParams["figure.figsize"] = (20, 16)
             fig, axes = plt.subplots(3, 2, constrained_layout=True)
         else:
-            plt2.rcParams["figure.figsize"] = (16, 16)
+            plt2.rcParams["figure.figsize"] = (20, 16)
             fig, axes = plt2.subplots(3, 2, constrained_layout=True)
 
         qam = 4 if j == 0 else 64
@@ -195,7 +195,7 @@ def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
 
 if __name__ == "__main__":
     n = 512
-    a = np.load(f'./test_result/{n}_report_plot_190_BNP.npz')
+
     i = a['i']
     start = a['start']
     end = a['end']
@@ -204,4 +204,6 @@ if __name__ == "__main__":
     bnp=a['bnp']
     ber=a['ber']
     itr=a['itr']
-    plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr)
+    for start in range(0,200,10):
+        a = np.load(f'./test_result/{n}_report_plot_190_BNP.npz')
+        plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr)

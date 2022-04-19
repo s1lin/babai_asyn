@@ -4,16 +4,20 @@ if k==0
     Ar = randn(n/2);
     Ai = randn(n/2);    
 else
-    phi = rand(n/2);
-    PHI = rand(n/2);
+    a = rand(1);
+    b = rand(1);
+    PHI = zeros(n/2,n/2);
+    phi = zeros(n/2,n/2);
     for i = 1:n/2
         for j = 1:n/2
-            phi(i, j) = phi(i, j)^abs(i-j);
-            PHI(i, j) = PHI(i, j)^abs(i-j);
+            phi(i, j) = a^abs(i-j);
+            PHI(i, j) = b^abs(i-j);
         end
     end
-    Ar = sqrt(phi) * randn(n/2) * sqrt(PHI);
-    Ai = sqrt(phi) * randn(n/2) * sqrt(PHI);
+    sqrtm(phi)
+    H =  sqrtm(phi) * complex(randn(n/2), randn(n/2)) * sqrtm(PHI);
+    Ar = real(H);
+    Ai = imag(H);
 end
 Abar = [Ar -Ai; Ai, Ar];
 A = Abar;
