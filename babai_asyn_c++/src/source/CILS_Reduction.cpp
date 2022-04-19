@@ -24,6 +24,18 @@ namespace cils {
         index m, n, upper, lower;
         bool verbose{}, eval{};
 
+//        void init_R_A() {
+//            R_A.resize(n / 2 * (1 + n), false);
+//            index idx = 0;
+//            for (index row = 0; row < R.size1(); row++) {
+//                for (index col = row; col < R.size2(); col++) {
+//                    R_A[idx] = R(row, col);
+//                    idx++;
+//                }
+//            }
+//        }
+
+
         /**
          * Evaluating the LLL decomposition
          * @return
@@ -203,7 +215,7 @@ namespace cils {
     public:
         //B --> A
         b_eye_matrix I{};
-        b_matrix B{}, R{}, Q{}, Z{}, P{};
+        b_matrix B{}, R{}, Q{}, Z{}, P{}, R_A{};
         b_vector y{}, y_r{}, p{};
 
         explicit CILS_Reduction(CILS <scalar, index> &cils) : CILS_Reduction(cils.A, cils.y, cils.lower, cils.upper) {}
@@ -915,7 +927,7 @@ namespace cils {
             R.assign(reduction.R);
             y.assign(reduction.y);
             t_qr = reT.run_time;
-
+//            init_R_A();
             //  ------------------------------------------------------------------
             //  --------  Perform the all-swap partial LLL reduction -------------------
             //  ------------------------------------------------------------------
@@ -938,47 +950,40 @@ namespace cils {
             t_plll = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_c) private(zeta, alpha, e, k, k1, i, j, i1, b_k) firstprivate(G)
             {
-                while(f) {
+                while (f) {
 #pragma omp barrier
 #pragma omp atomic write
                     f = false;
                     for (e = 0; e < n - 1; e++) {
 #pragma omp for schedule(static, 1) nowait
-                        for (k = 0; k < n; k++) {
-                            if (k < e + 1) {
-                                b_k = n - k;
-                                k1 = b_k - 1;
-                                zeta = std::round(R[(b_k + n * (k1)) - 2] /
-                                                  R[(b_k + n * (b_k - 2)) - 2]);
-                                alpha = R[(b_k + n * (k1)) - 2] -
-                                        zeta * R[(b_k + n * (b_k - 2)) - 2];
-                                scalar t = R[(b_k + n * (b_k - 2)) - 2];
-                                scalar scale = R[(b_k + n * (k1)) - 1];
-                                if ((t * t > 1.0000000001 * (alpha * alpha + scale * scale)) &&
-                                    (zeta != 0.0)) {
+                        for (k = 0; k < e + 1; k++) {
+                            b_k = n - k - 2;
+                            k1 = b_k + 1;
+                            zeta = std::round(R(b_k, k1) / R(b_k, b_k));
+                            alpha = R(b_k, k1) - zeta * R(b_k, b_k);
+                            if ((pow(R(b_k, b_k), 2) > 1.0000000001 * (alpha * alpha + pow(R(b_k + 1, k1), 2))) &&
+                                (zeta != 0.0)) {
 //                                    omp_set_lock(&lock[k]);
-                                    for (j = 0; j < k1; j++) {
-                                        R[j + n * (k1)] -= zeta * R[j + n * (b_k - 2)];
-                                    }
-                                    for (j = 0; j < n; j++) {
-                                        Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
-                                    }
-                                    for (int b_i{0}; b_i < b_k - 2; b_i++) {
-                                        index b_n = (b_k - b_i) - 3;
-                                        zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-                                        if (zeta != 0.0) {
-                                            for (j = 0; j <= b_n; j++) {
-                                                R[j + n * (k1)] -= zeta * R[j + n * b_n];
-                                            }
-                                            for (j = 0; j < n; j++) {
-                                                Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-                                            }
+                                for (j = 0; j < k1; j++) {
+                                    R(j, k1) -= zeta * R(j, b_k);//[j + n * (b_k - 2)];
+                                }
+                                for (j = 0; j < n; j++) {
+                                    Z(j, k1) -= zeta * Z(j, b_k);
+                                }
+                                for (int b_i{0}; b_i < b_k; b_i++) {
+                                    index b_n = (b_k - b_i) - 1;
+                                    zeta = std::round(R(b_n, k1) / R(b_n, b_n));
+                                    if (zeta != 0.0) {
+                                        for (j = 0; j <= b_n; j++) {
+                                            R(j, k1) -= zeta * R(j, b_n);
+                                        }
+                                        for (j = 0; j < n; j++) {
+                                            Z(j, k1) -= zeta * Z(j, b_n);
                                         }
                                     }
-//                                    omp_unset_lock(&lock[k]);
                                 }
-
                             }
+
                         }
                     }
 
@@ -1096,8 +1101,8 @@ namespace cils {
                 }
                 k++;
             }
-            verbose = true;
-            //lll_validation();
+//            verbose = true;
+//            lll_validation();
             return {{}, t_qr, t_plll};
         }
 

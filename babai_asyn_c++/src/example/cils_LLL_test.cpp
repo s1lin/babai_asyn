@@ -22,7 +22,7 @@ long plot_LLL() {
     scalar t_qr[4][200][20][2] = {}, t_aspl[4][200][20][2] = {}, t_total[4][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils);
-    cils.is_local = 0;
+    cils.is_local = 1;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;
@@ -36,15 +36,24 @@ long plot_LLL() {
 
                 cils::returnType<scalar, index> reT;
                 reduction.reset(cils);
-                reT = reduction.aspl();
+                reT = reduction.plll();
                 t_qr[d][t][0][k] = reT.run_time;
                 t_aspl[d][t][0][k] = reT.info;
                 t_total[d][t][0][k] = t_qr[d][t][0][k] + t_aspl[d][t][0][k];
+                printf("PLLL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
+                       reT.run_time, reT.info, reT.info + reT.run_time);
+
+                l++;
+                reduction.reset(cils);
+                reT = reduction.aspl();
+                t_qr[d][t][l][k] = reT.run_time;
+                t_aspl[d][t][l][k] = reT.info;
+                t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
                 printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
-                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
 
+                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     reduction.reset(cils);
                     reT = reduction.paspl(n_proc < 20? n_proc : 19);
@@ -52,9 +61,12 @@ long plot_LLL() {
                     t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
                     printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
-                           "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f\n",
+                           "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f,"
+                           "SPUPL: %8.4f, SPUTOTAL2:%8.4f\n",
                            n_proc < 20? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
-                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][0][k] / reT.info,
+                           t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][1][k] / reT.info,
+                           t_total[d][t][1][k] / t_total[d][t][l][k],
+                           t_aspl[d][t][0][k] / reT.info,
                            t_total[d][t][0][k] / t_total[d][t][l][k]
                     );
                 }
