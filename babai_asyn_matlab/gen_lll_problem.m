@@ -14,11 +14,13 @@ else
             PHI(i, j) = b^abs(i-j);
         end
     end
-    H =  sqrtm(phi) * complex(randn(n/2), randn(n/2)) * sqrtm(PHI);
-    Ar = real(H);
-    Ai = imag(H);
+
+    Ar = sqrtm(phi) * randn(n/2) * sqrtm(PHI);
+    Ai = sqrtm(phi) * randn(n/2) * sqrtm(PHI);
 end
+
 Abar = [Ar -Ai; Ai, Ar];
+
 A = Abar;
 y = randn(m,1);
 R0 = 0;
