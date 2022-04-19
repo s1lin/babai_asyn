@@ -14,7 +14,6 @@ else
             PHI(i, j) = b^abs(i-j);
         end
     end
-    sqrtm(phi)
     H =  sqrtm(phi) * complex(randn(n/2), randn(n/2)) * sqrtm(PHI);
     Ar = real(H);
     Ai = imag(H);
