@@ -38,8 +38,8 @@ long test_PBNP(int start, int end) {
     for (int t = 0; t < 10; t++) {
         run_time = omp_get_wtime();
         k = 0;
+        index s = 0;
         for (int snr = 5; snr <= 50; snr += 10) {
-            index s = 0;
             for (int qam = 1; qam <= 3; qam += 2) {
                 index init = 0;
                 for (int n = 50; n < 600; n += 100) {
@@ -115,13 +115,17 @@ long test_PBNP(int start, int end) {
                 k++;
             }
             s++;
+            run_time = omp_get_wtime() - run_time;
+            printf("++++++++++++++++++++++++++++++++++++++\n Elapsed Time: %.5fs. \n"
+                   "++++++++++++++++++++++++++++++++++++++\n", omp_get_wtime() - run_time);
+
         }
         run_time = omp_get_wtime() - run_time;
         printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
                "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
         cout.flush();
         printf("\n---------------------\nITER:%d\n---------------------\n", t);
-        if (t % 10 == 0) {//
+        //if (t % 10 == 0) {//
             PyObject *pName, *pModule, *pFunc;
             PyObject *pArgs, *pValue;
             Py_Initialize();
@@ -198,7 +202,7 @@ long test_PBNP(int start, int end) {
                 fprintf(stderr, "Failed to load file\n");
 
             }
-        }
+        //}
 
     }
 
