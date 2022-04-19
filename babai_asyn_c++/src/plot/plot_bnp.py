@@ -9,13 +9,13 @@ plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams.update({'font.size': 19})
 
 
-def save_data(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
-    np.savez(f'./test_result/{n}_report_plot_{i}_BNP.npz', n=n, i=i, max_proc=max_proc, min_proc=min_proc,
-             qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
+def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
+    np.savez(f'./test_result/{n}_report_plot_{i}_{start}_{end}_BNP.npz',
+             n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
 
 
-def plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr):
-    np.savez(f'./test_result/{n}_report_plot_{i}_BNP.npz', n=n, i=i, max_proc=max_proc, min_proc=min_proc,
+def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
+    np.savez(f'./test_result/{n}_report_plot_{i}_{start}_{end}BNP.npz', n=n, i=i, start=start, end=end,
              qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
     print("\n----------PLOT RUNTIME--------------\n")
     color = ['r', 'g', 'b', 'm']
@@ -197,11 +197,11 @@ if __name__ == "__main__":
     n = 512
     a = np.load(f'./test_result/{n}_report_plot_190_BNP.npz')
     i = a['i']
-    max_proc = a['max_proc']
-    min_proc = a['min_proc']
+    start = a['start']
+    end = a['end']
     qrT = a['qrT']
     asplT = a['asplT']
     bnp=a['bnp']
     ber=a['ber']
     itr=a['itr']
-    plot_bnp(n, i, max_proc, min_proc, qrT, asplT, bnp, ber, itr)
+    plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr)

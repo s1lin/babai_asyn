@@ -184,10 +184,10 @@ namespace cils {
                                 ct[t]++;
                             }
                             if (ct[t] >= idx - 2) {
-                                if (init == 1)
-                                    flag = diff == 0;
-                                if (init != 1)
-                                    flag = diff <= 100 || idx <= n_t ;
+//                                if (init == 1)
+//                                    flag = diff == 0;
+//                                if (init != 1)
+                                flag = diff <= 100 || idx <= n_t ;
 #pragma omp atomic write
                                 diff = 0;
                             }

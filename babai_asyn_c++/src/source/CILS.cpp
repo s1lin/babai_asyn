@@ -252,7 +252,7 @@ namespace cils {
     }
 
     template<typename scalar, typename index>
-    void init_PBNP(CILS<scalar, index> &cils, index n, index snr, index qam) {
+    void init_PBNP(CILS<scalar, index> &cils, index n, index snr, index qam, index c) {
         try {
             cils.m = n;
             cils.n = n;
@@ -273,6 +273,7 @@ namespace cils {
             matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(cils.m);
             matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(cils.n);
             matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(cils.snr);
+            matlab::data::TypedArray<scalar> c_M = factory.createScalar<scalar>(c);
 
 
             std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
@@ -282,12 +283,13 @@ namespace cils {
             matlabPtr->setVariable(u"m", std::move(m_M));
             matlabPtr->setVariable(u"n", std::move(n_M));
             matlabPtr->setVariable(u"SNR", std::move(SNR));
+            matlabPtr->setVariable(u"c", std::move(c_M));
 
 
             // Call the MATLAB addpath function
             if (cils.is_local)
                 matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
-            matlabPtr->eval(u" [A, x_t, y, R0] = gen_olm_problem(qam, m, n, SNR);");
+            matlabPtr->eval(u" [A, x_t, y, R0] = gen_olm_problem(qam, m, n, SNR, c);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
             matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");

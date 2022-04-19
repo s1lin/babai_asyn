@@ -27,7 +27,7 @@ function [A, x_t, y, R0] = gen_olm_problem(k, m, n, SNR, c)
  
 rng('shuffle')
 %Initialize Variables
-sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
+sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
 
 if c==0
     A = randn(n, n);
