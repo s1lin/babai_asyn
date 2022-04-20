@@ -1,6 +1,5 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
-//#include <boost/python.hpp>
 
 #include "../source/CILS.cpp"
 #include "../source/CILS_Reduction.cpp"

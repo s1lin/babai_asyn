@@ -15,8 +15,8 @@ for j = 1:n
     if l > j        
         piv([j,l]) = piv([l,j]);
         s(:,[j,l]) = s(:,[l,j]);
-        Q(:,[j,l]) = Q(:,[l;j]);
-        R(:,[j,l]) = R(:,[l;j]);
+        Q(:,[j,l]) = Q(:,[l,j]);
+        R(:,[j,l]) = R(:,[l,j]);
     end
     
     R(j,j) = norm(Q(:,j));

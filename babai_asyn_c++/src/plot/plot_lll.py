@@ -188,7 +188,7 @@ def plot_lll(n, i, max_proc, min_proc, qrT, asplT, totalT):
 
 if __name__ == "__main__":
     n = 5
-    a = np.load(f'./test_result/{n}_report_plot_190_ASPL.npz')
+    a = np.load(f'./test_result/{n}_report_plot_10_ASPL.npz')
     i = a['i']
     print(i)
     max_proc = a['max_proc']

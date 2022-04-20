@@ -118,7 +118,7 @@ long test_PBNP(int start, int end) {
             s++;
             run_time = omp_get_wtime() - run_time;
             printf("++++++++++++++++++++++++++++++++++++++\n Elapsed Time: %.5fs. \n"
-                   "++++++++++++++++++++++++++++++++++++++\n", omp_get_wtime() - run_time);
+                   "++++++++++++++++++++++++++++++++++++++\n", run_time);
 
         }
         run_time = omp_get_wtime() - run_time;
