@@ -40,13 +40,14 @@ for k = 1 : n_dim
     [~, i] = min(colNormB(1,k:n) - colNormB(2,k:n));
     q = i + k - 1;
     
+    
     % Column interchange
     if q > k
         piv([k,q]) = piv([q,k]);
         colNormB(:,[k,q]) = colNormB(:,[q,k]);
         B(:,[k,q]) = B(:,[q,k]);
     end
-
+    
     % Compute and apply the Householder transformation  I-tau*v*v'
     if norm(B(k+1:m,k)) > 0 % A Householder transformation is needed
 	    v = B(k:m,k);
@@ -68,7 +69,7 @@ for k = 1 : n_dim
     % Update colnormB(2,k+1:n)
     colNormB(2,k+1:n) = colNormB(2,k+1:n) + B(k,k+1:n) .* B(k,k+1:n);
 end
-
+colNormB(1,1:n) - colNormB(2,1:n)
 if m < n
    R = B;
 else

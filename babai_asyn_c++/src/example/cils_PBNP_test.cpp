@@ -22,19 +22,18 @@ long test_PBNP(int start, int end) {
             lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
             lt->tm_hour, lt->tm_min, lt->tm_sec
     );
-    printf("====================[ TEST | LLL | %s ]==================================\n", time_str);
+    printf("====================[ TEST | BNP | %s ]==================================\n", time_str);
     cout.flush();
 
     index d = 0, l = 0, num_trial = 200, k, c = 0;
     scalar t_qr[5][6][10][10][2] = {}, t_aspl[5][6][10][10][2] = {}, t_itr[5][6][10][10][2] = {};
     scalar t_bnp[5][6][10][10][2], t_ber[5][6][10][10][2] = {}, run_time;
-    scalar ber, res, bnp_spu = 0, spu = 0, ser_ber = 0, omp_ber = 0, bnp_ber = 0, pbnp_ber = 0;
-    scalar ser_rt = 0, omp_rt = 0, bnp_rt = 0, pbnp_rt = 0;
+
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
 
     cils.is_local = 0;
-
+    b_vector x_ser, x_lll, x_r;
     for (int t = 0; t < 10; t++) {
         run_time = omp_get_wtime();
         k = 0;
@@ -43,7 +42,9 @@ long test_PBNP(int start, int end) {
             for (int qam = 1; qam <= 3; qam += 2) {
                 index init = 0;
                 for (int n = 50; n < 600; n += 100) {
-                    b_vector x_ser(n, 0), x_lll(n, 0), x_r(n, 0);
+                    x_ser.resize(n, false);
+                    x_lll.resize(n, false);
+
                     printf("--------ITER: %d, SNR: %d, QAM: %d, n: %d-------\n", t + 1, snr, (int) pow(4, qam), n);
                     cils::init_PBNP(cils, n, snr, qam, c);
                     cils::returnType<scalar, index> reT;
@@ -86,7 +87,7 @@ long test_PBNP(int start, int end) {
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[s][init][t][0][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[s][init][t][0][k] = reT.run_time;
-                    res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
+                    scalar res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
                     printf("BNP: BER: %8.5f, RES: %8.4f, TIME: %8.4f\n", t_ber[s][init][t][0][k], res,
                            t_bnp[s][init][t][0][k]);
 

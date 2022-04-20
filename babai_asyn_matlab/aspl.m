@@ -1,4 +1,4 @@
-function [R,Z,y] = aspl(A,y)
+function [R,Z,y,t,diff] = aspl(A,y)
 %
 % rng('shuffle')
 % %Initialize Variables
@@ -45,7 +45,7 @@ f = true;
 even = true;
 start = 2;
 iter = 0;
-tic
+t = tic;
 
 while f
     iter = iter + 1;
@@ -109,7 +109,7 @@ while f
         end
     end
 end
-toc
+t = toc(t);
 Q = A*Z*inv(R);
 % iter
 % if n <= 16
@@ -118,21 +118,20 @@ Q = A*Z*inv(R);
 %     Q
 %     y
 % end
-diff = norm(Q'*y_LLL - y, 2)
+diff = norm(Q'*y_LLL - y, 2);
 %y'
 % 
 % 
-% k = 2;
-% 
-% while k <= n
-%     
-%     k1 = k-1;    
-%     if 0.25 * R(k1,k1)^2 >  R(k1,k)^2 + R(k,k)^2
-%         disp(["failed",k])
-%     end
-%     k = k + 1;
-% end
-sils_reduction(A,y_LLL);
+k = 2;
+
+while k <= n
+    
+    k1 = k-1;   
+    if  R(k1,k1)^2 > (1 + 1.e-10) * (R(k1,k)^2 + R(k,k)^2)
+        disp(["failed",k])
+    end
+    k = k + 1;
+end
 
 end
 

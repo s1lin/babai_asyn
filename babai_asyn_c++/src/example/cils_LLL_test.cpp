@@ -30,6 +30,7 @@ long plot_LLL() {
         for (int n = 50; n <= 200; n += 50) {
             printf("+++++++++++ Dimension %d ++++++++++++++++++++\n", n);
             for (int k = 0; k <= 1; k++) {
+                printf("+++++++++++ Case %d ++++++++++++++++++++\n", k + 1);
                 l = 0;
                 cils::init_LLL(cils, n, k);
                 cout.flush();
@@ -56,14 +57,14 @@ long plot_LLL() {
                 for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     reduction.reset(cils);
-                    reT = reduction.paspl(n_proc < 20? n_proc : 19);
+                    reT = reduction.paspl(n_proc < 20 ? n_proc : 19);
                     t_qr[d][t][l][k] = reT.run_time;
                     t_aspl[d][t][l][k] = reT.info;
                     t_total[d][t][l][k] = t_qr[d][t][l][k] + t_aspl[d][t][l][k];
                     printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                            "SPUQR: %8.4f, SPULLL: %8.4f, SPUTOTAL:%8.4f,"
                            "SPUPL: %8.4f, SPUTOTAL2:%8.4f\n",
-                           n_proc < 20? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
+                           n_proc < 20 ? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
                            t_qr[d][t][0][k] / reT.run_time, t_aspl[d][t][1][k] / reT.info,
                            t_total[d][t][1][k] / t_total[d][t][l][k],
                            t_aspl[d][t][0][k] / reT.info,
@@ -107,7 +108,7 @@ long plot_LLL() {
 
             if (pModule != nullptr) {
                 pFunc = PyObject_GetAttrString(pModule, "save_data");
-                if(cils.is_local)
+                if (cils.is_local)
                     pFunc = PyObject_GetAttrString(pModule, "plot_lll");
 
                 if (pFunc && PyCallable_Check(pFunc)) {

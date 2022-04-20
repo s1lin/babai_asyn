@@ -140,36 +140,39 @@ namespace cils {
         * @return
         */
         scalar qrp_validation() {
+            printf("====================[ TEST | QRP_VALIDATE ]==================================\n");
+            printf("[ INFO: in QRP validation]\n");
             index i, j, k;
             scalar sum, error = 0;
 
-            if (eval == 1) {
-                b_matrix B_T;
-                prod(Q, R, B_T);
 
-                b_matrix B_P;
-                prod(B, P, B_P);//helper::mtimes_AP<scalar, index>(m, n, B, P, B_P.data());
+            b_matrix B_T;
+            prod(Q, R, B_T);
 
-                if (verbose) {
-                    printf("\n[ Print Q:]\n");
-                    helper::display<scalar, index>(Q, "Q");
-                    printf("\n[ Print R:]\n");
-                    helper::display<scalar, index>(R, "R");
-                    printf("\n[ Print P:]\n");
-                    helper::display<scalar, index>(P, "P");
-                    printf("\n[ Print B:]\n");
-                    helper::display<scalar, index>(B, "B");
-                    printf("\n[ Print B_P:]\n");
-                    helper::display<scalar, index>(B_P, "B*P");
-                    printf("\n[ Print Q*R:]\n");
-                    helper::display<scalar, index>(B_T, "Q*R");
-                }
+            b_matrix B_P;
+            prod(B, P, B_P);//helper::mtimes_AP<scalar, index>(m, n, B, P, B_P.data());
 
-                for (i = 0; i < m * n; i++) {
-                    error += fabs(B_T(i) - B_P[i]);
-                }
+            if (verbose) {
+                printf("\n[ Print Q:]\n");
+                helper::display<scalar, index>(Q, "Q");
+                printf("\n[ Print R:]\n");
+                helper::display<scalar, index>(R, "R");
+                printf("\n[ Print P:]\n");
+                helper::display<scalar, index>(P, "P");
+                printf("\n[ Print B:]\n");
+                helper::display<scalar, index>(B, "B");
+                printf("\n[ Print B_P:]\n");
+                helper::display<scalar, index>(B_P, "B*P");
+                printf("\n[ Print Q*R:]\n");
+                helper::display<scalar, index>(B_T, "Q*R");
             }
 
+            for (i = 0; i < m * n; i++) {
+                error += fabs(B_T[i] - B_P[i]);
+            }
+
+
+            printf("QR Error: %8.5f\n", error);
             return error;
         }
 
@@ -310,12 +313,168 @@ namespace cils {
             return {{}, t_qr, 0};
         }
 
+        returnType <scalar, index> mgs_qrp() {
+            //Clear Variables:
+            R.clear();
+            Q.assign(B);
+            P.assign(I);
+            scalar s[2][n];
+            //  ------------------------------------------------------------------
+            //  --------  Perform the QR factorization: MGS Row-------------------
+            //  ------------------------------------------------------------------
+            scalar t_qr = omp_get_wtime();
+            scalar sum = 0;
+            for (index k = 0; k < n; k++) {
+                sum = 0;
+                for (index i = 0; i < n; i++) {
+                    sum += pow(Q(i, k), 2);
+                }
+                s[0][k] = sum;
+                s[1][k] = 0;
+            }
+
+            index l = 0;
+            scalar min_norm = 0;
+
+            for (index k = 0; k < n; k++) {
+                min_norm = s[0][k] - s[1][k];
+                l = k;
+                for (index i = k + 1; i < n; i++) {
+                    scalar cur_norm = s[0][i] - s[1][i];
+                    if (cur_norm <= min_norm) {
+                        min_norm = cur_norm;
+                        l = i;
+                    }
+                }
+                if (l > k) {
+                    for (index i = 0; i < n; i++) {
+                        std::swap(R(i, l), R(i, k));
+                        std::swap(P(i, l), P(i, k));
+                        std::swap(Q(i, l), Q(i, k));
+                    }
+                    std::swap(s[0][l], s[0][k]);
+                    std::swap(s[1][l], s[1][k]);
+                }
+                sum = 0;
+                for (index i = 0; i < n; i++) {
+                    sum += pow(Q(i, k), 2);
+                }
+                R(k, k) = sqrt(sum);
+                for (index i = 0; i < n; i++) {
+                    Q(i, k) = Q(i, k) / R(k, k);
+                }
+                for (index j = k + 1; j < n; j++) {
+                    R(k, j) = 0;
+                    for (index i = 0; i < n; i++) {
+                        R(k, j) += Q(i, k) * Q(i, j);
+                    }
+                    s[1][j] = s[1][j] + pow(R(k, j), 2);
+                    for (index i = 0; i < n; i++) {
+                        Q(i, j) -= R(k, j) * Q(i, k);
+                    }
+                }
+            }
+
+            b_matrix Q_T = trans(Q);
+            prod(Q_T, y, y_r);
+            y.assign(y_r);
+            t_qr = omp_get_wtime() - t_qr;
+//            qrp_validation();
+            return {{}, t_qr, 0};
+        }
+
+        returnType <scalar, index> pmgs_qrp(index n_proc) {
+            //Clear Variables:
+            R.clear();
+            Q.clear();
+            Q.assign(B);
+            P.assign(I);
+            scalar s[2][n];
+//            auto lock = new omp_lock_t[n]();
+//            for (index i = 0; i < n; i++) {
+//                omp_init_lock((&lock[i]));
+//                omp_set_lock(&lock[i]);
+//            }
+            //  ------------------------------------------------------------------
+            //  --------  Perform the QR factorization: MGS Row-------------------
+            //  ------------------------------------------------------------------
+            scalar t_qr = omp_get_wtime(), min_norm;
+            scalar sum = 0;
+            index i, j, k, l;
+#pragma omp parallel default(shared) num_threads(n_proc)
+            {}
+            //  ------------------------------------------------------------------
+            //  --------  Perform the QR factorization: MGS Row-------------------
+            //  ------------------------------------------------------------------
+
+#pragma omp parallel default(shared) num_threads(n_proc) private(sum, i, j, k, l, min_norm)
+            {
+#pragma omp for schedule(static, 1)
+                for (k = 0; k < n; k++) {
+                    sum = 0;
+                    for (i = 0; i < n; i++) {
+                        sum += pow(Q(i, k), 2);
+                    }
+                    s[0][k] = sum;
+                    s[1][k] = 0;
+                }
+
+                for (k = 0; k < n; k++) {
+#pragma omp single
+                    {
+                        min_norm = s[0][k] - s[1][k];
+                        l = k;
+                        for (i = k + 1; i < n; i++) {
+                            scalar cur_norm = s[0][i] - s[1][i];
+                            if (cur_norm <= min_norm) {
+                                min_norm = cur_norm;
+                                l = i;
+                            }
+                        }
+                        if (l > k) {
+                            for (i = 0; i < n; i++) {
+                                std::swap(R(i, l), R(i, k));
+                                std::swap(P(i, l), P(i, k));
+                                std::swap(Q(i, l), Q(i, k));
+                            }
+                            std::swap(s[0][l], s[0][k]);
+                            std::swap(s[1][l], s[1][k]);
+                        }
+                        R(k, k) = sqrt(s[0][k] - s[1][k]);
+                    }
+
+#pragma omp barrier
+#pragma omp for schedule(static, 1)
+                    for (i = 0; i < n; i++) {
+                        Q(i, k) = Q(i, k) / R(k, k);
+                    }
+#pragma omp for schedule(static, 1)
+                    for (j = k + 1; j < n; j++) {
+                        R(k, j) = 0;
+                        for (i = 0; i < n; i++) {
+                            R(k, j) += Q(i, k) * Q(i, j);
+                        }
+                        s[1][j] = s[1][j] + pow(R(k, j), 2);
+                        for (i = 0; i < n; i++) {
+                            Q(i, j) -= R(k, j) * Q(i, k);
+                        }
+                    }
+                }
+
+            }
+
+            b_matrix Q_T = trans(Q);
+            prod(Q_T, y, y_r);
+            y.assign(y_r);
+            t_qr = omp_get_wtime() - t_qr;
+            return {{}, t_qr, 0};
+        }
 
         /**
          * Parallel version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          */
-        returnType <scalar, index> mgs_qr_omp(const index n_proc) {
+        returnType <scalar, index> pmgs(const index n_proc) {
 
             R.clear();
             Q.clear();
@@ -433,7 +592,7 @@ namespace cils {
 
         /**
          * @deprecated
-         * @return 
+         * @return
          */
 //        returnType <scalar, index> aip() {
 //            scalar alpha;
@@ -578,14 +737,14 @@ namespace cils {
         returnType <scalar, index> plll() {
             scalar zeta, alpha, t_qr, t_plll, sum = 0;
 
-            Z.assign(I);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
-            auto reT = reduction.mgs_qr();
+            auto reT = reduction.mgs_qrp();
             R.assign(reduction.R);
             y.assign(reduction.y);
+            Z.assign(reduction.P);
             t_qr = reT.run_time;
 
             //  ------------------------------------------------------------------
@@ -691,16 +850,16 @@ namespace cils {
         returnType <scalar, index> aspl() {
             scalar zeta, alpha, t_qr, t_plll, sum = 0;
             //Clear Variables:
-            Z.assign(I);
             y_r.assign(y);
             auto s = new int[n]();
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
             CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
-            cils::returnType<scalar, index> reT = reduction.mgs_qr();
+            cils::returnType<scalar, index> reT = reduction.mgs_qrp();
             R.assign(reduction.R);
             y.assign(reduction.y);
+            Z.assign(reduction.P);
             t_qr = reT.run_time;
 
             //  ------------------------------------------------------------------
@@ -916,16 +1075,17 @@ namespace cils {
         returnType <scalar, index> paspl(index n_c) {
             scalar zeta, alpha, t_qr, t_plll;
             //Clear Variables:
-            Z.assign(I);
+
             y_r.assign(y);
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
 
             CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
-            cils::returnType<scalar, index> reT = reduction.mgs_qr_omp(n_c);
+            cils::returnType<scalar, index> reT = reduction.pmgs_qrp(n_c);
             R.assign(reduction.R);
             y.assign(reduction.y);
+            Z.assign(reduction.P);
             t_qr = reT.run_time;
 //            init_R_A();
             //  ------------------------------------------------------------------
@@ -1046,10 +1206,9 @@ namespace cils {
 #pragma omp for schedule(static)
                         for (k = start; k < n; k += 2) {
                             k1 = k - 1;
-                            zeta = round(R[k1 + k * n] / R[k1 + k1 * n]);
-                            alpha = R[k1 + k * n] - zeta * R[k1 + k1 * n];
 
-                            if (pow(R[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R[k + k * n], 2))) {
+                            if (pow(R[k1 + k1 * n], 2) >
+                                (1 + 1.e-10) * (pow(R[k1 + k * n], 2) + pow(R[k + k * n], 2))) {
                                 f = true;
                                 s[k] = 1;
                                 for (i = 0; i < n; i++) {
@@ -1093,10 +1252,8 @@ namespace cils {
             k = 1;
             while (k < n) {
                 k1 = k - 1;
-                zeta = round(R(k1, k) / R(k1, k1));
-                alpha = R(k1, k) - zeta * R(k1, k1);
 
-                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(alpha, 2) + pow(R(k, k), 2))) {
+                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(R(k1, k), 2) + pow(R(k, k), 2))) {
                     cerr << "Failed:" << k1 << endl;
                 }
                 k++;

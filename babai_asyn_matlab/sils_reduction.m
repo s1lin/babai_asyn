@@ -1,4 +1,4 @@
-function [R,Z,y] = sils_reduction(B,y)
+function [R,Z,y,t,diff] = sils_reduction(B,y)
 %
 % [R,Z,y] = sils_reduction(B,y) reduces the general standard integer 
 % least squares problem to an upper triangular one by the LLL-QRZ 
@@ -28,20 +28,20 @@ function [R,Z,y] = sils_reduction(B,y)
 
 
 [m,n] = size(B);
-
+t = tic;
 y_ = y;
 % QR factorization with minimum-column pivoting
-[R,piv,y] = qrmcp(B,y);
-%[Q, R, ~] = qr(B, y);
-
+%[R,piv,y] = qrmcp(B,y);
+[~, R, P, y, ~] = qrmgs_cp(B, y);
+%[Q, R] = qr(B);
 %y = Q'*y;
-%R_ = R;
+
 % Obtain the permutation matrix Z
-Z = zeros(n,n);
+Z = P;%zeros(n,n);
 %Z = eye(n);
-for j = 1 : n
-    Z(piv(j),j) = 1;
-end
+%for j = 1 : n
+%     Z(piv(j),j) = 1;
+%end
 
 % ------------------------------------------------------------------
 % --------  Perfome the partial LLL reduction  ---------------------
@@ -49,7 +49,7 @@ end
 
 k = 2;
 iter = 0;
-tic
+
 while k <= n
     iter = iter + 1;
     k1 = k-1;
@@ -92,18 +92,14 @@ while k <= n
         k = k + 1;
     end
 end
-toc
+t = toc(t);
 Q = B*Z*inv(R);
-iter
-if n <= 16
-    Z
-    R
-    Q
-    y
+diff = norm(Q'*y_ - y, 2);
+while k <= n
+    
+    k1 = k-1;   
+    if  R(k1,k1)^2 > (1 + 1.e-10) * (R(k1,k)^2 + R(k,k)^2)
+        disp(["failed",k])
+    end
+    k = k + 1;
 end
-diff = norm(Q'*y_ - y, 2)
-% Q = B*Z*inv(R)
-% Q'*Q
-% diff = Q'*y_ - y
-% norm(Q'*y_ - y, 1)
-% sils_lll_eval(R);
