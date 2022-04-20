@@ -440,7 +440,11 @@ namespace cils {
                             std::swap(s[0][l], s[0][k]);
                             std::swap(s[1][l], s[1][k]);
                         }
-                        R(k, k) = sqrt(s[0][k] - s[1][k]);
+                        sum = 0;
+                        for (i = 0; i < n; i++) {
+                            sum += pow(Q(i, k), 2);
+                        }
+                        R(k, k) = sqrt(sum);
                     }
 
 #pragma omp barrier
@@ -889,18 +893,18 @@ namespace cils {
                             for (j = 0; j < n; j++) {
                                 Z[j + n * (k1)] -= zeta * Z[j + n * (b_k - 2)];
                             }
-                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
-                                index b_n = (b_k - b_i) - 3;
-                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
-                                if (zeta != 0.0) {
-                                    for (j = 0; j <= b_n; j++) {
-                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
-                                    }
-                                    for (j = 0; j < n; j++) {
-                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
-                                    }
-                                }
-                            }
+//                            for (int b_i{0}; b_i < b_k - 2; b_i++) {
+//                                index b_n = (b_k - b_i) - 3;
+//                                zeta = std::round(R[b_n + n * (k1)] / R[b_n + n * b_n]);
+//                                if (zeta != 0.0) {
+//                                    for (j = 0; j <= b_n; j++) {
+//                                        R[j + n * (k1)] -= zeta * R[j + n * b_n];
+//                                    }
+//                                    for (j = 0; j < n; j++) {
+//                                        Z[j + n * (k1)] -= zeta * Z[j + n * b_n];
+//                                    }
+//                                }
+//                            }
                         }
                     }
                 }
@@ -1130,18 +1134,18 @@ namespace cils {
                                 for (j = 0; j < n; j++) {
                                     Z(j, k1) -= zeta * Z(j, b_k);
                                 }
-                                for (int b_i{0}; b_i < b_k; b_i++) {
-                                    index b_n = (b_k - b_i) - 1;
-                                    zeta = std::round(R(b_n, k1) / R(b_n, b_n));
-                                    if (zeta != 0.0) {
-                                        for (j = 0; j <= b_n; j++) {
-                                            R(j, k1) -= zeta * R(j, b_n);
-                                        }
-                                        for (j = 0; j < n; j++) {
-                                            Z(j, k1) -= zeta * Z(j, b_n);
-                                        }
-                                    }
-                                }
+//                                for (int b_i{0}; b_i < b_k; b_i++) {
+//                                    index b_n = (b_k - b_i) - 1;
+//                                    zeta = std::round(R(b_n, k1) / R(b_n, b_n));
+//                                    if (zeta != 0.0) {
+//                                        for (j = 0; j <= b_n; j++) {
+//                                            R(j, k1) -= zeta * R(j, b_n);
+//                                        }
+//                                        for (j = 0; j < n; j++) {
+//                                            Z(j, k1) -= zeta * Z(j, b_n);
+//                                        }
+//                                    }
+//                                }
                             }
 
                         }

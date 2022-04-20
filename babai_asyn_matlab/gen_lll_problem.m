@@ -31,6 +31,7 @@ end
 Abar = [Ar -Ai; Ai, Ar];
 A = Abar;
 y = randn(m,1);
+R0 = 0;
 %[~, R0, ~, ~, ~] = qrmgs_cp(A, y);
 %     c2 = c2 + cond(A);
 %     [R0,~,~,t2,diff] = sils_reduction(A,y);
