@@ -1434,16 +1434,16 @@ namespace cils {
             //  ------------------------------------------------------------------
 
             CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
-            CILS_Reduction<scalar, index> reduction2(B, y, lower, upper);
-            cils::returnType<scalar, index> reT = reduction2.pmgs_qrp(n_c);
+            cils::returnType<scalar, index> reT = reduction.pmgs_qrp(n_c);
             t_qr = reT.run_time;
-
+            R.assign(reduction.R);
 
             //while (reT.info != 0)
+            reduction.reset();
             reT = reduction.mgs_qrp();
             scalar error = 0;
             for (index i = 0; i < m * n; i++) {
-                error += fabs(reduction.R[i] - reduction2.R[i]);
+                error += fabs(R[i] - reduction.R[i]);
             }
             cout<<error;
 
