@@ -411,10 +411,17 @@ namespace cils {
 
                 if (l > k) {
 //                    cout << l << ",";
+                    scalar temp;
                     for (index i = 0; i < n; i++) {
-                        std::swap(R(i, l), R(i, k));
-                        std::swap(P(i, l), P(i, k));
-                        std::swap(Q(i, l), Q(i, k));
+                        temp = R(i, l);
+                        R(i, l) = R(i, k);
+                        R(i, k) = temp;
+                        temp = R(i, l);
+                        P(i, l) = P(i, k);
+                        P(i, k) = temp;
+                        temp = Q(i, l);
+                        Q(i, l) = Q(i, k);
+                        Q(i, k) = temp;
                     }
                     std::swap(s1[l], s1[k]);
                     std::swap(s2[l], s2[k]);
@@ -780,10 +787,17 @@ namespace cils {
                             }
                         }
                         if (l > k) {
+                            scalar temp;
                             for (i = 0; i < n; i++) {
-                                std::swap(R(i, l), R(i, k));
-                                std::swap(P(i, l), P(i, k));
-                                std::swap(Q(i, l), Q(i, k));
+                                temp = R(i, l);
+                                R(i, l) = R(i, k);
+                                R(i, k) = temp;
+                                temp = R(i, l);
+                                P(i, l) = P(i, k);
+                                P(i, k) = temp;
+                                temp = Q(i, l);
+                                Q(i, l) = Q(i, k);
+                                Q(i, k) = temp;
                             }
                             std::swap(s1[l], s1[k]);
                             std::swap(s2[l], s2[k]);
@@ -821,8 +835,8 @@ namespace cils {
             prod(Q_T, y, y_r);
             y.assign(y_r);
             t_qr = omp_get_wtime() - t_qr;
-            scalar error = qrp_validation();
-            return {{}, t_qr, error};
+//            scalar error = qrp_validation();
+            return {{}, t_qr, 0};
         }
 
         /**
@@ -1439,7 +1453,6 @@ namespace cils {
             R.assign(reduction.R);
 
             //while (reT.info != 0)
-            reduction.reset();
             reT = reduction.mgs_qrp();
             scalar error = 0;
             for (index i = 0; i < m * n; i++) {
@@ -1524,6 +1537,7 @@ namespace cils {
                             }
                         }
                     }
+#pragma omp barrier
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         if (s[k]) {
@@ -1550,7 +1564,7 @@ namespace cils {
                             y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
                         }
                     }
-
+#pragma omp barrier
 #pragma omp single
                     {
                         if (even) {
@@ -1561,8 +1575,9 @@ namespace cils {
                             start = 1;
                         }
                     }
-#pragma omp barrier
+
                     if (!f) {
+#pragma omp barrier
 #pragma omp for schedule(static)
                         for (k = start; k < n; k += 2) {
                             k1 = k - 1;
@@ -1577,6 +1592,7 @@ namespace cils {
                                 }
                             }
                         }
+#pragma omp barrier
 #pragma omp for schedule(static)
                         for (k = start; k < n; k += 2) {
                             if (s[k]) {
