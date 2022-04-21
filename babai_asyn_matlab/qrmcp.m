@@ -69,7 +69,7 @@ for k = 1 : n_dim
     % Update colnormB(2,k+1:n)
     colNormB(2,k+1:n) = colNormB(2,k+1:n) + B(k,k+1:n) .* B(k,k+1:n);
 end
-colNormB(1,1:n) - colNormB(2,1:n)
+colNormB
 if m < n
    R = B;
 else

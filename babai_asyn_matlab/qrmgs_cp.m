@@ -12,7 +12,7 @@ end
 for j = 1:n
     [~, l] = min(s(1,j:n)-s(2,j:n));
     l = l + j - 1;
-    if l > j        
+    if l > j   
         piv([j,l]) = piv([l,j]);
         s(:,[j,l]) = s(:,[l,j]);
         Q(:,[j,l]) = Q(:,[l,j]);
