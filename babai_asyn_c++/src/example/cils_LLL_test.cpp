@@ -36,10 +36,13 @@ long plot_LLL() {
 
                 cils::returnType<scalar, index> reT;
 //                reduction.reset(cils);
-//                reT = reduction.mgs_qrp2();
+//                reT = reduction.mgs_qrp();
+//                cout<<reduction.R;
 //
 //                reduction.reset(cils);
-//                reT = reduction.mgs_qrp();
+//                reT = reduction.pmgs_qrp(15);
+//
+//                cout<<reduction.R;
 
                 reduction.reset(cils);
                 reT = reduction.plll();
@@ -59,7 +62,7 @@ long plot_LLL() {
                        reT.run_time, reT.info, reT.info + reT.run_time);
 
 
-                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                     l++;
                     reduction.reset(cils);
                     index n_c = n_proc;

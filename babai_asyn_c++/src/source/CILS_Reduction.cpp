@@ -821,8 +821,8 @@ namespace cils {
             prod(Q_T, y, y_r);
             y.assign(y_r);
             t_qr = omp_get_wtime() - t_qr;
-//            qrp_validation();
-            return {{}, t_qr, 0};
+            scalar error = qrp_validation();
+            return {{}, t_qr, error};
         }
 
         /**
@@ -1434,11 +1434,23 @@ namespace cils {
             //  ------------------------------------------------------------------
 
             CILS_Reduction<scalar, index> reduction(B, y, lower, upper);
-            cils::returnType<scalar, index> reT = reduction.pmgs_qrp(n_c);
+            CILS_Reduction<scalar, index> reduction2(B, y, lower, upper);
+            cils::returnType<scalar, index> reT = reduction2.pmgs_qrp(n_c);
+            t_qr = reT.run_time;
+
+
+            //while (reT.info != 0)
+            reT = reduction.mgs_qrp();
+            scalar error = 0;
+            for (index i = 0; i < m * n; i++) {
+                error += fabs(reduction.R[i] - reduction2.R[i]);
+            }
+            cout<<error;
+
             R.assign(reduction.R);
             y.assign(reduction.y);
             Z.assign(reduction.P);
-            t_qr = reT.run_time;
+
 //            init_R_A();
             //  ------------------------------------------------------------------
             cout << "--------  Perform the PASPL reduction -------------------" << endl;
@@ -1606,6 +1618,7 @@ namespace cils {
                 }
                 k++;
             }
+            delete[] s;
 //            verbose = true;
 //            lll_validation();
             return {{}, t_qr, t_plll};
