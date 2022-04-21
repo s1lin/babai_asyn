@@ -286,20 +286,20 @@ namespace cils {
             for (index k = 0; k < n; k++) {
                 scalar sum = 0;
                 for (index i = 0; i < n; i++) {
-                    sum += pow(Q(i, k), 2);
+                    sum += pow(Q[i + k * n], 2);
                 }
                 R(k, k) = sqrt(sum);
                 for (index i = 0; i < n; i++) {
-                    Q(i, k) = Q(i, k) / R(k, k);
+                    Q[i + k * n] = Q[i + k * n] / R(k, k);
                 }
                 for (index j = 0; j < n; j++) {
                     if (j > k) {
                         R(k, j) = 0;
                         for (index i = 0; i < n; i++) {
-                            R(k, j) += Q(i, k) * Q(i, j);
+                            R(k, j) += Q[i + k * n] * Q(i, j);
                         }
                         for (index i = 0; i < n; i++) {
-                            Q(i, j) -= R(k, j) * Q(i, k);
+                            Q(i, j) -= R(k, j) * Q[i + k * n];
                         }
                     }
                 }
@@ -329,7 +329,7 @@ namespace cils {
             for (index k = 0; k < n; k++) {
                 sum = 0;
                 for (index i = 0; i < n; i++) {
-                    sum += pow(Q(i, k), 2);
+                    sum += pow(Q[i + k * n], 2);
                 }
                 s1[k] = sum;
                 s2[k] = 0;
@@ -413,35 +413,35 @@ namespace cils {
 //                    cout << l << ",";
                     scalar temp;
                     for (index i = 0; i < n; i++) {
-                        temp = R(i, l);
-                        R(i, l) = R(i, k);
-                        R(i, k) = temp;
-                        temp = R(i, l);
-                        P(i, l) = P(i, k);
-                        P(i, k) = temp;
-                        temp = Q(i, l);
-                        Q(i, l) = Q(i, k);
-                        Q(i, k) = temp;
+                        temp = R[i + l * n];
+                        R[i + l * n] = R[i + k * n];
+                        R[i + k * n] = temp;
+                        temp = R[i + l * n];
+                        P[i + l * n] = P[i + k * n];
+                        P[i + k * n] = temp;
+                        temp = Q[i + l * n];
+                        Q[i + l * n] = Q[i + k * n];
+                        Q[i + k * n] = temp;
                     }
                     std::swap(s1[l], s1[k]);
                     std::swap(s2[l], s2[k]);
                 }
                 sum = 0;
                 for (index i = 0; i < n; i++) {
-                    sum += pow(Q(i, k), 2);
+                    sum += pow(Q[i + k * n], 2);
                 }
                 R(k, k) = sqrt(sum);
                 for (index i = 0; i < n; i++) {
-                    Q(i, k) = Q(i, k) / R(k, k);
+                    Q[i + k * n] = Q[i + k * n] / R(k, k);
                 }
                 for (index j = k + 1; j < n; j++) {
                     R(k, j) = 0;
                     for (index i = 0; i < n; i++) {
-                        R(k, j) += Q(i, k) * Q(i, j);
+                        R(k, j) += Q[i + k * n] * Q(i, j);
                     }
                     s2[j] = s2[j] + pow(R(k, j), 2);
                     for (index i = 0; i < n; i++) {
-                        Q(i, j) -= R(k, j) * Q(i, k);
+                        Q(i, j) -= R(k, j) * Q[i + k * n];
                     }
                 }
             }
@@ -756,6 +756,8 @@ namespace cils {
             scalar t_qr = omp_get_wtime(), min_norm;
             scalar sum = 0;
             index i, j, k, l;
+            auto Q_d = Q.data();
+            auto R_d = R.data();
 #pragma omp parallel default(shared) num_threads(n_proc)
             {}
             //  ------------------------------------------------------------------
@@ -768,7 +770,7 @@ namespace cils {
                 for (k = 0; k < n; k++) {
                     sum = 0;
                     for (i = 0; i < n; i++) {
-                        sum += pow(Q(i, k), 2);
+                        sum += pow(Q_d[i + k * n], 2);
                     }
                     s1[k] = sum;
                 }
@@ -789,41 +791,41 @@ namespace cils {
                         if (l > k) {
                             scalar temp;
                             for (i = 0; i < n; i++) {
-                                temp = R(i, l);
-                                R(i, l) = R(i, k);
-                                R(i, k) = temp;
-                                temp = R(i, l);
-                                P(i, l) = P(i, k);
-                                P(i, k) = temp;
-                                temp = Q(i, l);
-                                Q(i, l) = Q(i, k);
-                                Q(i, k) = temp;
+                                temp = R_d[i + l * n];
+                                R_d[i + l * n] = R_d[i + k * n];
+                                R_d[i + k * n] = temp;
+                                temp = R_d[i + l * n];
+                                P[i + l * n] = P[i + k * n];
+                                P[i + k * n] = temp;
+                                temp = Q_d[i + l * n];
+                                Q_d[i + l * n] = Q_d[i + k * n];
+                                Q_d[i + k * n] = temp;
                             }
                             std::swap(s1[l], s1[k]);
                             std::swap(s2[l], s2[k]);
                         }
                         sum = 0;
                         for (i = 0; i < n; i++) {
-                            sum += pow(Q(i, k), 2);
+                            sum += pow(Q_d[i + k * n], 2);
                         }
-                        R(k, k) = sqrt(sum);
+                        R_d[k + k * n] = sqrt(sum);
                     }
 
 #pragma omp barrier
 #pragma omp for schedule(static, 1)
                     for (i = 0; i < n; i++) {
-                        Q(i, k) = Q(i, k) / R(k, k);
+                        Q_d[i + k * n] = Q_d[i + k * n] / R_d[k + k * n];
                     }
 #pragma omp for schedule(static, 1)
                     for (j = 0; j < n; j++) {
                         if (j > k) {
-                            R(k, j) = 0;
+                            R_d[k + j * n] = 0;
                             for (i = 0; i < n; i++) {
-                                R(k, j) += Q(i, k) * Q(i, j);
+                                R_d[k + j * n] += Q_d[i + k * n] * Q_d[i + j * n];
                             }
-                            s2[j] = s2[j] + pow(R(k, j), 2);
+                            s2[j] = s2[j] + pow(R_d[k + j * n], 2);
                             for (i = 0; i < n; i++) {
-                                Q(i, j) -= R(k, j) * Q(i, k);
+                                Q_d[i + j * n] -= R_d[k + j * n] * Q_d[i + k * n];
                             }
                         }
                     }
@@ -1129,14 +1131,14 @@ namespace cils {
                         //Perform a size reduction on R(k-1,k)
                         R(k1, k) = alpha;
                         for (i = 0; i <= k - 2; i++) {
-                            R(i, k) = R(i, k) - zeta * R(i, k1);
+                            R[i + k * n] = R[i + k * n] - zeta * R[i + k1 * n];
                         }
                         for (i = 0; i < n; i++) {
-                            Z(i, k) -= zeta * Z(i, k1);
+                            Z[i + k * n] -= zeta * Z[i + k1 * n];
                         }
                         //Perform size reductions on R(1:k-2,k)
                         for (i = k - 2; i >= 0; i--) {
-                            zeta = round(R(i, k) / R(i, i));
+                            zeta = round(R[i + k * n] / R(i, i));
                             if (zeta != 0) {
                                 for (j = 0; j <= i; j++) {
                                     R(j, k) = R(j, k) - zeta * R(j, i);
@@ -1150,8 +1152,8 @@ namespace cils {
 
                     //Permute columns k-1 and k of R and Z
                     for (i = 0; i < n; i++) {
-                        std::swap(R(i, k1), R(i, k));
-                        std::swap(Z(i, k1), Z(i, k));
+                        std::swap(R[i + k1 * n], R[i + k * n]);
+                        std::swap(Z[i + k1 * n], Z[i + k * n]);
                     }
 
                     //Bring R back to an upper triangular matrix by a Givens rotation
@@ -1273,8 +1275,8 @@ namespace cils {
                         f = true;
                         s[k] = 1;
                         for (i = 0; i < n; i++) {
-                            std::swap(R(i, k1), R(i, k));
-                            std::swap(Z(i, k1), Z(i, k));
+                            std::swap(R[i + k1 * n], R[i + k * n]);
+                            std::swap(Z[i + k1 * n], Z[i + k * n]);
                         }
                     }
                 }
@@ -1317,8 +1319,8 @@ namespace cils {
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {
-                                std::swap(R(i, k1), R(i, k));
-                                std::swap(Z(i, k1), Z(i, k));
+                                std::swap(R[i + k1 * n], R[i + k * n]);
+                                std::swap(Z[i + k1 * n], Z[i + k * n]);
                             }
                         }
                     }
@@ -1456,8 +1458,8 @@ namespace cils {
 
             auto s = new int[n]();
             scalar G[4] = {};
-//            auto R = R.data();
-//            auto Z_d = Z.data();
+            auto R_d = R.data();
+            auto Z_d = Z.data();
             index k, k1, i, j, e, i1, b_k, k2;
             index f = true, start = 1, even = true;
             index iter = 0;
@@ -1480,26 +1482,27 @@ namespace cils {
                         for (k = 0; k < e + 1; k++) {
                             b_k = n - k - 2;
                             k1 = b_k + 1;
-                            zeta = std::round(R(b_k, k1) / R(b_k, b_k));
-                            alpha = R(b_k, k1) - zeta * R(b_k, b_k);
-                            if ((pow(R(b_k, b_k), 2) > 1.0000000001 * (alpha * alpha + pow(R(b_k + 1, k1), 2))) &&
+                            zeta = std::round(R_d[b_k + k1 * n] / R_d[b_k + b_k * n]);
+                            alpha = R_d[b_k + k1 * n] - zeta * R_d[b_k + b_k * n];
+                            if ((pow(R_d[b_k + b_k * n], 2) >
+                                 1.0000000001 * (alpha * alpha + pow(R_d[b_k + 1 + k1 * n], 2))) &&
                                 (zeta != 0.0)) {
 //                                    omp_set_lock(&lock[k]);
                                 for (j = 0; j < k1; j++) {
-                                    R(j, k1) -= zeta * R(j, b_k);//[j + n * (b_k - 2)];
+                                    R_d[j + k1 * n] -= zeta * R_d[j + b_k * n];//[j + n * (b_k - 2)];
                                 }
                                 for (j = 0; j < n; j++) {
-                                    Z(j, k1) -= zeta * Z(j, b_k);
+                                    Z_d[j + k1 * n] -= zeta * Z_d[j + b_k * n];
                                 }
 //                                for (int b_i{0}; b_i < b_k; b_i++) {
 //                                    index b_n = (b_k - b_i) - 1;
-//                                    zeta = std::round(R(b_n, k1) / R(b_n, b_n));
+//                                    zeta = std::round(R_d(b_n, k1) / R_d(b_n, b_n));
 //                                    if (zeta != 0.0) {
 //                                        for (j = 0; j <= b_n; j++) {
-//                                            R(j, k1) -= zeta * R(j, b_n);
+//                                            R_d[j + k1 * n] -= zeta * R_d(j, b_n);
 //                                        }
 //                                        for (j = 0; j < n; j++) {
-//                                            Z(j, k1) -= zeta * Z(j, b_n);
+//                                            Z_d[j + k1 * n] -= zeta * Z_d(j, b_n);
 //                                        }
 //                                    }
 //                                }
@@ -1512,34 +1515,34 @@ namespace cils {
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         k1 = k - 1;
-                        if (pow(R[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(R(k1, k), 2) + pow(R(k, k), 2))) {
+                        if (pow(R_d[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {
-                                std::swap(R(i, k1), R(i, k));
-                                std::swap(Z(i, k1), Z(i, k));
+                                std::swap(R_d[i + k1 * n], R_d[i + k * n]);
+                                std::swap(Z_d[i + k1 * n], Z_d[i + k * n]);
                             }
                         }
                     }
-#pragma omp barrier
+
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         if (s[k]) {
                             s[k] = 0;
                             k1 = k - 1;
-                            //Bring R back to an upper triangular matrix by a Givens rotation
+                            //Bring R_d back to an upper triangular matrix by a Givens rotation
 
-                            scalar low_tmp[2] = {R[k1 + k1 * n], R[k + k1 * n]};
+                            scalar low_tmp[2] = {R_d[k1 + k1 * n], R_d[k + k1 * n]};
                             helper::planerot<scalar, index>(low_tmp, G);
-                            R[k1 + k1 * n] = low_tmp[0];
-                            R[k + k1 * n] = low_tmp[1];
+                            R_d[k1 + k1 * n] = low_tmp[0];
+                            R_d[k + k1 * n] = low_tmp[1];
 
                             //Combined Rotation.
                             for (i = k; i < n; i++) {
-                                low_tmp[0] = R[k1 + i * n];
-                                low_tmp[1] = R[k + i * n];
-                                R[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
-                                R[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                                low_tmp[0] = R_d[k1 + i * n];
+                                low_tmp[1] = R_d[k + i * n];
+                                R_d[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                R_d[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
                             }
 
                             low_tmp[0] = y[k1];
@@ -1548,7 +1551,7 @@ namespace cils {
                             y[k] = G[1] * low_tmp[0] + low_tmp[1] * G[3];
                         }
                     }
-#pragma omp barrier
+
 #pragma omp single
                     {
                         if (even) {
@@ -1566,35 +1569,34 @@ namespace cils {
                         for (k = start; k < n; k += 2) {
                             k1 = k - 1;
 
-                            if (pow(R[k1 + k1 * n], 2) >
-                                (1 + 1.e-10) * (pow(R[k1 + k * n], 2) + pow(R[k + k * n], 2))) {
+                            if (pow(R_d[k1 + k1 * n], 2) >
+                                (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
                                 f = true;
                                 s[k] = 1;
                                 for (i = 0; i < n; i++) {
-                                    std::swap(R(i, k1), R(i, k));
-                                    std::swap(Z(i, k1), Z(i, k));
+                                    std::swap(R_d[i + k1 * n], R_d[i + k * n]);
+                                    std::swap(Z_d[i + k1 * n], Z_d[i + k * n]);
                                 }
                             }
                         }
-#pragma omp barrier
 #pragma omp for schedule(static)
                         for (k = start; k < n; k += 2) {
                             if (s[k]) {
                                 s[k] = 0;
                                 k1 = k - 1;
-                                //Bring R back to an upper triangular matrix by a Givens rotation
+                                //Bring R_d back to an upper triangular matrix by a Givens rotation
 
-                                scalar low_tmp[2] = {R[k1 + k1 * n], R[k + k1 * n]};
+                                scalar low_tmp[2] = {R_d[k1 + k1 * n], R_d[k + k1 * n]};
                                 helper::planerot<scalar, index>(low_tmp, G);
-                                R[k1 + k1 * n] = low_tmp[0];
-                                R[k + k1 * n] = low_tmp[1];
+                                R_d[k1 + k1 * n] = low_tmp[0];
+                                R_d[k + k1 * n] = low_tmp[1];
 
                                 //Combined Rotation.
                                 for (i = k; i < n; i++) {
-                                    low_tmp[0] = R[k1 + i * n];
-                                    low_tmp[1] = R[k + i * n];
-                                    R[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
-                                    R[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
+                                    low_tmp[0] = R_d[k1 + i * n];
+                                    low_tmp[1] = R_d[k + i * n];
+                                    R_d[k1 + i * n] = G[0] * low_tmp[0] + G[2] * low_tmp[1];
+                                    R_d[k + i * n] = G[1] * low_tmp[0] + G[3] * low_tmp[1];
                                 }
 
                                 low_tmp[0] = y[k1];
