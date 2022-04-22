@@ -36,9 +36,9 @@ long test_PBNP(int start, int end) {
     b_vector x_ser, x_lll, x_r;
     for (int t = 0; t < 10; t++) {
         run_time = omp_get_wtime();
-        k = 0;
         index s = 0;
-        for (int snr = 5; snr <= 50; snr += 10) {
+        for (int snr = 0; snr <= 50; snr += 10) {
+            k = 0;
             for (int qam = 1; qam <= 3; qam += 2) {
                 index init = 0;
                 for (int n = 50; n < 600; n += 100) {

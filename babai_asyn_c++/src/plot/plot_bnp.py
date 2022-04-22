@@ -14,9 +14,7 @@ def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
              n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
 
 
-def plot_bnp():
-    np.savez(f'./test_result/{n}_report_plot_{start}_{end}BNP.npz', n=n, i=i, start=start, end=end,
-             qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
+def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
     print("\n----------PLOT RUNTIME--------------\n")
     color = ['r', 'g', 'b', 'm']
     marker = ['o', '+', 'x', '*']
@@ -194,16 +192,15 @@ def plot_bnp():
 
 
 if __name__ == "__main__":
-    n = 512
 
-    i = a['i']
-    start = a['start']
-    end = a['end']
-    qrT = a['qrT']
-    asplT = a['asplT']
-    bnp=a['bnp']
-    ber=a['ber']
-    itr=a['itr']
     for start in range(0,200,10):
-        a = np.load(f'./test_result/{n}_report_plot_190_BNP.npz')
-        plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr)
+        a = np.load(f'./test_result/0_report_plot_{start}_{start+10}_BNP.npz')
+        i = a['i']
+        start = a['start']
+        end = a['end']
+        qrT = a['qrT']
+        asplT = a['asplT']
+        bnp=a['bnp']
+        ber=a['ber']
+        itr=a['itr']
+        plot_bnp(0, i, start, end, qrT, asplT, bnp, ber, itr)

@@ -95,7 +95,7 @@ long plot_LLL() {
                "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
         cout.flush();
         printf("\n---------------------\nITER:%d\n---------------------\n", t);
-        if (t % 10 == 0) {
+        if ((t + 1) % 10 == 0) {
             PyObject *pName, *pModule, *pFunc;
             PyObject *pArgs, *pValue;
             Py_Initialize();
