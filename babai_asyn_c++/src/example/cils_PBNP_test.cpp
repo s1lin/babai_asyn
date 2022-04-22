@@ -26,8 +26,8 @@ long test_PBNP(int start, int end) {
     cout.flush();
 
     index d = 0, l = 0, num_trial = 200, k, c = 0;
-    scalar t_qr[5][6][10][10][2] = {}, t_aspl[5][6][10][10][2] = {}, t_itr[5][6][10][10][2] = {};
-    scalar t_bnp[5][6][10][10][2], t_ber[5][6][10][10][2] = {}, run_time;
+    scalar t_qr[6][6][10][10][2] = {}, t_aspl[6][6][10][10][2] = {}, t_itr[6][6][10][10][2] = {};
+    scalar t_bnp[6][6][10][10][2], t_ber[6][6][10][10][2] = {}, run_time;
 
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
@@ -41,7 +41,7 @@ long test_PBNP(int start, int end) {
             k = 0;
             for (int qam = 1; qam <= 3; qam += 2) {
                 index init = 0;
-                for (int n = 50; n < 600; n += 100) {
+                for (int n = 50; n <= 550; n += 100) {
                     x_ser.resize(n, false);
                     x_lll.resize(n, false);
 
@@ -133,7 +133,7 @@ long test_PBNP(int start, int end) {
             if (_import_array() < 0)
                 PyErr_Print();
 
-            npy_intp di5[5] = {5, 6, 10, 10, 2};
+            npy_intp di5[5] = {6, 6, 10, 10, 2};
 
             PyObject *pQRT = PyArray_SimpleNewFromData(5, di5, NPY_DOUBLE, t_qr);
             PyObject *pLLL = PyArray_SimpleNewFromData(5, di5, NPY_DOUBLE, t_aspl);

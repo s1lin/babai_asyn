@@ -193,14 +193,14 @@ def plot_bnp(n, i, start, end, qrT, asplT, bnp, ber, itr):
 
 if __name__ == "__main__":
 
-    for start in range(0,200,10):
-        a = np.load(f'./test_result/0_report_plot_{start}_{start+10}_BNP.npz')
-        i = a['i']
-        start = a['start']
-        end = a['end']
-        qrT = a['qrT']
-        asplT = a['asplT']
-        bnp=a['bnp']
-        ber=a['ber']
-        itr=a['itr']
-        plot_bnp(0, i, start, end, qrT, asplT, bnp, ber, itr)
+    # for start in range(0,10,10):
+    a = np.load(f'./test_result/0_report_plot_{0}_{0+10}_BNP.npz')
+    i = a['i']
+    start = a['start']
+    end = a['end']
+    qrT = a['qrT']
+    asplT = a['asplT']
+    bnp=a['bnp']
+    ber=a['ber']
+    itr=a['itr']
+    plot_bnp(0, i, start, end, qrT, asplT, bnp, ber, itr)

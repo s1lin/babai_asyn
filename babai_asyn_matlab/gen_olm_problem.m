@@ -45,9 +45,8 @@ else
             PHI(i, j) = b^abs(i-j);
         end
     end
-    H =  sqrtm(phi) * complex(randn(n/2), randn(n/2)) * sqrtm(PHI);
-    Ar = real(H);
-    Ai = imag(H);
+    Ar = sqrtm(phi) * randn(n/2) * sqrtm(psi);
+    Ai = sqrtm(phi) * randn(n/2) * sqrtm(psi);
 end
 if c >= 1
     Abar = [Ar -Ai; Ai, Ar];
