@@ -94,7 +94,7 @@ long test_PBNP(int size_n) {
                 for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
-                    reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, init);
+                    reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, 1);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[s][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[s][t][l][k] = reT.run_time;
