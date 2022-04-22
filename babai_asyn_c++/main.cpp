@@ -11,11 +11,11 @@ int main(int argc, char *argv[]) {
     printf("\n====================[ Run | cils | Release ]==================================\n");
     double t = omp_get_wtime();
 
-    int start = stoi(argv[1]);
+    int size_n = stoi(argv[1]);
     int end = stoi(argv[2]);
 ////    CILS cils = cils_driver<double, int>(argc, argv);
 //    plot_LLL<double, int>();
-    test_PBNP<double, int>(start, end);
+    test_PBNP<double, int>(size_n);
 
     t = omp_get_wtime() - t;
 
