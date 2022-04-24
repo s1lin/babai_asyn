@@ -93,5 +93,5 @@ y = A * x_t + v;
 % 
 % res1 = norm(x_t - z_B1)
 % res2 = norm(x_t - z_B2)
-R1 = y1;
+R1 = 0;
 end

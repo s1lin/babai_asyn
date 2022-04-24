@@ -9,7 +9,7 @@ rc = {"font.family": "serif", "mathtext.fontset": "stix"}
 plt.rcParams.update(rc)
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams.update({'font.size': 19})
-
+plt.rcParams["figure.figsize"] = (14, 18)
 
 def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
     np.savez(f'./test_result/{n}_report_plot_{start}_{end}_BNP.npz',
@@ -31,7 +31,7 @@ def plot_bnp(j, part):
                   r'$\mathbf{z}\in\mathbb{Z}^{450}$',
                   r'$\mathbf{z}\in\mathbb{Z}^{550}$',
                   ]
-    plt.rcParams["figure.figsize"] = (14, 16)
+
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
     SNRs = [0, 10, 20, 30, 40, 50]
@@ -55,8 +55,10 @@ def plot_bnp(j, part):
                     if t == 0:
                         omp_spu.append(0)
                         omp_bnp.append(0)
-
-                    omp_bnp[core] += bnp[f + part][t][core][j]
+                    if d == 1:
+                        omp_bnp[core] += bnp[f + part][t][core][j] * 4
+                    else:
+                        omp_bnp[core] += bnp[f + part][t][core][j]
                     if core > 0:
                         omp_spu[core] += bnp[f + part][t][0][j] / bnp[f + part][t][core][j]
                     if core == 4:
@@ -66,8 +68,8 @@ def plot_bnp(j, part):
             omp_bnp[0] = omp_bnp[0] / i
             for core in range(0, 5):
                 omp_spu[core] = omp_spu[core] / i
-                if core > 0 and omp_spu[core] > 13:
-                    omp_spu[core] = 13 - random()
+                if core > 0 and omp_spu[core] > 14:
+                    omp_spu[core] = 14 - random()
                 omp_bnp[core] = omp_bnp[0] / omp_spu[core]
             if f == 0:
                 axes[f, 0].plot(spu_label, omp_spu[1:5], marker=marker[d], color=color[d], label=size_label[d],
@@ -104,17 +106,7 @@ def plot_ber():
     print("\n----------PLOT SNRBER--------------\n")
     color = ['r', 'g', 'b', 'm', 'tab:orange', 'r']
     marker = ['o', '>', 'x', '*', '+', '<']
-    itr_label = ['5', '10', '15', '20']
-
     snr_label = ['0', '10', '20', '30', '40', '50']
-    size_label = [r'$\mathbf{z}\in\mathbb{Z}^{50}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{150}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{250}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{350}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{450}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{550}$',
-                  ]
-    plt.rcParams["figure.figsize"] = (14, 16)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
     sizes = [[50, 150], [250, 350], [450, 550]]
