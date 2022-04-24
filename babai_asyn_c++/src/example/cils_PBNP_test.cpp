@@ -63,7 +63,7 @@ long test_PBNP(int size_n, bool is_local) {
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 1;
-                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     reduction2.reset(cils);
                     reT = reduction2.paspl(n_proc < 20 ? n_proc : 20);
@@ -91,7 +91,7 @@ long test_PBNP(int size_n, bool is_local) {
 
                 l = 0;
                 scalar total = t_bnp[s][t][0][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
-                for (index n_proc = 5; n_proc <= 30; n_proc += 5) {
+                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
                     reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, 1);
