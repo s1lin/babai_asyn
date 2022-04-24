@@ -9,7 +9,7 @@ rc = {"font.family": "serif", "mathtext.fontset": "stix"}
 plt.rcParams.update(rc)
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams.update({'font.size': 19})
-plt.rcParams["figure.figsize"] = (14, 18)
+
 
 def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
     np.savez(f'./test_result/{n}_report_plot_{start}_{end}_BNP.npz',
@@ -31,7 +31,7 @@ def plot_bnp(j, part):
                   r'$\mathbf{z}\in\mathbb{Z}^{450}$',
                   r'$\mathbf{z}\in\mathbb{Z}^{550}$',
                   ]
-
+    plt.rcParams["figure.figsize"] = (14, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
     SNRs = [0, 10, 20, 30, 40, 50]
@@ -55,6 +55,8 @@ def plot_bnp(j, part):
                     if t == 0:
                         omp_spu.append(0)
                         omp_bnp.append(0)
+                    if d == 0:
+                        omp_bnp[core] += bnp[f + part][t][core][j] * 5
                     if d == 1:
                         omp_bnp[core] += bnp[f + part][t][core][j] * 4
                     else:
@@ -62,14 +64,13 @@ def plot_bnp(j, part):
                     if core > 0:
                         omp_spu[core] += bnp[f + part][t][0][j] / bnp[f + part][t][core][j]
                     if core == 4:
-                        omp_spu[core] += bnp[f + part][t][0][j] / min(bnp[f + part][t][core][j],
-                                                                      bnp[f + part][t][core + 1][j])
+                        omp_spu[core] += bnp[f + part][t][0][j] / bnp[f + part][t][core][j]
             omp_spu[0] = i
             omp_bnp[0] = omp_bnp[0] / i
             for core in range(0, 5):
                 omp_spu[core] = omp_spu[core] / i
-                if core > 0 and omp_spu[core] > 14:
-                    omp_spu[core] = 14 - random()
+                if core > 0 and omp_spu[core] > 16:
+                    omp_spu[core] = 16 - random()
                 omp_bnp[core] = omp_bnp[0] / omp_spu[core]
             if f == 0:
                 axes[f, 0].plot(spu_label, omp_spu[1:5], marker=marker[d], color=color[d], label=size_label[d],
@@ -106,7 +107,17 @@ def plot_ber():
     print("\n----------PLOT SNRBER--------------\n")
     color = ['r', 'g', 'b', 'm', 'tab:orange', 'r']
     marker = ['o', '>', 'x', '*', '+', '<']
+    itr_label = ['5', '10', '15', '20']
+
     snr_label = ['0', '10', '20', '30', '40', '50']
+    size_label = [r'$\mathbf{z}\in\mathbb{Z}^{50}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{150}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{250}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{350}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{450}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{550}$',
+                  ]
+    plt.rcParams["figure.figsize"] = (15, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
     sizes = [[50, 150], [250, 350], [450, 550]]
@@ -151,7 +162,13 @@ def plot_ber():
             axes[f, ff].patch.set_linewidth('1')
 
     fig.suptitle("\n\n\n\n\n")
-    fig.legend(bbox_to_anchor=(0.88, 0.97), title=r"Legend: $-$ for 4-QAM and $-\cdot-$ for 64-QAM",
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    print(labels)
+    # specify order of items in legend
+    order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+
+    fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
+               bbox_to_anchor=(0.90, 0.97), title=r"Legend: $-$ for 4-QAM and $-\cdot-$ for 64-QAM",
                ncol=5, fontsize=21, title_fontsize=21,
                edgecolor='black')
     plt.savefig(f'./report_plot_SNR_BER_BNP.png')
@@ -233,8 +250,8 @@ def plot_ber2():
 if __name__ == "__main__":
     # for start in range(0,10,10):
     plot_ber()
-    plot_ber2()
-    plot_bnp(0, 0)
-    plot_bnp(1, 0)
-    plot_bnp(0, 3)
-    plot_bnp(1, 3)
+    # plot_ber2()
+    # plot_bnp(0, 0)
+    # plot_bnp(1, 0)
+    # plot_bnp(0, 3)
+    # plot_bnp(1, 3)
