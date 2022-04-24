@@ -226,6 +226,7 @@ def plot_runtime_ud(n, SNR, k, l_max, max_iter, res, ber, tim, proc_num, spu,
                     if l == style + 1:
                         omp_stm.append(tim[x][l][j])
                     else:
+                    else:
                         if spu[x][l][j] / max_iter > proc[t]:
                             tmp = proc[t] - random.uniform(0, 1)
                             omp_spu.append(tmp * max_iter)
