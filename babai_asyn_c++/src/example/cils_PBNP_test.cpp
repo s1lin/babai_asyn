@@ -13,7 +13,7 @@ void init_z_hat(b_vector &z_hat, b_vector &x, int init, double mean) {
 }
 
 template<typename scalar, typename index>
-long test_PBNP(int size_n) {
+long test_PBNP(int size_n, bool is_local) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -32,9 +32,9 @@ long test_PBNP(int size_n) {
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
 
-    cils.is_local = 0;
+    cils.is_local = is_local;
     b_vector x_ser, x_lll, x_r;
-    for (int t = 0; t < 200; t++) {
+    for (int t = 0; t < num_trial; t++) {
         run_time = omp_get_wtime();
         index s = 0;
         for (int snr = 0; snr <= 50; snr += 10) {
@@ -110,10 +110,6 @@ long test_PBNP(int size_n) {
                 k++;
             }
             s++;
-            run_time = omp_get_wtime() - run_time;
-            printf("++++++++++++++++++++++++++++++++++++++\n Elapsed Time: %.5fs. \n"
-                   "++++++++++++++++++++++++++++++++++++++\n", run_time);
-
         }
         run_time = omp_get_wtime() - run_time;
         printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"

@@ -1,4 +1,4 @@
-function [R,piv,y] = qrmcp(B,y)
+function [R,P,y] = qrmcp(B,y)
 %
 % [R,piv,y] = qrmcp(B,y) computes the QR factorization of B with 
 %             minimum-column pivoting: 
@@ -69,7 +69,12 @@ for k = 1 : n_dim
     % Update colnormB(2,k+1:n)
     colNormB(2,k+1:n) = colNormB(2,k+1:n) + B(k,k+1:n) .* B(k,k+1:n);
 end
-colNormB
+P = zeros(n,n);
+%Z = eye(n);
+for j = 1 : n
+    P(piv(j),j) = 1;
+end
+
 if m < n
    R = B;
 else

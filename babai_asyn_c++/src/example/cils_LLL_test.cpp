@@ -21,7 +21,7 @@ long plot_LLL() {
     scalar t_qr[4][200][20][2] = {}, t_aspl[4][200][20][2] = {}, t_total[4][200][20][2] = {}, run_time;
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils);
-    cils.is_local = 0;
+    cils.is_local = 1;
 
     for (int t = 0; t < num_trial; t++) {
         d = 0;

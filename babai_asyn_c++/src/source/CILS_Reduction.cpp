@@ -35,6 +35,38 @@ namespace cils {
 //            }
 //        }
 
+//        double b_norm(const b_vector &x) {
+//            double norm_x;
+//            if (x.size() == 0) {
+//                norm_x = 0.0;
+//            } else {
+//                norm_x = 0.0;
+//                if (x.size() == 1) {
+//                    norm_x = std::abs(x[0]);
+//                } else {
+//                    double scale;
+//                    int kend;
+//                    scale = 3.3121686421112381E-170;
+//                    kend = x.size();
+//                    for (int k{0}; k < kend; k++) {
+//                        double absxk;
+//                        absxk = std::abs(x[k]);
+//                        if (absxk > scale) {
+//                            double t;
+//                            t = scale / absxk;
+//                            norm_x = norm_x * t * t + 1.0;
+//                            scale = absxk;
+//                        } else {
+//                            double t;
+//                            t = absxk / scale;
+//                            norm_x += t * t;
+//                        }
+//                    }
+//                    norm_x = scale * std::sqrt(norm_x);
+//                }
+//            }
+//            return norm_x;
+//        }
 
         /**
          * Evaluating the LLL decomposition
@@ -348,75 +380,13 @@ namespace cils {
                         l = i;
                     }
                 }
-//                index i1, i2, idx;
-//                if (k + 1 > n) {
-//                    i1 = 0;
-//                    i2 = 0;
-//                    idx = 0;
-//                } else {
-//                    i1 = k;
-//                    i2 = n;
-//                    idx = k;
-//                }
-//                index loop_ub = i2 - i1;
-//                sd_vector varargin_1(loop_ub, 0);
-//                for (i2 = 0; i2 < loop_ub; i2++) {
-//                    varargin_1[i2] = s1[i1 + i2] - s2[i1 + i2];
-//                }
-//                index last = loop_ub;
-//                if (loop_ub <= 2) {
-//                    if (loop_ub == 1) {
-//                        idx = 1;
-//                    } else if ((varargin_1[0] > varargin_1[loop_ub - 1]) ||
-//                               (std::isnan(varargin_1[0]) &&
-//                                (!std::isnan(varargin_1[loop_ub - 1])))) {
-//                        idx = loop_ub;
-//                    } else {
-//                        idx = 1;
-//                    }
-//                } else {
-//                    if (!std::isnan(varargin_1[0])) {
-//                        idx = 1;
-//                    } else {
-//                        bool exitg1;
-//                        idx = 0;
-//                        index j = 2;
-//                        exitg1 = false;
-//                        while ((!exitg1) && (j <= last)) {
-//                            if (!std::isnan(varargin_1[j - 1])) {
-//                                idx = j;
-//                                exitg1 = true;
-//                            } else {
-//                                j++;
-//                            }
-//                        }
-//                    }
-//                    if (idx == 0) {
-//                        idx = 1;
-//                    } else {
-//                        l = varargin_1[idx - 1];
-//                        i1 = idx + 1;
-//                        index j;
-//                        for (j = i1; j <= last; j++) {
-//                            index s_idx_1 = varargin_1[j - 1];
-//                            if (l > s_idx_1) {
-//                                l = s_idx_1;
-//                                idx = j;
-//                            }
-//                        }
-//                    }
-//                }
-//                // 'qrmgs_cp:14' l = l + j - 1;
-//                l = idx + k - 1;
-
                 if (l > k) {
-//                    cout << l << ",";
                     scalar temp;
                     for (index i = 0; i < n; i++) {
                         temp = R[i + l * n];
                         R[i + l * n] = R[i + k * n];
                         R[i + k * n] = temp;
-                        temp = R[i + l * n];
+                        temp = P[i + l * n];
                         P[i + l * n] = P[i + k * n];
                         P[i + k * n] = temp;
                         temp = Q[i + l * n];
@@ -470,20 +440,20 @@ namespace cils {
 //            int k;
 //            int last;
 //            int loop_ub;
-//
-//            // 'qrmgs_cp:3' R = zeros(n, n);
+//            int nn;
+//            // 'qrmgs_cp:2' [m, nn] = size(A);
+//            nn = n;
+//            // 'qrmgs_cp:3' R = zeros(nn, nn);
 //            R.resize(n, n);
-//            loop_ub = n * n;
-//            for (i = 0; i < loop_ub; i++) {
-//                R[i] = 0.0;
-//            }
-//            // 'qrmgs_cp:4' s = zeros(2, n);
+//            R.clear();
+//
+//            // 'qrmgs_cp:4' s = zeros(2, nn);
 //            s.resize(2, n);
 //            loop_ub = n << 1;
 //            for (i = 0; i < loop_ub; i++) {
 //                s[i] = 0.0;
 //            }
-//            // 'qrmgs_cp:5' piv = 1:n;
+//            // 'qrmgs_cp:5' piv = 1:nn;
 //            if (n < 1) {
 //                piv.resize(1, 0);
 //            } else {
@@ -495,40 +465,34 @@ namespace cils {
 //            }
 //            // 'qrmgs_cp:6' Q = A;
 //            Q.resize(n, n);
-//            loop_ub = n * n;
-//            for (i = 0; i < loop_ub; i++) {
-//                Q[i] = B[i];
-//            }
-//            // 'qrmgs_cp:8' for k = 1:n+
-//            scalar t_qr = omp_get_wtime();
+//            Q.assign(B);
+//            // 'qrmgs_cp:8' for k = 1:nn
 //            i = n;
+//            scalar t_qr = omp_get_wtime();
 //            for (k = 0; k < i; k++) {
 //                // 'qrmgs_cp:9' s(1, k) = norm(Q(:,k))^2;
 //                loop_ub = n;
 //                b_A.resize(n);
 //                for (i1 = 0; i1 < loop_ub; i1++) {
-//                    b_A[i1] = B[i1 + n * k];
+//                    b_A[i1] = Q[i1 + n * k];
 //                }
-//                double sum = 0;
-//                for (index ii = 0; ii < n; ii++) {
-//                    sum += pow(Q(ii, k), 2);
-//                }
-//                s[2 * k] = sum;
+//                l = b_norm(b_A);
+//                s[2 * k] = l * l;
 //            }
-//            // 'qrmgs_cp:12' for j = 1:n
+//            // 'qrmgs_cp:12' for j = 1:nn
 //            i = n;
 //            for (j = 0; j < i; j++) {
 //                double s_idx_1;
 //                int i2;
 //                unsigned int piv_idx_1;
-//                // 'qrmgs_cp:13' [~, l] = min(s(1,j:n)-s(2,j:n));
-//                if (j + 1 > n) {
+//                // 'qrmgs_cp:13' [~, l] = min(s(1,j:nn)-s(2,j:nn));
+//                if (j + 1 > nn) {
 //                    i1 = 0;
 //                    i2 = 0;
 //                    idx = 0;
 //                } else {
 //                    i1 = j;
-//                    i2 = n;
+//                    i2 = nn;
 //                    idx = j;
 //                }
 //                loop_ub = i2 - i1;
@@ -582,7 +546,6 @@ namespace cils {
 //                l = (static_cast<double>(idx) + (static_cast<double>(j) + 1.0)) - 1.0;
 //                // 'qrmgs_cp:15' if l > j
 //                if (l > static_cast<double>(j) + 1.0) {
-////                    cout << l - 1 << ",";
 //                    double s_idx_2;
 //                    double s_idx_3;
 //                    // 'qrmgs_cp:16' piv([j,l]) = piv([l,j]);
@@ -641,12 +604,7 @@ namespace cils {
 //                for (i1 = 0; i1 < loop_ub; i1++) {
 //                    b_A[i1] = Q[i1 + Q.size1() * j];
 //                }
-//                double sum = 0;
-//                for (index ii = 0; ii < n; ii++) {
-//                    sum += pow(Q(ii, j), 2);
-//                }
-//
-//                R[j + R.size1() * j] = sqrt(sum);
+//                R[j + R.size1() * j] = b_norm(b_A);
 //                // 'qrmgs_cp:23' Q(:,j) = Q(:,j)/R(j,j);
 //                last = Q.size1() - 1;
 //                l = R[j + R.size1() * j];
@@ -658,8 +616,8 @@ namespace cils {
 //                for (i1 = 0; i1 < loop_ub; i1++) {
 //                    Q[i1 + Q.size1() * j] = b_A[i1];
 //                }
-//                // 'qrmgs_cp:24' for k = j+1:n
-//                i1 = n - j;
+//                // 'qrmgs_cp:24' for k = j+1:nn
+//                i1 = nn - j;
 //                for (k = 0; k <= i1 - 2; k++) {
 //                    piv_idx_1 = (static_cast<unsigned int>(j) + k) + 2U;
 //                    // 'qrmgs_cp:25' R(j,k) = Q(:,j)'* Q(:,k);
@@ -691,8 +649,8 @@ namespace cils {
 //            // 'qrmgs_cp:31' y = Q' * y;
 //            last = Q.size2() - 1;
 //            idx = Q.size1();
-//            b_A.resize(m);
-//            loop_ub = m;
+//            b_A.resize(y.size());
+//            loop_ub = y.size();
 //            for (i = 0; i < loop_ub; i++) {
 //                b_A[i] = y[i];
 //            }
@@ -705,13 +663,13 @@ namespace cils {
 //                    y[loop_ub] = y[loop_ub] + Q[loop_ub * Q.size1() + k] * b_A[k];
 //                }
 //            }
-//            // 'qrmgs_cp:32' P = zeros(n, n);
+//            // 'qrmgs_cp:32' P = zeros(nn, nn);
 //            P.resize(n, n);
 //            loop_ub = n * n;
 //            for (i = 0; i < loop_ub; i++) {
 //                P[i] = 0.0;
 //            }
-//            // 'qrmgs_cp:33' for j = 1 : n
+//            // 'qrmgs_cp:33' for j = 1 : nn
 //            i = n;
 //            for (j = 0; j < i; j++) {
 //                // 'qrmgs_cp:34' P(piv(j),j) = 1;
@@ -724,16 +682,9 @@ namespace cils {
 //            //      [R_,piv,y_] = qrmcp(A,y);
 //            //      R_
 //            //  end
-//            // 'qrmgs_cp:30' d = 1;
-//            // 'qrmgs_cp:31' y = Q' * y;
-//            b_matrix Q_T = trans(Q);
-//            prod(Q_T, y, y_r);
-//            y.assign(y_r);
 //            t_qr = omp_get_wtime() - t_qr;
-//            cout << endl;
 ////            qrp_validation();
 //            return {{}, t_qr, 0};
-//
 //        }
 
         returnType <scalar, index> pmgs_qrp(index n_proc) {
@@ -1515,7 +1466,8 @@ namespace cils {
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         k1 = k - 1;
-                        if (pow(R_d[k1 + k1 * n], 2) > (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
+                        if (pow(R_d[k1 + k1 * n], 2) >
+                            (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {

@@ -1,4 +1,4 @@
-function [A, x_t, y, R0] = gen_olm_problem(k, m, n, SNR, c)
+function [A, x_t, y, R1] = gen_olm_problem(k, m, n, SNR, c)
 % [A, y, v, x_t, sigma] = gen_problem(k, m, n, SNR)
 % generates linear model y = A * x_t + v
 %
@@ -69,11 +69,29 @@ v = [vr; vi];
 %Get Upper triangular matrix
 y = A * x_t + v;
 
-R0 = 0;
+
+% [R1, Z1, y1] = sils_reduction(A, y);
+% [R2, Z2, y2] = sils_reduction2(A, y);
+% 
+% upper = 2^k - 1;
+% z_B1 = zeros(n, 1);
+% z_B2 = zeros(n, 1);
+% 
+% for j = n:-1:1
+%     z_B1(j) = (y1(j) - R1(j, j + 1:n) * z_B1(j + 1:n)) / R1(j, j);
+%     z_B2(j) = (y2(j) - R2(j, j + 1:n) * z_B2(j + 1:n)) / R2(j, j);
+%     z_B1(j) = round(z_B1(j));
+%     z_B2(j) = round(z_B2(j));
+% end
+% 
+% z_B1 = Z1 * z_B1;
+% z_B2 = Z2 * z_B2;
+% for j = n:-1:1
+%     z_B1(j) = max(min(z_B1(j), upper), 0);
+%     z_B2(j) = max(min(z_B2(j), upper), 0);
+% end
+% 
+% res1 = norm(x_t - z_B1)
+% res2 = norm(x_t - z_B2)
+R1 = y1;
 end
-
-
-
-
-
-
