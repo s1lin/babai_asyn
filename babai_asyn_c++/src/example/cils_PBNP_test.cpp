@@ -233,7 +233,7 @@ long test_PBNP_2(int s, bool is_local) {
         index n = sizes[s];
         cils::init_PBNP(cils, n, 30, 3, 0);
         cils::returnType<scalar, index> reT;
-        for (k = 0; k <= 1; k++) {
+        for (k = 1; k <= 1; k++) {
             cils.is_constrained = 0;
             x_ser.resize(n, false);
             x_lll.resize(n, false);
@@ -306,8 +306,6 @@ long test_PBNP_2(int s, bool is_local) {
                        t_bnp[s][t][l][k], t_bnp[s][t][0][k] / t_bnp[s][t][l][k],
                        total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
             }
-            k++;
-
         }
 
         run_time = omp_get_wtime() - run_time;
@@ -352,7 +350,7 @@ long test_PBNP_2(int s, bool is_local) {
                 if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", 0)) != 0) {
+                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", 1)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {

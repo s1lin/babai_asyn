@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
     int is_local = stoi(argv[2]);
 ////    CILS cils = cils_driver<double, int>(argc, argv);
 //    plot_LLL<double, int>();
-    test_PBNP_2<double, int>(size_n, is_local);
+
+    test_PBNP_2<double, int>(1, is_local);
 
     t = omp_get_wtime() - t;
 

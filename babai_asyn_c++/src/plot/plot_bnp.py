@@ -16,7 +16,7 @@ def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
              n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
 
 def save_data2(n, i, start, end, qrT, asplT, bnp):
-    np.savez(f'./test_result/{n}_report_plot_BNP.npz',
+    np.savez(f'./test_result/{n}_report_plot_BNP_{start}.npz',
              n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp)
 
 def plot_bnp(j, part):
