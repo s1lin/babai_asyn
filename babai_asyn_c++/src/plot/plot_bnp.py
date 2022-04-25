@@ -15,6 +15,9 @@ def save_data(n, i, start, end, qrT, asplT, bnp, ber, itr):
     np.savez(f'./test_result/{n}_report_plot_{start}_{end}_BNP.npz',
              n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp, ber=ber, itr=itr)
 
+def save_data2(n, i, start, end, qrT, asplT, bnp):
+    np.savez(f'./test_result/{n}_report_plot_BNP.npz',
+             n=n, i=i, start=start, end=end, qrT=qrT, asplT=asplT, bnp=bnp)
 
 def plot_bnp(j, part):
     qam = 64 if j == 1 else 4

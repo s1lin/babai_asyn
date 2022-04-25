@@ -309,19 +309,19 @@ namespace cils {
                 }
             }
 
-            std::vector<scalar> R0(cils.n * cils.n, 0);
-            i = 0;
-            for (auto r: R_0) {
-                R0[i] = r;
-                ++i;
-            }
-            cils.B.resize(cils.n, cils.n);
-            cils.B.clear();
-            for (index col = 0; col < cils.n; col++) {
-                for (index row = 0; row < cils.n; row++) {
-                    cils.B(row, col) = R0[row + col * cils.n];
-                }
-            }
+//            std::vector<scalar> R0(cils.n * cils.n, 0);
+//            i = 0;
+//            for (auto r: R_0) {
+//                R0[i] = r;
+//                ++i;
+//            }
+//            cils.B.resize(cils.n, cils.n);
+//            cils.B.clear();
+//            for (index col = 0; col < cils.n; col++) {
+//                for (index row = 0; row < cils.n; row++) {
+//                    cils.B(row, col) = R0[row + col * cils.n];
+//                }
+//            }
 
             i = 0;
             for (auto r: y_M) {
