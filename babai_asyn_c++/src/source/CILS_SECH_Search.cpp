@@ -179,7 +179,7 @@ namespace cils {
                 }
                 y_B[row] = y_bar[row] - sum;
             }
-            
+
 //#pragma omp simd
             for (index R_R = n_dx_q_0; R_R < n_dx_q_1; R_R++) {
                 z[R_R] = z_x[R_R];
@@ -439,7 +439,8 @@ namespace cils {
             d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
 
             //ILS search process
-            for (count = 0; count < max_thre || iter == 0; count++) {
+            while (true) {
+//            for (count = 0; count < max_thre || iter == 0; count++) {
                 newprsd = p[row_k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -511,7 +512,7 @@ namespace cils {
             scalar gamma = R_kk * (c[row_k] - z[row_k]);
             scalar newprsd, sum;
             //ILS search process
-            for (index count = 0; count < search_iter || iter == 0; count++) {
+            while (true) {
                 newprsd = p[row_k] + gamma * gamma;
                 if (newprsd < beta) {
                     if (k != 0) {
@@ -564,6 +565,83 @@ namespace cils {
             return diff == dx;
         }
 
+        sd_vector
+        mse2(const index n_dx_q_0, const index n_dx_q_1, const b_vector &R_A, const b_vector &y_B, b_vector &z_x,
+             index T, const index case1, index case2, scalar beta) {
+
+            index dx = n_dx_q_1 - n_dx_q_0;
+            index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
+            index dflag = 1, iter = 0, diff = 0, k = dx - 1;
+            scalar R_kk = R_A[row_kk + row_k], newprsd, sum, gamma;
+            if (case1) {
+                beta = INFINITY;
+            }
+
+            for (index R_R = n_dx_q_0; R_R < n_dx_q_1; R_R++) {
+                z[R_R] = z_x[R_R];
+            }
+
+            if (!case2) {
+                c[row_k] = y_B[row_k] / R_kk;
+                z[row_k] = round(c[row_k]);
+
+                //  Determine enumeration direction at level block_size
+                d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
+                gamma = R_kk * (c[row_k] - z[row_k]);
+            }
+
+            //ILS search process
+            while (true) {
+                newprsd = p[row_k] + gamma * gamma;
+                if (newprsd < beta && !case2) {
+                    if (k != 0) {
+                        k--;
+                        row_k--;
+                        sum = 0;
+                        row_kk -= (n - row_k - 1);
+                        R_kk = R_A[row_kk + row_k];
+                        p[row_k] = newprsd;
+#pragma omp simd reduction(+ : sum)
+                        for (index col = k + 1; col < dx; col++) {
+                            sum += R_A[row_kk + col + n_dx_q_0] * z[col + n_dx_q_0];
+                        }
+
+                        c[row_k] = (y_B[row_k] - sum) / R_kk;
+                        z[row_k] = round(c[row_k]);
+                        gamma = R_kk * (c[row_k] - z[row_k]);
+                        d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
+
+                    } else {
+                        if (!case2) {
+                            beta = newprsd;
+                            diff = 0;
+                            for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
+                                diff += z_x[h] == z[h];
+                                z_x[h] = z[h];
+                            }
+                            iter++;
+                            if (iter == T)
+                                break;
+                        }
+                        case2 = false;
+                        z[row_k] += d[row_k];
+                        gamma = R_A[row_kk + row_k] * (c[row_k] - z[row_k]);
+                        d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
+                    }
+                } else {
+                    if (k == dx - 1) break;
+                    else {
+                        k++;
+                        row_k++;
+                        row_kk += n - row_k;
+                        z[row_k] += d[row_k];
+                        gamma = R_A[row_kk + row_k] * (c[row_k] - z[row_k]);
+                        d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
+                    }
+                }
+            }
+            return {diff == dx, beta, T};
+        }
     };
 }
 //Collectors:

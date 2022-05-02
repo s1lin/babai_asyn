@@ -1,5 +1,6 @@
 //#include "src/example/cils_LLL_test.cpp"
-#include "src/example/cils_PBNP_test.cpp"
+//#include "src/example/cils_PBNP_test.cpp"
+#include "src/example/cils_PBOB_test.cpp"
 
 using namespace std;
 using namespace cils;
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]) {
 ////    CILS cils = cils_driver<double, int>(argc, argv);
 //    plot_LLL<double, int>();
 
-    test_PBNP_2<double, int>(1, is_local);
+    test_PBOB<double, int>(4, is_local);
 
     t = omp_get_wtime() - t;
 

@@ -214,11 +214,11 @@ long test_PBOB(int s, bool is_local) {
             lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
             lt->tm_hour, lt->tm_min, lt->tm_sec
     );
-    printf("====================[ TEST | BNP | %s ]==================================\n", time_str);
+    printf("====================[ TEST | BOB | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 200, k, c = 1;
-    scalar t_qr[6][200][6][2] = {}, t_aspl[6][200][6][2] = {}, t_bnp[6][200][6][2], run_time;
+    index d = 0, l = 0, num_trial = 200, k, c = 1, SNR = 30;
+    scalar t_qr[6][200][10][2] = {}, t_aspl[6][200][10][2] = {}, t_bnp[6][200][10][2] = {}, t_ber[6][200][10][2] = {}, run_time;
 
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
@@ -231,14 +231,17 @@ long test_PBOB(int s, bool is_local) {
 
         run_time = omp_get_wtime();
         index n = sizes[s];
-        cils::init_PBNP(cils, n, 30, 3, 0);
+        cils::init_PBNP(cils, n, SNR, 3, c);
+        cils.block_size = 50;
+        cils.spilt_size = 2;
+        cils.init_d();
         cils::returnType<scalar, index> reT;
-        for (k = 1; k <= 1; k++) {
+        for (k = 0; k < 1; k++) {
             cils.is_constrained = 0;
             x_ser.resize(n, false);
             x_lll.resize(n, false);
 
-            printf("--------ITER: %d, SNR: %d, constrain: %d, n: %d-------\n", t + 1, 30, k, n);
+            printf("--------ITER: %d, SNR: %d, constrain: %d, n: %d-------\n", t + 1, SNR, k, n);
 
             reduction.reset(cils);
             if (k)
@@ -287,23 +290,33 @@ long test_PBOB(int s, bool is_local) {
 
             reT = olm.bnp();
             projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+            scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
             t_bnp[s][t][0][k] = reT.run_time;
-            scalar res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-            printf("BNP: RES: %8.4f, TIME: %8.4f\n", res, t_bnp[s][t][0][k]);
+            t_ber[s][t][0][k] = ber;
+            printf("BNP: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][0][k]);
 
-            l = 0;
-            scalar total = t_bnp[s][t][0][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
+            init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
+            reT = olm.bocb(0);
+            projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+            ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
+            t_bnp[s][t][1][k] = reT.run_time;
+            t_ber[s][t][1][k] = ber;
+            printf("BOB: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][1][k]);
+
+            l = 1;
+            scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
             for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                 l++;
                 init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
-                reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, 1);
+                reT = olm.pbocb_test(n_proc < 20 ? n_proc : 20, 10, 0);
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+                ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
                 t_bnp[s][t][l][k] = reT.run_time;
-                res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
-                printf("PBNP: CORE: %3d, ITER: %4d, RES: %8.4f, TIME: %8.4f, "
+                t_ber[s][t][l][k] = ber;
+                printf("PBOB: CORE: %3d, ITER: %4d, BER: %8.4f, TIME: %8.4f, "
                        "BNP SPU: %8.4f, TOTAL SPU: %8.4f\n",
-                       n_proc < 20 ? n_proc : 20, (int) reT.info, res,
-                       t_bnp[s][t][l][k], t_bnp[s][t][0][k] / t_bnp[s][t][l][k],
+                       n_proc < 20 ? n_proc : 20, (int) reT.info, ber,
+                       t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
                        total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
             }
         }
@@ -320,15 +333,17 @@ long test_PBOB(int s, bool is_local) {
         if (_import_array() < 0)
             PyErr_Print();
 
-        npy_intp dim[4] = {6, 200, 6, 2};
+        npy_intp dim[4] = {6, 200, 10, 2};
 
         PyObject *pQRT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_qr);
         PyObject *pLLL = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_aspl);
         PyObject *pBNP = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_bnp);
+        PyObject *pBER = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_ber);
 
         if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
         if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
         if (pBNP == nullptr) printf("[ ERROR] pBNP has a problem.\n");
+        if (pBER == nullptr) printf("[ ERROR] pBER has a problem.\n");
 
         PyObject *sys_path = PySys_GetObject("path");
         if (cils.is_local)
@@ -337,23 +352,23 @@ long test_PBOB(int s, bool is_local) {
         else
             PyList_Append(sys_path, PyUnicode_FromString("./"));
 
-        pName = PyUnicode_FromString("plot_bnp");
+        pName = PyUnicode_FromString("plot_bob");
         pModule = PyImport_Import(pName);
 
         if (pModule != nullptr) {
-            pFunc = PyObject_GetAttrString(pModule, "save_data2");
+            pFunc = PyObject_GetAttrString(pModule, "save_data");
             if (pFunc && PyCallable_Check(pFunc)) {
-                pArgs = PyTuple_New(7);
+                pArgs = PyTuple_New(8);
                 if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", 1)) != 0) {
+                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", c)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
+                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", k)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
@@ -363,6 +378,9 @@ long test_PBOB(int s, bool is_local) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 6, pBNP) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 7, pBER) != 0) {
                     return false;
                 }
                 pValue = PyObject_CallObject(pFunc, pArgs);

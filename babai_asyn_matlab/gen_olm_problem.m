@@ -69,29 +69,42 @@ v = [vr; vi];
 %Get Upper triangular matrix
 y = A * x_t + v;
 
-
-% [R1, Z1, y1] = sils_reduction(A, y);
-% [R2, Z2, y2] = sils_reduction2(A, y);
+%reduction
+% [R1, Z, y1] = sils_reduction2(A, y);
 % 
 % upper = 2^k - 1;
 % z_B1 = zeros(n, 1);
 % z_B2 = zeros(n, 1);
+% block=50;
 % 
+% ds = ones(m/block, 1) .* block;
+% % 
+% % for i = m/block-1:-1:1
+% %     ds(i) = ds(i) + ds(i+1);
+% % end
+% % ds
+% %BOB
+% z_B1 = sils_block_search(R1, y1, z_B1, ds, 0, 2^k-1);
+% 
+% 
+% %BNP
 % for j = n:-1:1
-%     z_B1(j) = (y1(j) - R1(j, j + 1:n) * z_B1(j + 1:n)) / R1(j, j);
-%     z_B2(j) = (y2(j) - R2(j, j + 1:n) * z_B2(j + 1:n)) / R2(j, j);
-%     z_B1(j) = round(z_B1(j));
+%     z_B2(j) = (y1(j) - R1(j, j + 1:n) * z_B2(j + 1:n)) / R1(j, j);
 %     z_B2(j) = round(z_B2(j));
 % end
 % 
-% z_B1 = Z1 * z_B1;
-% z_B2 = Z2 * z_B2;
+% %z=Zz
+% z_B1 = Z * z_B1;
+% z_B2 = Z * z_B2;
+% 
 % for j = n:-1:1
 %     z_B1(j) = max(min(z_B1(j), upper), 0);
 %     z_B2(j) = max(min(z_B2(j), upper), 0);
 % end
-% 
-% res1 = norm(x_t - z_B1)
-% res2 = norm(x_t - z_B2)
-R1 = 0;
+% % 
+% res1 = norm(y - A*z_B1)
+% res2 = norm(y - A*z_B2)
+%y = y1;
+%A = Z;
+R1 = zeros(n);
 end

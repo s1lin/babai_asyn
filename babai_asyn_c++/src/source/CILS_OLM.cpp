@@ -187,7 +187,7 @@ namespace cils {
 //                                if (init == 1)
 //                                    flag = diff == 0;
 //                                if (init != 1)
-                                flag = diff <= 100 || idx <= n_t ;
+                                flag = diff <= 100 || idx <= n_t;
 #pragma omp atomic write
                                 diff = 0;
                             }
@@ -321,28 +321,6 @@ namespace cils {
             b_vector y_b(n);
 
             CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
-            scalar start = omp_get_wtime();
-
-            if (init == -1) {
-                for (index i = 0; i < ds; i++) {
-                    n_dx_q_1 = d[i];
-                    n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
-
-                    for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
-                        sum = 0;
-                        for (index col = n_dx_q_1; col < n; col++) {
-                            sum += R(row, col) * z_hat[col];
-                        }
-                        y_b[row] = y_bar[row] - sum;
-                    }
-
-                    if (is_constrained)
-                        search.ch(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
-                    else
-                        search.se(n_dx_q_0, n_dx_q_1, 0, R, y_b, z_hat);
-                }
-            }
-            start = omp_get_wtime() - start;
             scalar run_time = omp_get_wtime();
 
             for (index i = 0; i < ds; i++) {
@@ -361,9 +339,10 @@ namespace cils {
                     search.ch(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
                 else
                     search.se(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
+//                cout<<z_hat;
             }
-            run_time = omp_get_wtime() - run_time + start;
-            returnType<scalar, index> reT = {{run_time - start}, run_time, 0};
+            run_time = omp_get_wtime() - run_time;
+            returnType<scalar, index> reT = {{run_time}, run_time, 0};
             return reT;
         }
 
@@ -379,16 +358,7 @@ namespace cils {
 
             b_vector y_B(n);
             y_B.clear();
-            CILS_SECH_Search<scalar, index> _ils(m, n, qam);
-//            omp_set_schedule((omp_sched_t) schedule, chunk_size);
-//            auto lock = new omp_lock_t[ds]();
-//            for (index i = 0; i < ds; i++) {
-//                omp_set_lock(&lock[i]);
-//            }
-//
-//            omp_unset_lock(&lock[0]);
-//            omp_unset_lock(&lock[1]);
-
+            CILS_SECH_Search<scalar, index> _ils(m, n, qam, search_iter);
 
 #pragma omp parallel default(none) num_threads(n_proc)
             {}
@@ -399,8 +369,8 @@ namespace cils {
 
                 if (is_constrained)
                     _ils.mch(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
-//                else
-//                    _ils.mse(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
+                else
+                    _ils.mse(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
 
                 R_S_2[0] = 1;
                 end = 1;
@@ -454,8 +424,8 @@ namespace cils {
 
             if (is_constrained)
                 search.mch(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
-//            else
-//                search.mse(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
+            else
+                search.mse(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
 
 
             R_S_1[0] = 1;
@@ -493,10 +463,9 @@ namespace cils {
                             if (is_constrained) {
                                 R_S_1[i] = search.mch2(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
 //                                R_S_1[i] = search.ch(n_dx_q_0, n_dx_q_2, check, R, y_B, z_hat);
-                            }
-//                            else
-//                                R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
-                            omp_unset_lock(&lock[j]);
+                            } else
+                                R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
+//                            omp_unset_lock(&lock[j]);
                             if (check) { //!R_S_1[i] &&
                                 end = i + 1;
                                 R_S_1[i] = 1;
@@ -522,7 +491,7 @@ namespace cils {
 #pragma parallel omp cancellation point
 
             returnType<scalar, index> reT;
-//            matrix_vector_mult<scalar, index, m, n>(Z, z_hat);
+
 
             scalar time = 0; //(run_time3 + run_time2) * 0.5;
             if (init == -1) {
@@ -538,71 +507,107 @@ namespace cils {
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
 //            cout.flush();
 //            }
-            for (index i = 0; i < ds; i++) {
-                omp_destroy_lock(&lock[i]);
-            }
+//            for (index i = 0; i < ds; i++) {
+//                omp_destroy_lock(&lock[i]);
+//            }
             return reT;
         }
 
-        returnType <scalar, index> pbocb_test(const index n_proc, const index nstep, const index init) {
+        returnType <scalar, index> pbocb_test(const index n_t, const index nstep, const index init) {
 
             index ds = d.size();
             index diff = 0, num_iter = 0, flag = 0, temp;
-            si_vector R_S_1(ds, 0), ct(nstep, 0), df(nstep, 0);
-            index row_n, check = 0, r, end = 0;
-            index n_dx_q_1, n_dx_q_0;
+            si_vector delta(ds, 0), ct(nstep, 0), df(nstep, 0);
+            index row_n, check = 0, r, idx = 0, s = 0;
+            index n_dx_q_1, n_dx_q_0, case2 = 0;
             scalar sum = 0, start;
             scalar run_time = 0, run_time3 = 0;
 
-#pragma omp parallel default(none) num_threads(n_proc)
-            {}
-
-            CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
-            scalar run_time2 = omp_get_wtime();
+            sd_vector reT;
             n_dx_q_1 = d[0];
             n_dx_q_0 = d[1];
+            b_vector y_B(n), y_old(n), T(n, 1), beta(n, 0);
+            y_B.clear();
+            y_old.clear();
 
+            CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
+
+
+#pragma omp parallel default(none) num_threads(n_t)
+            {}
+
+            scalar run_time2 = omp_get_wtime();
             if (is_constrained)
                 search.mch(n_dx_q_0, n_dx_q_1, 0, 1, R_A, y_bar, z_hat);
             else
-                search.mse(n_dx_q_0, n_dx_q_1, 0, 1, R_A, y_bar, z_hat);
+                search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_bar, z_hat, (int) INFINITY, true, false, INFINITY);
 
-            R_S_1[0] = 1;
-            end = 1;
+            delta[0] = 0;
+            idx = 1;
 
-#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_1, n_dx_q_0, sum, temp, check, row_n)
+#pragma omp parallel default(shared) num_threads(n_t) private(n_dx_q_1, n_dx_q_0, sum, temp, check, row_n, case2, reT)
             {
-                for (index j = 0; j < nstep && !flag; j++) {
+                for (index t = 0; t < nstep && !flag; t++) {
 #pragma omp for schedule(dynamic) nowait
                     for (index i = 1; i < ds; i++) {
-                        if (!flag && end <= i) {
+                        if (!flag && idx <= i) {
                             n_dx_q_1 = d[i];
                             n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
-                            check = i == end;
-                            //row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                            check = i == idx;
+                            case2 = true;
+                            row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                            for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                                sum = 0;
+                                row_n += n - row;
+#pragma omp simd reduction(+:sum)
+                                for (index col = n_dx_q_1; col < n; col++) {
+                                    sum += R_A[col + row_n] * z_hat[col];
+                                }
+                                y_B[row] = y_bar[row] - sum;
+                                case2 = case2 && y_old[row] == y_B[row];
+                                y_old[row] = y_B[row];
+                            }
 
                             if (is_constrained)
-//                                if(check)
-                                R_S_1[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
-//                                else
-//                                    R_S_1[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
-                            else
-                                R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_1, i, check, R_A, y_bar, z_hat);
-
-                            if (check) {
-                                end = i + 1;
-                                R_S_1[i] = 1;
+                                delta[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_B, z_hat);
+                            else {
+                                if (check) {
+//                                    search.se(n_dx_q_0, n_dx_q_1, 1, R, y_B, z_hat);
+//                                    search.mse(n_dx_q_0, n_dx_q_1, i, check, R_A, y_B, z_hat);
+                                    search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, (int) INFINITY,
+                                                true, false, INFINITY);
+                                    idx = i + 1;
+                                    delta[i] = 0;
+                                } else {
+                                    if (case2 && T[i] != 0) {
+                                        reT = search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_B,
+                                                          z_hat, 1, t == 0, case2, beta[i]);
+                                        beta[i] = reT[1];
+                                        delta[i] = reT[0];
+                                        T[i] = reT[2];
+                                    } else {
+                                        delta[i] = 0;
+                                    }
+                                }
                             }
                         }
 #pragma omp atomic
-                        df[j] += R_S_1[i];
+                        s++;
+                    }
+                    if (!flag || idx <= n_t || s < 10) {
+#pragma omp for nowait
+                        for (index i = 1; i < idx; i++) {
+                            diff += delta[i];
 #pragma omp atomic
-                        ct[j]++;
-                    }
-                    if (!flag) {
-                        flag = (df[j] >= ds - offset) && ct[j] == ds - 1;
-                        num_iter = j;
-                    }
+                            ct[t]++;
+                        }
+                        if (ct[t] >= idx - 2) {
+                            flag = diff <= 3 || idx <= n_t;
+#pragma omp atomic write
+                            diff = 0;
+                        }
+                    } else
+                        flag = true;
 
                 }
 
@@ -620,12 +625,12 @@ namespace cils {
                 time = qam == 1 ? run_time2 : run_time2 * 0.5 + run_time3 * 0.5;
             }
 //            if (mode == 0)
-//                reT = {{run_time3}, time, (scalar) diff + end};
+//                reT = {{run_time3}, time, (scalar) diff + idx};
 //            else {
 //            helper::display<scalar, index>(df, nstep, "df");
 //            helper::display<scalar, index>(ct, nstep, "ct");
 //
-//            cout << "n_proc:" << n_proc << "," << "init:" << init << ",end:" << end << ",ratio:"
+//            cout << "n_proc:" << n_proc << "," << "init:" << init << ",idx:" << idx << ",ratio:"
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "," << num_iter << "||" << endl;
 //            cout.flush();
 
