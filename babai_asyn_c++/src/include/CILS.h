@@ -156,7 +156,7 @@ namespace cils {
             for (index i = d.size() - 2; i >= 0; i--) {
                 d[i] += d[i + 1];
             }
-            d[1]++;
+            d[1]-=3;
 
             helper::display<scalar, index>(d, "d");
         }

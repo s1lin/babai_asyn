@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 ////    CILS cils = cils_driver<double, int>(argc, argv);
 //    plot_LLL<double, int>();
 
-    test_PBOB<double, int>(4, is_local);
+    test_PBOB<double, int>(size_n, is_local);
 
     t = omp_get_wtime() - t;
 
