@@ -82,7 +82,7 @@ namespace cils {
 
     public:
         index qam, snr, upper, lower, search_iter, m, n;
-        index block_size, spilt_size, offset, is_constrained, is_local=1, verbose = 0;
+        index block_size, spilt_size, offset, is_constrained, is_local = 1, verbose = 0;
         scalar init_res, sigma, tolerance;
 
         si_vector d;
@@ -138,7 +138,7 @@ namespace cils {
         void init_d() {
             if (!is_init_success)
                 std::cout << "[INFO: ] You need to initialize the class by calling method init().";
-
+            d.clear();
             d.resize(n / block_size);
             if (spilt_size != 0) {
                 d.resize(n / block_size + spilt_size - 1);
@@ -156,7 +156,8 @@ namespace cils {
             for (index i = d.size() - 2; i >= 0; i--) {
                 d[i] += d[i + 1];
             }
-            d[1]-=3;
+            if (d[1] % 2 != 0)
+                d[1] -= 3;
 
             helper::display<scalar, index>(d, "d");
         }

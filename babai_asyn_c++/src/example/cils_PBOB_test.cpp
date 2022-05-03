@@ -205,7 +205,7 @@ long test_PBNP(int size_n, bool is_local) {
 }
 
 template<typename scalar, typename index>
-long test_PBOB(int n, bool is_local) {
+long test_PBOB(int n, int nob, bool is_local) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -232,7 +232,7 @@ long test_PBOB(int n, bool is_local) {
         for (int t = 0; t < num_trial; t++) {
             run_time = omp_get_wtime();
             cils::init_PBNP(cils, n, SNRs[s], 3, c);
-            cils.block_size = 50;
+            cils.block_size = n / nob;
             cils.spilt_size = 2;
             cils.init_d();
             cils::returnType<scalar, index> reT;
