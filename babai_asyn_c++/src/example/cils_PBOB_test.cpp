@@ -286,9 +286,9 @@ long test_PBOB(int n, int nob, bool is_local) {
                                (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info));
                 }
 
-                scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
-                init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
+//                scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
 
+                init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                 scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
