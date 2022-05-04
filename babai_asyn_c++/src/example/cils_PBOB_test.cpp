@@ -260,7 +260,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 0;
-                for (index n_proc = 3; n_proc <= 12; n_proc += 3) {
+                for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
                     l++;
                     reduction2.reset(cils);
                     if (constrain)
@@ -306,7 +306,7 @@ long test_PBOB(int n, int nob, bool is_local) {
 
                 l = 1;
                 scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
-                for (index n_proc = 3; n_proc <= 12; n_proc += 3) {
+                for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
                     reT = olm.pbocb_test(n_proc < 10 ? n_proc : 10, 10, 0);
