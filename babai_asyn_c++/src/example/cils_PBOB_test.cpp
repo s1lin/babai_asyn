@@ -66,12 +66,12 @@ long test_PBNP(int size_n, bool is_local) {
                 for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     reduction2.reset(cils);
-                    reT = reduction2.paspl(n_proc < 20 ? n_proc : 20);
+                    reT = reduction2.paspl(n_proc < 10 ? n_proc : 10);
                     t_qr[s][t][l][k] = reT.run_time;
                     t_aspl[s][t][l][k] = reT.info;
                     printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                            "SPUQR: %8.4f, SPUASPL: %8.4f, SPUPLLL: %8.4f, SPUTOTAL:%8.4f\n",
-                           n_proc < 20 ? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
+                           n_proc < 10 ? n_proc : 10, reT.run_time, reT.info, reT.info + reT.run_time,
                            t_qr[s][t][0][k] / reT.run_time, t_aspl[s][t][0][k] / reT.info,
                            t_aspl[s][t][1][k] / reT.info,
                            (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info)
@@ -94,7 +94,7 @@ long test_PBNP(int size_n, bool is_local) {
                 for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
-                    reT = olm.pbnp2(n_proc < 20 ? n_proc : 20, 10, 1);
+                    reT = olm.pbnp2(n_proc < 10 ? n_proc : 10, 10, 1);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     t_ber[s][t][l][k] = helper::find_bit_error_rate<scalar, index>(x_lll, cils.x_t, cils.qam);
                     t_bnp[s][t][l][k] = reT.run_time;
@@ -102,7 +102,7 @@ long test_PBNP(int size_n, bool is_local) {
                     res = helper::find_residual<scalar, index>(cils.A, x_lll, cils.y);
                     printf("PBNP: CORE: %3d, ITER: %4d, BER: %8.5f, RES: %8.4f, TIME: %8.4f, "
                            "BNP SPU: %8.4f, TOTAL SPU: %8.4f\n",
-                           n_proc < 20 ? n_proc : 20, (int) reT.info, t_ber[s][t][l][k], res,
+                           n_proc < 10 ? n_proc : 10, (int) reT.info, t_ber[s][t][l][k], res,
                            t_bnp[s][t][l][k],
                            t_bnp[s][t][0][k] / t_bnp[s][t][l][k],
                            total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
@@ -259,27 +259,27 @@ long test_PBOB(int n, int nob, bool is_local) {
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 0;
-                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
+                for (index n_proc = 3; n_proc <= 12; n_proc += 3) {
                     l++;
                     reduction2.reset(cils);
                     if (k)
-                        reT = reduction2.paspl_p(n_proc < 20 ? n_proc : 20);
+                        reT = reduction2.paspl_p(n_proc < 10 ? n_proc : 10);
                     else
-                        reT = reduction2.paspl(n_proc < 20 ? n_proc : 20);
+                        reT = reduction2.paspl(n_proc < 10 ? n_proc : 10);
 
                     t_qr[s][t][l][k] = reT.run_time;
                     t_aspl[s][t][l][k] = reT.info;
                     if (k)
                         printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                                "SPUQR: %8.4f, SPUASPL: %8.4f, 3, SPUTOTAL:%8.4f\n",
-                               n_proc < 20 ? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
+                               n_proc < 10 ? n_proc : 10, reT.run_time, reT.info, reT.info + reT.run_time,
                                t_qr[s][t][0][k] / reT.run_time, t_aspl[s][t][0][k] / reT.info,
                                t_aspl[s][t][1][k] / reT.info,
                                (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info));
                     else
                         printf("PASPL-P: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                                "SPUQR: %8.4f, SPUASPL: %8.4f, SPUPLLL: %8.4f, SPUTOTAL:%8.4f\n",
-                               n_proc < 20 ? n_proc : 20, reT.run_time, reT.info, reT.info + reT.run_time,
+                               n_proc < 10 ? n_proc : 10, reT.run_time, reT.info, reT.info + reT.run_time,
                                t_qr[s][t][0][k] / reT.run_time, t_aspl[s][t][0][k] / reT.info,
                                t_aspl[s][t][1][k] / reT.info,
                                (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info));
@@ -305,17 +305,17 @@ long test_PBOB(int n, int nob, bool is_local) {
 
                 l = 1;
                 scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
-                for (index n_proc = 5; n_proc <= 25; n_proc += 5) {
+                for (index n_proc = 3; n_proc <= 12; n_proc += 3) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
-                    reT = olm.pbocb_test(n_proc < 20 ? n_proc : 20, 10, 0);
+                    reT = olm.pbocb_test(n_proc < 10 ? n_proc : 10, 10, 0);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                     ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
                     t_bnp[s][t][l][k] = reT.run_time;
                     t_ber[s][t][l][k] = ber;
                     printf("PBOB: CORE: %3d, ITER: %4d, BER: %8.4f, TIME: %8.4f, "
                            "BOB SPU: %8.4f, TOTAL SPU: %8.4f\n",
-                           n_proc < 20 ? n_proc : 20, (int) reT.info, ber,
+                           n_proc < 10 ? n_proc : 10, (int) reT.info, ber,
                            t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
                            total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
                 }
