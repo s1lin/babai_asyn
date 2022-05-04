@@ -218,25 +218,25 @@ long test_PBOB(int n, int nob, bool is_local) {
     cout.flush();
 
     index d = 0, l = 0, num_trial = 200, k, c = 1;
-    scalar t_qr[6][200][10][2] = {}, t_aspl[6][200][10][2] = {}, t_bnp[6][200][10][2] = {}, t_ber[6][200][10][2] = {}, run_time;
+    scalar t_qr[10][200][10][2] = {}, t_aspl[10][200][10][2] = {}, t_bnp[10][200][10][2] = {}, t_ber[10][200][10][2] = {}, run_time;
 
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
 
     cils.is_local = is_local;
-    index sizes[5] = {50, 100, 200, 300, 500};
-    index SNRs[6] = {0,10,20,30,40,50};
+    index SNRs[9] = {0, 10, 15, 20, 25, 30, 35, 40, 50};
 
     b_vector x_ser, x_lll, x_r;
-    for (int s = 0; s < 6; s++)
+    for (int s = 0; s < 9; s++)
         for (int t = 0; t < num_trial; t++) {
             run_time = omp_get_wtime();
-            cils::init_PBNP(cils, n, SNRs[s], 3, c);
+
             cils.block_size = n / nob;
             cils.spilt_size = 2;
             cils.init_d();
             cils::returnType<scalar, index> reT;
-            for (k = 0; k < 1; k++) {
+            for (k = 0; k < 2; k++) {
+                cils::init_PBNP(cils, n, SNRs[s], k == 0 ? 1 : 3, c);
                 cils.is_constrained = 0;
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
@@ -314,7 +314,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                     t_bnp[s][t][l][k] = reT.run_time;
                     t_ber[s][t][l][k] = ber;
                     printf("PBOB: CORE: %3d, ITER: %4d, BER: %8.4f, TIME: %8.4f, "
-                           "BNP SPU: %8.4f, TOTAL SPU: %8.4f\n",
+                           "BOB SPU: %8.4f, TOTAL SPU: %8.4f\n",
                            n_proc < 20 ? n_proc : 20, (int) reT.info, ber,
                            t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
                            total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
@@ -368,7 +368,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                     if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", c)) != 0) {
                         return false;
                     }
-                    if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", k)) != 0) {
+                    if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
                         return false;
                     }
                     if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
@@ -397,7 +397,7 @@ long test_PBOB(int n, int nob, bool is_local) {
             }
             //}
 
-    }
+        }
 
     printf("End of current TASK.\n");
     printf("-------------------------------------------\n");

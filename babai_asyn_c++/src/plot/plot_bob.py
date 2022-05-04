@@ -105,74 +105,65 @@ def plot_bnp(j, part):
 
 def plot_ber():
     print("\n----------PLOT SNRBER--------------\n")
-    color = ['r', 'g', 'b', 'm', 'tab:orange', 'r']
+    color = ['r', 'g', 'b', 'm', 'tab:orange', 'y']
     marker = ['o', '>', 'x', '*', '+', '<']
     itr_label = ['5', '10', '15', '20']
 
     snr_label = ['0', '10', '20', '30', '40', '50']
-    size_label = [r'$\mathbf{z}\in\mathbb{Z}^{50}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{150}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{250}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{350}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{450}$',
-                  r'$\mathbf{z}\in\mathbb{Z}^{550}$',
-                  ]
+    size_label = [r'$\mathbf{z}\in\mathbb{Z}^{200}$',
+                  r'$\mathbf{z}\in\mathbb{Z}^{500}$']
     plt.rcParams["figure.figsize"] = (15, 18)
-    fig, axes = plt.subplots(3, 2, constrained_layout=True)
+    fig, axes = plt.subplots(2, 1, constrained_layout=True)
 
-    sizes = [[50, 150], [250, 350], [450, 550]]
+    sizes = [200, 500]
     # SNR_BER
 
-    labels_snr = ['Alg 2.3', '$n_c=5$', '$n_c=10$', '$n_c=15$', '$n_c=20$']
-    labels_snr2 = ['Alg 2.3', '$n_c=5$', '$n_c=10$', '$n_c=15$', '$n_c=20$']
-    for f in range(0, 3):
-        for ff in range(0, 2):
-            n = sizes[f][ff]
-            data = np.load(f'./test_result/{n}_report_plot_0_0_BNP.npz')
-            i = data['i']
-            ber = data['ber']
+    labels_snr = ['Alg 2.3',  'Alg 5.1', '$n_c=5$', '$n_c=10$', '$n_c=15$', '$n_c=20$']
+    # for f in range(0, 3):
+    for f in range(0, 2):
+        n = sizes[f]
+        data = np.load(f'./test_result/{n}_report_plot_1_1_BOB.npz')
+        i = data['i']
+        ber = data['ber']
 
-            for j in range(0, 2):
-                for l in range(0, 5):
-                    omp_ber = []
-                    for snr in range(0, len(snr_label)):
-                        omp_ber.append(0)
-                        for t in range(0, i):
-                            omp_ber[snr] = omp_ber[snr] + ber[snr][t][l][j] / i
-                    if j == 0 and f == 0 and ff == 0:
-                        axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
-                                         markersize=12)
-                    elif j == 1 and f == 0 and ff == 0:
-                        axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], linestyle='-.',
-                                         markersize=12, label=labels_snr2[l])
-                    elif j == 0:
-                        axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], markersize=12)
-                    else:
-                        axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], linestyle='-.',
-                                         markersize=12)
+        for j in range(0, 1):
+            for l in range(0, 2):
+                omp_ber = []
+                for snr in range(0, len(snr_label)):
+                    omp_ber.append(0)
+                    for t in range(0, i):
+                        omp_ber[snr] = omp_ber[snr] + ber[snr][t][l][j] / i
+                if j == 0 and f == 0:
+                    axes[f].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
+                                     markersize=12)
+                elif j == 0:
+                    axes[f].plot(snr_label, omp_ber, color=color[l], marker=marker[l], markersize=12)
+                else:
+                    axes[f].plot(snr_label, omp_ber, color=color[l], marker=marker[l], linestyle='-.',
+                                     markersize=12)
 
-    for f in range(0, 3):
-        for ff in range(0, 2):
-            axes[f, ff].set_title(f'Avg. BER vs SNR for Dimension {sizes[f][ff]}', fontweight="bold")
-            axes[f, ff].set_ylabel('Avg. BER', fontweight="bold")
-            axes[f, ff].set_xticklabels(snr_label)
-            axes[f, ff].set_xlabel('SNR (db)', fontweight="bold")
-            axes[f, ff].grid(color='b', ls='-.', lw=0.25)
-            axes[f, ff].patch.set_edgecolor('black')
-            axes[f, ff].patch.set_linewidth('1')
+    for ff in range(0, 2):
+        axes[ff].set_title(f'Avg. BER vs SNR for Dimension {sizes[ff]}', fontweight="bold")
+        axes[ff].set_ylabel('Avg. BER', fontweight="bold")
+        axes[ff].set_xticklabels(snr_label)
+        axes[ff].set_xlabel('SNR (db)', fontweight="bold")
+        axes[ff].grid(color='b', ls='-.', lw=0.25)
+        axes[ff].patch.set_edgecolor('black')
+        axes[ff].patch.set_linewidth('1')
 
     fig.suptitle("\n\n\n\n\n")
-    handles, labels = axes[0, 0].get_legend_handles_labels()
+    handles, labels = axes[0].get_legend_handles_labels()
     print(labels)
     # specify order of items in legend
-    order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+    #order = [0,1,2,3,4,5]
+    order = [0,1]
 
     fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
                bbox_to_anchor=(0.90, 0.97), title=r"Legend: $-$ for 4-QAM and $-\cdot-$ for 64-QAM",
                ncol=5, fontsize=21, title_fontsize=21,
                edgecolor='black')
-    plt.savefig(f'./report_plot_SNR_BER_BNP.png')
-    plt.savefig(f'./report_plot_SNR_BER_BNP.eps', format='eps', dpi=1200)
+    plt.savefig(f'./report_plot_SNR_BER_BOB.png')
+    plt.savefig(f'./report_plot_SNR_BER_BOB.eps', format='eps', dpi=1200)
     plt.close()
 
     print("\n----------END PLOT SNRBER--------------\n")
@@ -249,9 +240,9 @@ def plot_ber2():
 
 if __name__ == "__main__":
     # for start in range(0,10,10):
-    # plot_ber()
+    plot_ber()
     # plot_ber2()
     # plot_bnp(0, 0)
     # plot_bnp(1, 0)
     # plot_bnp(0, 3)
-    plot_bnp(1, 3)
+    # plot_bnp(1, 3)
