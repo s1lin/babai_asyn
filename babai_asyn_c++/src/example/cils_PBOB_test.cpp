@@ -228,7 +228,7 @@ long test_PBOB(int n, int nob, bool is_local) {
     cils.is_constrained = constrain;
     cils.block_size = n / nob;
     cils.spilt_size = 2;
-    cils.init_d();
+
 
     b_vector x_ser, x_lll, x_r;
 
@@ -238,7 +238,7 @@ long test_PBOB(int n, int nob, bool is_local) {
             cils::returnType<scalar, index> reT;
             for (k = 0; k < 2; k++) {
                 cils::init_PBNP(cils, n, SNRs[s], k == 0 ? 1 : 3, c);
-
+                cils.init_d();
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
 
@@ -252,11 +252,12 @@ long test_PBOB(int n, int nob, bool is_local) {
                 t_qr[s][t][0][k] = reT.run_time;
                 t_aspl[s][t][0][k] = reT.info;
                 if (constrain)
-                    printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
-                           reT.run_time, reT.info, reT.info + reT.run_time);
-                else
                     printf("ASPL-P: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                            reT.run_time, reT.info, reT.info + reT.run_time);
+                else
+                    printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
+                       reT.run_time, reT.info, reT.info + reT.run_time);
+
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 0;
