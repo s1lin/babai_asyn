@@ -217,40 +217,41 @@ long test_PBOB(int n, int nob, bool is_local) {
     printf("====================[ TEST | BOB | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 200, k, c = 1;
+    index d = 0, l = 0, num_trial = 200, k, c = 0, constrain = 0;
     scalar t_qr[10][200][10][2] = {}, t_aspl[10][200][10][2] = {}, t_bnp[10][200][10][2] = {}, t_ber[10][200][10][2] = {}, run_time;
+    index SNRs[9] = {0, 10, 15, 20, 25, 30, 35, 40, 50};
 
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
 
     cils.is_local = is_local;
-    index SNRs[9] = {0, 10, 15, 20, 25, 30, 35, 40, 50};
+    cils.is_constrained = constrain;
+    cils.block_size = n / nob;
+    cils.spilt_size = 2;
+    cils.init_d();
 
     b_vector x_ser, x_lll, x_r;
-    for (int s = 0; s < 9; s++)
-        for (int t = 0; t < num_trial; t++) {
-            run_time = omp_get_wtime();
 
-            cils.block_size = n / nob;
-            cils.spilt_size = 2;
-            cils.init_d();
+    for (int t = 0; t < num_trial; t++) {
+        for (int s = 0; s < 9; s++) {
+            run_time = omp_get_wtime();
             cils::returnType<scalar, index> reT;
             for (k = 0; k < 2; k++) {
                 cils::init_PBNP(cils, n, SNRs[s], k == 0 ? 1 : 3, c);
-                cils.is_constrained = 0;
+
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
 
                 printf("--------ITER: %d, SNR: %d, constrain: %d, n: %d-------\n", t + 1, SNRs[s], k, n);
 
                 reduction.reset(cils);
-                if (k)
+                if (constrain)
                     reT = reduction.aspl_p();
                 else
                     reT = reduction.aspl();
                 t_qr[s][t][0][k] = reT.run_time;
                 t_aspl[s][t][0][k] = reT.info;
-                if (k)
+                if (constrain)
                     printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                            reT.run_time, reT.info, reT.info + reT.run_time);
                 else
@@ -262,22 +263,22 @@ long test_PBOB(int n, int nob, bool is_local) {
                 for (index n_proc = 3; n_proc <= 12; n_proc += 3) {
                     l++;
                     reduction2.reset(cils);
-                    if (k)
+                    if (constrain)
                         reT = reduction2.paspl_p(n_proc < 10 ? n_proc : 10);
                     else
                         reT = reduction2.paspl(n_proc < 10 ? n_proc : 10);
 
                     t_qr[s][t][l][k] = reT.run_time;
                     t_aspl[s][t][l][k] = reT.info;
-                    if (k)
-                        printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
+                    if (constrain)
+                        printf("PASPL-P: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                                "SPUQR: %8.4f, SPUASPL: %8.4f, 3, SPUTOTAL:%8.4f\n",
                                n_proc < 10 ? n_proc : 10, reT.run_time, reT.info, reT.info + reT.run_time,
                                t_qr[s][t][0][k] / reT.run_time, t_aspl[s][t][0][k] / reT.info,
                                t_aspl[s][t][1][k] / reT.info,
                                (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info));
                     else
-                        printf("PASPL-P: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
+                        printf("PASPL: CORE: %3d, QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f, "
                                "SPUQR: %8.4f, SPUASPL: %8.4f, SPUPLLL: %8.4f, SPUTOTAL:%8.4f\n",
                                n_proc < 10 ? n_proc : 10, reT.run_time, reT.info, reT.info + reT.run_time,
                                t_qr[s][t][0][k] / reT.run_time, t_aspl[s][t][0][k] / reT.info,
@@ -320,84 +321,85 @@ long test_PBOB(int n, int nob, bool is_local) {
                            total / (t_bnp[s][t][l][k] + t_qr[s][t][l][k] + t_aspl[s][t][l][k]));
                 }
             }
+        }
+        run_time = omp_get_wtime() - run_time;
+        printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
+               "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
+        cout.flush();
+        printf("\n---------------------\nITER:%d\n---------------------\n", t);
+        //if (t % 10 == 0) {//
+        PyObject *pName, *pModule, *pFunc;
+        PyObject *pArgs, *pValue;
+        Py_Initialize();
+        if (_import_array() < 0)
+            PyErr_Print();
 
-            run_time = omp_get_wtime() - run_time;
-            printf("++++++++++++++++++++++++++++++++++++++\n Trial %d, Elapsed Time: %.5fs. \n"
-                   "++++++++++++++++++++++++++++++++++++++\n", t, run_time);
-            cout.flush();
-            printf("\n---------------------\nITER:%d\n---------------------\n", t);
-            //if (t % 10 == 0) {//
-            PyObject *pName, *pModule, *pFunc;
-            PyObject *pArgs, *pValue;
-            Py_Initialize();
-            if (_import_array() < 0)
-                PyErr_Print();
+        npy_intp dim[4] = {10, 200, 10, 2};
 
-            npy_intp dim[4] = {6, 200, 10, 2};
+        PyObject *pQRT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_qr);
+        PyObject *pLLL = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_aspl);
+        PyObject *pBNP = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_bnp);
+        PyObject *pBER = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_ber);
 
-            PyObject *pQRT = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_qr);
-            PyObject *pLLL = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_aspl);
-            PyObject *pBNP = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_bnp);
-            PyObject *pBER = PyArray_SimpleNewFromData(4, dim, NPY_DOUBLE, t_ber);
+        if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
+        if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
+        if (pBNP == nullptr) printf("[ ERROR] pBNP has a problem.\n");
+        if (pBER == nullptr) printf("[ ERROR] pBER has a problem.\n");
 
-            if (pQRT == nullptr) printf("[ ERROR] pQRT has a problem.\n");
-            if (pLLL == nullptr) printf("[ ERROR] pLLL has a problem.\n");
-            if (pBNP == nullptr) printf("[ ERROR] pBNP has a problem.\n");
-            if (pBER == nullptr) printf("[ ERROR] pBER has a problem.\n");
+        PyObject *sys_path = PySys_GetObject("path");
+        if (cils.is_local)
+            PyList_Append(sys_path, PyUnicode_FromString(
+                    "/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_c++/src/plot"));
+        else
+            PyList_Append(sys_path, PyUnicode_FromString("./"));
 
-            PyObject *sys_path = PySys_GetObject("path");
-            if (cils.is_local)
-                PyList_Append(sys_path, PyUnicode_FromString(
-                        "/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_c++/src/plot"));
-            else
-                PyList_Append(sys_path, PyUnicode_FromString("./"));
+        pName = PyUnicode_FromString("plot_bob");
+        pModule = PyImport_Import(pName);
 
-            pName = PyUnicode_FromString("plot_bob");
-            pModule = PyImport_Import(pName);
-
-            if (pModule != nullptr) {
-                pFunc = PyObject_GetAttrString(pModule, "save_data");
-                if (pFunc && PyCallable_Check(pFunc)) {
-                    pArgs = PyTuple_New(8);
-                    if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", c)) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 5, pLLL) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 6, pBNP) != 0) {
-                        return false;
-                    }
-                    if (PyTuple_SetItem(pArgs, 7, pBER) != 0) {
-                        return false;
-                    }
-                    pValue = PyObject_CallObject(pFunc, pArgs);
-
-                } else {
-                    if (PyErr_Occurred())
-                        PyErr_Print();
-                    fprintf(stderr, "Cannot find function qr\n");
+        if (pModule != nullptr) {
+            pFunc = PyObject_GetAttrString(pModule, "save_data");
+            if (pFunc && PyCallable_Check(pFunc)) {
+                pArgs = PyTuple_New(8);
+                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
+                    return false;
                 }
-            } else {
-                PyErr_Print();
-                fprintf(stderr, "Failed to load file\n");
+                if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", c)) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 5, pLLL) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 6, pBNP) != 0) {
+                    return false;
+                }
+                if (PyTuple_SetItem(pArgs, 7, pBER) != 0) {
+                    return false;
+                }
+                pValue = PyObject_CallObject(pFunc, pArgs);
 
+            } else {
+                if (PyErr_Occurred())
+                    PyErr_Print();
+                fprintf(stderr, "Cannot find function qr\n");
             }
-            //}
+        } else {
+            PyErr_Print();
+            fprintf(stderr, "Failed to load file\n");
 
         }
+    }
+    //}
+
+
 
     printf("End of current TASK.\n");
     printf("-------------------------------------------\n");
