@@ -287,7 +287,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                                t_aspl[s][t][1][k] / reT.info,
                                (t_qr[s][t][0][k] + t_aspl[s][t][0][k]) / (reT.run_time + reT.info));
                 }
-
+                cout.flush();
 //                scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
 
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
@@ -297,6 +297,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 t_bnp[s][t][0][k] = reT.run_time;
                 t_ber[s][t][0][k] = ber;
                 printf("BNP: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][0][k]);
+                cout.flush();
 
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
                 reT = olm.bocb(0);
@@ -305,6 +306,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 t_bnp[s][t][1][k] = reT.run_time;
                 t_ber[s][t][1][k] = ber;
                 printf("BOB: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][1][k]);
+                cout.flush();
 
                 l = 1;
                 scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
