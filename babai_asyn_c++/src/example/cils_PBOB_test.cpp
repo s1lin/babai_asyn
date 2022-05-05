@@ -237,7 +237,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
             run_time = omp_get_wtime();
             cils::returnType<scalar, index> reT;
             for (int k = 0; k < 2; k++) {
-                qam = k == 0 ? 1 : 3
+                qam = k == 0 ? 1 : 3;
                 cils::init_PBNP(cils, n, SNRs[s], qam, c);
                 cils.init_d();
                 x_ser.resize(n, false);
