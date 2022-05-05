@@ -266,7 +266,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                     l++;
                     reduction2.reset(cils);
                     if (constrain)
-                        reT = reduction2.paspl_p(n_proc == 0 ? 3 : n_proc);
+                        reT = reduction2.paspl_p(n_proc == 0 ? 1 : n_proc);
                     else
                         reT = reduction2.paspl(n_proc < 10 ? n_proc : 10);
 
