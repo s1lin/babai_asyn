@@ -262,11 +262,11 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
                 l = 0;
-                for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
+                for (index n_proc = 0; n_proc <= 6; n_proc += 3) {
                     l++;
                     reduction2.reset(cils);
                     if (constrain)
-                        reT = reduction2.paspl_p(n_proc == 9 ? 10 : n_proc);
+                        reT = reduction2.paspl_p(n_proc == 0 ? 3 : n_proc);
                     else
                         reT = reduction2.paspl(n_proc < 10 ? n_proc : 10);
 
