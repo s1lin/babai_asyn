@@ -243,7 +243,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
 
-                printf("--------ITER: %d, SNR: %d, constrain: %d, n: %d-------\n", t + 1, SNRs[s], k, n);
+                printf("--------ITER: %d, SNR: %d, QAM: %d, SIZE: %d-------\n", t + 1, SNRs[s], qam, n);
 
                 reduction.reset(cils);
                 if (constrain)
