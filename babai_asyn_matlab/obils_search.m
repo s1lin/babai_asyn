@@ -281,6 +281,7 @@ end
 % % dflag for down or up search direction 
 % dflag = 1; % Intend to move down to a lower level
 % 
+% z(k)
 % 
 % while 1
 %     if dflag == 1
@@ -291,14 +292,14 @@ end
 %            if k ~= 1 % Move to level k-1
 %                
 %                k = k - 1;
-%                sum = y(k) - R(k,k+1:n)*z(k+1:n);              
+%                sum = y(k) - R(k,k+1:n)*z(k+1:n);
 %                % Update the partial squared residual norm
 %                prsd(k) = newprsd;
 %                
 %                % Find the initial integer in [l(k), u(k)]
 %                c(k) = sum / R(k,k);
 %                [z(k),d(k),lflag(k),uflag(k)] = init(c(k),l(k),u(k));
-%                
+%                %z(k)
 %                gamma = R(k,k) * (c(k) - z(k));
 %                
 %            else    % A valid point is found, update search radius

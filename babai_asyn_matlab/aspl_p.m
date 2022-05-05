@@ -1,51 +1,68 @@
-function [A, R, P, y] = aspl_p(A, y)
+function [R, Z, y] = aspl_p(A, y)
+[m, n] = size(A);
+[Q, R, ~] = qrmgs_row(A, y);
+y_LLL = y;
+y = Q'*y;
+
+% %y = R(:, n+1);
+% %R = R(:,1:n);
+% % Obtain the permutation matrix Z
+Z = eye(n);
 
 % ------------------------------------------------------------------
 % --------  Perfome the partial LLL reduction  ---------------------
 % ------------------------------------------------------------------
 
 f = true;
-swap = zeros(n,1);
 even = true;
 start = 2;
-G = cell(n, 1);
 tic
-while f || ~even
+while f
     f = false;
     for k = start:2:n
-        k1 = k-1;
+        k1 = k - 1;
         zeta = round(R(k1,k) / R(k1,k1));
         alpha = R(k1,k) - zeta * R(k1,k1);
-        if R(k1,k1)^2 > 2 * (alpha^2 + R(k,k)^2)
-            swap(k) = 1;
-            f = true;           
+        if R(k1,k1)^2 > (1 + 1.e-10) * (R(k1,k)^2 + R(k,k)^2)
+            f = true;
+            % Permute columns k-1 and k of R and Z
+            R(1:k,[k1,k]) = R(1:k,[k,k1]);
+            Z(:,[k1,k]) = Z(:,[k,k1]);
+            
+            % Bring R back to an upper triangular matrix by a Givens rotation
+            [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
+            R([k1,k],k:n) = G * R([k1,k],k:n);
+            
+            % Apply the Givens rotation to y
+            y([k1,k]) = G * y([k1,k]);
         end
     end
-    for k = start:2:n
-        if swap(k) == 1
-         k1 = k - 1;         
-         % Permute columns k-1 and k of R and Z
-         R(1:k,[k1,k]) = R(1:k,[k,k1]);       
-         Z(:,[k1,k]) = Z(:,[k,k1]);
-         [G{k},R([k1,k],k1)] = planerot(R([k1,k],k1));
-        end
-    end
-    
-    for k = start:2:n    
-        if swap(k) == 1
-            k1 = k-1;
-            R([k1,k],k:n) = G{k} * R([k1,k],k:n);   
-            y([k1,k]) = G{k} * y([k1,k]);
-            swap(k) = 0;
-        end
-    end
-
     if even
         even = false;
         start = 3;
     else
         even = true;
-        start = 2;           
+        start = 2;
+    end
+    if ~f
+        for k = start:2:n
+            k1 = k - 1;
+            zeta = round(R(k1,k) / R(k1,k1));
+            alpha = R(k1,k) - zeta * R(k1,k1);
+            if R(k1,k1)^2 > (1 + 1.e-10) * (R(k1,k)^2 + R(k,k)^2)
+                f = true;
+                % Permute columns k-1 and k of R and Z
+                R(1:k,[k1,k]) = R(1:k,[k,k1]);
+                Z(:,[k1,k]) = Z(:,[k,k1]);
+                
+                % Bring R back to an upper triangular matrix by a Givens rotation
+                [G,R([k1,k],k1)] = planerot(R([k1,k],k1));
+                R([k1,k],k:n) = G * R([k1,k],k:n);
+                
+                % Apply the Givens rotation to y
+                y([k1,k]) = G * y([k1,k]);
+            end
+        end
     end
 end
 
@@ -59,7 +76,7 @@ if n <= 16
 end
 diff = norm(Q'*y_LLL - y, 2)
 
-sils_lll_eval(R);
-sils_reduction(A,y_LLL);
+% sils_lll_eval(R);
+% sils_reduction(A,y_LLL);
 
 

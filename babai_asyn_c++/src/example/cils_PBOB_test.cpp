@@ -223,11 +223,11 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
 
     cils::CILS<scalar, index> cils;
     cils::CILS_Reduction<scalar, index> reduction(cils), reduction2(cils);
-
+    cils::returnType<scalar, index> reT;
     cils.is_local = is_local;
     cils.is_constrained = constrain;
     cils.block_size = n / nob;
-    cils.spilt_size = 2;
+//    cils.spilt_size = 2;
 
 
     b_vector x_ser, x_lll, x_r;
@@ -235,7 +235,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
     for (int t = 0; t < num_trial; t++) {
         for (int s = 0; s < 9; s++) {
             run_time = omp_get_wtime();
-            cils::returnType<scalar, index> reT;
+
             for (int k = 0; k < 2; k++) {
                 qam = k == 0 ? 1 : 3;
                 cils::init_PBNP(cils, n, SNRs[s], qam, c);
@@ -252,6 +252,8 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                     reT = reduction.aspl();
                 t_qr[s][t][0][k] = reT.run_time;
                 t_aspl[s][t][0][k] = reT.info;
+//                reduction.reset(cils);
+//                reduction.mgs_qr();
                 if (constrain)
                     printf("ASPL-P: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
                            reT.run_time, reT.info, reT.info + reT.run_time);
@@ -300,7 +302,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 cout.flush();
 
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
-                reT = olm.bocb(0);
+                reT = olm.bocb();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                 t_bnp[s][t][1][k] = reT.run_time;
@@ -404,6 +406,65 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
     //}
 
 
+
+    printf("End of current TASK.\n");
+    printf("-------------------------------------------\n");
+
+    return 0;
+
+}
+
+template<typename scalar, typename index>
+long test_CH(int n, int nob, int c, bool is_local){
+
+    time_t t0 = time(nullptr);
+    struct tm *lt = localtime(&t0);
+    char time_str[20];
+    sprintf(time_str, "%04d/%02d/%02d %02d:%02d:%02d",
+            lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+            lt->tm_hour, lt->tm_min, lt->tm_sec
+    );
+    printf("====================[ TEST | BOB | %s ]==================================\n", time_str);
+    cout.flush();
+
+    index d = 0, l = 0, num_trial = 200, constrain = c != 0, qam = 3;
+    cils::CILS<scalar, index> cils;
+    cils::returnType<scalar, index> reT;
+
+    cils.is_local = is_local;
+    cils.is_constrained = constrain;
+//    cils.block_size = n / nob;
+//    cils.spilt_size = 2;
+
+    b_vector x_ser, x_lll, x_r;
+    cils::init_PBNP(cils, n, 0, qam, 1);
+
+    x_ser.resize(n, false);
+    x_lll.resize(n, false);
+
+    printf("--------ITER: %d, SNR: %d, QAM: %d, SIZE: %d-------\n", 0, 0, qam, n);
+
+    cils::CILS_SECH_Search<scalar, index> search(n, n, qam, 1e6);
+    cils::CILS_OLM<scalar, index> olm(cils, x_ser, cils.B, cils.y);
+    cout<<cils.y;
+    init_z_hat(x_ser, x_r, 1, (scalar) cils.upper / 2.0);
+    search.ch(0, n, 1, cils.B, cils.y, x_ser);
+    projection(cils.A, x_ser, x_lll, 0, cils.upper);
+    scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
+    cout<<x_lll;
+    cout<<ber;
+    //    printf("CH: BER: %8.4f, TIME: %8.4f\n", ber, reT.run_time);
+    cout.flush();
+
+    init_z_hat(x_ser, x_r, 1, (scalar) cils.upper / 2.0);
+    search.mch(0, n, olm.R_A, cils.y,x_ser, (int) INFINITY, true, false, INFINITY);
+    projection(cils.A, x_ser, x_lll, 0, cils.upper);
+    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
+    cout<<x_lll;
+    cout<<cils.x_t;
+    cout<<ber;
+//    printf("MCH: BER: %8.4f, TIME: %8.4f\n", ber, reT.run_time);
+    cout.flush();
 
     printf("End of current TASK.\n");
     printf("-------------------------------------------\n");

@@ -310,6 +310,8 @@ namespace cils {
             //Clear Variables:
             R.clear();
             Q.assign(B);
+            P.assign(I);
+            Z.assign(I);
 
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------

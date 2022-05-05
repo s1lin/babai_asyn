@@ -9,7 +9,8 @@ function x = sils_block_search(Rb, yb, x, d, l, u)
             return
         else
             tic
-            x = sils_search(Rb, yb, 1);
+            %x = sils_search(Rb, yb, 1);
+            x = obils_search(Rb, yb, l, u);
             toc
             return
         end
@@ -26,13 +27,14 @@ function x = sils_block_search(Rb, yb, x, d, l, u)
             return
         else
             q = d(1);
-            xx1 = sils_block_search(Rb(q + 1:nn, q + 1:nn), yb(q + 1:nn), x, d(2:ds), l, u);
+            xx1 = sils_block_search(Rb(q + 1:nn, q + 1:nn), yb(q + 1:nn), x, d(2:ds), l(q + 1:nn), u(q + 1:nn));
             yb2 = yb(1:q) - Rb(1:q, q + 1:nn) * xx1;
             if q == 1 %Babai
                 xx2 = round(yb2 / Rb(1, 1));
             else
                 tic
-                xx2 = sils_search(Rb(1:q, 1:q), yb2, 1);
+                %xx2 = sils_search(Rb(1:q, 1:q), yb2, 1);
+                xx2 = obils_search(Rb(1:q, 1:q), yb2, l, u);
                 toc
             end
             x = [xx2; xx1];

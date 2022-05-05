@@ -315,7 +315,7 @@ namespace cils {
             return {{}, time, 0};
         }
 
-        returnType <scalar, index> bocb(index init) {
+        returnType <scalar, index> bocb() {
             scalar sum = 0;
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
@@ -339,7 +339,7 @@ namespace cils {
                     search.ch(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
                 else
                     search.se(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
-//                cout<<z_hat;
+
             }
             run_time = omp_get_wtime() - run_time;
             returnType<scalar, index> reT = {{run_time}, run_time, 0};
@@ -371,7 +371,8 @@ namespace cils {
                     _ils.mch(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
                 else
                     _ils.mse(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
-
+                cout << "out" << endl;
+                cout.flush();
                 R_S_2[0] = 1;
                 end = 1;
 #pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
@@ -538,9 +539,9 @@ namespace cils {
 
             scalar run_time2 = omp_get_wtime();
             if (is_constrained)
-                search.mch(n_dx_q_0, n_dx_q_1, 0, 1, R_A, y_bar, z_hat);
+                search.mch(n_dx_q_0, n_dx_q_1, R_A, y_bar, z_hat, (int) INFINITY, true, false, INFINITY);
             else
-                search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_bar, z_hat, (int) INFINITY, true, false, INFINITY);
+                search.mse(n_dx_q_0, n_dx_q_1, R_A, y_bar, z_hat, (int) INFINITY, true, false, INFINITY);
 
             delta[0] = 0;
             idx = 1;
@@ -568,28 +569,34 @@ namespace cils {
                                 y_old[row] = y_B[row];
                             }
 
-                            if (is_constrained)
-                                delta[i] = search.mch(n_dx_q_0, n_dx_q_1, i, check, R_A, y_B, z_hat);
-                            else {
-                                if (check) {
+                            if (check) {
 //                                    search.se(n_dx_q_0, n_dx_q_1, 1, R, y_B, z_hat);
 //                                    search.mse(n_dx_q_0, n_dx_q_1, i, check, R_A, y_B, z_hat);
-                                    search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, (int) INFINITY,
-                                                true, false, INFINITY);
-                                    idx = i + 1;
-                                    delta[i] = 0;
+                                if (is_constrained)
+                                    search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, (int) INFINITY,
+                                               true, false, INFINITY);
+                                else
+                                    search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, (int) INFINITY,
+                                           true, false, INFINITY);
+
+                                idx = i + 1;
+                                delta[i] = 0;
+                            } else {
+                                if (case2 && T[i] != 0) {
+                                    if (is_constrained)
+                                        reT = search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B,
+                                                     z_hat, 1, t == 0, case2, beta[i]);
+                                    else
+                                        reT = search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B,
+                                                         z_hat, 1, t == 0, case2, beta[i]);
+                                    beta[i] = reT[1];
+                                    delta[i] = reT[0];
+                                    T[i] = reT[2];
                                 } else {
-                                    if (case2 && T[i] != 0) {
-                                        reT = search.mse2(n_dx_q_0, n_dx_q_1, R_A, y_B,
-                                                          z_hat, 1, t == 0, case2, beta[i]);
-                                        beta[i] = reT[1];
-                                        delta[i] = reT[0];
-                                        T[i] = reT[2];
-                                    } else {
-                                        delta[i] = 0;
-                                    }
+                                    delta[i] = 0;
                                 }
                             }
+
                         }
 #pragma omp atomic
                         s++;
