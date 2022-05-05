@@ -205,7 +205,7 @@ long test_PBNP(int size_n, bool is_local) {
 }
 
 template<typename scalar, typename index>
-long test_PBOB(int n, int nob, bool is_local) {
+long test_PBOB(int n, int nob, int c, bool is_local) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -217,7 +217,7 @@ long test_PBOB(int n, int nob, bool is_local) {
     printf("====================[ TEST | BOB | %s ]==================================\n", time_str);
     cout.flush();
 
-    index d = 0, l = 0, num_trial = 200, k, c = 0, constrain = 0;
+    index d = 0, l = 0, num_trial = 200, constrain = c != 0, qam;
     scalar t_qr[10][200][10][2] = {}, t_aspl[10][200][10][2] = {}, t_bnp[10][200][10][2] = {}, t_ber[10][200][10][2] = {}, run_time;
     index SNRs[9] = {0, 10, 15, 20, 25, 30, 35, 40, 50};
 
@@ -236,8 +236,9 @@ long test_PBOB(int n, int nob, bool is_local) {
         for (int s = 0; s < 9; s++) {
             run_time = omp_get_wtime();
             cils::returnType<scalar, index> reT;
-            for (k = 0; k < 2; k++) {
-                cils::init_PBNP(cils, n, SNRs[s], k == 0 ? 1 : 3, c);
+            for (int k = 0; k < 2; k++) {
+                qam = k == 0 ? 1 : 3
+                cils::init_PBNP(cils, n, SNRs[s], qam, c);
                 cils.init_d();
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
@@ -256,7 +257,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                            reT.run_time, reT.info, reT.info + reT.run_time);
                 else
                     printf("ASPL: QR: %8.4f, LLL: %8.4f, TOTAL:%8.4f\n",
-                       reT.run_time, reT.info, reT.info + reT.run_time);
+                           reT.run_time, reT.info, reT.info + reT.run_time);
 
                 cils::CILS_OLM<scalar, index> olm(cils, x_ser, reduction.R, reduction.y);
 
@@ -292,7 +293,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
-                scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
+                scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                 t_bnp[s][t][0][k] = reT.run_time;
                 t_ber[s][t][0][k] = ber;
                 printf("BNP: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][0][k]);
@@ -300,7 +301,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
                 reT = olm.bocb(0);
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
-                ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
+                ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                 t_bnp[s][t][1][k] = reT.run_time;
                 t_ber[s][t][1][k] = ber;
                 printf("BOB: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][1][k]);
@@ -312,7 +313,7 @@ long test_PBOB(int n, int nob, bool is_local) {
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
                     reT = olm.pbocb_test(n_proc < 10 ? n_proc : 10, 10, 0);
                     projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
-                    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, 3);
+                    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                     t_bnp[s][t][l][k] = reT.run_time;
                     t_ber[s][t][l][k] = ber;
                     printf("PBOB: CORE: %3d, ITER: %4d, BER: %8.4f, TIME: %8.4f, "

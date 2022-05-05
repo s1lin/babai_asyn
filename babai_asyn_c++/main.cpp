@@ -14,11 +14,12 @@ int main(int argc, char *argv[]) {
 
     int size_n = stoi(argv[1]);
     int nob = stoi(argv[2]);
-    int is_local = stoi(argv[3]);
+    int c = stoi(argv[3]);
+    int is_local = stoi(argv[4]);
 ////    CILS cils = cils_driver<double, int>(argc, argv);
 //    plot_LLL<double, int>();
 
-    test_PBOB<double, int>(size_n, nob, is_local);
+    test_PBOB<double, int>(size_n, nob, c, is_local);
 
     t = omp_get_wtime() - t;
 
