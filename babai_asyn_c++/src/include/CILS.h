@@ -156,11 +156,11 @@ namespace cils {
             for (index i = d.size() - 2; i >= 0; i--) {
                 d[i] += d[i + 1];
             }
-            for (index i = d.size() - 1; i >= 0; i--) {
-                if(d[i] % 2 != 0){
-                    d[i]++;
-                }
-            }
+//            for (index i = d.size() - 1; i >= 0; i--) {
+//                if(d[i] % 2 != 0){
+//                    d[i]++;
+//                }
+//            }
 
             helper::display<scalar, index>(d, "d");
         }
