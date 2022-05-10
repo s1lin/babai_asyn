@@ -228,8 +228,8 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
     cils.is_constrained = constrain;
     cils.block_size = n / nob;
     cils.spilt_size = 0;
-    if(cils.block_size == 20)
-        cils.spilt_size = 2;
+//    if(cils.block_size == 20)
+//        cils.spilt_size = 2;
 
     b_vector x_ser, x_lll, x_r;
 

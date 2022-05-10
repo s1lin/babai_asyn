@@ -154,7 +154,7 @@ def plot_bob_unconstrained1():
     fig2, axes2 = plt2.subplots(1, 2, constrained_layout=True)
 
     SNRs = [10, 20, 30, 40]
-    nns = [200, 300, 400]
+    nns = [200, 300, 400, 20]
     # SNR_BER
     d = 0
     f0 = 0
