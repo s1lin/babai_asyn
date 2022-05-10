@@ -136,34 +136,33 @@ def plot_bob(j, part, c):
 
 
 def plot_bob_unconstrained1():
-    j = 1
+    j = 0
     print(f"\n----------PLOT SPU: Unconstrained--------------\n")
-    color = ['r', 'g', 'b', 'm', 'tab:orange', 'y']
+    color = ['r', 'g', 'b', 'r', 'tab:orange', 'y']
     marker = ['o', '>', 'x', '*', '+', '<']
     spu_label = ['5', '10', '15']
-    itr_label = ['1-OB', '1-BOB\n1-ASPL', '5-PBOB\n5-PASPL', '10-PBOB\n10-PASPL', '15-PBOB\n15-PASPL']
-    itr_label2 = ['1-OB\n+ASPL', '1-BOB\n+ASPL',
-                  '5-PBOB\n+PASPL', '10-PBOB\n+PASPL', '15-PBOB\n+PASPL']
+    itr_label = ['1\nOB-R', '1\nBOB-R', '5\nPBOB-R', '10\nPBOB-R', '15\nPBOB-R']
+    itr_label2 = ['1-OB', '1-BOBL', '5-PBOB', '10-PBOB', '15-PBOB']
 
-    size_label = [r'$\mathbf{A}\in\mathbb{A}^{200\times200}$',
-                  r'$\mathbf{A}\in\mathbb{A}^{300\times300}$',
-                  r'$\mathbf{A}\in\mathbb{A}^{400\times400}$',
-                  r'$\mathbf{A}\in\mathbb{A}^{500\times500}$']
+    size_label = [r'$n=m=200, d_i=10$',
+                  r'$n=m=300, d_i=10$',
+                  r'$n=m=400, d_i=10$',
+                  r'$n=m=200, d_i=20$']
     plt.rcParams["figure.figsize"] = (14, 7)
     plt2.rcParams["figure.figsize"] = (14, 7)
     fig, axes = plt.subplots(1, 2, constrained_layout=True)
     fig2, axes2 = plt2.subplots(1, 2, constrained_layout=True)
 
-    SNRs = [0, 10, 15, 20, 25, 30, 35, 40, 50]
-    nns = [200, 300, 400, 500]
+    SNRs = [10, 20, 30, 40]
+    nns = [200, 300, 400]
     # SNR_BER
     d = 0
     f0 = 0
     f1 = 1
     f2 = 2
-    snr = 2
+    snr = 0
     for n in nns:
-        data = np.load(f'./test_result/{n}_report_plot_0_0_BOB.npz')
+        data = np.load(f'./{n}_report_plot_0_0_BOB.npz')
         i = data['i']
         qrT = data['qrT']
         asplT = data['asplT']
@@ -223,11 +222,11 @@ def plot_bob_unconstrained1():
             omp_sputot.append(omp_totalT[1] / omp_totalT[core + 2])
 
         axes[1].plot(spu_label, omp_spu[2:5], marker=marker[d], color=color[d], label=size_label[d], markersize=12)
-        axes[1].plot(spu_label, omp_s_r[1:4], marker=marker[d], color=color[d], linestyle='-.', markersize=12)
+        # axes[1].plot(spu_label, omp_s_r[1:4], marker=marker[d], color=color[d], linestyle='-.', markersize=12)
         axes2[1].plot(spu_label, omp_sputot, marker=marker[d], color=color[d], markersize=12)
 
         axes[0].semilogy(itr_label, omp_bnp, marker=marker[d], color=color[d], markersize=12)
-        axes[0].semilogy(itr_label[1:len(itr_label)], omp_red, marker=marker[d], color=color[d], linestyle='-.', markersize=12)
+        # axes[0].semilogy(itr_label[1:len(itr_label)], omp_red, marker=marker[d], color=color[d], linestyle='-.', markersize=12)
         axes2[0].semilogy(itr_label2, omp_totalT, marker = marker[d], color = color[d], markersize = 12)
         axes[0].set_title(f'Avg. Speedup over \nBOB (Alg. 5.1) or ASPL(Alg. 3.3)', fontweight="bold")
         axes[1].set_title(f'Avg. Running Time', fontweight="bold")
@@ -237,21 +236,33 @@ def plot_bob_unconstrained1():
         d = d + 1
 
     for f0 in range(0, 2):
-        for f1 in range(0, 1):
-            axes[f0].grid(True)
-            axes[f0].patch.set_edgecolor('black')
-            axes[f0].patch.set_linewidth('1')
-            axes[f0].set_ylabel('Avg. Running Time (seconds)', fontweight="bold")
-            axes[f0].set_ylabel('Avg. Speedup', fontweight="bold")
+        axes[f0].grid(True)
+        axes[f0].patch.set_edgecolor('black')
+        axes[f0].patch.set_linewidth('1')
+        axes[f0].set_ylabel('Avg. Running Time (seconds)', fontweight="bold")
+        axes[f0].set_ylabel('Avg. Speedup', fontweight="bold")
+        axes2[f0].grid(True)
+        axes2[f0].patch.set_edgecolor('black')
+        axes2[f0].patch.set_linewidth('1')
+        axes2[f0].set_ylabel('Avg. Running Time (seconds)', fontweight="bold")
+        axes2[f0].set_ylabel('Avg. Speedup', fontweight="bold")
 
     fig.suptitle(f'\n\n\n\n')
     fig.legend(bbox_to_anchor=(0.93, 0.98),
-               title=r"Legend: $-$ for estimation algorithms and $-\cdot-$ for reduction algorithms",
+               title=r"Legend",
+               ncol=4, fontsize=21, title_fontsize=21,
+               edgecolor='black')
+    fig2.suptitle(f'\n\n\n\n')
+    fig2.legend(bbox_to_anchor=(0.93, 0.98),
+               title=r"Legend",
                ncol=4, fontsize=21, title_fontsize=21,
                edgecolor='black')
     plt.savefig(f'./report_plot_SNR_SPU_BOB_UNC_1.png')
     plt.savefig(f'./report_plot_SNR_SPU_BOB_UNC_1.eps', format='eps', dpi=1200)
     plt.close()
+    plt2.savefig(f'./report_plot_SNR_SPU_BOB_UNC_2.png')
+    plt2.savefig(f'./report_plot_SNR_SPU_BOB_UNC_2.eps', format='eps', dpi=1200)
+    plt2.close()
 
     print("\n----------END PLOT SNRBER--------------\n")
 
