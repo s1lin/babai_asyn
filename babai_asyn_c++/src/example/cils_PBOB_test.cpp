@@ -375,7 +375,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", c)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
+                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 3)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 4, pQRT) != 0) {
