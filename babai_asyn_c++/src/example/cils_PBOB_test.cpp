@@ -228,8 +228,8 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
     cils.is_constrained = constrain;
     cils.block_size = n / nob;
     cils.spilt_size = 0;
-//    if(cils.block_size == 20)
-//        cils.spilt_size = 2;
+    if(cils.block_size == 20)
+        cils.spilt_size = 2;
 
     b_vector x_ser, x_lll, x_r;
 
@@ -366,14 +366,8 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
             pFunc = PyObject_GetAttrString(pModule, "save_data");
             if (pFunc && PyCallable_Check(pFunc)) {
                 pArgs = PyTuple_New(8);
-                if(cils.block_size == 20){
-                    if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", 20)) != 0) {
-                        return false;
-                    }
-                } else {
-                    if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
-                        return false;
-                    }
+                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", 20)) != 0) {
+                    return false;
                 }
                 if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
                     return false;
