@@ -312,7 +312,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
 
                 l = 1;
                 scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
-                for (index n_proc = 5; n_proc <= 15; n_proc += 5) {
+                for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
                     l++;
                     init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
                     reT = olm.pbocb_test(n_proc, 10, 0);
@@ -366,7 +366,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
             pFunc = PyObject_GetAttrString(pModule, "save_data");
             if (pFunc && PyCallable_Check(pFunc)) {
                 pArgs = PyTuple_New(8);
-                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", 20)) != 0) {
+                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i",n)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
