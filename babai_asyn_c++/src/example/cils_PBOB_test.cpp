@@ -239,7 +239,10 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
 
             for (int k = 0; k < 1; k++) {
                 cils::init_PBNP(cils, n, SNRs[s], qam, c);
+                cils.block_size = n / nob;
+                cils.spilt_size = 0;
                 cils.init_d();
+
                 x_ser.resize(n, false);
                 x_lll.resize(n, false);
 
@@ -296,8 +299,10 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 reT = olm.bnp();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                 scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
-                t_bnp[s][t][0][k] = reT.run_time;
-                t_ber[s][t][0][k] = ber;
+                t_bnp[s][t][0][0] = reT.run_time;
+                t_bnp[s][t][0][1] = reT.run_time;
+                t_ber[s][t][0][0] = ber;
+                t_ber[s][t][0][1] = ber;
                 printf("BNP: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][0][k]);
                 cout.flush();
 
@@ -324,17 +329,20 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                            "BOB SPU: %8.4f, TOTAL SPU: %8.4f\n",
                            n_proc, (int) reT.info, ber,
                            t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
-                           total / (t_bnp[s][t][l][k] + t_qr[s][t][l-1][k] + t_aspl[s][t][l-1][k]));
+                           total / (t_bnp[s][t][l][k] + t_qr[s][t][l - 1][k] + t_aspl[s][t][l - 1][k]));
                 }
 
-                if(n == 200){
+                if (n == 200) {
+                    cout << "------------------block size 20 ---------\n";
                     cils.block_size = n / 10;
                     cils.spilt_size = 2;
                     cils.init_d();
+                    cils::CILS_OLM<scalar, index> olm2(cils, x_ser, reduction.R, reduction.y);
                     k = 1;
-                    init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
-                    reT = olm.bocb();
-                    projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+                    init_z_hat(olm2.z_hat, x_r, 0, (scalar) cils.upper / 2.0);
+
+                    reT = olm2.bocb();
+                    projection(reduction.Z, olm2.z_hat, x_lll, 0, cils.upper);
                     ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                     t_bnp[s][t][1][k] = reT.run_time;
                     t_ber[s][t][1][k] = ber;
@@ -342,12 +350,12 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                     cout.flush();
 
                     l = 1;
-                    scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
+                    total = t_bnp[s][t][1][1] + t_qr[s][t][0][0] + t_aspl[s][t][0][0];
                     for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
                         l++;
-                        init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
-                        reT = olm.pbocb_test(n_proc, 10, 0);
-                        projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+                        init_z_hat(olm2.z_hat, x_r, 0, (int) cils.upper / 2);
+                        reT = olm2.pbocb_test(n_proc, 10, 0);
+                        projection(reduction.Z, olm2.z_hat, x_lll, 0, cils.upper);
                         ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                         t_bnp[s][t][l][k] = reT.run_time;
                         t_ber[s][t][l][k] = ber;
@@ -355,7 +363,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                                "BOB SPU: %8.4f, TOTAL SPU: %8.4f\n",
                                n_proc, (int) reT.info, ber,
                                t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
-                               total / (t_bnp[s][t][l][k] + t_qr[s][t][l-1][k] + t_aspl[s][t][l-1][k]));
+                               total / (t_bnp[s][t][l][k] + t_qr[s][t][l - 1][0] + t_aspl[s][t][l - 1][0]));
                     }
 
                 }
@@ -399,7 +407,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
             pFunc = PyObject_GetAttrString(pModule, "save_data");
             if (pFunc && PyCallable_Check(pFunc)) {
                 pArgs = PyTuple_New(8);
-                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i",n)) != 0) {
+                if (PyTuple_SetItem(pArgs, 0, Py_BuildValue("i", n)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 1, Py_BuildValue("i", t)) != 0) {
@@ -448,7 +456,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
 }
 
 template<typename scalar, typename index>
-long test_CH(int n, int nob, int c, bool is_local){
+long test_CH(int n, int nob, int c, bool is_local) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -479,23 +487,23 @@ long test_CH(int n, int nob, int c, bool is_local){
 
     cils::CILS_SECH_Search<scalar, index> search(n, n, qam, 1e6);
     cils::CILS_OLM<scalar, index> olm(cils, x_ser, cils.B, cils.y);
-    cout<<cils.y;
+    cout << cils.y;
     init_z_hat(x_ser, x_r, 1, (scalar) cils.upper / 2.0);
     search.ch(0, n, 1, cils.B, cils.y, x_ser);
     projection(cils.A, x_ser, x_lll, 0, cils.upper);
     scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
-    cout<<x_lll;
-    cout<<ber;
+    cout << x_lll;
+    cout << ber;
     //    printf("CH: BER: %8.4f, TIME: %8.4f\n", ber, reT.run_time);
     cout.flush();
 
     init_z_hat(x_ser, x_r, 1, (scalar) cils.upper / 2.0);
-    search.mch(0, n, olm.R_A, cils.y,x_ser, (int) INFINITY, true, false, INFINITY);
+    search.mch(0, n, olm.R_A, cils.y, x_ser, (int) INFINITY, true, false, INFINITY);
     projection(cils.A, x_ser, x_lll, 0, cils.upper);
     ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
-    cout<<x_lll;
-    cout<<cils.x_t;
-    cout<<ber;
+    cout << x_lll;
+    cout << cils.x_t;
+    cout << ber;
 //    printf("MCH: BER: %8.4f, TIME: %8.4f\n", ber, reT.run_time);
     cout.flush();
 
