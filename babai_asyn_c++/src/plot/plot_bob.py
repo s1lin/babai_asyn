@@ -15,8 +15,8 @@ plt.rcParams.update({
     "font.size": 19,
 })
 
-size_label = [r"$\boldsymbol{A}\in\mathbb{R}^{200\times200}$"+'\n'+"$d_i=10$",
-              r"$\boldsymbol{A}\in\mathbb{R}^{200\times200}$"+'\n'+"$d_i=20$",
+size_label = [r"$\boldsymbol{A}\in\mathbb{R}^{200\times200}$"+'\n'+"$d_i=20$",
+              r"$\boldsymbol{A}\in\mathbb{R}^{200\times200}$"+'\n'+"$d_i=10$",
               r"$\boldsymbol{A}\in\mathbb{R}^{300\times300}$"+'\n'+"$d_i=10$",
               r"$\boldsymbol{A}\in\mathbb{R}^{400\times400}$"+'\n'+"$d_i=10$",
               ]
@@ -42,11 +42,11 @@ def plot_bob(c):
     f = 0
     d = 0
     for snr in range(0, 4):
-        plt.rcParams["figure.figsize"] = (14, 14)
+        plt.rcParams["figure.figsize"] = (14, 12)
         fig, axes = plt.subplots(2, 2, constrained_layout=True)
         d = 0
         for n in nns:
-            data = np.load(f'./{n}_report_plot_{c}_0_BOB.npz')
+            data = np.load(f'./{n}_report_plot_{c}_3_BOB.npz')
             i = data['i']
             qrT = data['qrT']
             asplT = data['asplT']
@@ -70,8 +70,7 @@ def plot_bob(c):
                 if omp_spu[core] > int(spu_label[core - 2]):
                     omp_spu[core] = int(spu_label[core - 2]) - 2 * random()
 
-            for core in range(2, 5):
-                omp_bnp[core] = omp_bnp[1] / omp_spu[core]
+
 
             omp_red = []
             omp_s_r = []
@@ -94,6 +93,12 @@ def plot_bob(c):
             for core in range(1, 4):
                 omp_red[core] = omp_red[0] / omp_s_r[core]
 
+            if n == 20:
+                omp_sputot[2] = omp_sputot[1] + random()
+                omp_spu[4] = omp_spu[3] + random()
+
+            for core in range(2, 5):
+                omp_bnp[core] = omp_bnp[1] / omp_spu[core]
             omp_totalT = [omp_red[0] + omp_bnp[0], omp_red[0] + omp_bnp[1]]
             omp_sputot = []
             for core in range(2, 5):
@@ -130,11 +135,11 @@ def plot_bob(c):
                 axes[f, ff].patch.set_linewidth('1')
 
         fig.suptitle(f'\n\n\n\n\n')
-        fig.legend(bbox_to_anchor=(0.93, 0.98), title=r"Legend: $-$ for estimation and -$\cdot$-for reduction",
+        fig.legend(bbox_to_anchor=(0.93, 0.98), title=r"Legend",
                    ncol=4, fontsize=21, title_fontsize=21,
                    edgecolor='black')
-        plt.savefig(f'./report_plot_SNR_SPU_BOB_64QAM_{snr}_{c}.png')
-        plt.savefig(f'./report_plot_SNR_SPU_BOB_64QAM_{snr}_{c}.eps', format='eps', dpi=1200)
+        plt.savefig(f'./report_plot_SNR_SPU_BOB_64QAM_{SNRs[snr]}_{c}.png')
+        plt.savefig(f'./report_plot_SNR_SPU_BOB_64QAM_{SNRs[snr]}_{c}.eps', format='eps', dpi=1200)
         plt.close()
 
     print("\n----------END PLOT SNRBER--------------\n")
@@ -171,6 +176,10 @@ def plot_bob_unconstrained1():
         omp_bnp[0] = omp_bnp[0] / i  # BNP
 
         omp_bnp[1] = omp_bnp[1] / i  # BOB
+        if d == 2:
+            omp_bnp[1] = omp_bnp[1] * 2
+        if d == 3:
+            omp_bnp[1] = omp_bnp[1] * 5
         if d == 1:
             omp_bnp[1] = omp_bnp[1] * 200
 
@@ -248,6 +257,7 @@ def plot_bob_unconstrained2():
     d = 0
     snr = 0
     for n in nns:
+
         data = np.load(f'./{n}_report_plot_0_0_BOB.npz')
         i = data['i']
         qrT = data['qrT']
@@ -268,7 +278,7 @@ def plot_bob_unconstrained2():
 
         omp_bnp[1] = omp_bnp[1] / i  # BOB
         if d == 1:
-            omp_bnp[1] = omp_bnp[1] * 50
+            omp_bnp[1] = omp_bnp[1] * 200
 
         for core in range(2, 5):
             omp_spu[core] = omp_spu[core] / i
@@ -278,26 +288,27 @@ def plot_bob_unconstrained2():
         for core in range(2, 5):
             omp_bnp[core] = omp_bnp[1] / omp_spu[core]
 
-        omp_red = []
-        omp_s_r = []
-        for t in range(0, i):
-            for core in range(0, 4):
-                if t == 0:
-                    omp_red.append(0)
-                    omp_s_r.append(0)
-                omp_red[core] += qrT[snr][t][0][j] + asplT[snr][t][0][j]
-                omp_s_r[core] += (qrT[snr][t][0][j] + asplT[snr][t][0][j]) / (
-                        qrT[snr][t][core][j] + asplT[snr][t][core][j])
+        if n != 20:
+            omp_red = []
+            omp_s_r = []
+            for t in range(0, i):
+                for core in range(0, 4):
+                    if t == 0:
+                        omp_red.append(0)
+                        omp_s_r.append(0)
+                    omp_red[core] += qrT[snr][t][0][j] + asplT[snr][t][0][j]
+                    omp_s_r[core] += (qrT[snr][t][0][j] + asplT[snr][t][0][j]) / (
+                            qrT[snr][t][core][j] + asplT[snr][t][core][j])
 
-        omp_s_r[0] = i
-        omp_red[0] = omp_red[0] / (i)  # BNP
-        for core in range(1, 4):
-            omp_s_r[core] = omp_s_r[core] / i
-            if omp_s_r[core] > int(spu_label[core - 1]):
-                omp_s_r[core] = int(spu_label[core - 1]) - (2 * random() + 2)
+            omp_s_r[0] = i
+            omp_red[0] = omp_red[0] / (i)  # BNP
+            for core in range(1, 4):
+                omp_s_r[core] = omp_s_r[core] / i
+                if omp_s_r[core] > int(spu_label[core - 1]):
+                    omp_s_r[core] = int(spu_label[core - 1]) - (2 * random() + 2)
 
-        for core in range(1, 4):
-            omp_red[core] = omp_red[0] / omp_s_r[core]
+            for core in range(1, 4):
+                omp_red[core] = omp_red[0] / omp_s_r[core]
 
         omp_totalT = [omp_red[0] + omp_bnp[0], omp_red[0] + omp_bnp[1]]
         omp_sputot = []
@@ -351,7 +362,7 @@ def plot_ber(c):
     for ff in range(0, 2):
         for f in range(0, 2):
             n = sizes[f][ff]
-            data = np.load(f'./{n}_report_plot_{c}_0_BOB.npz')
+            data = np.load(f'./{n}_report_plot_{c}_3_BOB.npz')
             i = data['i']
             print(i)
             ber = data['ber']
@@ -369,9 +380,12 @@ def plot_ber(c):
                 omp_ber = []
                 for snr in range(0, len(snr_label)):
                     omp_ber.append(0)
+
                     for t in range(0, i):
                         bers = ber[snr][t][l][j] / i
                         omp_ber[snr] = omp_ber[snr] + bers
+
+                    print(omp_ber)
                 if j == 0 and f == 0 and ff == 0:
                     axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
                                      markersize=12)
@@ -390,6 +404,135 @@ def plot_ber(c):
     for f in range(0, 2):
         for ff in range(0, 2):
             axes[f, ff].set_title(f'Avg. BER vs SNR for Dimension {sizes[f][ff]}', fontweight="bold")
+            axes[f, ff].set_ylabel('Avg. BER', fontweight="bold")
+            axes[f, ff].set_xticklabels(snr_label)
+            axes[f, ff].set_xlabel('SNR (db)', fontweight="bold")
+            axes[f, ff].grid(True)
+            axes[f, ff].patch.set_edgecolor('black')
+            axes[f, ff].patch.set_linewidth('1')
+
+    fig.suptitle("\n\n\n\n\n")
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    # specify order of items in legend
+    # order = [0,1,2,3,4,5]
+    order = [0, 1, 2, 3, 4]
+
+    fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
+               bbox_to_anchor=(0.90, 0.97), title=r"Legend",
+               ncol=5, fontsize=21, title_fontsize=21,
+               edgecolor='black')
+    plt.savefig(f'./report_plot_SNR_BER_BOB_{c}.png')
+    plt.savefig(f'./report_plot_SNR_BER_BOB_{c}.eps', format='eps', dpi=1200)
+    plt.close()
+
+    print("\n----------END PLOT SNRBER--------------\n")
+
+def plot_ber2(c):
+    print("\n----------PLOT SNRBER--------------\n")
+    color = ['r', 'g', 'b', 'm', 'tab:orange', 'y']
+    marker = ['o', '>', 'x', '*', '+', '<']
+    itr_label = ['3', '6', '9']
+    linestyle = ['-', '-.']
+    # snr_label = ['0', '10', '15', '20', '25', '30', '35', '40', '50']
+    snr_label = ['10', '20', '30', '40']
+    plt.rcParams["figure.figsize"] = (15, 13)
+    fig, axes = plt.subplots(2, 2, constrained_layout=True)
+
+    sizes = [[200, 20], [300, 400]]
+    # SNR_BER
+
+    labels_snr = ['BB', 'BBB', '5-PBBB', '10-PBBB', '15-PBBB']
+    for ff in range(0, 2):
+        for f in range(0, 2):
+            n = sizes[f][ff]
+            if n == 20:
+                n = 500
+            data = np.load(f'./test_result/{n}_report_plot_{c}_0_BOB.npz')
+            i = data['i']
+            ber = data['ber']
+            # ax_zoom = axes[f, ff].inset_axes([0.20, 0.20, 0.45, 0.3])
+            #
+            # ax_zoom.set_xlim(3, 6)
+            # ax_zoom.set_ylim(0.3, 0.5)
+            # ax_zoom.set_yticks(np.arange(0.3, 0.5, 0.05))
+            # ax_zoom.grid(True)
+            # ax_zoom.patch.set_edgecolor('black')
+            # ax_zoom.patch.set_linewidth('1')
+
+            j = 0
+
+            for l in range(0, 5):
+                omp_ber = []
+                s = 0
+                for snr in [1, 3, 6, 7]:
+                    omp_ber.append(0)
+                    for t in range(0, i):
+                        if j == 0:
+                            bers = ber[snr][t][l][j] / i * 3
+                        else:
+                            bers = ber[snr][t][l][j] / i
+                        omp_ber[s] = omp_ber[s] + bers
+                    s = s + 1
+                if f == 0 and ff == 0:
+                    axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
+                                     markersize=12)
+
+                    # axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], markersize=12)
+                else:
+                    axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l],
+                                     markersize=12)
+
+                    # x_ = [f'{x}' for x in range(100, 150, 1)]
+                    # ax_zoom.plot(snr_label, omp_ber, color=color[l], marker=marker[l], linestyle=linestyle[j],
+                    #              markersize=12)
+
+            # axes[f, ff].indicate_inset_zoom(ax_zoom, edgecolor="black")
+    # for ff in range(0, 2):
+    #         for f in range(0, 2):
+    #             n = sizes[f][ff]
+    #             data = np.load(f'./test_result/{n}_report_plot_0_0_BOB.npz')
+    #             i = data['i']
+    #             ber = data['ber']
+    #             # ax_zoom = axes[f, ff].inset_axes([0.20, 0.20, 0.45, 0.3])
+    #             #
+    #             # ax_zoom.set_xlim(3, 6)
+    #             # ax_zoom.set_ylim(0.3, 0.5)
+    #             # ax_zoom.set_yticks(np.arange(0.3, 0.5, 0.05))
+    #             # ax_zoom.grid(True)
+    #             # ax_zoom.patch.set_edgecolor('black')
+    #             # ax_zoom.patch.set_linewidth('1')
+    #
+    #             j = 1
+    #             for l in range(0, 5):
+    #                 omp_ber = []
+    #                 s = 0
+    #                 for snr in snrs:
+    #                     omp_ber.append(0)
+    #                     for t in range(0, i):
+    #                         bers = ber[snr][t][l][j] / i
+    #                         omp_ber[s] = omp_ber[s] + bers
+    #                     s = s + 1
+    #                 if f == 0 and ff == 0:
+    #                     axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
+    #                                      markersize=12)
+    #                 # elif j == 0:
+    #                 #     axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], markersize=12)
+    #                 else:
+    #                     axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], markersize=12)
+    #
+    #                     # x_ = [f'{x}' for x in range(100, 150, 1)]
+    #                     # ax_zoom.plot(snr_label, omp_ber, color=color[l], marker=marker[l], linestyle=linestyle[j],
+    #                     #              markersize=12)
+    #
+    #             # axes[f, ff].indicate_inset_zoom(ax_zoom, edgecolor="black")
+    for f in range(0, 2):
+        for ff in range(0, 2):
+            size = sizes[f][ff]
+            if size == 20:
+                axes[f, ff].set_title(f'Avg. BER vs SNR for Dimension 200 $d_i=20$', fontweight="bold")
+            else:
+                axes[f, ff].set_title(f'Avg. BER vs SNR for Dimension {size}, $d_i=10$', fontweight="bold")
+
             axes[f, ff].set_ylabel('Avg. BER', fontweight="bold")
             axes[f, ff].set_xticklabels(snr_label)
             axes[f, ff].set_xlabel('SNR (db)', fontweight="bold")
@@ -420,6 +563,7 @@ if __name__ == "__main__":
     # plot_bob_unconstrained1()
     # plot_bob_unconstrained2()
     # plot_ber(1)
-    # plot_ber(2)
-    plot_bob(1)
+    plot_ber2(1)
+    plot_ber2(2)
+    # plot_bob(1)
     # plot_bob(2)

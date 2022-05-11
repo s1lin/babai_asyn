@@ -227,7 +227,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
     cils.is_local = is_local;
     cils.is_constrained = constrain;
     cils.block_size = n / nob;
-    cils.spilt_size = 0;
+    cils.spilt_size = 2;
 //    if(cils.block_size == 20)
 //        cils.spilt_size = 2;
 
@@ -302,7 +302,7 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                 cout.flush();
 
                 init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
-                reT = olm.pbocb_test(1, 10, 0);
+                reT = olm.bocb();
                 projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
                 t_bnp[s][t][1][k] = reT.run_time;
@@ -325,6 +325,39 @@ long test_PBOB(int n, int nob, int c, bool is_local) {
                            n_proc, (int) reT.info, ber,
                            t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
                            total / (t_bnp[s][t][l][k] + t_qr[s][t][l-1][k] + t_aspl[s][t][l-1][k]));
+                }
+
+                if(n == 200){
+                    cils.block_size = n / 10;
+                    cils.spilt_size = 2;
+                    cils.init_d();
+                    k = 1;
+                    init_z_hat(olm.z_hat, x_r, 1, (scalar) cils.upper / 2.0);
+                    reT = olm.bocb();
+                    projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+                    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
+                    t_bnp[s][t][1][k] = reT.run_time;
+                    t_ber[s][t][1][k] = ber;
+                    printf("BOB: BER: %8.4f, TIME: %8.4f\n", ber, t_bnp[s][t][1][k]);
+                    cout.flush();
+
+                    l = 1;
+                    scalar total = t_bnp[s][t][1][k] + t_qr[s][t][0][k] + t_aspl[s][t][0][k];
+                    for (index n_proc = 3; n_proc <= 9; n_proc += 3) {
+                        l++;
+                        init_z_hat(olm.z_hat, x_r, 1, (int) cils.upper / 2);
+                        reT = olm.pbocb_test(n_proc, 10, 0);
+                        projection(reduction.Z, olm.z_hat, x_lll, 0, cils.upper);
+                        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_lll, qam);
+                        t_bnp[s][t][l][k] = reT.run_time;
+                        t_ber[s][t][l][k] = ber;
+                        printf("PBOB: CORE: %3d, ITER: %4d, BER: %8.4f, TIME: %8.4f, "
+                               "BOB SPU: %8.4f, TOTAL SPU: %8.4f\n",
+                               n_proc, (int) reT.info, ber,
+                               t_bnp[s][t][l][k], t_bnp[s][t][1][k] / t_bnp[s][t][l][k],
+                               total / (t_bnp[s][t][l][k] + t_qr[s][t][l-1][k] + t_aspl[s][t][l-1][k]));
+                    }
+
                 }
             }
         }
