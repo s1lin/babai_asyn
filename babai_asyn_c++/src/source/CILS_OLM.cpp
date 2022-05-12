@@ -661,7 +661,7 @@ namespace cils {
                     return {{}, 0, 0};
                 }
             }
-
+            scalar start = omp_get_wtime();
             for (index i = 0; i < ds; i++) {
                 n_dx_q_1 = d[i];
                 n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
@@ -676,7 +676,7 @@ namespace cils {
             }
 //        std::random_shuffle(r_d.begin(), r_d.end());
 
-            scalar start = omp_get_wtime();
+
             for (index i = 0; i < ds; i++) {
                 n_dx_q_1 = d[i];
                 n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];

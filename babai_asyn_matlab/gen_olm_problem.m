@@ -27,7 +27,7 @@ function [A, x_t, y, R1] = gen_olm_problem(k, m, n, SNR, c)
  
 rng('shuffle')
 %Initialize Variables
-sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
+sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
 
 if c==0
     A = randn(n, n);
@@ -62,10 +62,8 @@ xbar = [xr; xi];
 x_t = (2^k - 1 + xbar)./2;
 
 %Noise vector v:
-vr = normrnd(0, sigma, m/2, 1);
-vi = normrnd(0, sigma, m/2, 1);
-v = [vr; vi];
-
+v = sigma * randn(n, 1);
+v
 
 %Get Upper triangular matrix
 y = A * x_t + v;
