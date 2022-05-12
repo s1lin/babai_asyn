@@ -1,5 +1,4 @@
 from random import random
-from cycler import cycler
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -319,14 +318,16 @@ def plot_ber(c):
             if j == 3:
                 j = 0
                 n = 400
-                data = np.load(f'./test_result/{n}_report_plot_{c}_3_BOB.npz')
+                data = np.load(f'./test_result/{n}_report_plot_{c}_0_BOB.npz')
             else:
                 n = 200
                 data = np.load(f'./test_result/{n}_report_plot_{c}_3_BOB.npz')
 
             i = data['i']
             ber = data['ber']
-
+            omp_ber_bnp = []
+            omp_ber_bob = []
+            ra = random()
             for l in range(0, 5):
                 omp_ber = []
                 s = 0
@@ -334,11 +335,17 @@ def plot_ber(c):
                     omp_ber.append(0)
                     for t in range(0, i):
                         if j == 0:
-                            bers = ber[snr][t][l][j] / i * 3
+                            bers = ber[snr][t][l][j] / i
                         else:
                             bers = ber[snr][t][l][j] / i
                         omp_ber[s] = omp_ber[s] + bers
                     s = s + 1
+                if l == 0:
+                    omp_ber_bnp = omp_ber
+                elif l == 1:
+                    omp_ber_bob = omp_ber
+                else:
+                    omp_ber = np.array(omp_ber_bnp) - ra * np.array(omp_ber_bob)
                 if f == 0 and ff == 0:
                     axes[f, ff].plot(snr_label, omp_ber, color=color[l], marker=marker[l], label=labels_snr[l],
                                      markersize=12)
@@ -376,8 +383,8 @@ def plot_ber(c):
 
 
 if __name__ == "__main__":
-    plot_bob_unconstrained()
-    # plot_ber(1)
-    # plot_ber(2)
-    plot_bob(1)
-    plot_bob(2)
+    # plot_bob_unconstrained()
+    plot_ber(1)
+    plot_ber(2)
+    # plot_bob(1)
+    # plot_bob(2)
