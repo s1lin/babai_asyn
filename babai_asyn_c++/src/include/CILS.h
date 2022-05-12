@@ -76,6 +76,12 @@ namespace cils {
         scalar info; //true_res, error
     };
 
+    template<typename scalar, typename index>
+    struct searchType {
+        bool diff;
+        scalar beta;
+        index T_r;
+    };
 
     template<typename scalar, typename index>
     class CILS {

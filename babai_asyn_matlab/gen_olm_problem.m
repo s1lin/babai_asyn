@@ -32,8 +32,8 @@ sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
 if c==0
     A = randn(n, n);
 elseif c==1
-    Ar = normrnd(0, sqrt(1/2), m/2, n/2);
-    Ai = normrnd(0, sqrt(1/2), m/2, n/2);
+    Ar = randn(n/2, n/2);
+    Ai = randn(n/2, n/2);
 else 
     a = rand(1);
     b = rand(1);

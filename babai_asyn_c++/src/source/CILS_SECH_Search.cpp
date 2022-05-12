@@ -22,7 +22,7 @@ namespace cils {
     class CILS_SECH_Search {
 
     private:
-        index m, n, max_thre = 1e6;
+        index m, n, max_thre = INT_MAX;
         index lower, upper, search_iter;
         b_vector p, c, z, d, l, u;
 
@@ -52,6 +52,7 @@ namespace cils {
         bool ch(const index n_dx_q_0, const index n_dx_q_1, const bool check,
                 const b_matrix &R_R, const b_vector &y_B, b_vector &z_x) {
             // Variables
+            scalar time = omp_get_wtime();
             scalar sum, newprsd, gamma, beta = INFINITY;
             index dx = n_dx_q_1 - n_dx_q_0, k = dx - 1;
             index end_1 = n_dx_q_1 - 1, row_k = k + n_dx_q_0, diff;
@@ -77,7 +78,12 @@ namespace cils {
 //            cout << z[row_k] << endl;
             gamma = R_kk * (c[row_k] - z[row_k]);
             //ILS search process
-            while (true) {
+            while (iter < max_thre) {
+                iter++;
+                if (omp_get_wtime() - time > 10) {
+                    cout << "BREAK DUE TO RUNTIME";
+                    break;
+                }
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {
@@ -114,11 +120,14 @@ namespace cils {
                         } else {
                             beta = newprsd;
                             diff = 0;
-                            iter++;
+
                             for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
                                 diff += z_x[h] == z[h];
                                 z_x[h] = z[h];
                             }
+
+//                            if (time > 10)
+//                                break;
 //                            if (n_dx_q_1 != n) {
 //                                if (diff == dx || iter > search_iter || !check) {
 //                                    break;
@@ -159,10 +168,10 @@ namespace cils {
             return diff;
         }
 
-        sd_vector
+        searchType <scalar, index>
         mch(const index n_dx_q_0, const index n_dx_q_1, const b_vector &R_A, const b_vector &y_B, b_vector &z_x,
             index T, const index case1, index case2, scalar beta) {
-
+            scalar time = omp_get_wtime();
             index dx = n_dx_q_1 - n_dx_q_0;
             index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
             index dflag = 1, iter = 0, diff = 0, k = dx - 1;
@@ -195,8 +204,13 @@ namespace cils {
                     d[row_k] = c[row_k] > z[row_k] ? 1 : -1; //Determine enumeration direction at level block_size
                 }
             }
-
-            while (true) {
+            index iter2 = 0;
+            while (iter2 < max_thre) {
+                iter2++;
+                if (omp_get_wtime() - time > 10) {
+                    cout << "BREAK DUE TO RUNTIME";
+                    break;
+                }
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta && !case2) {
@@ -350,10 +364,9 @@ namespace cils {
         }
 
 
-        sd_vector
+        searchType <scalar, index>
         mse(const index n_dx_q_0, const index n_dx_q_1, const b_vector &R_A, const b_vector &y_B, b_vector &z_x,
             index T, const index case1, index case2, scalar beta) {
-
             index dx = n_dx_q_1 - n_dx_q_0;
             index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
             index dflag = 1, iter = 0, diff = 0, k = dx - 1;
@@ -427,7 +440,7 @@ namespace cils {
                     }
                 }
             }
-            return {diff == dx, beta, T - iter};
+            return {diff != dx, beta, T - iter};
         }
     };
 }
