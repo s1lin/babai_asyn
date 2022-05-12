@@ -514,20 +514,20 @@ namespace cils {
             return reT;
         }
 
-        returnType <scalar, index> pbocb_test(const index n_t, const index nstep, const index init) {
+        returnType <scalar, index> pbocb_test(const index n_t, const index nstep, const index init, const index T_) {
 
             index ds = d.size();
             index diff = 0, num_iter = 0, flag = 0, temp;
-            si_vector delta(ds, 0), ct(nstep, 0), df(nstep, 0);
+            b_vector ct(nstep, 0), df(nstep, 0), delta(ds, 0);
             index row_n, check = 0, r, idx = 0, s = 0;
             index n_dx_q_1, n_dx_q_0, case2 = 0;
             scalar sum = 0, start;
             scalar run_time = 0, run_time3 = 0;
 
-            sd_vector reT;
+            cils::searchType<scalar, index> reT;
             n_dx_q_1 = d[0];
             n_dx_q_0 = d[1];
-            b_vector y_B(n), y_old(n), T(n, 1), beta(n, 0);
+            b_vector y_B(n), y_old(n), T(ds, 1), beta(n, 0);
             y_B.clear();
             y_old.clear();
 
@@ -582,16 +582,14 @@ namespace cils {
                                 idx = i + 1;
                                 delta[i] = 0;
                             } else {
-                                if (case2 && T[i] != 0) {
+                                if (case2 || T[i] != 0) {
                                     if (is_constrained)
-                                        reT = search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B,
-                                                     z_hat, 1, t == 0, case2, beta[i]);
+                                        reT = search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2, beta[i]);
                                     else
-                                        reT = search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B,
-                                                         z_hat, 1, t == 0, case2, beta[i]);
-                                    beta[i] = reT[1];
-                                    delta[i] = reT[0];
-                                    T[i] = reT[2];
+                                        reT = search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2, beta[i]);
+                                    beta[i] = reT.beta;
+                                    delta[i] = reT.diff;
+                                    T[i] = reT.T_r;
                                 } else {
                                     delta[i] = 0;
                                 }
@@ -601,20 +599,25 @@ namespace cils {
 #pragma omp atomic
                         s++;
                     }
-                    if (!flag || idx <= n_t || s < 10) {
+
+                    if (!flag && t > 1) {
+                        num_iter = t;
 #pragma omp for nowait
-                        for (index i = 1; i < idx; i++) {
+                        for (index i = 1; i < ds; i++) {
+#pragma omp atomic
                             diff += delta[i];
 #pragma omp atomic
                             ct[t]++;
                         }
-                        if (ct[t] >= idx - 2) {
+                        if (ct[t] >= ds - 1) {
                             flag = diff <= 3 || idx <= n_t;
 #pragma omp atomic write
                             diff = 0;
                         }
-                    } else
+                    } else {
                         flag = true;
+                    }
+
 
                 }
 
@@ -624,23 +627,14 @@ namespace cils {
                 }
             }
             run_time2 = omp_get_wtime() - run_time2;
-
             scalar time = 0;
             if (init == -1) {
                 time = qam == 1 ? run_time2 + run_time : run_time2 + run_time;
             } else {
                 time = qam == 1 ? run_time2 : run_time2 * 0.5 + run_time3 * 0.5;
             }
-//            if (mode == 0)
-//                reT = {{run_time3}, time, (scalar) diff + idx};
-//            else {
-//            helper::display<scalar, index>(df, nstep, "df");
-//            helper::display<scalar, index>(ct, nstep, "ct");
-//
-//            cout << "n_proc:" << n_proc << "," << "init:" << init << ",idx:" << idx << ",ratio:"
-//                 << (index) (run_time2 / run_time3) << "," << run_time << "," << num_iter << "||" << endl;
-//            cout.flush();
-
+//            cout << delta;
+//            cout << ct;
             return {{run_time3}, time, (scalar) num_iter + 1};
         }
 
