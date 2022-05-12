@@ -234,7 +234,7 @@ long test_PBOB(int n, int nob, int c, int T_, bool is_local) {
     b_vector x_ser, x_lll, x_r;
 
     for (int t = 0; t < num_trial; t++) {
-        for (int s = 0; s < 1; s++) {
+        for (int s = 0; s < 4; s++) {
             run_time = omp_get_wtime();
             int k = 0;
             cils::init_PBNP(cils, n, SNRs[s], qam, c);
