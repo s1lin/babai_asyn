@@ -15,18 +15,21 @@ namespace cils {
 
     template<typename Integer, typename Scalar>
     CILS_Matrix <Integer, Scalar> trans(CILS_Matrix <Integer, Scalar> &A) {
-        CILS_Matrix<Integer, Scalar> A_T(A.size2(), A.size1());
-        for (int i = 0; i < A.size1(); i++)
-            for (int j = 0; j < A.size2(); j++)
-                A_T(j, i) = A(i, j);
-        return A_T;
+        CILS_Matrix<Integer, Scalar> A_t(A.size2(), A.size1());
+        for (int i = 0; i < A.size1(); i++) {
+            int m = A.size2();
+            for (int coffset = 0; coffset < m; coffset++) {
+                A_t(coffset, i) = A(i, coffset);
+            }
+        }
+        return A_t;
     }
 
     //Ax = b
     template<typename Integer, typename Scalar>
     void prod(CILS_Matrix <Integer, Scalar> &A, CILS_Vector <Integer, Scalar> &x, CILS_Vector <Integer, Scalar> &b) {
         Scalar sum;
-        b.resize(x.size(), false);
+        b.resize(A.size1(), false);
         for (Integer row = 0; row < A.size1(); row++) {
             sum = 0;
             for (Integer col = 0; col < A.size2(); col++) {
@@ -37,8 +40,9 @@ namespace cils {
     }
 
     template<typename Integer, typename Scalar>
-    void projection(CILS_Matrix <Integer, Scalar> &A, CILS_Vector <Integer, Scalar> &x, CILS_Vector <Integer, Scalar> &b,
-                    Integer lower, Integer upper) {
+    void
+    projection(CILS_Matrix <Integer, Scalar> &A, CILS_Vector <Integer, Scalar> &x, CILS_Vector <Integer, Scalar> &b,
+               Integer lower, Integer upper) {
         Scalar sum;
         b.clear();
         for (Integer row = 0; row < A.size1(); row++) {

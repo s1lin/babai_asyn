@@ -1,4 +1,4 @@
-function [A, x_t, y, permutation] = gen_ublm_problem(k, m, n, SNR, c, max_iter)
+function [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(k, m, n, SNR, c, max_iter)
 % [A, y, v, x_t, sigma] = gen_problem(k, m, n, SNR)
 % generates linear model y = A * x_t + v
 %
@@ -47,7 +47,7 @@ else
 end
 
 Abar = [Ar -Ai; Ai, Ar];
-A = 2*Abar;
+A = 2*Abar
 
 
 %True parameter x:
@@ -64,21 +64,27 @@ v = sigma * randn(m, 1);
 %Get Upper triangular matrix
 y = A * x_t + v;
 
-permutation = zeros(max_iter, n);
-if factorial(n) > 1e7        
-    for i = 1 : max_iter
-        permutation(i,:) = randperm(n);
-    end        
-else
-   permutation = perms(1:n);
-   if max_iter > factorial(n)
-      for i = factorial(n) : max_iter
-          permutation(i,:) = randperm(n);
-       end
-  end        
-end 
+permutation = zeros(1, n);
+% if factorial(n) > 1e7        
+%     for i = 1 : max_iter
+%         permutation(i,:) = randperm(n);
+%     end        
+% else
+%    permutation = perms(1:n);
+%    if max_iter > factorial(n)
+%       for i = factorial(n) : max_iter
+%           permutation(i,:) = randperm(n);
+%        end
+%   end        
+% end 
 
-%permutation = permutation';    
-%permutation(:,1) = (1:n)';
+[size_perm, ~] = size(permutation);
+size_perm
+permutation = permutation';    
+permutation(:,1) = (1:n)';
+
+x_hat = cgsic(A, y, 0, 2^k-1)
+
+R0 = zeros(n);
 
 end

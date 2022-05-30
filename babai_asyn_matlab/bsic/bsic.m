@@ -39,7 +39,7 @@ for i = 1:max_iter
         l = repelem(0, t)';
         u = repelem(2^k-1, t)';       
         if optimal
-            z = obils(H_adj, y_hat, l, u);
+            z = zeros(t, 0);%obils(H_adj, y_hat, l, u);
         else
             [~, R, y_bar,~ ,~ , p] = obils_reduction(H_adj,y_hat,l,u);
             z = zeros(t, 1);

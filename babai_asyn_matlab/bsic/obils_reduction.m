@@ -48,7 +48,8 @@ p = 1:n;
 
 % Inverse transpose of R
 G = inv(R)';
-
+j = 0;
+x_j = 0;
 % Determine the column permutatons 
 for k = n : -1 : 2
     maxDist = -1;

@@ -343,4 +343,133 @@ namespace cils {
             cils.is_init_success = false;
         }
     }
+
+    template<typename scalar, typename index>
+    void init_ublm(CILS<scalar, index> &cils, index m, index n, index snr, index qam, index c) {
+        try {
+            cils.m = m;
+            cils.n = n;
+            cils.A.resize(m, n, false);
+            cils.y.resize(m, false);
+            cils.x_t.resize(n, false);
+            cils.x_t.clear();
+            cils.qam = qam;
+            cils.snr = snr;
+            cils.upper = pow(2, qam) - 1;
+
+            matlab::data::ArrayFactory factory;
+
+            // Call the MATLAB movsum function
+            matlab::data::TypedArray<scalar> k_M = factory.createScalar<scalar>(cils.qam);
+            matlab::data::TypedArray<scalar> m_M = factory.createScalar<scalar>(cils.m);
+            matlab::data::TypedArray<scalar> n_M = factory.createScalar<scalar>(cils.n);
+            matlab::data::TypedArray<scalar> SNR = factory.createScalar<scalar>(cils.snr);
+            matlab::data::TypedArray<scalar> c_M = factory.createScalar<scalar>(c);
+            matlab::data::TypedArray<scalar> ITR = factory.createScalar<scalar>(cils.search_iter);
+
+
+            std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr;
+            matlabPtr = matlab::engine::startMATLAB();
+
+            matlabPtr->setVariable(u"qam", std::move(k_M));
+            matlabPtr->setVariable(u"m", std::move(m_M));
+            matlabPtr->setVariable(u"n", std::move(n_M));
+            matlabPtr->setVariable(u"SNR", std::move(SNR));
+            matlabPtr->setVariable(u"c", std::move(c_M));
+            matlabPtr->setVariable(u"max_iter", std::move(ITR));
+
+
+            // Call the MATLAB addpath function
+            if (cils.is_local)
+                matlabPtr->eval(u"addpath('/Users/shileilin/CLionProjects/babai_asyn/babai_asyn_matlab/bsic')");
+            matlabPtr->eval(u" [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(qam, m, n, SNR, c, max_iter);");
+
+            matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
+            matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
+            matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
+            matlab::data::TypedArray<scalar> const R_0 = matlabPtr->getVariable(u"R0");
+            matlab::data::TypedArray<scalar> const per = matlabPtr->getVariable(u"permutation");
+            matlab::data::TypedArray<scalar> const szp = matlabPtr->getVariable(u"size_perm");
+
+            std::vector<scalar> A_v(cils.m * cils.n, 0);
+            index i = 0;
+            for (auto r: A_A) {
+                A_v[i] = r;
+                i++;
+            }
+            for (index col = 0; col < cils.n; col++) {
+                for (index row = 0; row < cils.m; row++) {
+                    cils.A(row, col) = A_v[row + col * cils.m];
+                }
+            }
+            cout << cils.A;
+
+//            std::vector<scalar> R0(cils.n * cils.n, 0);
+//            i = 0;
+//            for (auto r: R_0) {
+//                R0[i] = r;
+//                ++i;
+//            }
+//            cils.B.resize(cils.n, cils.n);
+//            cils.B.clear();
+//            for (index col = 0; col < cils.n; col++) {
+//                for (index row = 0; row < cils.n; row++) {
+//                    cils.B(row, col) = R0[row + col * cils.n];
+//                }
+//            }
+
+            i = 0;
+            for (auto r: y_M) {
+                cils.y[i] = r;
+                ++i;
+            }
+            cout << cils.y;
+
+            i = 0;
+            for (auto r: x_M) {
+                cils.x_t[i] = r;
+                ++i;
+            }
+            i = 0;
+
+            scalar *size = (double *) malloc(1 * sizeof(double));
+
+            for (auto r: szp) {
+                size[0] = r;
+                ++i;
+            }
+            cout << size[0] << endl;
+            auto *p = (scalar *) malloc(cils.n * size[0] * sizeof(scalar));
+
+            i = 0;
+            for (auto r: per) {
+                p[i] = r;
+                ++i;
+            }
+
+            index k1 = 0;
+//            cils.permutation.resize((int) size[0] + 1);
+//            cils.permutation[k1] = std::vector<scalar>(cils.n);
+//            cils.permutation[k1].assign(cils.n, 0);
+//            for (index iter = 0; iter < (int) size[0] * cils.n; iter++) {
+//                cils.permutation[k1][i] = p[iter];
+//                i = i + 1;
+//                if (i == cils.n) {
+//                    i = 0;
+//                    k1++;
+//                    cils.permutation[k1] = std::vector<scalar>(cils.n);
+//                    cils.permutation[k1].assign(cils.n, 0);
+//                }
+//            }
+            cils.is_init_success = true;
+
+            matlabPtr.get_deleter();
+            //Step 2: initialize variables:
+
+
+        } catch (const std::exception &e) {
+            std::cout << e.what();
+            cils.is_init_success = false;
+        }
+    }
 }

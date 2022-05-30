@@ -16,12 +16,13 @@ function [x_hat, A_hat, P] = cgsic(A, y, lower, upper)
 %     rho - real scalar for the norm of the residual vector corresponding to x_hat
 %     A_hat - m-by-n real matrix, permuted A for sub-optimal methods
 %     P - n-by-n real matrix where A_hat*P'=A
+A_t = A';
 
 [~, n] = size(A);
 x_hat = zeros(n,1);
 P = eye(n);
-b= A'*y;
-C = A'*A;
+b= A_t*y
+C = A_t*A
 k = 0;
 rho = norm(y)^2;
 for i = n:-1:1
