@@ -82,7 +82,13 @@ size_perm = 0;
 % permutation = permutation';    
 % permutation(:,1) = (1:n)';
 
-x_hat = cgsic(A, y, 0, 2^k-1)
+x_hat = cgsic(A, y, 0, 2^k-1);
+x_hat'
+
+l = repelem(0, n)';
+u = repelem(2^k-1, n)';       
+x_hat = gradproj(A,y,l,u,zeros(n,1),max_iter);
+x_hat'
 
 R0 = zeros(n);
 

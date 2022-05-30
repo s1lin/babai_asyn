@@ -26,7 +26,7 @@ bool test_init_pt() {
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
     cils.is_constrained = true;
-    cils.search_iter = 1;
+    cils.search_iter = 1000;
 
     cils::init_ublm(cils, m, n, snr, qam, 1);
 
@@ -43,6 +43,14 @@ bool test_init_pt() {
     scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
     cout << ublm.x_hat;
     printf("CGSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+
+    ublm.x_hat.clear();
+    reT = ublm.gp();
+    res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+    cout << ublm.x_hat;
+    printf("GP: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+
     return true;
 
 }

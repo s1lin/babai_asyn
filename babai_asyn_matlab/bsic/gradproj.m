@@ -1,13 +1,13 @@
-function x = gradproj(B,y,l,u,x,max_iter)
+function x_hat = gradproj(B,y,l,u,x,max_iter)
 % Gradient projection method to find a real solutiont to the
 % box-constrained real LS problem min_{l<=x<=u}||y-Bx||_2
 % The input x is an initial point, we may take x=(l+u)/2.
 % max_iter is the maximum number of iterations, say 50.
 
 n = length(x);
-
+x_hat = zeros(n, 1);
 c = B'*y;
-
+t = 0;
 for iter = 1:max_iter
     
     g = B'*(B*x-y);
@@ -35,6 +35,7 @@ for iter = 1:max_iter
         k3 = 0;
     end
     if (k1 && k2 && k3)
+        x_hat = x;
         break
     end
     

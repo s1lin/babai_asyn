@@ -61,7 +61,7 @@ namespace cils {
         }
 
         void clear() {
-            this->x.clear();
+            std::fill_n(this->begin(), n, 0);
         }
 
         void assign(Integer new_value) {

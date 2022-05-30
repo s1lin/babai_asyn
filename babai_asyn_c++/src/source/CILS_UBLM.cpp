@@ -24,11 +24,11 @@ namespace cils {
     public:
         index m, n, upper, lower, search_iter;
         scalar tolerance;
-        b_vector x_hat{}, y{}, l{}, u{};
+        b_vector x_hat{}, y{};
         b_matrix A{}, I{};
         std::vector<std::vector<double>> permutation;
 
-        explicit CILS_UBLM(CILS <scalar, index> &cils) {
+        explicit CILS_UBLM(CILS<scalar, index> &cils) {
             this->n = cils.n;
             this->m = cils.m;
             this->upper = cils.upper;
@@ -64,23 +64,23 @@ namespace cils {
             //      x_hat A_hat - m-by-n real matrix, permuted A for sub-optimal methods
             //      Piv - n-by-n real matrix where A_hat*Piv'=A
          */
-        returnType <scalar, index> cgsic() {
-            b_matrix C(n, n), P(n, n);
+        returnType<scalar, index> cgsic() {
+            b_matrix C(n, n), P(n, n), A_(this->A);
             b_vector b(n);
             scalar xi, rho, rho_min, rho_t;
 
-            // 'cgsic:20' [~, n] = size(A);
+            // 'cgsic:20' [~, n] = size(A_);
             // 'cgsic:21' x_hat = zeros(n,1);
             x_hat.clear();
             // 'cgsic:22' P = eye(n);
             P.assign(I);
             scalar time = omp_get_wtime();
 
-            // 'cgsic:23' b= A'*y;
-            b_matrix A_t = trans(A);
+            // 'cgsic:23' b= A_'*y;
+            b_matrix A_t = trans(A_);
             prod(A_t, y, b);
-            // 'cgsic:24' C = A'*A;
-            prod(A_t, A, C);
+            // 'cgsic:24' C = A_'*A_;
+            prod(A_t, A_, C);
             // 'cgsic:25' k = 0;
             index k = -1;
             // 'cgsic:26' rho = norm(y)^2;
@@ -114,11 +114,11 @@ namespace cils {
                 }
                 // 'cgsic:42' rho = rho_min;
                 rho = rho_min;
-                // 'cgsic:43' A(:,[k, i]) = A(:, [i,k]);
+                // 'cgsic:43' A_(:,[k, i]) = A_(:, [i,k]);
                 // 'cgsic:44' P(:,[k, i]) = P(:, [i,k]);
                 // 'cgsic:46' C(:,[k, i]) = C(:, [i,k]);
                 for (int i1 = 0; i1 < m; i1++) {
-                    std::swap(A(i1, i), A(i1, k));
+                    std::swap(A_(i1, i), A_(i1, k));
                 }
                 for (int i1 = 0; i1 < n; i1++) {
                     std::swap(P[i1 + i * n], P[i1 + k * n]);
@@ -132,7 +132,7 @@ namespace cils {
                 }
             }
             time = omp_get_wtime() - time;
-            // 'cgsic:49' A_hat = A;
+            // 'cgsic:49' A_hat = A_;
             // 'cgsic:50' x_hat = P * x_hat;
             b.assign(x_hat);
             x_hat.clear();
@@ -140,7 +140,7 @@ namespace cils {
             return {{}, time, 0};
         }
 
-        returnType <scalar, index> gp(b_vector &x, const index search_iter) {
+        returnType<scalar, index> gp() {
             b_vector ex;
 
             sd_vector t_bar, t_seq;
@@ -150,7 +150,6 @@ namespace cils {
             index i, j, k1, k2, k3;
             scalar v_norm = INFINITY;
             b_vector x_cur(n, 0);
-
 
             scalar time = omp_get_wtime();
 
@@ -167,14 +166,16 @@ namespace cils {
                 }
                 b_vector Ax, g;
                 prod(A, x_cur, Ax);
-                r0 = r0 + Ax;
+                for (index i1 = 0; i1 < Ax.size(); i1++){
+                    r0[i1] += Ax[i1];
+                }
                 prod(A_T, r0, g);
 
                 //  Check KKT conditions
                 // 'ubils:230' if (x_cur==cils.l) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = !(x_cur[i] == l[i]);
+                    b_x_0[i] = !(x_cur[i] == lower);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:231' k1 = 1;
@@ -182,14 +183,14 @@ namespace cils {
                 } else {
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == l[i]) {
+                        if (x_cur[i] == lower) {
                             k3++;
                         }
                     }
                     r1.resize(k3, 0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == l[i]) {
+                        if (x_cur[i] == lower) {
                             r1[k3] = i + 1;
                             k3++;
                         }
@@ -212,7 +213,7 @@ namespace cils {
                 // 'ubils:236' if (x_cur==u) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = !(x_cur[i] == u[i]);
+                    b_x_0[i] = !(x_cur[i] == upper);
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:237' k2 = 1;
@@ -220,14 +221,14 @@ namespace cils {
                 } else {
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == u[i]) {
+                        if (x_cur[i] == upper) {
                             k3++;
                         }
                     }
                     r2.resize(k3, 0);
                     k3 = 0;
                     for (i = 0; i < n; i++) {
-                        if (x_cur[i] == u[i]) {
+                        if (x_cur[i] == upper) {
                             r2[k3] = i + 1;
                             k3++;
                         }
@@ -250,7 +251,7 @@ namespace cils {
                 // 'ubils:242' if (l<x_cur & x_cur<u) == 0
                 b_x_0.resize(n, 0);
                 for (i = 0; i < n; i++) {
-                    b_x_0[i] = ((!(l[i] < x_cur[i])) || (!(x_cur[i] < u[i])));
+                    b_x_0[i] = ((!(lower < x_cur[i])) || (!(x_cur[i] < upper)));
                 }
                 if (helper::if_all_x_true<index>(b_x_0)) {
                     // 'ubils:243' k3 = 1;
@@ -258,8 +259,8 @@ namespace cils {
                 } else {
                     b_x_0.resize(n, 0);
                     for (i = 0; i < n; i++) {
-                        b_x_0[i] = (l[i] < x_cur[i]);
-                        b_x_1[i] = (x_cur[i] < u[i]);
+                        b_x_0[i] = (lower < x_cur[i]);
+                        b_x_1[i] = (x_cur[i] < upper);
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -290,22 +291,14 @@ namespace cils {
                         k3 = 0;
                     }
                 }
-                scalar v_norm_cur = helper::find_residual<scalar, index>(A, x_cur, y);
                 // 'ubils:248' if (k1 & k2 & k3)
-                if ((k1 != 0) && (k2 != 0) && (k3 != 0) && (v_norm > v_norm_cur)) {
+                if ((k1 != 0) && (k2 != 0) && (k3 != 0)) {
                     k1 = k2 = k3 = 0;
                     for (i = 0; i < n; i++) {
-                        scalar x_est = round(x_cur[i]);
-                        //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
-                        if (x_est < 0) {
-                            x_est = 0;
-                        } else if (x_est > upper) {
-                            x_est = upper;
-                        }
-                        x[i] = x_est;
+                        x_hat[i] = x_cur[i];
                     }
-                    v_norm = v_norm_cur;
-                } else {
+                }
+                else {
                     scalar x_tmp;
                     //  Find the Cauchy poindex
                     // 'ubils:253' t_bar = 1.e5*ones(n,1);
@@ -328,7 +321,7 @@ namespace cils {
                     r0.resize(r4.size());
                     k3 = r4.size();
                     for (i = 0; i < k3; i++) {
-                        r0[i] = (x_cur[r4[i] - 1] - u[r4[i] - 1]) / g[r4[i] - 1];
+                        r0[i] = (x_cur[r4[i] - 1] - upper) / g[r4[i] - 1];
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -355,7 +348,7 @@ namespace cils {
                     r0.resize(r5.size());
                     k3 = r5.size();
                     for (i = 0; i < k3; i++) {
-                        r0[i] = (x_cur[r5[i] - 1] - l[r5[i] - 1]) / g[r5[i] - 1];
+                        r0[i] = (x_cur[r5[i] - 1] - lower) / g[r5[i] - 1];
                     }
                     k3 = 0;
                     for (i = 0; i < n; i++) {
@@ -463,24 +456,11 @@ namespace cils {
                     }
                 }
             }
-            //s_bar4 = round_index(s_bar4_unrounded, -1, 1);
-//        for (i = 0; i < n; i++) {
-//            scalar x_est = round(x[i]);
-//            //x_est = 2.0 * std::floor(x_est / 2.0) + 1.0;
-//            if (x_est < 0) {
-//                x_est = 0;
-//            } else if (x_est > upper) {
-//                x_est = upper;
-//            }
-//            x[i] = x_est;
-//        }
-
-            //scalar v_norm = helper::find_residual<scalar, index>(m, n, A.data(), x.data(), y.data());
             time = omp_get_wtime() - time;
             return {{}, time, v_norm};
         }
 
-        returnType <scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_matrix &Q_t, b_matrix &R_t, b_vector &d) {
+        returnType<scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_matrix &Q_t, b_matrix &R_t, b_vector &d) {
             b_matrix A_bar_p, P_tmp, P_hat, P_tilde, Q, R, b_A_bar_p, b_A_tilde, b_p;
             b_vector b_d, y_tmp;
             si_vector b_x;
