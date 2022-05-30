@@ -69,7 +69,7 @@ namespace cils {
             matlabPtr->setVariable(u"max_iter", std::move(MIT));
 
             // Call the MATLAB addpath function
-            matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
+            matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/')");
 //            matlabPtr->eval(u"addpath('/Users/shileilin/CLionProjects/babai_asyn/babai_asyn_matlab/')");
 //            matlabPtr->eval(u" [A, x_t, v, y, sigma, res, permutation, size_perm, R0] = gen_problem_convergence(k, m, n, SNR, max_iter);");
             matlabPtr->eval(
@@ -203,7 +203,7 @@ namespace cils {
             // Call the MATLAB addpath function
             if (cils.is_local)
 //                matlabPtr->eval(u"addpath('/Users/shileilin/CLionProjects/babai_asyn/babai_asyn_matlab/')");
-                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
+                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/')");
             matlabPtr->eval(u" [A, y, R0] = gen_lll_problem(k, m, n);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
@@ -259,7 +259,6 @@ namespace cils {
             cils.n = n;
             cils.A.resize(n, n, false);
             cils.y.resize(n, false);
-            cils.y.resize(n, false);
             cils.y.clear();
             cils.x_t.resize(n, false);
             cils.x_t.clear();
@@ -289,7 +288,7 @@ namespace cils {
 
             // Call the MATLAB addpath function
             if (cils.is_local)
-                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/Reference/babai_asyn/babai_asyn_matlab/')");
+                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/')");
             matlabPtr->eval(u" [A, x_t, y, R0] = gen_olm_problem(qam, m, n, SNR, c);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
@@ -350,7 +349,11 @@ namespace cils {
             cils.m = m;
             cils.n = n;
             cils.A.resize(m, n, false);
+            cils.I.resize(n, n);
+            cils.I.reset();
+            cils.A.clear();
             cils.y.resize(m, false);
+            cils.y.clear();
             cils.x_t.resize(n, false);
             cils.x_t.clear();
             cils.qam = qam;
@@ -381,15 +384,15 @@ namespace cils {
 
             // Call the MATLAB addpath function
             if (cils.is_local)
-                matlabPtr->eval(u"addpath('/Users/shileilin/CLionProjects/babai_asyn/babai_asyn_matlab/bsic')");
-            matlabPtr->eval(u" [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(qam, m, n, SNR, c, max_iter);");
+                matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/bsic/')");
+            matlabPtr->eval(u" [A, x_t, y, R0, ~, ~] = gen_ublm_problem(qam, m, n, SNR, c, max_iter);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");
             matlab::data::TypedArray<scalar> const y_M = matlabPtr->getVariable(u"y");
             matlab::data::TypedArray<scalar> const x_M = matlabPtr->getVariable(u"x_t");
             matlab::data::TypedArray<scalar> const R_0 = matlabPtr->getVariable(u"R0");
-            matlab::data::TypedArray<scalar> const per = matlabPtr->getVariable(u"permutation");
-            matlab::data::TypedArray<scalar> const szp = matlabPtr->getVariable(u"size_perm");
+//            matlab::data::TypedArray<scalar> const per = matlabPtr->getVariable(u"permutation");
+//            matlab::data::TypedArray<scalar> const szp = matlabPtr->getVariable(u"size_perm");
 
             std::vector<scalar> A_v(cils.m * cils.n, 0);
             index i = 0;
@@ -399,10 +402,11 @@ namespace cils {
             }
             for (index col = 0; col < cils.n; col++) {
                 for (index row = 0; row < cils.m; row++) {
-                    cils.A(row, col) = A_v[row + col * cils.m];
+                    cils.A[col * cils.m + row] = A_v[col * cils.m + row];
                 }
             }
-            cout << cils.A;
+
+//            cout << cils.A;
 
 //            std::vector<scalar> R0(cils.n * cils.n, 0);
 //            i = 0;
@@ -423,7 +427,7 @@ namespace cils {
                 cils.y[i] = r;
                 ++i;
             }
-            cout << cils.y;
+//            cout << cils.y;
 
             i = 0;
             for (auto r: x_M) {
@@ -432,22 +436,22 @@ namespace cils {
             }
             i = 0;
 
-            scalar *size = (double *) malloc(1 * sizeof(double));
-
-            for (auto r: szp) {
-                size[0] = r;
-                ++i;
-            }
-            cout << size[0] << endl;
-            auto *p = (scalar *) malloc(cils.n * size[0] * sizeof(scalar));
-
-            i = 0;
-            for (auto r: per) {
-                p[i] = r;
-                ++i;
-            }
-
-            index k1 = 0;
+//            scalar *size = (double *) malloc(1 * sizeof(double));
+//
+//            for (auto r: szp) {
+//                size[0] = r;
+//                ++i;
+//            }
+//            cout << size[0] << endl;
+//            auto *p = (scalar *) malloc(cils.n * size[0] * sizeof(scalar));
+//
+//            i = 0;
+//            for (auto r: per) {
+//                p[i] = r;
+//                ++i;
+//            }
+//
+//            index k1 = 0;
 //            cils.permutation.resize((int) size[0] + 1);
 //            cils.permutation[k1] = std::vector<scalar>(cils.n);
 //            cils.permutation[k1].assign(cils.n, 0);

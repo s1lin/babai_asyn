@@ -25,7 +25,7 @@ endif ()
 if (CXX_COMPILER_GNUCLANG OR CXX_COMPILER_INTEL)
     set(CMAKE_CXX_FLAGS "-std=c++17")
     set(CMAKE_C_FLAGS "-std=c17")
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O1")
 endif ()
 
@@ -45,7 +45,8 @@ elseif (CXX_COMPILER_PGI)
 else ()
     message(SEND_ERROR "Don't know OpenMP flag for this compiler!")
 endif ()
-
+set(Matlab_ROOT_DIR "/usr/local/MATLAB/R2022a/")
+message(${Matlab_ROOT_DIR})
 
 find_package(Python3 COMPONENTS Interpreter NumPy)
 find_package(OpenMP REQUIRED)

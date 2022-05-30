@@ -70,7 +70,11 @@ namespace cils {
 
         void assign(CILS_Vector &y) {
             this->resize(y.size(), false);
-            std::copy(y.begin(), y.end(), this->begin());
+            this->n = y.size();
+            this->x.resize(n);
+            for (int i = 0; i < n; i++){
+                this->x[i] = y.x[i];
+            }
         }
 
         Scalar &operator[](const Integer i) {

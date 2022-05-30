@@ -10,16 +10,6 @@
 
 template<typename scalar, typename index>
 bool test_init_pt() {
-    index n = 6, m = 4, qam = 3, snr = 35;
-
-    b_vector x_cgsic(n, 0), x_gp(n, 0);
-    scalar res;
-    cils::CILS<scalar, index> cils(m, n, qam, snr, 1e3);
-    cils::init_ublm(cils, m, n, snr, qam, 1);
-    cils.is_constrained = true;
-
-    scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
-    printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -30,17 +20,30 @@ bool test_init_pt() {
     );
     printf("====================[ TEST | INIT_POINT | %s ]==================================\n", time_str);
 
+    index m = 12, n = 18, qam = 3, snr = 35;
+    scalar res;
+
+    cils::CILS<scalar, index> cils;
+    cils.is_local = true;
+    cils.is_constrained = true;
+    cils.search_iter = 1;
+
+    cils::init_ublm(cils, m, n, snr, qam, 1);
+
+//    scalar r = helper::find_residual<scalar, index>(cils.A, cils.x_t, cils.y);
+//    printf("[ INIT COMPLETE, RES:%8.5f, RES:%8.5f]\n", cils.init_res, r);
+
     cils::returnType<scalar, index> reT;
     //----------------------INIT POINT (SERIAL)--------------------------------//
     cils::CILS_UBLM<scalar, index> ublm(cils);
 
     //CGSIC:
-    reT = ublm.cgsic(x_cgsic);
-    res = helper::find_residual<scalar, index>(cils.A, x_cgsic, cils.y);
-    scalar ber = helper::find_bit_error_rate<scalar, index>(x_cgsic, cils.x_t, cils.qam);
-    cout << x_cgsic;
+    reT = ublm.cgsic();
+    res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+    scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+    cout << ublm.x_hat;
     printf("CGSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-
+    return true;
 
 }
 ////

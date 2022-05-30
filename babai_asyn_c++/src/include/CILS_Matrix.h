@@ -81,20 +81,17 @@ namespace cils {
 
         void assign(CILS_Matrix &B) {
             this->resize(B.size1(), B.size2(), false);
-            std::cout << B.size1() << B.size2() << "\n";
             for (int i = 0; i < B.size1() * B.size2(); i++){
                 this->x[i] = B.x[i];
-                std::cout << B.x[i]<<",";
-                std::cout << this->x[i] << ", ";
             }
         }
 
         Scalar &at_element(const Integer row, const Integer col) {
-            return x[row + col * s2];
+            return x[row + col * s1];
         }
 
         const Scalar &at_element(const Integer row, const Integer col) const {
-            return x[row + col * s2];
+            return x[row + col * s1];
         }
 
         void assign(Integer col, CILS_Vector <Integer, Scalar> &y) {

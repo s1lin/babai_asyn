@@ -24,8 +24,8 @@ namespace cils {
     public:
         index m, n, upper, lower, search_iter;
         scalar tolerance;
-        b_vector z_hat, y, l, u;
-        b_matrix A, I;
+        b_vector x_hat{}, y{}, l{}, u{};
+        b_matrix A{}, I{};
         std::vector<std::vector<double>> permutation;
 
         explicit CILS_UBLM(CILS <scalar, index> &cils) {
@@ -33,21 +33,16 @@ namespace cils {
             this->m = cils.m;
             this->upper = cils.upper;
             this->search_iter = cils.search_iter;
-
-            this->z_hat.resize(n);
-            this->z_hat.clear();
+            this->y.assign(cils.y);
+            this->x_hat.resize(n);
+            this->x_hat.clear();
             this->A.resize(m, n, false);
             this->A.assign(cils.A);
-            cout << "HERE";
-            cout << cils.A;
-            cout << A;
             this->I.assign(cils.I);
 
-            this->y.assign(cils.y);
-            this->l.assign(cils.l);
-            this->u.assign(cils.u);
-            this->tolerance = cils.tolerance;
-            this->permutation = cils.permutation;
+            //TODO:
+//            this->tolerance = cils.tolerance;
+//            this->permutation = cils.permutation;
             this->upper = cils.upper;
             this->lower = cils.lower;
         }
@@ -69,7 +64,7 @@ namespace cils {
             //      x_hat A_hat - m-by-n real matrix, permuted A for sub-optimal methods
             //      Piv - n-by-n real matrix where A_hat*Piv'=A
          */
-        returnType <scalar, index> cgsic(b_vector &x_hat) {
+        returnType <scalar, index> cgsic() {
             b_matrix C(n, n), P(n, n);
             b_vector b(n);
             scalar xi, rho, rho_min, rho_t;
@@ -79,16 +74,13 @@ namespace cils {
             x_hat.clear();
             // 'cgsic:22' P = eye(n);
             P.assign(I);
+            scalar time = omp_get_wtime();
 
             // 'cgsic:23' b= A'*y;
-            cout << A;
             b_matrix A_t = trans(A);
-            cout << A_t;
             prod(A_t, y, b);
-            cout << b;
             // 'cgsic:24' C = A'*A;
             prod(A_t, A, C);
-            cout << C;
             // 'cgsic:25' k = 0;
             index k = -1;
             // 'cgsic:26' rho = norm(y)^2;
@@ -125,8 +117,10 @@ namespace cils {
                 // 'cgsic:43' A(:,[k, i]) = A(:, [i,k]);
                 // 'cgsic:44' P(:,[k, i]) = P(:, [i,k]);
                 // 'cgsic:46' C(:,[k, i]) = C(:, [i,k]);
+                for (int i1 = 0; i1 < m; i1++) {
+                    std::swap(A(i1, i), A(i1, k));
+                }
                 for (int i1 = 0; i1 < n; i1++) {
-                    std::swap(A[i1 + i * n], A[i1 + k * n]);
                     std::swap(P[i1 + i * n], P[i1 + k * n]);
                     std::swap(C[i1 + i * n], C[i1 + k * n]);
                 }
@@ -137,12 +131,13 @@ namespace cils {
                     std::swap(C(k, i1), C(i, i1));
                 }
             }
+            time = omp_get_wtime() - time;
             // 'cgsic:49' A_hat = A;
             // 'cgsic:50' x_hat = P * x_hat;
             b.assign(x_hat);
             x_hat.clear();
             prod(P, b, x_hat);
-            return {{}, 0, 0};
+            return {{}, time, 0};
         }
 
         returnType <scalar, index> gp(b_vector &x, const index search_iter) {

@@ -47,8 +47,7 @@ else
 end
 
 Abar = [Ar -Ai; Ai, Ar];
-A = 2*Abar
-
+A = 2 * Abar;
 
 %True parameter x:
 low = -2^(k-1);
@@ -78,10 +77,10 @@ permutation = zeros(1, n);
 %   end        
 % end 
 
-[size_perm, ~] = size(permutation);
-size_perm
-permutation = permutation';    
-permutation(:,1) = (1:n)';
+% [size_perm, ~] = size(permutation);
+size_perm = 0;
+% permutation = permutation';    
+% permutation(:,1) = (1:n)';
 
 x_hat = cgsic(A, y, 0, 2^k-1)
 
