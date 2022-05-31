@@ -42,7 +42,7 @@ namespace cils {
 
             //TODO:
 //            this->tolerance = cils.tolerance;
-//            this->permutation = cils.permutation;
+            this->permutation = cils.permutation;
             this->upper = cils.upper;
             this->lower = cils.lower;
         }
@@ -140,6 +140,13 @@ namespace cils {
             return {{}, time, 0};
         }
 
+        /**
+         * Gradient projection method to find a real solutiont to the
+           box-constrained real LS problem min_{l<=x<=u}||y-Bx||_2
+           The input x is an initial point, we may take x=(l+u)/2.
+           max_iter is the maximum number of iterations, say 50.
+         * @return
+         */
         returnType<scalar, index> gp() {
             b_vector ex;
 
@@ -460,12 +467,8 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_matrix &Q_t, b_matrix &R_t, b_vector &d) {
-            b_matrix A_bar_p, P_tmp, P_hat, P_tilde, Q, R, b_A_bar_p, b_A_tilde, b_p;
-            b_vector b_d, y_tmp;
-            si_vector b_x;
-            int q, i, input_sizes_idx_1, k, loop_ub, sizes_idx_1, t, vlen;
-            // Corresponds to Algorithm 5 (Partition Strategy) in Report 10
+        /**
+         * // Corresponds to Algorithm 5 (Partition Strategy) in Report 10
             //  [A_t, P_tmp, x_tilde, Q_t, R_t, t] = partition_H(A, x, m, n)
             //  permutes and partitions A_t so that the submatrices H_i are
             //  full-column rank
@@ -482,976 +485,510 @@ namespace cils {
             //      A_t) Q_t - m-by-n real matrix (Q factors) R_t - m-by-n
             //      real matrix (R factors) t - 2-by-q integer matrix (indicates
             //      submatrices of A_t)
-            //  A_ = A;
-            //  x_ = x;
-            // 'partition:23' [m, n] = size(A);
-            // 'partition:24' A_t = A;
-            A_t = A;
-            // 'partition:25' q = n;
-            q = A.size2();
-            // 'partition:26' P_tmp = eye(n);
-            t = A.size2();
-            P_tmp.resize(A.size2(), A.size2(), false);
-            for (i = 0; i < t; i++) {
-                P_tmp[i + P_tmp.size1() * i] = 1.0;
-            }
-
-            // 'partition:27' R_t = zeros(m,n);
-            R_t.resize(A.size1(), A.size2(), false);
-
-            // 'partition:28' Q_t = zeros(m,n);
-            Q_t.resize(A.size1(), A.size2(), false);
-
-            // 'partition:29' d = zeros(n, 1);
-            d.resize(A.size2(), false);
-            // 'partition:30' k = 0;
-            k = 0;
-            // 'partition:32' while q >= 1
-            while (q >= 1) {
-                double c_d;
-                int b_loop_ub, i1, i2, i3, r, p;
-                // 'partition:33' k = k + 1;
-                k++;
-                // 'partition:34' p = max(1, q-m+1);
-                p = std::max(1, q - A.size1() + 1);
-                // 'partition:35' A_bar = A_t(:, p:q);
-                if (p > q) {
-                    i = 0;
-                    i1 = 0;
-                } else {
-                    i = p - 1;
-                    i1 = q;
-                }
-                // 'partition:36' P_tilde = eye(n);
-                t = A.size2();
-                P_tilde.resize(A.size2(), A.size2(), false);
-                for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
-                    P_tilde[sizes_idx_1 + P_tilde.size1() * sizes_idx_1] = 1.0;
-                }
-
-                // Find the rank of A_bar
-                // 'partition:39' [Q,R,P_hat]=qr(A_bar);
-                loop_ub = A_t.size1();
-                b_loop_ub = i1 - i;
-                b_A_tilde.resize(A_t.size1(), b_loop_ub);
-                for (i1 = 0; i1 < b_loop_ub; i1++) {
-                    for (i2 = 0; i2 < loop_ub; i2++) {
-                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-                                A_t[i2 + A_t.size1() * (i + i1)];
-                    }
-                }
-                helper::qrp(b_A_tilde, Q, R, b_p, true, true);
-                P_hat.resize(b_p.size1(), b_p.size2());
-                loop_ub = b_p.size1() * b_p.size2();
-                for (i1 = 0; i1 < loop_ub; i1++) {
-                    P_hat[i1] = b_p[i1];
-                }
-                // 'partition:40' if size(R,2)>1
-                if (R.size2() > 1) {
-                    // 'partition:41' r = sum(abs(diag(R)) > 10^(-6));
-                    t = R.size1();
-                    vlen = R.size2();
-                    if (t < vlen) {
-                        vlen = t;
-                    }
-                    b_d.resize(vlen);
-                    i1 = vlen - 1;
-                    for (sizes_idx_1 = 0; sizes_idx_1 <= i1; sizes_idx_1++) {
-                        b_d[sizes_idx_1] = R[sizes_idx_1 + R.size1() * sizes_idx_1];
-                    }
-                    t = b_d.size();
-                    y_tmp.resize(b_d.size());
-                    for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
-                        y_tmp[sizes_idx_1] = std::abs(b_d[sizes_idx_1]);
-                    }
-                    b_x.resize(y_tmp.size());
-                    loop_ub = y_tmp.size();
-                    for (i1 = 0; i1 < loop_ub; i1++) {
-                        b_x[i1] = (y_tmp[i1] > 1.0E-6);
-                    }
-                    vlen = b_x.size();
-                    if (b_x.size() == 0) {
-                        r = 0;
-                    } else {
-                        r = b_x[0];
-                        for (sizes_idx_1 = 2; sizes_idx_1 <= vlen; sizes_idx_1++) {
-                            r += b_x[sizes_idx_1 - 1];
-                        }
-                    }
-                } else {
-                    // 'partition:42' else
-                    // 'partition:43' r = sum(abs(R(1,1)) > 10^(-6));
-                    r = (std::abs(R[0]) > 1.0E-6);
-                }
-                // 'partition:45' A_bar_p = A_bar * P_hat;
-                loop_ub = A_t.size1();
-                b_A_tilde.resize(A_t.size1(), b_loop_ub);
-                for (i1 = 0; i1 < b_loop_ub; i1++) {
-                    for (i2 = 0; i2 < loop_ub; i2++) {
-                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-                                A_t[i2 + A_t.size1() * (i + i1)];
-                    }
-                }
-                prod(b_A_tilde, b_p, A_bar_p);
-                // 'partition:46' d(k) = size(A_bar, 2);
-                d[k - 1] = b_loop_ub;
-                // The case where A_bar is rank deficient
-                // 'partition:49' if r < d(k)
-                c_d = d[k - 1];
-                if (r < c_d) {
-                    double b_t;
-                    bool empty_non_axis_sizes;
-                    // Permute the columns of A_t and the entries of x_tilde
-                    // 'partition:51' A_t(:, p:q) = [A_bar_p(:,r+1:d(k)), A_bar_p(:,
-                    // 1:r)];
-                    if (r + 1.0 > c_d) {
-                        i = -1;
-                        i1 = -1;
-                    } else {
-                        i = r - 1;
-                        i1 = static_cast<int>(c_d) - 1;
-                    }
-                    if (1 > r) {
-                        loop_ub = 0;
-                    } else {
-                        loop_ub = r;
-                    }
-                    if (p > q) {
-                        i2 = 0;
-                    } else {
-                        i2 = p - 1;
-                    }
-                    b_loop_ub = i1 - i;
-                    if ((A_bar_p.size1() != 0) && (b_loop_ub != 0)) {
-                        t = A_bar_p.size1();
-                    } else if ((A_bar_p.size1() != 0) && (loop_ub != 0)) {
-                        t = A_bar_p.size1();
-                    } else {
-                        if (A_bar_p.size1() > 0) {
-                            t = A_bar_p.size1();
-                        } else {
-                            t = 0;
-                        }
-                        if (A_bar_p.size1() > t) {
-                            t = A_bar_p.size1();
-                        }
-                    }
-                    empty_non_axis_sizes = (t == 0);
-                    if (empty_non_axis_sizes ||
-                        ((A_bar_p.size1() != 0) && (b_loop_ub != 0))) {
-                        input_sizes_idx_1 = i1 - i;
-                    } else {
-                        input_sizes_idx_1 = 0;
-                    }
-                    if (empty_non_axis_sizes || ((A_bar_p.size1() != 0) && (loop_ub != 0))) {
-                        sizes_idx_1 = loop_ub;
-                    } else {
-                        sizes_idx_1 = 0;
-                    }
-                    vlen = A_bar_p.size1();
-                    b_A_tilde.resize(A_bar_p.size1(), b_loop_ub);
-                    for (i1 = 0; i1 < b_loop_ub; i1++) {
-                        for (i3 = 0; i3 < vlen; i3++) {
-                            b_A_tilde[i3 + b_A_tilde.size1() * i1] =
-                                    A_bar_p[i3 + A_bar_p.size1() * ((i + i1) + 1)];
-                        }
-                    }
-                    b_loop_ub = A_bar_p.size1();
-                    b_A_bar_p.resize(A_bar_p.size1(), loop_ub);
-                    for (i = 0; i < loop_ub; i++) {
-                        for (i1 = 0; i1 < b_loop_ub; i1++) {
-                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] =
-                                    A_bar_p[i1 + A_bar_p.size1() * i];
-                        }
-                    }
-                    for (i = 0; i < input_sizes_idx_1; i++) {
-                        for (i1 = 0; i1 < t; i1++) {
-                            A_t[i1 + A_t.size1() * (i2 + i)] = b_A_tilde[i1 + t * i];
-                        }
-                    }
-                    for (i = 0; i < sizes_idx_1; i++) {
-                        for (i1 = 0; i1 < t; i1++) {
-                            A_t[i1 + A_t.size1() * ((i2 + i) + input_sizes_idx_1)] =
-                                    b_A_bar_p[i1 + t * i];
-                        }
-                    }
-                    // Update the permutation matrix P_tilde
-                    // 'partition:54' I_d = eye(d(k));
-                    if (c_d < 0.0) {
-                        b_t = 0.0;
-                    } else {
-                        b_t = c_d;
-                    }
-                    t = static_cast<int>(b_t);
-                    P_hat.resize(t, t);
-                    loop_ub = static_cast<int>(b_t) * static_cast<int>(b_t);
-                    for (i = 0; i < loop_ub; i++) {
-                        P_hat[i] = 0.0;
-                    }
-                    if (static_cast<int>(b_t) > 0) {
-                        for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
-                            P_hat[sizes_idx_1 + P_hat.size1() * sizes_idx_1] = 1.0;
-                        }
-                    }
-                    // 'partition:55' P_d = [I_d(:, r+1:d(k)), I_d(:, 1:r)];
-                    if (r + 1.0 > c_d) {
-                        i = -1;
-                        i1 = -1;
-                    } else {
-                        i = r - 1;
-                        i1 = static_cast<int>(d[k - 1]) - 1;
-                    }
-                    if (1 > r) {
-                        loop_ub = 0;
-                    } else {
-                        loop_ub = r;
-                    }
-                    b_loop_ub = i1 - i;
-                    if ((P_hat.size1() != 0) && (b_loop_ub != 0)) {
-                        t = P_hat.size1();
-                    } else if ((P_hat.size1() != 0) && (loop_ub != 0)) {
-                        t = P_hat.size1();
-                    } else {
-                        if (P_hat.size1() > 0) {
-                            t = P_hat.size1();
-                        } else {
-                            t = 0;
-                        }
-                        if (P_hat.size1() > t) {
-                            t = P_hat.size1();
-                        }
-                    }
-                    empty_non_axis_sizes = (t == 0);
-                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (b_loop_ub != 0))) {
-                        input_sizes_idx_1 = i1 - i;
-                    } else {
-                        input_sizes_idx_1 = 0;
-                    }
-                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (loop_ub != 0))) {
-                        sizes_idx_1 = loop_ub;
-                    } else {
-                        sizes_idx_1 = 0;
-                    }
-                    // 'partition:56' P_hat = P_hat * P_d;
-                    vlen = P_hat.size1() - 1;
-                    b_A_tilde.resize(P_hat.size1(), b_loop_ub);
-                    for (i1 = 0; i1 < b_loop_ub; i1++) {
-                        for (i2 = 0; i2 <= vlen; i2++) {
-                            b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-                                    P_hat[i2 + P_hat.size1() * ((i + i1) + 1)];
-                        }
-                    }
-                    vlen = P_hat.size1() - 1;
-                    b_A_bar_p.resize(P_hat.size1(), loop_ub);
-                    for (i = 0; i < loop_ub; i++) {
-                        for (i1 = 0; i1 <= vlen; i1++) {
-                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] = P_hat[i1 + P_hat.size1() * i];
-                        }
-                    }
-                    A_bar_p.resize(t, input_sizes_idx_1 + sizes_idx_1);
-                    for (i = 0; i < input_sizes_idx_1; i++) {
-                        for (i1 = 0; i1 < t; i1++) {
-                            A_bar_p[i1 + A_bar_p.size1() * i] = b_A_tilde[i1 + t * i];
-                        }
-                    }
-                    for (i = 0; i < sizes_idx_1; i++) {
-                        for (i1 = 0; i1 < t; i1++) {
-                            A_bar_p[i1 + A_bar_p.size1() * (i + input_sizes_idx_1)] =
-                                    b_A_bar_p[i1 + t * i];
-                        }
-                    }
-                    prod(b_p, A_bar_p, P_hat);
-                    // 'partition:58' d(k) = r;
-                    d[k - 1] = r;
-                } else {
-                    // 'partition:59' else
-                    // Permute the columns of A_t and the entries of x_tilde
-                    // 'partition:61' A_t(:, p:q) = A_bar_p;
-                    if (p > q) {
-                        i = 1;
-                    } else {
-                        i = p;
-                    }
-                    loop_ub = A_bar_p.size2();
-                    for (i1 = 0; i1 < loop_ub; i1++) {
-                        b_loop_ub = A_bar_p.size1();
-                        for (i2 = 0; i2 < b_loop_ub; i2++) {
-                            A_t[i2 + A_t.size1() * ((i + i1) - 1)] =
-                                    A_bar_p[i2 + A_bar_p.size1() * i1];
-                        }
-                    }
-                }
-                // Update the permutation matrix P_tilde
-                // 'partition:64' P_tilde(p:q, p:q) = P_hat;
-                if (p > q) {
-                    i = 1;
-                    i1 = 1;
-                } else {
-                    i = p;
-                    i1 = p;
-                }
-                loop_ub = P_hat.size2();
-                for (i2 = 0; i2 < loop_ub; i2++) {
-                    b_loop_ub = P_hat.size1();
-                    for (i3 = 0; i3 < b_loop_ub; i3++) {
-                        P_tilde[((i + i3) + P_tilde.size1() * ((i1 + i2) - 1)) - 1] =
-                                P_hat[i3 + P_hat.size1() * i2];
-                    }
-                }
-                // 'partition:65' P_tmp = P_tmp * P_tilde;
-                b_A_tilde.resize(P_tmp.size1(), P_tmp.size2());
-                loop_ub = P_tmp.size1() * P_tmp.size2() - 1;
-                for (i = 0; i <= loop_ub; i++) {
-                    b_A_tilde[i] = P_tmp[i];
-                }
-                prod(b_A_tilde, P_tilde, P_tmp);
-                // 'partition:67' p = q - r + 1;
-                p = q - r + 1;
-                // 'partition:68' R_t(:, p:q) = R(:, 1:r);
-                if (1 > r) {
-                    loop_ub = 0;
-                } else {
-                    loop_ub = r;
-                }
-                if (p > q) {
-                    i = 1;
-                } else {
-                    i = p;
-                }
-                b_loop_ub = R.size1();
-                for (i1 = 0; i1 < loop_ub; i1++) {
-                    for (i2 = 0; i2 < b_loop_ub; i2++) {
-                        R_t[i2 + R_t.size1() * ((i + i1) - 1)] = R[i2 + R.size1() * i1];
-                    }
-                }
-                // 'partition:69' Q_t(:, p:q) = Q(:, 1:r);
-                if (1 > r) {
-                    loop_ub = 0;
-                } else {
-                    loop_ub = r;
-                }
-                if (p > q) {
-                    i = 1;
-                } else {
-                    i = p;
-                }
-                b_loop_ub = Q.size1();
-                for (i1 = 0; i1 < loop_ub; i1++) {
-                    for (i2 = 0; i2 < b_loop_ub; i2++) {
-                        Q_t[i2 + Q_t.size1() * ((i + i1) - 1)] = Q[i2 + Q.size1() * i1];
-                    }
-                }
-                // 'partition:71' q = q - r;
-                q -= r;
-            }
-            // 'partition:73' d = d(1:k);
-            if (1 > k) {
-                i = 0;
-            } else {
-                i = k;
-            }
-            d.resize(i);
-            // Remove the extra columns of the d
-
-            //  %Test
-            //  [H, P_H, x_H, Q_H, R_H, i_H] = partition_H(A_, x_, m, n);
-            //  size(A_t)
-            //  size(H)
-            //  AD=norm(A_t-H, 2)
-            //  PD=norm(P_tmp-P_H,2)
-            //  xD=norm(x_H-x_tilde,2)
-            //  QD=norm(Q_t-Q_H,2)
-            //  RD=norm(R_t-R_H,2)
-            //
-
-            //  dk
-            //  i_H
-        }
-
-//        returnType <scalar, index>
-//        bsic(b_vector &x_cur, scalar v_norm_cur, index mode) {
+         * @param A_t
+         * @param P_t
+         * @param d
+         * @return
+         */
+//        returnType<scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_vector &d) {
+//            b_matrix A_bar_p, P_tmp, P_hat, P_tilde, b_A_bar_p, b_A_tilde, b_p, R;
+//            b_vector b_d, y_tmp;
+//            si_vector b_x;
+//            int q, i, input_sizes_idx_1, k, loop_ub, sizes_idx_1, t, vlen;
 //
-//            b_vector x_tmp(x_cur), x_per(n, 0), y_bar(m, 0);
-//            b_matrix A_T, A_P(A), P_tmp, P_par(I), Q_t, R_t, P_fin; //A could be permuted based on the init point
+//            //  A_ = A;
+//            //  x_ = x;
+//            // 'partition:23' [m, n] = size(A);
+//            // 'partition:24' A_t = A;
+//            A_t.assign(A);
+//            // 'partition:25' q = n;
+//            q = A.size2();
+//            // 'partition:26' P_tmp = eye(n);
+//            t = A.size2();
+//            P_tmp.assign(I);
 //
-//            b_vector stopping(3, 0);
-//
-//            b_vector z(n, 0);
-//            scalar time = omp_get_wtime();
-//
-//            index b_count = 0;
-//
-//            if (v_norm_cur <= tolerance) {
-//                stopping[0] = 1;
-//                time = omp_get_wtime() - time;
-//                return {{}, time, v_norm_cur};
-//            }
-//
-//            index cur_1st, cur_end, i, j, ll, k1, per = -1, best_per = -1, iter = 0, p;
-//            scalar v_norm = v_norm_cur;
-//            P_tmp.resize(A_P.size2(), A_P.size2(), false);
-//
-//            time = omp_get_wtime();
-//            for (index itr = 0; itr < 3000; itr++) {
-//                iter = itr; //mode ? rand() % search_iter : itr;
-//
-//                A_P.clear();
-//                x_tmp.clear();
-//                for (i = 0; i < n; i++) {
-//                    p = permutation[iter][i] - 1;
-//                    column(A_P, i) = column(A, p);
-//                    x_tmp[i] = x_per[p];
+//            // 'partition:29' d = zeros(n, 1);
+//            d.resize(A.size2(), false);
+//            // 'partition:30' k = 0;
+//            k = 0;
+//            // 'partition:32' while q >= 1
+//            while (q >= 1) {
+//                double c_d;
+//                int b_loop_ub, i1, i2, i3, r, p;
+//                // 'partition:33' k = k + 1;
+//                k++;
+//                // 'partition:34' p = max(1, q-m+1);
+//                p = std::max(1, q - A.size1() + 1);
+//                // 'partition:35' A_bar = A_t(:, p:q);
+//                if (p > q) {
+//                    i = 0;
+//                    i1 = 0;
+//                } else {
+//                    i = p - 1;
+//                    i1 = q;
 //                }
+//                // 'partition:36' P_tilde = eye(n);
+//                t = A.size2();
+//                P_tilde.assign(I);
 //
-//                // 'SCP_Block_Optimal_2:104' per = true;
-//                P_tmp.clear();
-//                P_tmp.assign(I);
-//                si_vector d;
-//                partition(A_P, P_tmp, Q_t, R_t, d);
-//                b_vector x_t;
-//                prod(P_tmp, x_tmp, x_t);
-//                per = iter;
-//                //  dk = zeros(2,k);
-//                //  s = 0;
-//                //  for i=1:k
-//                //      dk(2,i)=n-s;
-//                //      dk(1,i)=n-s-t(i)+1;
-//                //      s = s + t(i);
-//                //  end
-//                // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
-//                index s = 0;
-//                for (j = 0; j < d.size(); j++) {
-//                    cur_1st = n - s - 1;//t(0, j);
-//                    cur_end = n - s - d(j) + 1;//t(1, j);
-//                    s += d(j);
-//                    y_bar.clear();
-//                    if (cur_end == n - 1) {
-//                        auto a1 = subrange(A_P, 0, m, 0, cur_1st);
-//                        y_bar = y - prod(a1, subrange(x_tmp, 0, cur_1st));
-//                    } else if (cur_1st == 0) {
-//                        auto a2 = subrange(A_P, 0, m, cur_end + 1, n);
-//                        y_bar = y - prod(a2, subrange(x_tmp, cur_end + 1, n));
+//
+//                // Find the rank of A_bar
+//                // 'partition:39' [Q,R,P_hat]=qr(A_bar);
+//                loop_ub = A_t.size1();
+//                b_loop_ub = i1 - i;
+//                b_A_tilde.resize(A_t.size1(), b_loop_ub);
+//                for (i1 = 0; i1 < b_loop_ub; i1++) {
+//                    for (i2 = 0; i2 < loop_ub; i2++) {
+//                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+//                                A_t[i2 + A_t.size1() * (i + i1)];
+//                    }
+//                }
+//                helper::qrp(b_A_tilde,  R, b_p, true, true);
+//                P_hat.resize(b_p.size1(), b_p.size2());
+//                loop_ub = b_p.size1() * b_p.size2();
+//                for (i1 = 0; i1 < loop_ub; i1++) {
+//                    P_hat[i1] = b_p[i1];
+//                }
+//                // 'partition:40' if size(R,2)>1
+//                if (R.size2() > 1) {
+//                    // 'partition:41' r = sum(abs(diag(R)) > 10^(-6));
+//                    t = R.size1();
+//                    vlen = R.size2();
+//                    if (t < vlen) {
+//                        vlen = t;
+//                    }
+//                    b_d.resize(vlen);
+//                    i1 = vlen - 1;
+//                    for (sizes_idx_1 = 0; sizes_idx_1 <= i1; sizes_idx_1++) {
+//                        b_d[sizes_idx_1] = R[sizes_idx_1 + R.size1() * sizes_idx_1];
+//                    }
+//                    t = b_d.size();
+//                    y_tmp.resize(b_d.size());
+//                    for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
+//                        y_tmp[sizes_idx_1] = std::abs(b_d[sizes_idx_1]);
+//                    }
+//                    b_x.resize(y_tmp.size());
+//                    loop_ub = y_tmp.size();
+//                    for (i1 = 0; i1 < loop_ub; i1++) {
+//                        b_x[i1] = (y_tmp[i1] > 1.0E-6);
+//                    }
+//                    vlen = b_x.size();
+//                    if (b_x.size() == 0) {
+//                        r = 0;
 //                    } else {
-//                        auto a1 = subrange(A_P, 0, m, 0, cur_1st);
-//                        auto a2 = subrange(A_P, 0, m, cur_end + 1, n);
-//                        y_bar = y - prod(a1, subrange(x_tmp, 0, cur_1st)) -
-//                                prod(a2, subrange(x_tmp, cur_end + 1, n));
+//                        r = b_x[0];
+//                        for (sizes_idx_1 = 2; sizes_idx_1 <= vlen; sizes_idx_1++) {
+//                            r += b_x[sizes_idx_1 - 1];
+//                        }
 //                    }
-//
-//                    //  Compute optimal solution
-//                    ll = cur_end - cur_1st + 1;
-//                    A_T.resize(m, ll, false);
-//
-//                    for (i = cur_1st; i <= cur_end; i++) {
-//                        column(A_T, i - cur_1st) = column(A_P, i);
-//                    }
-//
-//                    auto Q_j = subrange(Q_t, 0, m, cur_1st, cur_end + 1);
-////                    helper::display<scalar, index>(Q_t, "Q_t");
-////                    helper::display<scalar, index>(Q_j, "Q_j");
-//                    auto y_t = prod(trans(Q_j), y_bar);
-//                    auto R_j = subrange(R_t, 0, y_t.size(), cur_1st, cur_end + 1);
-////                    helper::display<scalar, index>(R_j, "R_j");
-////                    z.resize(ll, false);
-////                    CILS_Reduction<scalar, index> reduction(A_T, y_bar, 0, upper);
-////                    reduction.aip();
-////                    helper::display<scalar, index>(reduction.R, "R_R");
-////                    helper::display<scalar, index>(reduction.y, "y_R");
-////                    helper::display<scalar, index>(y_t, "y_t");
-////                    reduction.aspl_p_serial();
-//
-//                    CILS_SECH_Search<scalar, index> ils(ll, ll, qam);
-////                    ils.obils_search(0, ll, 1, reduction.R, reduction.y, z);
-//                    ils.obils_search(0, ll, 1, R_j, y_t, z);
-//
-////                    subrange(x_tmp, cur_1st, cur_1st + ll) = z;
-////                    axpy_prod(reduction.P, z, x, true);
-//                    for (i = 0; i < ll; i++) {
-//                        x_tmp[cur_1st + i] = z[i];
-//                    }
-//
+//                } else {
+//                    // 'partition:42' else
+//                    // 'partition:43' r = sum(abs(R(1,1)) > 10^(-6));
+//                    r = (std::abs(R[0]) > 1.0E-6);
 //                }
-//
-//                v_norm_cur = norm_2(y - prod(A_P, x_tmp));
-//
-//                if (v_norm_cur < v_norm) {
-//                    // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
-//                    x_per.clear();
-//                    for (ll = 0; ll < n; ll++) {
-//                        x_per[ll] = x_tmp[ll];
+//                // 'partition:45' A_bar_p = A_bar * P_hat;
+//                loop_ub = A_t.size1();
+//                b_A_tilde.resize(A_t.size1(), b_loop_ub);
+//                for (i1 = 0; i1 < b_loop_ub; i1++) {
+//                    for (i2 = 0; i2 < loop_ub; i2++) {
+//                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+//                                A_t[i2 + A_t.size1() * (i + i1)];
 //                    }
-//                    P_par.assign(P_tmp);
-//                    // 'SCP_Block_Optimal_2:88' v_norm_cur = v_norm_temp;
-//                    //  v_norm_cur = v_norm_temp;
-//                    // 'SCP_Block_Optimal_2:89' if per
-//                    best_per = per;
-//                    // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
-//                    if (v_norm_cur <= tolerance) {
-//                        // 'SCP_Block_Optimal_2:95' stopping(2)=1;
-//                        stopping[1] = 1;
-//                    }
-//                    // 'SCP_Block_Optimal_2:99' v_norm = v_norm_cur;
-//                    v_norm = v_norm_cur;
 //                }
-//                // If we don't decrease the residual, keep trying permutations
+//                prod(b_A_tilde, b_p, A_bar_p);
+//                // 'partition:46' d(k) = size(A_bar, 2);
+//                d[k - 1] = b_loop_ub;
+//                // The case where A_bar is rank deficient
+//                // 'partition:49' if r < d(k)
+//                c_d = d[k - 1];
+//                if (r < c_d) {
+//                    double b_t;
+//                    bool empty_non_axis_sizes;
+//                    // Permute the columns of A_t and the entries of x_tilde
+//                    // 'partition:51' A_t(:, p:q) = [A_bar_p(:,r+1:d(k)), A_bar_p(:,
+//                    // 1:r)];
+//                    if (r + 1.0 > c_d) {
+//                        i = -1;
+//                        i1 = -1;
+//                    } else {
+//                        i = r - 1;
+//                        i1 = static_cast<int>(c_d) - 1;
+//                    }
+//                    if (1 > r) {
+//                        loop_ub = 0;
+//                    } else {
+//                        loop_ub = r;
+//                    }
+//                    if (p > q) {
+//                        i2 = 0;
+//                    } else {
+//                        i2 = p - 1;
+//                    }
+//                    b_loop_ub = i1 - i;
+//                    if ((A_bar_p.size1() != 0) && (b_loop_ub != 0)) {
+//                        t = A_bar_p.size1();
+//                    } else if ((A_bar_p.size1() != 0) && (loop_ub != 0)) {
+//                        t = A_bar_p.size1();
+//                    } else {
+//                        if (A_bar_p.size1() > 0) {
+//                            t = A_bar_p.size1();
+//                        } else {
+//                            t = 0;
+//                        }
+//                        if (A_bar_p.size1() > t) {
+//                            t = A_bar_p.size1();
+//                        }
+//                    }
+//                    empty_non_axis_sizes = (t == 0);
+//                    if (empty_non_axis_sizes ||
+//                        ((A_bar_p.size1() != 0) && (b_loop_ub != 0))) {
+//                        input_sizes_idx_1 = i1 - i;
+//                    } else {
+//                        input_sizes_idx_1 = 0;
+//                    }
+//                    if (empty_non_axis_sizes || ((A_bar_p.size1() != 0) && (loop_ub != 0))) {
+//                        sizes_idx_1 = loop_ub;
+//                    } else {
+//                        sizes_idx_1 = 0;
+//                    }
+//                    vlen = A_bar_p.size1();
+//                    b_A_tilde.resize(A_bar_p.size1(), b_loop_ub);
+//                    for (i1 = 0; i1 < b_loop_ub; i1++) {
+//                        for (i3 = 0; i3 < vlen; i3++) {
+//                            b_A_tilde[i3 + b_A_tilde.size1() * i1] =
+//                                    A_bar_p[i3 + A_bar_p.size1() * ((i + i1) + 1)];
+//                        }
+//                    }
+//                    b_loop_ub = A_bar_p.size1();
+//                    b_A_bar_p.resize(A_bar_p.size1(), loop_ub);
+//                    for (i = 0; i < loop_ub; i++) {
+//                        for (i1 = 0; i1 < b_loop_ub; i1++) {
+//                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] =
+//                                    A_bar_p[i1 + A_bar_p.size1() * i];
+//                        }
+//                    }
+//                    for (i = 0; i < input_sizes_idx_1; i++) {
+//                        for (i1 = 0; i1 < t; i1++) {
+//                            A_t[i1 + A_t.size1() * (i2 + i)] = b_A_tilde[i1 + t * i];
+//                        }
+//                    }
+//                    for (i = 0; i < sizes_idx_1; i++) {
+//                        for (i1 = 0; i1 < t; i1++) {
+//                            A_t[i1 + A_t.size1() * ((i2 + i) + input_sizes_idx_1)] =
+//                                    b_A_bar_p[i1 + t * i];
+//                        }
+//                    }
+//                    // Update the permutation matrix P_tilde
+//                    // 'partition:54' I_d = eye(d(k));
+//                    if (c_d < 0.0) {
+//                        b_t = 0.0;
+//                    } else {
+//                        b_t = c_d;
+//                    }
+//                    t = static_cast<int>(b_t);
+//                    P_hat.resize(t, t);
+//                    loop_ub = static_cast<int>(b_t) * static_cast<int>(b_t);
+//                    for (i = 0; i < loop_ub; i++) {
+//                        P_hat[i] = 0.0;
+//                    }
+//                    if (static_cast<int>(b_t) > 0) {
+//                        for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
+//                            P_hat[sizes_idx_1 + P_hat.size1() * sizes_idx_1] = 1.0;
+//                        }
+//                    }
+//                    // 'partition:55' P_d = [I_d(:, r+1:d(k)), I_d(:, 1:r)];
+//                    if (r + 1.0 > c_d) {
+//                        i = -1;
+//                        i1 = -1;
+//                    } else {
+//                        i = r - 1;
+//                        i1 = static_cast<int>(d[k - 1]) - 1;
+//                    }
+//                    if (1 > r) {
+//                        loop_ub = 0;
+//                    } else {
+//                        loop_ub = r;
+//                    }
+//                    b_loop_ub = i1 - i;
+//                    if ((P_hat.size1() != 0) && (b_loop_ub != 0)) {
+//                        t = P_hat.size1();
+//                    } else if ((P_hat.size1() != 0) && (loop_ub != 0)) {
+//                        t = P_hat.size1();
+//                    } else {
+//                        if (P_hat.size1() > 0) {
+//                            t = P_hat.size1();
+//                        } else {
+//                            t = 0;
+//                        }
+//                        if (P_hat.size1() > t) {
+//                            t = P_hat.size1();
+//                        }
+//                    }
+//                    empty_non_axis_sizes = (t == 0);
+//                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (b_loop_ub != 0))) {
+//                        input_sizes_idx_1 = i1 - i;
+//                    } else {
+//                        input_sizes_idx_1 = 0;
+//                    }
+//                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (loop_ub != 0))) {
+//                        sizes_idx_1 = loop_ub;
+//                    } else {
+//                        sizes_idx_1 = 0;
+//                    }
+//                    // 'partition:56' P_hat = P_hat * P_d;
+//                    vlen = P_hat.size1() - 1;
+//                    b_A_tilde.resize(P_hat.size1(), b_loop_ub);
+//                    for (i1 = 0; i1 < b_loop_ub; i1++) {
+//                        for (i2 = 0; i2 <= vlen; i2++) {
+//                            b_A_tilde[i2 + b_A_tilde.size1() * i1] =
+//                                    P_hat[i2 + P_hat.size1() * ((i + i1) + 1)];
+//                        }
+//                    }
+//                    vlen = P_hat.size1() - 1;
+//                    b_A_bar_p.resize(P_hat.size1(), loop_ub);
+//                    for (i = 0; i < loop_ub; i++) {
+//                        for (i1 = 0; i1 <= vlen; i1++) {
+//                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] = P_hat[i1 + P_hat.size1() * i];
+//                        }
+//                    }
+//                    A_bar_p.resize(t, input_sizes_idx_1 + sizes_idx_1);
+//                    for (i = 0; i < input_sizes_idx_1; i++) {
+//                        for (i1 = 0; i1 < t; i1++) {
+//                            A_bar_p[i1 + A_bar_p.size1() * i] = b_A_tilde[i1 + t * i];
+//                        }
+//                    }
+//                    for (i = 0; i < sizes_idx_1; i++) {
+//                        for (i1 = 0; i1 < t; i1++) {
+//                            A_bar_p[i1 + A_bar_p.size1() * (i + input_sizes_idx_1)] =
+//                                    b_A_bar_p[i1 + t * i];
+//                        }
+//                    }
+//                    prod(b_p, A_bar_p, P_hat);
+//                    // 'partition:58' d(k) = r;
+//                    d[k - 1] = r;
+//                } else {
+//                    // 'partition:59' else
+//                    // Permute the columns of A_t and the entries of x_tilde
+//                    // 'partition:61' A_t(:, p:q) = A_bar_p;
+//                    if (p > q) {
+//                        i = 1;
+//                    } else {
+//                        i = p;
+//                    }
+//                    loop_ub = A_bar_p.size2();
+//                    for (i1 = 0; i1 < loop_ub; i1++) {
+//                        b_loop_ub = A_bar_p.size1();
+//                        for (i2 = 0; i2 < b_loop_ub; i2++) {
+//                            A_t[i2 + A_t.size1() * ((i + i1) - 1)] =
+//                                    A_bar_p[i2 + A_bar_p.size1() * i1];
+//                        }
+//                    }
+//                }
+//                // Update the permutation matrix P_tilde
+//                // 'partition:64' P_tilde(p:q, p:q) = P_hat;
+//                if (p > q) {
+//                    i = 1;
+//                    i1 = 1;
+//                } else {
+//                    i = p;
+//                    i1 = p;
+//                }
+//                loop_ub = P_hat.size2();
+//                for (i2 = 0; i2 < loop_ub; i2++) {
+//                    b_loop_ub = P_hat.size1();
+//                    for (i3 = 0; i3 < b_loop_ub; i3++) {
+//                        P_tilde[((i + i3) + P_tilde.size1() * ((i1 + i2) - 1)) - 1] =
+//                                P_hat[i3 + P_hat.size1() * i2];
+//                    }
+//                }
+//                // 'partition:65' P_tmp = P_tmp * P_tilde;
+//                b_A_tilde.resize(P_tmp.size1(), P_tmp.size2());
+//                loop_ub = P_tmp.size1() * P_tmp.size2() - 1;
+//                for (i = 0; i <= loop_ub; i++) {
+//                    b_A_tilde[i] = P_tmp[i];
+//                }
+//                prod(b_A_tilde, P_tilde, P_tmp);
+//                // 'partition:67' p = q - r + 1;
+//                p = q - r + 1;
+//                // 'partition:68' R_t(:, p:q) = R(:, 1:r);
+//                if (1 > r) {
+//                    loop_ub = 0;
+//                } else {
+//                    loop_ub = r;
+//                }
+//                if (p > q) {
+//                    i = 1;
+//                } else {
+//                    i = p;
+//                }
+//                b_loop_ub = R.size1();
+//                for (i1 = 0; i1 < loop_ub; i1++) {
+//                    for (i2 = 0; i2 < b_loop_ub; i2++) {
+//                        R_t[i2 + R_t.size1() * ((i + i1) - 1)] = R[i2 + R.size1() * i1];
+//                    }
+//                }
+//                // 'partition:69' Q_t(:, p:q) = Q(:, 1:r);
+//                if (1 > r) {
+//                    loop_ub = 0;
+//                } else {
+//                    loop_ub = r;
+//                }
+//                if (p > q) {
+//                    i = 1;
+//                } else {
+//                    i = p;
+//                }
+//                b_loop_ub = Q.size1();
+//                for (i1 = 0; i1 < loop_ub; i1++) {
+//                    for (i2 = 0; i2 < b_loop_ub; i2++) {
+//                        Q_t[i2 + Q_t.size1() * ((i + i1) - 1)] = Q[i2 + Q.size1() * i1];
+//                    }
+//                }
+//                // 'partition:71' q = q - r;
+//                q -= r;
 //            }
-//            // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
-//            b_matrix P_cur(I);
-//
-//            //I(:, permutation(:, best_per))
-//            if (best_per >= 0) {
-//                for (i = 0; i < n; i++) {
-//                    column(P_cur, i) = column(I, permutation[best_per][i] - 1);
-//                }
-//
-//                P_tmp.assign(I);
-//                axpy_prod(P_cur, P_par, P_tmp, true);
-//                axpy_prod(P_tmp, x_per, x_cur, true);
+//            // 'partition:73' d = d(1:k);
+//            if (1 > k) {
+//                i = 0;
+//            } else {
+//                i = k;
 //            }
+//            d.resize(i);
+//            // Remove the extra columns of the d
 //
-//            time = omp_get_wtime() - time;
-//            return {{}, time, v_norm_cur};
+//            //  %Test
+//            //  [H, P_H, x_H, Q_H, R_H, i_H] = partition_H(A_, x_, m, n);
+//            //  size(A_t)
+//            //  size(H)
+//            //  AD=norm(A_t-H, 2)
+//            //  PD=norm(P_tmp-P_H,2)
+//            //  xD=norm(x_H-x_tilde,2)
+//            //  QD=norm(Q_t-Q_H,2)
+//            //  RD=norm(R_t-R_H,2)
+//            //
+//
+//            //  dk
+//            //  i_H
 //        }
-//
-//        returnType <scalar, index>
-//        pbsic(b_vector &x_cur, scalar v_norm_cur, index n_proc, index mode) {
-//            // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
-//            b_vector stopping(3, 0);
-//
-//            scalar time = omp_get_wtime();
-//            //  Subfunctions: SCP_opt
-//
-//            // 'SCP_Block_Optimal_2:25' b_count = 0;
-//            index b_count = 0;
-//            index best_proc = -1;
-//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
-//            if (v_norm_cur <= tolerance) {
-//                // 'SCP_Block_Optimal_2:28' stopping(1)=1;
-//                stopping[0] = 1;
-//                time = omp_get_wtime() - time;
-//                return {{}, time, v_norm_cur};
-//            }
-//            index cur_1st, cur_end, i, t, k1;
-//            // 'SCP_Block_Optimal_2:32' t.size2() = ceil(n/m);
-//            // 'SCP_Block_Optimal_2:33' indicator = zeros(2, t.size2());
-//
-//            scalar v_norm = v_norm_cur;
-//            // 'SCP_Block_Optimal_2:50' per = false;
-//            std::vector<b_vector> x(n_proc, b_vector(x_cur));
-//            b_vector v_norm_cur_proc(n_proc, v_norm), x_per(x_cur);
-//            si_vector best_per_proc(n_proc, 0);
-//
-//            // private variables
-//            b_vector z, z_z; //z_z = Z * z;
-//            b_vector A_T, A_P(m * n, 0), x_tmp(x_cur), y_bar(m, 0), y(m, 0);
-//
-//            time = omp_get_wtime();
-//#pragma omp parallel default(shared) num_threads(n_proc) private(z, z_z, A_T, cur_1st, cur_end, i, t, k1) firstprivate(A_P, x_tmp, v_norm, y_bar, y)
-//            {
-//                index t_num = omp_get_thread_num(), per = -1;
-//                index start = omp_get_thread_num() * search_iter / n_proc;
-//                index end = (omp_get_thread_num() + 1) * search_iter / n_proc;
-//
-//                for (index itr = start; itr < end; itr++) {
-//                    index iter = mode ? rand()// search_iter : itr;
-//                    // H_Apply permutation strategy to update x_cur and v_norm_cur
-//                    // [x_tmp, v_norm_temp] = block_opt(A_P, y, x_tmp, n, indicator);
-//                    // Corresponds to H_Algorithm 12 (Block Optimal) in Report 10
-//                    // 'SCP_Block_Optimal_2:56' for j = 1:t.size2()
-//                    for (k1 = 0; k1 < n; k1++) {
-//                        for (i = 0; i < m; i++) {
-//                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
-//                        }
-//                        x_tmp[k1] = x[t_num][permutation[iter][k1] - 1];
-//                    }
-//                    // 'SCP_Block_Optimal_2:104' per = true;
-//                    per = iter;
-//
-//                    for (index j = 0; j < t.size2(); j++) {
-//                        cur_1st = indicator[2 * j];
-//                        cur_end = indicator[2 * j + 1];
-//                        y_bar.clear();
-//                        for (k1 = 0; k1 <= cur_1st - 2; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                t = k1 * m + i;
-//                                y_bar[i] += A_P[i + m * (t / m)] * x_tmp[k1];
-//                            }
-//                        }
-//                        for (k1 = 0; k1 < n - cur_end; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                t = k1 * m + i;
-//                                y_bar[i] += A_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
-//                            }
-//                        }
-//                        for (t = 0; t < m; t++) {
-//                            y_bar[t] = y[t] - y_bar[t];
-//                        }
-//                        l = cur_end - cur_1st + 1;
-//                        A_T.resize(m * t);
-//                        for (k1 = 0; k1 < t; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                A_T[i + m * k1] = A_P[i + m * (cur_1st - 1 + k1)];
-//                            }
-//                        }
-//                        // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
-//                        z.resize(l);
-//                        z_z.resize(t);
-//                        z.assign(t, 0);
-//                        z_z.assign(t, 0);
-//
-//                        CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
-//                        reduction.aip(A_T, y_bar);
-//
-//                        CILS_SECH_Search<scalar, index> ils(t, t, qam);
-//                        ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
-//
-//                        // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
-//                        for (i = 0; i < t; i++) {
-//                            z[reduction.p[i] - 1] = z_z[i];
-//                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-//                        }
-//                        for (i = 0; i < t; i++) {
-//                            x_tmp[cur_1st + i - 1] = z[i];
-//                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-//                        }
-//                    }
-//
-//                    // 'SCP_Block_Optimal_2:84' v_norm_temp = norm(y - A_P * x_tmp);
-//                    v_norm_cur_proc[t_num] = helper::find_residual(m, n, A_P.data(), x_tmp.data(), y.data());
-//                    // 'SCP_Block_Optimal_2:86' if v_norm_temp < v_norm
-//                    if (v_norm_cur_proc[t_num] < v_norm) {
-//                        // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
-//                        for (l = 0; l < n; l++) {
-//                            x_per[t] = x_tmp[t];
-//                            x[t_num][t] = x_tmp[t];
-//                        }
-//                        // 'SCP_Block_Optimal_2:89' if per
-//                        best_per_proc[t_num] = per;
-//                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
-//                        if (v_norm_cur_proc[t_num] <= tolerance) {
-//                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
-//                            stopping[1] = 1;
-//                            iter = search_iter;
-//                            best_proc = t_num;
-//                        }
-//                        v_norm = v_norm_cur_proc[t_num];
-//                    }
-//                    if (stopping[1])
-//                        iter = search_iter;
-//                }
-//            }
-//
-//            b_vector P_cur(n * n, 0), P_tmp(n * n, 0);
-//            // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
-//
-//            b_vector x_a(n, 0);
-//
-//            if (best_proc < 0) {
-//                scalar v_min = INFINITY;
-//                for (k1 = 0; k1 < n_proc; k1++) {
-//                    if (v_norm_cur_proc[k1] < v_min) {
-//                        v_min = v_norm_cur_proc[k1];
-//                        best_proc = k1;
-//                    }
-//                }
-//            }
-//
-//            for (k1 = 0; k1 < n; k1++) {
-//                for (i = 0; i < n; i++) {
-//                    P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per_proc[best_proc]][k1] - 1)];
-//                }
-//            }
-//
-//            // 'SCP_Block_Optimal_2:115' x_cur = P_cur * x_cur;
-//            helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x[best_proc].data(), x_a.data());
-//            for (i = 0; i < n; i++) {
-//                x_cur[i] = x_a[i];
-//            }
-//
-//            time = omp_get_wtime() - time;
-//            return {stopping, time, v_norm};
-//        }
-//
-//        returnType <scalar, index>
-//        pabsic(b_vector &x_cur, scalar *v_norm_cur, index size) {
-//
-//            // 'SCP_Block_Optimal_2:24' stopping=zeros(1,3);
-//            b_vector stopping(3, 0);
-//
-//            scalar time = omp_get_wtime();
-//            //  Subfunctions: SCP_opt
-//            scalar flag = 0.0;
-//            // 'SCP_Block_Optimal_2:25' b_count = 0;
-//            // 'SCP_Block_Optimal_2:27' if v_norm_cur <= tolerance
-//            if (v_norm_cur[0] <= tolerance) {
-//                // 'SCP_Block_Optimal_2:28' stopping(1)=1;
-//                stopping[0] = 1;
-//                time = omp_get_wtime() - time;
-//                return {{}, time, v_norm_cur[0]};
-//            }
-//            index cur_1st, cur_end, i, t, k1, per = -1, best_per = -1;
-//            // 'SCP_Block_Optimal_2:32' t.size2() = ceil(n/m);
-//            // 'SCP_Block_Optimal_2:33' indicator = zeros(2, t.size2());
-//            auto v_norm = (double *) malloc(2 * sizeof(double));
-//            auto v_norm_rank = (double *) malloc(2 * sizeof(double));
-//            v_norm_rank[0] = v_norm_cur[0];
-//            v_norm[0] = v_norm_cur[0];
-//            v_norm[1] = rank;
-//
-//            b_vector x_per(x_cur), x(n, 0);
-//            if (verbose) {
-//                cout << "here: " << rank * search_iter / size << "," << (rank + 1) * search_iter / size
-//                     << endl;
-//                if (rank != 0) {
-//                    helper::display<scalar, index>(m, n, H.data(), "H" + to_string(rank));
-//                    helper::display<scalar, index>(1, n, permutation[0].data(), "Per" + to_string(rank));
-//                }
-//            }
-//
-////        index start = rank * search_iter / size;
-////        index end = (rank + 1) * search_iter / size;
-////        index slice = (end - start) / t.size2();
-////        index iter = start;
-////        b_matrix  A_P(H);
-//            if (rank == 0)
-//                time = MPI_Wtime();
-///*#pragma omp parallel default(shared) num_threads(t.size2()) private(v_norm_cur, cur_1st, cur_end, i, t, k1, per)
-//        {
-//            vector<scalar> A_T, x_tmp(x_cur), y_bar(m, 0), y(m, 0);
-//            vector<scalar> z, z_z; //z_z = Z * z;
-//            v_norm_cur = (double *) malloc(1 * sizeof(double));
-//            //v_norm[0] = v_norm_rank[0];
-//
-////            index t_num = omp_get_thread_num();
-////            index t_start = start + slice * t_num;
-////            index t_end = start + slice * (t_num + 1);
-//            while (iter < end) {
-//                if (omp_get_thread_num() == 0) {
-//                    for (k1 = 0; k1 < n; k1++) {
-//                        for (i = 0; i < m; i++) {
-//                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
-//                        }
-//                        x_tmp[k1] = x_per[permutation[iter][k1] - 1];
-//                    }
-//                    per = iter;
-//                }
-//#pragma omp barrier
-//                for (index inner = 0; inner < 4; inner++) {
-//#pragma omp for schedule(static, 1) nowait
-//                    for (index j = 0; j < t.size2(); j++) {
-////                        if (rank == 0 && inner == 0)
-////                            cout << omp_get_thread_num() << " " << endl;
-//                        cur_1st = indicator[2 * j];
-//                        cur_end = indicator[2 * j + 1];
-//                        y_bar.clear();
-//                        for (k1 = 0; k1 <= cur_1st - 2; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                t = k1 * m + i;
-//                                y_bar[i] += A_P[i + m * (t / m)] * x_tmp[k1];
-//                            }
-//                        }
-//                        for (k1 = 0; k1 < n - cur_end; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                t = k1 * m + i;
-//                                y_bar[i] += A_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
-//                            }
-//                        }
-//                        for (t = 0; t < m; t++) {
-//                            y_bar[t] = y[t] - y_bar[t];
-//                        }
-//                        l = cur_end - cur_1st + 1;
-//                        A_T.resize(m * t);
-//                        for (k1 = 0; k1 < t; k1++) {
-//                            for (i = 0; i < m; i++) {
-//                                A_T[i + m * k1] = A_P[i + m * (cur_1st - 1 + k1)];//2.0 *
-//                            }
-//                        }
-//                        // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
-//                        z.resize(l);
-//                        z_z.resize(t);
-//                        z.assign(t, 0);
-//                        z_z.assign(t, 0);
-//
-//                        CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
-//                        reduction.aip(A_T, y_bar);
-//
-//                        CILS_SECH_Search<scalar, index> ils(t, t, qam);
-//                        ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
-//
-//                        // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
-//                        for (i = 0; i < t; i++) {
-//                            z[reduction.p[i] - 1] = z_z[i];
-//                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-//                        }
-//                        for (i = 0; i < t; i++) {
-//                            x_tmp[cur_1st + i - 1] = z[i];
-//                            //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-//                        }
-//                    }
-//                }
-//
-//                if (omp_get_thread_num() == 0) {
-//                    iter++;
-//                    // x_tmp
-//                    // 'SCP_Block_Optimal_2:84' v_norm_temp = norm(y - A_P * x_tmp);
-//                    v_norm_cur[0] = helper::find_residual<scalar, index>(m, n, A_P.data(), x_tmp.data(), y.data());
-//                    // 'SCP_Block_Optimal_2:86' if v_norm_temp < v_norm
-//                    if (v_norm_cur[0] < v_norm[0]) {
-//                        // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
-//                        for (l = 0; l < n; l++) {
-//                            x_per[t] = x_tmp[t];
-//                        }
-//                        // 'SCP_Block_Optimal_2:88' v_norm_cur = v_norm_temp;
-//                        // 'SCP_Block_Optimal_2:89' if per
-//                        best_per = per;
-//                        per = -1;
-//                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
-//                        if (v_norm_cur[0] <= tolerance) {
-//                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
-//                            stopping[1] = 1;
-//                            iter = end;
-//                        }
-//                        v_norm[0] = v_norm_cur[0];
-//                    }
-//                }
-//#pragma omp barrier
-//                if (stopping[1])
-//                    iter = end;
-//            }
-//
-//        }
-////        */
-////
-////#pragma omp parallel default(shared) num_threads(t.size2()) private(cur_1st, cur_end, i, t, k1)
-////            {
-////                b_vector x_tmp(x_cur), y_bar(m, 0), y(m, 0);
-////                b_matrix  A_P(H);
-////                b_vector A_T, z, z_z; //z_z = Z * z;
-//////#pragma omp for schedule(static, chunk)
-////                index t_num = omp_get_thread_num(), per = -1;
-////                index start = omp_get_thread_num() * search_iter / t.size2();
-////                index end = (omp_get_thread_num() + 1) * search_iter / t.size2();
-////                for (index iter = start; iter < end; iter++) {
-////                    for (k1 = 0; k1 < n; k1++) {
-////                        for (i = 0; i < m; i++) {
-////                            A_P[i + m * k1] = H[i + m * (permutation[iter][k1] - 1)];
-////                        }
-////                        x_tmp[k1] = x_per[permutation[iter][k1] - 1];
-////                    }
-////                    per = iter;
-////#pragma omp barrier
-////                    for (index inner = 0; inner < 4; inner++) {
-////#pragma omp for schedule(dynamic) nowait
-////                        for (index j = 0; j < t.size2(); j++) {
-////                            cur_1st = indicator[2 * j];
-////                            cur_end = indicator[2 * j + 1];
-////                            y_bar.clear();
-////                            for (k1 = 0; k1 <= cur_1st - 2; k1++) {
-////                                for (i = 0; i < m; i++) {
-////                                    t = k1 * m + i;
-////                                    y_bar[i] += A_P[i + m * (t / m)] * x_tmp[k1];
-////                                }
-////                            }
-////                            for (k1 = 0; k1 < n - cur_end; k1++) {
-////                                for (i = 0; i < m; i++) {
-////                                    t = k1 * m + i;
-////                                    y_bar[i] += A_P[i + m * (cur_end + t / m)] * x_tmp[cur_end + k1];
-////                                }
-////                            }
-////                            for (t = 0; t < m; t++) {
-////                                y_bar[t] = y[t] - y_bar[t];
-////                            }
-////                            l = cur_end - cur_1st + 1;
-////                            A_T.resize(m * t);
-////                            for (k1 = 0; k1 < t; k1++) {
-////                                for (i = 0; i < m; i++) {
-////                                    A_T[i + m * k1] = A_P[i + m * (cur_1st - 1 + k1)];//2.0 *
-////                                }
-////                            }
-////                            // 'SCP_Block_Optimal_2:80' z = obils(H_adj, y_bar, l, u);
-////                            z.resize(l);
-////                            z_z.resize(t);
-////                            z.assign(t, 0);
-////                            z_z.assign(t, 0);
-////
-////                            CILS_Reduction<scalar, index> reduction(m, t, 0, upper, 0, 0);
-////                            reduction.aip(A_T, y_bar);
-////
-////                            CILS_SECH_Search<scalar, index> ils(t, t, qam);
-////                            ils.obils_search2(reduction.R_Q, reduction.y_q, z_z);
-////
-////                            // 'SCP_Block_Optimal_2:81' x_tmp(cur_1st:cur_end) = 2 * z + e_vec;
-////                            for (i = 0; i < t; i++) {
-////                                z[reduction.p[i] - 1] = z_z[i];
-////                                //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-////                            }
-////                            for (i = 0; i < t; i++) {
-////                                x_tmp[cur_1st + i - 1] = z[i];
-////                                //reduction.y_q[i];//z_z[reduction.p[i] - 1];//2.0 * z_z[i] + 1;
-////                            }
-////                        }
-////                    }
-////                    v_norm_cur[0] = helper::find_residual<scalar, index>(m, n, A_P.data(), x_tmp.data(),
-////                                                                         y.data());
-////                    // 'SCP_Block_Optimal_2:86' if v_norm_temp < v_norm
-////                    if (v_norm_cur[0] < v_norm[0]) {
-////                        // 'SCP_Block_Optimal_2:87' x_cur = x_tmp;
-////                        for (l = 0; l < n; l++) {
-////                            x_per[t] = x_tmp[t];
-////                        }
-////                        // 'SCP_Block_Optimal_2:88' v_norm_cur = v_norm_temp;
-////                        // 'SCP_Block_Optimal_2:89' if per
-////                        best_per = per;
-////                        per = -1;
-////                        // 'SCP_Block_Optimal_2:94' if v_norm_cur <= tolerance
-////                        if (v_norm_cur[0] <= tolerance) {
-////                            // 'SCP_Block_Optimal_2:95' stopping(2)=1;
-////                            stopping[1] = 1;
-////                        }
-////                        v_norm[0] = v_norm_cur[0];
-////                    }
-////                    if (stopping[1]) {
-////                        iter = search_iter;
-////                    }
-////                }
-////            }
-////            // x_tmp
-////            // 'SCP_Block_Optimal_2:84' v_norm_temp = norm(y - A_P * x_tmp);
-////
-////            MPI_Barrier(MPI_COMM_WORLD);
-////            MPI_Allreduce(v_norm, v_norm_rank, 1, MPI_2DOUBLE_PRECISION, MPI_MINLOC, MPI_COMM_WORLD);
-////
-////            if (rank == v_norm_rank[1]) {
-////                b_vector P_cur(n * n, 0), P_tmp(n * n, 0);
-////                // 'SCP_Block_Optimal_2:44' P_tmp = eye(n);
-////                helper::eye<scalar, index>(n, P_tmp.data());
-////                helper::eye<scalar, index>(n, P_cur.data());
-////
-////                if (best_per >= 0) {
-////                    for (k1 = 0; k1 < n; k1++) {
-////                        for (i = 0; i < n; i++) {
-////                            P_cur[i + n * k1] = P_tmp[i + n * (permutation[best_per][k1] - 1)];
-////                        }
-////                    }
-////                }
-////                //'SCP_Block_Optimal_2:115' x_cur = P_cur * x_cur;
-////                helper::mtimes_Axy<scalar, index>(n, n, P_cur.data(), x_per.data(), x.data());
-////                for (i = 0; i < n; i++) {
-////                    x_cur[i] = x[i];
-////                }
-////            }
-////            MPI_Barrier(MPI_COMM_WORLD);
-////            MPI_Bcast(&x_cur[0], n, MPI_DOUBLE, v_norm_rank[1], MPI_COMM_WORLD);
-////            if (rank == 0)
-////                time = MPI_Wtime() - time;
-////
-////            if (verbose)
-////                helper::display(n, x.data(), "x:" + std::to_string(rank));
-////
-////            return {stopping, time, v_norm[0]};
-////        }
-//
-//        };
+
+        returnType <scalar, index> bsic(index optimal) {
+
+            b_vector x_tmp(x_hat), htx(m, 0), y_bar(m, 0), y_hat(m, 0), x_t;
+            b_matrix A_T, A_P(A), P(I), P_cum(I), d(2, n); //A could be permuted based on the init point
+            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y);
+
+            scalar time = omp_get_wtime();
+            if (v_norm <= tolerance) {
+                time = omp_get_wtime() - time;
+                return {{}, time, v_norm};
+            }
+
+            CILS_Reduction<scalar, index> reduction;
+            CILS_OLM<scalar, index> olm;
+//            CILS_SECH_Search<scalar,index> search;
+
+            index i, j, ll, k1, per = -1, best_per = -1, iter = 0, p;
+
+
+            // 'SCP_Block_Optimal_2:34' cur_end = n;
+            index cur_end = n, cur_1st;
+            // 'SCP_Block_Optimal_2:35' i = 1;
+            index b_i = 1;
+            // 'SCP_Block_Optimal_2:36' while cur_end > 0
+            while (cur_end > 0) {
+                // 'SCP_Block_Optimal_2:37' cur_1st = max(1, cur_end-m+1);
+                cur_1st = std::max(1, (cur_end - m) + 1);
+                // 'SCP_Block_Optimal_2:38' indicator(1,i) = cur_1st;
+                d[2 * (b_i - 1)] = cur_1st;
+                // 'SCP_Block_Optimal_2:39' indicator(2,i) = cur_end;
+                d[2 * (b_i - 1) + 1] = cur_end;
+                // 'SCP_Block_Optimal_2:40' cur_end = cur_1st - 1;
+                cur_end = cur_1st - 1;
+                // 'SCP_Block_Optimal_2:41' i = i + 1;
+                b_i++;
+            }
+            d.resize(2, b_i - 1, true);
+
+            time = omp_get_wtime();
+            for (index itr = 0; itr < search_iter-1; itr++) {
+                iter = itr;
+                A_P.clear();
+                x_tmp.clear();
+                for (index col = 0; col < n; col++) {
+                    p = permutation[iter][col] - 1;
+                    for (index row = 0; row < m; row++){
+                        A_P(row, col) = A(row, p);
+                    }
+                    x_tmp[col] = x_hat[p];
+                }
+
+                // 'SCP_Block_Optimal_2:104' per = true;
+                // y_hat = y - H_t * x_t;
+                prod(A_P, x_tmp, htx);
+                for (i = 0; i < m; i++){
+                    y_hat[i] = y[i] - htx[i];
+                }
+
+                for (j = 0; j < d.size2(); j++) {
+                    cur_1st = d(0, j) - 1;
+                    cur_end = d(1, j) - 1;
+                    index t = cur_end - cur_1st + 1;
+                    A_T.resize(m, t);
+
+                    x_t.resize(t);
+                    for (index col = cur_1st; col <= cur_end; col++){
+                        for (index row = 0; row < m; row++){
+                            A_T(row, col-cur_1st) = A_P(row, col);
+                        }
+                        x_t[col-cur_1st] = x_tmp[col];
+                    }
+
+                    prod(A_T, x_t, htx);
+                    for (i = 0; i < m; i++){
+                        y_hat[i] = y_hat[i] + htx[i];
+                    }
+
+                    b_vector z(t, 0);
+                    reduction.reset(A_T, y_hat, upper);
+                    reduction.aip();
+                    if (optimal){
+                        //todo
+                    } else{
+                        olm.reset(reduction.R, reduction.y, upper, true);
+                        olm.bnp();
+                        prod(reduction.P, olm.z_hat, z);
+                    }
+                    for (index col = cur_1st; col <= cur_end; col++){
+                        x_tmp[col] = z[col-cur_1st];
+                    }
+                    prod(A_T, z, htx);
+                    for (i = 0; i < m; i++){
+                        y_hat[i] = y_hat[i] - htx[i];
+                    }
+
+                }
+
+                scalar rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
+
+                if (rho < v_norm) {
+                    b_matrix I_P(n, n);
+                    for (i = 0; i < n; i++) {
+                        p = permutation[iter][i] - 1;
+                        for (index i1 = 0; i1 < n; i1++) {
+                            I_P[i1 + P.size1() * i] = I[i1 + I.size1() * p];
+                        }
+                    }
+                    P.assign(I_P);
+                    prod(P, x_tmp, x_hat);
+                    if (rho <= tolerance) {
+                        break;
+                    }
+                    v_norm = rho;
+                }
+            }
+//            x_hat.clear();
+//            x_hat.assign(x_cur);
+            return {{}, time, v_norm};
+        }
     };
 }

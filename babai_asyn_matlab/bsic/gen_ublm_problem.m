@@ -63,32 +63,28 @@ v = sigma * randn(m, 1);
 %Get Upper triangular matrix
 y = A * x_t + v;
 
-permutation = zeros(1, n);
-% if factorial(n) > 1e7        
-%     for i = 1 : max_iter
-%         permutation(i,:) = randperm(n);
-%     end        
-% else
-%    permutation = perms(1:n);
-%    if max_iter > factorial(n)
-%       for i = factorial(n) : max_iter
-%           permutation(i,:) = randperm(n);
-%        end
-%   end        
-% end 
+permutation = zeros(max_iter, n);
+if factorial(n) > 1e7        
+    for i = 1 : max_iter
+        permutation(i,:) = randperm(n);
+    end        
+else
+   permutation = perms(1:n);
+   if max_iter > factorial(n)
+      for i = factorial(n) : max_iter
+          permutation(i,:) = randperm(n);
+      end
+  end        
+end 
 
-% [size_perm, ~] = size(permutation);
-size_perm = 0;
-% permutation = permutation';    
-% permutation(:,1) = (1:n)';
+[size_perm, ~] = size(permutation);
+permutation = permutation';    
+permutation(:,1) = (1:n)';
 
-x_hat = cgsic(A, y, 0, 2^k-1);
-x_hat'
-
-l = repelem(0, n)';
-u = repelem(2^k-1, n)';       
-x_hat = gradproj(A,y,l,u,zeros(n,1),max_iter);
-x_hat'
+[x_hat, ~, ~] = cgsic(A, y, 0, 2^k-1);
+[s_bar_cur, v_norm_cur] = bsic(x_hat, inf, A, 0, max_iter, y, k, permutation, false);
+s_bar_cur'
+sum(s_bar_cur)
 
 R0 = zeros(n);
 

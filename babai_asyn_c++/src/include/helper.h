@@ -901,8 +901,8 @@ namespace helper {
      * @param _q 
      * @param eval 
      */
-    void qrp(b_matrix &A_A, b_matrix &Q_A, b_matrix &R_A, b_matrix &P_A, bool _q, bool eval) {
-
+    void qrp(b_matrix &A_A, b_matrix &P_A, b_matrix &R_A, bool _q, bool eval) {
+        b_matrix Q_A;
         int m = (int) A_A.size1(), n = (int) A_A.size2();
 
         auto A = new double[m * n]{};

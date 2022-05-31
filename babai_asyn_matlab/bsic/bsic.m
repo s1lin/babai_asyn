@@ -14,9 +14,21 @@ function [x_cur, rho] = bsic(x_cur, rho, A, tolerance, max_iter, y, k, permutati
 % Outputs:
 %     x_cur - n-dimensional integer vector for the sub-optimal solution
 %     rho - real scalar for the norm of the residual vector corresponding to x_cur
-
 [m, n] = size(A);
+q = ceil(n/m);
+indicator = zeros(2, q);
+cur_end = n;
+i = 1;
+while cur_end > 0
+    cur_1st = max(1, cur_end-m+1);
+    indicator(1,i) = cur_1st;
+    indicator(2,i) = cur_end;
+    cur_end = cur_1st - 1;
+    i = i + 1;
+end
+
 I = eye(n);
+Piv_cum = eye(n);
 v_norm = rho;
 for i = 1:max_iter 
     %permutation = randperm(n);
@@ -24,7 +36,9 @@ for i = 1:max_iter
     x_tmp = x_cur(permutation(:, i));
     %H_P = A(:,permutation);
     %x_tmp = x_cur(permutation);
-    [H_t, Piv_cum, x_t, indicator] = part(H_P, x_tmp, m, n);
+    %[H_t, Piv_cum, indicator] = part(H_P);
+    H_t = H_P;
+    x_t = Piv_cum' * x_tmp;
     y_hat = y - H_t * x_t;
     
     for j = 1:size(indicator, 2)
@@ -35,15 +49,14 @@ for i = 1:max_iter
   
         H_adj = H_t(:, cur_1st:cur_end);
         y_hat = y_hat + H_adj * x_t(cur_1st:cur_end);
-        
+
         l = repelem(0, t)';
         u = repelem(2^k-1, t)';       
         if optimal
-            z = zeros(t, 0);%obils(H_adj, y_hat, l, u);
+            z = obils(H_adj, y_hat, l, u);
         else
             [~, R, y_bar,~ ,~ , p] = obils_reduction(H_adj,y_hat,l,u);
-            z = zeros(t, 1);
-            
+            z = zeros(t, 1);            
             for h=t:-1:1
                 if h==t
                     s_temp=y_bar(h)/(R(h,h));
@@ -58,10 +71,9 @@ for i = 1:max_iter
             end
             z = x;
         end
-
         x_t(cur_1st:cur_end) = z;
         y_hat = y_hat - H_adj * z;
-
+        
     end
     
     rho = norm(y - H_t * x_t);

@@ -39,7 +39,9 @@ namespace cils {
         si_vector d;
         b_matrix R{}, A{};
 
-        CILS_OLM(CILS <scalar, index> &cils, b_vector &z_hat, b_matrix &R, b_vector &y_bar) {
+        CILS_OLM() {}
+
+        CILS_OLM(CILS<scalar, index> &cils, b_vector &z_hat, b_matrix &R, b_vector &y_bar) {
             this->n = cils.n;
             this->m = cils.m;
             this->upper = cils.upper;
@@ -56,7 +58,19 @@ namespace cils {
             init_R_A();
         }
 
-        returnType <scalar, index>
+        void reset(b_matrix &R, b_vector &y_bar, index upper, index is_constrained) {
+            this->n = R.size1();
+            this->m = R.size2();
+            this->upper = upper;
+            this->is_constrained = is_constrained;
+            this->R.assign(R);
+            this->y_bar.assign(y_bar);
+            this->z_hat.resize(n);
+            this->z_hat.clear();
+            this->y.assign(y);
+        }
+
+        returnType<scalar, index>
         pbnp(const index n_t, const index nstep) {
 
             index idx = 0, ni, nj, diff = 0, c_i, t = 0;
@@ -122,7 +136,7 @@ namespace cils {
             return reT;
         }
 
-        returnType <scalar, index>
+        returnType<scalar, index>
         pbnp2(const index n_t, const index nstep, const index init) {
 
             index idx = 0, ni, nj, diff = 0, c_i, t = 0, s = 0;
@@ -207,7 +221,7 @@ namespace cils {
             return {{}, run_time, (scalar) s};
         }
 
-        returnType <scalar, index> bnp() {
+        returnType<scalar, index> bnp() {
             scalar sum = 0;
             scalar time = omp_get_wtime();
             for (index i = n - 1; i >= 0; i--) {
@@ -222,7 +236,7 @@ namespace cils {
             return {{}, time, 0};
         }
 
-        returnType <scalar, index> sic(const index nstep) {
+        returnType<scalar, index> sic(const index nstep) {
             b_vector sum(n, 0), z(z_hat);
             b_vector a_t(n, 0);
             y_bar.resize(m);
@@ -260,7 +274,7 @@ namespace cils {
             return {{}, time, t};
         }
 
-        returnType <scalar, index> psic(const index nstep, const index n_t) {
+        returnType<scalar, index> psic(const index nstep, const index n_t) {
             b_vector sum(n, 0), z(z_hat);
             b_vector a_t(n, 0), y_b(y);
             index diff[nstep], flag = 0, num_iter = 0;
@@ -301,7 +315,7 @@ namespace cils {
             return {{}, time, num_iter};
         }
 
-        returnType <scalar, index> backsolve() {
+        returnType<scalar, index> backsolve() {
             scalar sum = 0;
             scalar time = omp_get_wtime();
             for (index i = n - 1; i >= 0; i--) {
@@ -315,7 +329,7 @@ namespace cils {
             return {{}, time, 0};
         }
 
-        returnType <scalar, index> bocb() {
+        returnType<scalar, index> bocb() {
             scalar sum = 0;
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
@@ -347,7 +361,7 @@ namespace cils {
         }
 
 
-        returnType <scalar, index> pbocb(const index n_proc, const index nstep, const index init) {
+        returnType<scalar, index> pbocb(const index n_proc, const index nstep, const index init) {
             index ds = d.size();
 
             index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {}, R_S_2[ds] = {};
@@ -514,7 +528,7 @@ namespace cils {
             return reT;
         }
 
-        returnType <scalar, index> pbocb_test(const index n_t, const index nstep, const index init, const index T_) {
+        returnType<scalar, index> pbocb_test(const index n_t, const index nstep, const index init, const index T_) {
 
             index ds = d.size();
             index diff = 0, num_iter = 0, flag = 0, temp;
@@ -577,16 +591,18 @@ namespace cils {
                                                true, false, INFINITY);
                                 else
                                     search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, (int) INFINITY,
-                                           true, false, INFINITY);
+                                               true, false, INFINITY);
 
                                 idx = i + 1;
                                 delta[i] = 0;
                             } else {
                                 if (case2 || T[i] != 0) {
                                     if (is_constrained)
-                                        reT = search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2, beta[i]);
+                                        reT = search.mch(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2,
+                                                         beta[i]);
                                     else
-                                        reT = search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2, beta[i]);
+                                        reT = search.mse(n_dx_q_0, n_dx_q_1, R_A, y_B, z_hat, T_, t == 0, case2,
+                                                         beta[i]);
                                     beta[i] = reT.beta;
                                     delta[i] = reT.diff;
                                     T[i] = reT.T_r;
@@ -639,7 +655,7 @@ namespace cils {
         }
 
 
-        returnType <scalar, index> bocb_CPU() {
+        returnType<scalar, index> bocb_CPU() {
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
 
@@ -698,6 +714,7 @@ namespace cils {
             returnType<scalar, index> reT = {time, run_time, 0};
             return reT;
         }
+
     };
 }
 

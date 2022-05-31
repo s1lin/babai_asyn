@@ -42,7 +42,6 @@ function [Q, R,y,l,u,p] = obils_reduction(B,y,l,u)
 %y = Q' * y;
 R0 = R;
 y0 = y;
-
 % Permutation vector 
 p = 1:n;
 
@@ -70,7 +69,6 @@ for k = n : -1 : 2
             x_j = x_i;
         end
     end
-
     % Perform permutations
     p(j:k) = p([j+1:k,j]);
     l(j:k) = l([j+1:k,j]);
@@ -80,7 +78,6 @@ for k = n : -1 : 2
     y(1:k-1) = y(1:k-1) - R(1:k-1,j) * x_j;
     R(:,j) = [];
     G(:,j) = [];
-
     for t = j : k - 1
         % Triangularize R and G by Givens rotation        
         [W, R([t,t+1],t)] = planerot(R([t,t+1],t));
@@ -95,6 +92,5 @@ end
 R0 = R0(:,p);
 
 % Transform R0 and y0 by the QR factorization
-[Q, R] = qr([R0,y0]);
-y = R(:,n+1);
-R = R(:,1:n);
+[Q, R, y] = qrmgs(R0, y0);
+

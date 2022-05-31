@@ -82,6 +82,17 @@ namespace cils {
     }
 
     template<typename Integer, typename Scalar>
+    Scalar norm_2(CILS_Matrix <Integer, Scalar> &A, Integer row_s, Integer row_e, Integer col_s, Integer col_e) {
+        Scalar sum = 0;
+        for (int row = row_s; row <= row_e; row++){
+            for (int col = col_s; col <= col_e; col++){
+                sum += A(row, col) * A(row, col);
+            }
+        }
+        return sqrt(sum);
+    }
+
+    template<typename Integer, typename Scalar>
     Scalar inner_prod(CILS_Vector <Integer, Scalar> &x,
                       CILS_Vector <Integer, Scalar> &y) {
         Scalar sum = 0;

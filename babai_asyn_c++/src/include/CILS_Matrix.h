@@ -58,6 +58,10 @@ namespace cils {
             return s2;
         }
 
+        void size2(int si2) {
+            this->s2 = si2;
+        }
+
         Integer size1() const {
             return s1;
         }
