@@ -173,7 +173,7 @@ namespace cils {
                 }
                 b_vector Ax, g;
                 prod(A, x_cur, Ax);
-                for (index i1 = 0; i1 < Ax.size(); i1++){
+                for (index i1 = 0; i1 < Ax.size(); i1++) {
                     r0[i1] += Ax[i1];
                 }
                 prod(A_T, r0, g);
@@ -304,8 +304,7 @@ namespace cils {
                     for (i = 0; i < n; i++) {
                         x_hat[i] = x_cur[i];
                     }
-                }
-                else {
+                } else {
                     scalar x_tmp;
                     //  Find the Cauchy poindex
                     // 'ubils:253' t_bar = 1.e5*ones(n,1);
@@ -871,10 +870,10 @@ namespace cils {
 //            //  i_H
 //        }
 
-        returnType <scalar, index> bsic(index optimal) {
+        returnType<scalar, index> bsic(index optimal) {
 
-            b_vector x_tmp(x_hat), htx(m, 0), y_bar(m, 0), y_hat(m, 0), x_t;
-            b_matrix A_T, A_P(A), P(I), P_cum(I), d(2, n); //A could be permuted based on the init point
+            b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t;
+            b_matrix A_T, A_P(A), P(I), d(2, n); //A could be permuted based on the init point
             scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y);
 
             scalar time = omp_get_wtime();
@@ -887,7 +886,7 @@ namespace cils {
             CILS_OLM<scalar, index> olm;
 //            CILS_SECH_Search<scalar,index> search;
 
-            index i, j, ll, k1, per = -1, best_per = -1, iter = 0, p;
+            index i, j, p, iter = 0;
 
 
             // 'SCP_Block_Optimal_2:34' cur_end = n;
@@ -910,22 +909,24 @@ namespace cils {
             d.resize(2, b_i - 1, true);
 
             time = omp_get_wtime();
-            for (index itr = 0; itr < search_iter-1; itr++) {
+            for (index itr = 0; itr < search_iter - 1; itr++) {
                 iter = itr;
                 A_P.clear();
                 x_tmp.clear();
                 for (index col = 0; col < n; col++) {
                     p = permutation[iter][col] - 1;
-                    for (index row = 0; row < m; row++){
+                    for (index row = 0; row < m; row++) {
                         A_P(row, col) = A(row, p);
                     }
                     x_tmp[col] = x_hat[p];
                 }
 
+                //todo: [H_t, Piv_cum, indicator] = part(H_P);
+
                 // 'SCP_Block_Optimal_2:104' per = true;
                 // y_hat = y - H_t * x_t;
                 prod(A_P, x_tmp, htx);
-                for (i = 0; i < m; i++){
+                for (i = 0; i < m; i++) {
                     y_hat[i] = y[i] - htx[i];
                 }
 
@@ -936,33 +937,33 @@ namespace cils {
                     A_T.resize(m, t);
 
                     x_t.resize(t);
-                    for (index col = cur_1st; col <= cur_end; col++){
-                        for (index row = 0; row < m; row++){
-                            A_T(row, col-cur_1st) = A_P(row, col);
+                    for (index col = cur_1st; col <= cur_end; col++) {
+                        for (index row = 0; row < m; row++) {
+                            A_T(row, col - cur_1st) = A_P(row, col);
                         }
-                        x_t[col-cur_1st] = x_tmp[col];
+                        x_t[col - cur_1st] = x_tmp[col];
                     }
 
                     prod(A_T, x_t, htx);
-                    for (i = 0; i < m; i++){
+                    for (i = 0; i < m; i++) {
                         y_hat[i] = y_hat[i] + htx[i];
                     }
 
                     b_vector z(t, 0);
                     reduction.reset(A_T, y_hat, upper);
                     reduction.aip();
-                    if (optimal){
+                    if (optimal) {
                         //todo
-                    } else{
+                    } else {
                         olm.reset(reduction.R, reduction.y, upper, true);
                         olm.bnp();
                         prod(reduction.P, olm.z_hat, z);
                     }
-                    for (index col = cur_1st; col <= cur_end; col++){
-                        x_tmp[col] = z[col-cur_1st];
+                    for (index col = cur_1st; col <= cur_end; col++) {
+                        x_tmp[col] = z[col - cur_1st];
                     }
                     prod(A_T, z, htx);
-                    for (i = 0; i < m; i++){
+                    for (i = 0; i < m; i++) {
                         y_hat[i] = y_hat[i] - htx[i];
                     }
 
@@ -986,8 +987,150 @@ namespace cils {
                     v_norm = rho;
                 }
             }
+            time = omp_get_wtime() - time;
 //            x_hat.clear();
 //            x_hat.assign(x_cur);
+            return {{}, time, v_norm};
+        }
+
+        scalar pasic(b_matrix &d, b_vector &x_tmp, index optimal, index iter, index nthreads) {
+//            cout << iter << "," << omp_get_thread_num() << endl;
+            b_matrix A_P(m, n), A_T;
+            b_vector x_t, htx, y_hat(m, 0);
+            x_tmp.clear();
+            CILS_Reduction<scalar, index> reduction;
+            CILS_OLM<scalar, index> olm;
+            index p, i;
+            for (index col = 0; col < n; col++) {
+                p = permutation[iter][col] - 1;
+                for (index row = 0; row < m; row++) {
+                    A_P(row, col) = A(row, p);
+                }
+                x_tmp[col] = x_hat[p];
+            }
+            prod(A_P, x_tmp, htx);
+            for (i = 0; i < m; i++) {
+                y_hat[i] = y[i] - htx[i];
+            }
+
+#pragma omp parallel default(shared) num_threads(2) firstprivate(htx) private(A_T, x_t, p, i, reduction, olm)
+            {
+                for (int u = 0; u < 2; u++) {
+#pragma omp for nowait
+                    for (int j = 0; j < d.size2(); j++) {
+//                        printf("Task %d: thread %d "
+//                               "of the %d children of "
+//                               "%d: "
+//                               "handling iter %d\n",
+//                               iter, omp_get_thread_num(),
+//                               omp_get_team_size(2),
+//                               omp_get_ancestor_thread_num(1),
+//                               j);
+
+                        index cur_1st = d(0, j) - 1;
+                        index cur_end = d(1, j) - 1;
+                        index t = cur_end - cur_1st + 1;
+                        A_T.resize(m, t);
+
+                        x_t.resize(t);
+                        for (index col = cur_1st; col <= cur_end; col++) {
+                            for (index row = 0; row < m; row++) {
+                                A_T(row, col - cur_1st) = A_P(row, col);
+                            }
+                            x_t[col - cur_1st] = x_tmp[col];
+                        }
+                        prod(A_T, x_t, htx);
+                        for (i = 0; i < m; i++) {
+                            y_hat[i] = y_hat[i] + htx[i];
+                        }
+
+                        b_vector z(t, 0);
+                        reduction.reset(A_T, y_hat, upper);
+                        reduction.aip();
+                        if (optimal) {
+                            //todo
+                        } else {
+                            olm.reset(reduction.R, reduction.y, upper, true);
+                            olm.bnp();
+                            prod(reduction.P, olm.z_hat, z);
+                        }
+                        for (index col = cur_1st; col <= cur_end; col++) {
+                            x_tmp[col] = z[col - cur_1st];
+                        }
+                        prod(A_T, z, htx);
+                        for (i = 0; i < m; i++) {
+                            y_hat[i] = y_hat[i] - htx[i];
+                        }
+                    }
+                }
+            }
+            scalar rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
+//            cout << x_tmp;
+            return rho;
+        }
+
+        returnType<scalar, index> pbsic(index optimal, index n_t) {
+
+            b_vector x_tmp(x_hat);
+            b_matrix P(I), d(2, n); //A could be permuted based on the init point
+            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y);
+
+            scalar time = omp_get_wtime();
+            if (v_norm <= tolerance) {
+                time = omp_get_wtime() - time;
+                return {{}, time, v_norm};
+            }
+
+            index i, j, p, iter = 0;
+
+            // 'SCP_Block_Optimal_2:34' cur_end = n;
+            index cur_end = n, cur_1st;
+            // 'SCP_Block_Optimal_2:35' i = 1;
+            index b_i = 1;
+            // 'SCP_Block_Optimal_2:36' while cur_end > 0
+            while (cur_end > 0) {
+                // 'SCP_Block_Optimal_2:37' cur_1st = max(1, cur_end-m+1);
+                cur_1st = std::max(1, (cur_end - m) + 1);
+                // 'SCP_Block_Optimal_2:38' indicator(1,i) = cur_1st;
+                d[2 * (b_i - 1)] = cur_1st;
+                // 'SCP_Block_Optimal_2:39' indicator(2,i) = cur_end;
+                d[2 * (b_i - 1) + 1] = cur_end;
+                // 'SCP_Block_Optimal_2:40' cur_end = cur_1st - 1;
+                cur_end = cur_1st - 1;
+                // 'SCP_Block_Optimal_2:41' i = i + 1;
+                b_i++;
+            }
+            d.resize(2, b_i - 1, true);
+            omp_set_nested(1);
+            index nthreads = 2;
+            index tasks = search_iter/n_t;
+            scalar rho;
+            b_matrix I_P(n, n);
+            time = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_t) firstprivate(I_P, x_tmp, rho, p)
+            {
+#pragma omp single nowait
+#pragma omp taskloop
+                for (index itr = 0; itr < search_iter - 1; itr++) {
+                    rho = pasic(d, x_tmp, optimal, itr, nthreads);
+                    if (rho < v_norm) {
+                        for (i = 0; i < n; i++) {
+                            p = permutation[itr][i] - 1;
+                            for (index i1 = 0; i1 < n; i1++) {
+                                I_P[i1 + P.size1() * i] = I[i1 + I.size1() * p];
+                            }
+                        }
+                        P.assign(I_P);
+                        prod(P, x_tmp, x_hat);
+//                        if (rho <= tolerance) {
+//                            break;
+//                        }
+                        v_norm = rho;
+                    }
+                }
+            }
+
+            time = omp_get_wtime() - time;
             return {{}, time, v_norm};
         }
     };

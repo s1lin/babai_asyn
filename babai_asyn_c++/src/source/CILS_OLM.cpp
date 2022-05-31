@@ -68,6 +68,7 @@ namespace cils {
             this->z_hat.resize(n);
             this->z_hat.clear();
             this->y.assign(y);
+            init_R_A();
         }
 
         returnType<scalar, index>

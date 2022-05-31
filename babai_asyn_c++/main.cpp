@@ -6,8 +6,8 @@
 using namespace std;
 using namespace cils;
 
-//void functiona(int i, int n_threads) {
-//    cout << omp_get_thread_num() << endl;
+void functiona(int i, int n_threads) {
+    cout << i << "," << omp_get_thread_num() << endl;
 //#pragma omp parallel num_threads(n_threads)
 //    for (int t = 0; t < 2; t++)
 //#pragma omp for nowait
@@ -15,7 +15,7 @@ using namespace cils;
 //                printf("Task %d: thread %d of the %d children of %d: handling iter %d\n",
 //                       i, omp_get_thread_num(), omp_get_team_size(2),
 //                       omp_get_ancestor_thread_num(1), j);
-//}
+}
 
 int main(int argc, char *argv[]) {
 
@@ -33,18 +33,20 @@ int main(int argc, char *argv[]) {
     test_init_pt<double, int>();
 
 
-//    omp_set_nested(1);   /* make sure nested parallism is on */
-//    int nprocs = omp_get_num_procs();
-//    auto nthreads = new int[2]{4, 4};
-//
-//#pragma omp parallel default(none) shared(nthreads) num_threads(2)
-//#pragma omp single
-//    {
-//        for (int i = 0; i < 6; i++)
-//#pragma omp task
-//                functiona(i, nthreads[i]);
-//
-//    }
+    omp_set_nested(1);   /* make sure nested parallism is on */
+    int nprocs = omp_get_num_procs();
+    auto nthreads = new int[2]{4, 4};
+
+#pragma omp parallel default(none) shared(nthreads) num_threads(4)
+    {
+#pragma omp single
+        {
+            for (int i = 0; i < 6; i++)
+#pragma omp task
+                functiona(i, nthreads[i]);
+        }
+
+    }
 
     t = omp_get_wtime() - t;
 
