@@ -21,13 +21,13 @@ bool test_init_pt() {
     );
     printf("====================[ TEST | INIT_POINT | %s ]==================================\n", time_str);
 
-    index m = 4, n = 6, qam = 3, snr = 35;
+    index m = 12, n = 18, qam = 3, snr = 35;
     scalar res;
 
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
     cils.is_constrained = true;
-    cils.search_iter = 1e4;
+    cils.search_iter = 3e4;
 
     cils::init_ublm(cils, m, n, snr, qam, 1);
 

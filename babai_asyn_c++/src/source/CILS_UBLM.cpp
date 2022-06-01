@@ -1013,20 +1013,11 @@ namespace cils {
                 y_hat[i] = y[i] - htx[i];
             }
 
-#pragma omp parallel default(shared) num_threads(2) firstprivate(htx) private(A_T, x_t, p, i, reduction, olm)
-            {
-                for (int u = 0; u < 2; u++) {
-#pragma omp for nowait
+//#pragma omp parallel default(shared) num_threads(2) firstprivate(htx) private(A_T, x_t, p, i, reduction, olm)
+//            {
+//                for (int u = 0; u < 2; u++) {
+//#pragma omp for nowait
                     for (int j = 0; j < d.size2(); j++) {
-//                        printf("Task %d: thread %d "
-//                               "of the %d children of "
-//                               "%d: "
-//                               "handling iter %d\n",
-//                               iter, omp_get_thread_num(),
-//                               omp_get_team_size(2),
-//                               omp_get_ancestor_thread_num(1),
-//                               j);
-
                         index cur_1st = d(0, j) - 1;
                         index cur_end = d(1, j) - 1;
                         index t = cur_end - cur_1st + 1;
@@ -1051,7 +1042,7 @@ namespace cils {
                             //todo
                         } else {
                             olm.reset(reduction.R, reduction.y, upper, true);
-                            olm.bnp();
+                            olm.pbnp2(2, 2, 0);
                             prod(reduction.P, olm.z_hat, z);
                         }
                         for (index col = cur_1st; col <= cur_end; col++) {
@@ -1061,8 +1052,8 @@ namespace cils {
                         for (i = 0; i < m; i++) {
                             y_hat[i] = y_hat[i] - htx[i];
                         }
-                    }
-                }
+//                    }
+//                }
             }
             scalar rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
 //            cout << x_tmp;
@@ -1103,14 +1094,13 @@ namespace cils {
             d.resize(2, b_i - 1, true);
             omp_set_nested(1);
             index nthreads = 2;
-            index tasks = search_iter/n_t;
             scalar rho;
             b_matrix I_P(n, n);
             time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_t) firstprivate(I_P, x_tmp, rho, p)
+#pragma omp parallel default(shared) num_threads(n_t) firstprivate(I_P, x_tmp, rho, p, i)
             {
 #pragma omp single nowait
-#pragma omp taskloop
+#pragma omp taskloop nogroup grainsize(200)
                 for (index itr = 0; itr < search_iter - 1; itr++) {
                     rho = pasic(d, x_tmp, optimal, itr, nthreads);
                     if (rho < v_norm) {
