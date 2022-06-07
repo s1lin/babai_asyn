@@ -21,13 +21,13 @@ bool test_init_pt() {
     );
     printf("====================[ TEST | INIT_POINT | %s ]==================================\n", time_str);
 
-    index m = 12, n = 18, qam = 3, snr = 35;
+    index m = 50, n = 60, qam = 3, snr = 40;
     scalar res;
 
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
     cils.is_constrained = true;
-    cils.search_iter = 3e4;
+    cils.search_iter = 300;
 
     cils::init_ublm(cils, m, n, snr, qam, 1);
 
@@ -36,15 +36,41 @@ bool test_init_pt() {
 
     cils::returnType<scalar, index> reT;
     //----------------------INIT POINT (SERIAL)--------------------------------//
-    cils::CILS_UBLM<scalar, index> ublm(cils);
+    cils::CILS_Reduction<scalar, index> reduction, reduction1;
+//    cout << cils.A;
+//    reduction.reset(cils.A, cils.y, 7);
+//    b_matrix A_S, A_T;
+//    reT = reduction.aip();
+//    prod(reduction.Q, reduction.R, A_S);
+////    cout << A_T;
+//    scalar qr_time = reT.run_time;
+//    reduction.reset(cils.A, cils.y, 7);
+//
+//    reT = reduction.paip(10);
+//    prod(reduction.Q, reduction.R, A_T);
+//    scalar error;
+//    for (index i = 0; i < m * n; i++) {
+//        error += fabs(A_S[i] - A_T[i]);
+//    }
+//    cout << "ERROR:" << error << ", ";
+//    printf("QR: SER: %8.4f, PAR: %8.4f, SPU: %8.4f\n", qr_time, reT.run_time, qr_time / reT.run_time);
 
-    CGSIC:
-    reT = ublm.cgsic();
-    res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
-    scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-    b_vector x_cgsic(ublm.x_hat);
-    cout << ublm.x_hat;
-    printf("CGSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+//    cout << A_T;
+//    cout << reduction.R;
+//    cout << reduction.Q;
+    if (n > 20) {
+
+
+        cils::CILS_UBLM<scalar, index> ublm(cils);
+
+        CGSIC:
+        cout << cils.x_t;
+        reT = ublm.cgsic();
+        res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+        scalar ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+        b_vector x_cgsic(ublm.x_hat);
+        cout << ublm.x_hat;
+        printf("CGSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 //
 //    ublm.x_hat.clear();
 //    reT = ublm.gp();
@@ -52,23 +78,36 @@ bool test_init_pt() {
 //    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
 //    cout << ublm.x_hat;
 //    printf("GP: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
-    ublm.x_hat.assign(x_cgsic);
-    reT = ublm.bsic(false);
-    res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
-    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-    cout << ublm.x_hat;
 
-    printf("BSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+        ublm.x_hat.assign(x_cgsic);
+        reT = ublm.bsic(false, m);
+        res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+        cout << ublm.x_hat;
+        cout.flush();
+        scalar time = reT.run_time;
+        printf("BSIC_BNP: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
-    ublm.x_hat.assign(x_cgsic);
-    reT = ublm.pbsic(false, 10);
-    res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
-    ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-    cout << ublm.x_hat;
 
-    printf("PBSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
+        ublm.x_hat.assign(x_cgsic);
+        reT = ublm.bsic(true, m);
+        res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+        cout << ublm.x_hat;
+        cout.flush();
+        time = reT.run_time;
+        printf("BSIC_BBB: ber: %8.5f, v_norm: %8.4f, time: %8.4f\n", ber, res, reT.run_time);
 
-    cout << cils.x_t;
+        ublm.x_hat.assign(x_cgsic);
+        reT = ublm.pbsic(true, m, 5);
+        res = helper::find_residual<scalar, index>(cils.A, ublm.x_hat, cils.y);
+        ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+        cout << ublm.x_hat;
+
+        printf("PBSIC: ber: %8.5f, v_norm: %8.4f, time: %8.4f, speedup: %8.4f\n",
+               ber, res, reT.run_time, time / reT.run_time);
+    }
+
     return true;
 
 }

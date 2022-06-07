@@ -168,12 +168,12 @@ namespace cils {
             return diff;
         }
 
-        searchType <scalar, index>
+        searchType<scalar, index>
         mch(const index n_dx_q_0, const index n_dx_q_1, const b_vector &R_A, const b_vector &y_B, b_vector &z_x,
             index T, const index case1, index case2, scalar beta) {
             scalar time = omp_get_wtime();
             index dx = n_dx_q_1 - n_dx_q_0;
-            index row_k = n_dx_q_1 - 1, row_kk = row_k * (n - n_dx_q_1 / 2);
+            index row_k = n_dx_q_1 - 1, row_kk = (row_k * (2 * n - n_dx_q_1)) / 2;
             index dflag = 1, iter = 0, diff = 0, k = dx - 1;
             scalar R_kk = R_A[row_kk + row_k], newprsd, sum, gamma;
             if (case1) {
@@ -256,7 +256,7 @@ namespace cils {
                             case2 = false;
                             k = 0;
                             row_k = n_dx_q_0;
-                            row_kk = row_k * (n - n_dx_q_1 / 2);
+                            row_kk = (row_k * (2 * n - n_dx_q_1)) / 2;
                         }
                     } else {
                         dflag = 0;
@@ -292,6 +292,113 @@ namespace cils {
             return {diff == dx, beta, T - iter};
         }
 
+        bool mch2(const index n_dx_q_0, const index n_dx_q_1, const index i, const index check,
+                  const b_vector &R_A, const b_vector &y_B, b_vector &z_x) {
+            scalar time = omp_get_wtime();
+            index dx = n_dx_q_1 - n_dx_q_0;
+            index row_k = n_dx_q_1 - 1, row_kk = (row_k * (2 * n - n_dx_q_1))/2;
+            index dflag = 1, iter = 0, diff = 0, k = dx - 1;
+            scalar R_kk = R_A[row_kk + row_k], newprsd, sum, gamma;
+            scalar beta = INFINITY;
+
+            //Determine enumeration direction at level block_size
+            //Initial squared search radius
+            gamma = R_kk * (c[row_k] - z[row_k]);
+
+            c[row_k] = y_B[row_k] / R_kk;
+            z[row_k] = round(c[row_k]);
+            if (z[row_k] <= lower) {
+                z[row_k] = u[row_k] = lower; //The lower bound is reached
+                l[row_k] = d[row_k] = 1;
+            } else if (z[row_k] >= upper) {
+                z[row_k] = upper; //The upper bound is reached
+                u[row_k] = 1;
+                l[row_k] = 0;
+                d[row_k] = -1;
+            } else {
+                l[row_k] = u[row_k] = 0;
+                d[row_k] = c[row_k] > z[row_k] ? 1 : -1; //Determine enumeration direction at level block_size
+            }
+
+            while (true) {
+                if (omp_get_wtime() - time > 10) {
+                    cout << "BREAK DUE TO RUNTIME";
+                    break;
+                }
+                if (dflag) {
+                    newprsd = p[row_k] + gamma * gamma;
+                    if (newprsd < beta) {
+                        if (k != 0) {
+                            k--;
+                            row_k--;
+                            row_kk -= (n - row_k - 1);
+                            R_kk = R_A[row_kk + row_k];
+                            p[row_k] = newprsd;
+                            sum = 0;
+#pragma omp simd reduction(+ : sum)
+                            for (index col = k + 1; col < dx; col++) {
+                                sum += R_A[row_kk + col + n_dx_q_0] * z[col + n_dx_q_0];
+                            }
+                            c[row_k] = (y_B[row_k] - sum) / R_kk;
+                            z[row_k] = round(c[row_k]);
+                            if (z[row_k] <= lower) {
+                                z[row_k] = u[row_k] = lower;
+                                l[row_k] = d[row_k] = 1;
+                            } else if (z[row_k] >= upper) {
+                                z[row_k] = upper;
+                                u[row_k] = 1;
+                                l[row_k] = 0;
+                                d[row_k] = -1;
+                            } else {
+                                l[row_k] = u[row_k] = 0;
+                                d[row_k] = c[row_k] > z[row_k] ? 1 : -1;
+                            }
+                            gamma = R_kk * (c[row_k] - z[row_k]);
+
+                        } else {
+                            beta = newprsd;
+                            diff = 0;
+                            for (index h = n_dx_q_0; h < n_dx_q_1; h++) {
+                                diff += z_x[h] == z[h];
+                                z_x[h] = z[h];
+                            }
+//                            k = 0;
+//                            row_k = n_dx_q_0;
+//                            row_kk = row_k * (n - n_dx_q_1 / 2);
+                        }
+                    } else {
+                        dflag = 0;
+                    }
+
+                } else {
+                    if (k == dx - 1) break;
+                    else {
+                        k++;
+                        row_k++;
+                        row_kk += n - row_k;
+                        if (l[row_k] != 1 || u[row_k] != 1) {
+                            z[row_k] += d[row_k];
+                            if (z[row_k] == 0) {
+                                l[row_k] = 1;
+                                d[row_k] = -d[row_k] + 1;
+                            } else if (z[row_k] == upper) {
+                                u[row_k] = 1;
+                                d[row_k] = -d[row_k] - 1;
+                            } else if (l[row_k] == 1) {
+                                d[row_k] = 1;
+                            } else if (u[row_k] == 1) {
+                                d[row_k] = -1;
+                            } else {
+                                d[row_k] = d[row_k] > 0 ? -d[row_k] - 1 : -d[row_k] + 1;
+                            }
+                            gamma = R_A[row_kk + row_k] * (c[row_k] - z[row_k]);
+                            dflag = 1;
+                        }
+                    }
+                }
+            }
+            return diff == dx;
+        }
 
         bool se(const index n_dx_q_0, const index n_dx_q_1, const bool check,
                 const b_matrix &R_R, const b_vector &y_B, b_vector &z_x) {
@@ -364,7 +471,7 @@ namespace cils {
         }
 
 
-        searchType <scalar, index>
+        searchType<scalar, index>
         mse(const index n_dx_q_0, const index n_dx_q_1, const b_vector &R_A, const b_vector &y_B, b_vector &z_x,
             index T, const index case1, index case2, scalar beta) {
             index dx = n_dx_q_1 - n_dx_q_0;

@@ -58,7 +58,7 @@ namespace cils {
             init_R_A();
         }
 
-        void reset(b_matrix &R, b_vector &y_bar, index upper, index is_constrained) {
+        void reset(b_matrix &R, b_vector &y_bar, index upper, index block_size, index is_constrained, index qam = 3) {
             this->n = R.size1();
             this->m = R.size2();
             this->upper = upper;
@@ -68,6 +68,12 @@ namespace cils {
             this->z_hat.resize(n);
             this->z_hat.clear();
             this->y.assign(y);
+            this->qam = qam;
+            d.resize(n / block_size);
+            std::fill(d.begin(), d.end(), block_size);
+            for (index i = d.size() - 2; i >= 0; i--) {
+                d[i] += d[i + 1];
+            }
             init_R_A();
         }
 
@@ -334,8 +340,8 @@ namespace cils {
             scalar sum = 0;
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
-
-            CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
+//            cout << R;
+            CILS_SECH_Search<scalar, index> search(n, n, qam, search_iter);
             scalar run_time = omp_get_wtime();
 
             for (index i = 0; i < ds; i++) {
@@ -349,15 +355,51 @@ namespace cils {
                     }
                     y_b[row] = y_bar[row] - sum;
                 }
-
+//                cout << y_b;
                 if (is_constrained)
                     search.ch(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
                 else
                     search.se(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
-
             }
+//            cout << z_hat;
             run_time = omp_get_wtime() - run_time;
-            returnType<scalar, index> reT = {{run_time}, run_time, 0};
+            returnType<scalar, index> reT = {{}, run_time, 0};
+            return reT;
+        }
+
+        returnType<scalar, index> bocb2() {
+            scalar sum = 0;
+            index ds = d.size(), n_dx_q_0, n_dx_q_1, row_n;
+            b_vector y_b(n);
+//            cout << R;
+            CILS_SECH_Search<scalar, index> search(n, n, qam, search_iter);
+            scalar run_time = omp_get_wtime();
+
+            for (index i = 0; i < ds; i++) {
+                n_dx_q_1 = d[i];
+                n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
+//                cout << ((n_dx_q_0 - 1) * (2 * n - n_dx_q_0)) / 2 << ", " << (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                row_n = ((n_dx_q_0 - 1) * (2 * n - n_dx_q_0)) / 2;
+                for (index row = n_dx_q_0; row < n_dx_q_1; row++) {
+                    sum = 0;
+                    row_n += n - row;
+//#pragma omp simd reduction(+:sum)
+                    for (index col = n_dx_q_1; col < n; col++) {
+                        sum += R_A[col + row_n] * z_hat[col];
+                    }
+                    y_b[row] = y_bar[row] - sum;
+                }
+//                cout << y_b;
+                if (is_constrained)
+                    search.ch(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
+//                    search.mch(n_dx_q_0, n_dx_q_1, R_A, y_b, z_hat,
+//                        INFINITY, true, false, INFINITY);
+                else
+                    search.se(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
+            }
+//            cout << z_hat;
+            run_time = omp_get_wtime() - run_time;
+            returnType<scalar, index> reT = {{}, run_time, 0};
             return reT;
         }
 
@@ -365,91 +407,33 @@ namespace cils {
         returnType<scalar, index> pbocb(const index n_proc, const index nstep, const index init) {
             index ds = d.size();
 
-            index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {}, R_S_2[ds] = {};
+            index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {};
             index test, row_n, check = 0, r, _nswp = nstep, end = 0;
-            index n_dx_q_2, n_dx_q_1, n_dx_q_0;
+            index n_dx_q_2, n_dx_q_0;
             scalar sum = 0, start;
             scalar run_time = 0, run_time3 = 0;
 
             b_vector y_B(n);
-            y_B.clear();
-            CILS_SECH_Search<scalar, index> _ils(m, n, qam, search_iter);
 
 #pragma omp parallel default(none) num_threads(n_proc)
             {}
-            if (init == -1) {
-                start = omp_get_wtime();
-                n_dx_q_2 = d[0];
-                n_dx_q_0 = d[1];
-
-                if (is_constrained)
-                    _ils.mch(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
-                else
-                    _ils.mse(n_dx_q_0, n_dx_q_2, 0, 0, R_A, y_bar, z_hat);
-                cout << "out" << endl;
-                cout.flush();
-                R_S_2[0] = 1;
-                end = 1;
-#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
-                {
-                    for (index j = 0; j < _nswp && !flag; j++) {
-#pragma omp for schedule(dynamic) nowait
-                        for (index i = 1; i < ds; i++) {
-                            if (!flag && end <= i) {// !R_S_1[i] && front >= i &&!R_S_1[i] &&
-                                n_dx_q_2 = d[i];
-                                n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
-                                check = i == end;
-                                row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
-                                for (index row = n_dx_q_0; row < n_dx_q_2; row++) {
-                                    sum = 0;
-                                    row_n += n - row;
-                                    for (index col = n_dx_q_2; col < n; col++) {
-                                        sum += R_A[col + row_n] * z_hat[col];
-                                    }
-                                    y_B[row] = y_bar[row] - sum;
-                                }
-                                if (is_constrained)
-                                    R_S_2[i] = _ils.mch(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_hat);
-//                                else
-//                                    R_S_2[i] = _ils.mse(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_hat);
-                                if (check) {
-                                    end = i + 1;
-                                    R_S_2[i] = 1;
-                                }
-                                diff += R_S_2[i];
-//                                if (mode != 0) {
-                                flag = ((diff) >= ds - 1) && j > 0;
-//                                }
-                            }
-                        }
-                    }
-#pragma omp single
-                    {
-                        if (qam != 1) run_time = omp_get_wtime() - start;
-                    };
-                }
-                if (qam == 1) run_time = omp_get_wtime() - start;
-                flag = check = diff = 0;
-                _nswp = 3;
-            }
 
             CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
+
             scalar run_time2 = omp_get_wtime();
             n_dx_q_2 = d[0];
             n_dx_q_0 = d[1];
 
             if (is_constrained)
-                search.mch(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
+                search.mch2(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
             else
-                search.mse(n_dx_q_0, n_dx_q_2, 0, 1, R_A, y_bar, z_hat);
+                search.se(n_dx_q_0, n_dx_q_2, 1, R, y_bar, z_hat);
 
 
             R_S_1[0] = 1;
             end = 1;
-
-#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_1, n_dx_q_0, sum, temp, check, test, row_n)
+#pragma omp parallel default(shared) num_threads(n_proc) private(n_dx_q_2, n_dx_q_0, sum, temp, check, test, row_n) firstprivate(y_B)
             {
-
                 for (index j = 0; j < _nswp && !flag; j++) {
 //                omp_set_lock(&lock[j - 1]);
 //                omp_unset_lock(&lock[j - 1]);
@@ -459,7 +443,7 @@ namespace cils {
                             n_dx_q_2 = d[i];
                             n_dx_q_0 = i == ds - 1 ? 0 : d[i + 1];
                             check = i == end;
-                            row_n = (n_dx_q_0 - 1) * (n - n_dx_q_0 / 2);
+                            row_n = ((n_dx_q_0 - 1) * (2 * n - n_dx_q_0)) / 2;
                             for (index row = n_dx_q_0; row < n_dx_q_2; row++) {
                                 sum = 0;
                                 row_n += n - row;
@@ -479,8 +463,10 @@ namespace cils {
                             if (is_constrained) {
                                 R_S_1[i] = search.mch2(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
 //                                R_S_1[i] = search.ch(n_dx_q_0, n_dx_q_2, check, R, y_B, z_hat);
-                            } else
-                                R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
+                            }
+//                            else
+//                                R_S_1[i] = search.mse(n_dx_q_0, n_dx_q_2, R_A, y_B, z_hat, check ? INFINITY : 1, true,
+//                                                      false, INFINITY);
 //                            omp_unset_lock(&lock[j]);
                             if (check) { //!R_S_1[i] &&
                                 end = i + 1;
@@ -518,7 +504,7 @@ namespace cils {
 //            if (mode == 0)
 //                reT = {{run_time3}, time, (scalar) diff + end};
 //            else {
-            reT = {{run_time3}, time, (scalar) num_iter + 1};
+            return {{run_time3}, time, (scalar) num_iter + 1};
 //            cout << "n_proc:" << n_proc << "," << "init:" << init << "," << diff << "," << end << ",Ratio:"
 //                 << (index) (run_time2 / run_time3) << "," << run_time << "||";
 //            cout.flush();
@@ -526,7 +512,6 @@ namespace cils {
 //            for (index i = 0; i < ds; i++) {
 //                omp_destroy_lock(&lock[i]);
 //            }
-            return reT;
         }
 
         returnType<scalar, index> pbocb_test(const index n_t, const index nstep, const index init, const index T_) {

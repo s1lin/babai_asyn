@@ -81,10 +81,13 @@ end
 permutation = permutation';    
 permutation(:,1) = (1:n)';
 
-[x_hat, ~, ~] = cgsic(A, y, 0, 2^k-1);
-[s_bar_cur, v_norm_cur] = bsic(x_hat, inf, A, 0, max_iter, y, k, permutation, false);
-s_bar_cur'
-sum(s_bar_cur)
+% [x_hat, ~, ~] = cgsic(A, y, 0, 2^k-1);
+% tic
+% [s_bar_cur, v_norm_cur] = bsic(x_hat, inf, A, 0, max_iter-1, y, k, permutation, false);
+% toc
+% s_bar_cur'
+% x_t'
+% sum(s_bar_cur)
 
 R0 = zeros(n);
 

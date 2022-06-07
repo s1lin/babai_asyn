@@ -80,7 +80,7 @@ namespace cils {
             prod(B, Z, B_T);
             b_matrix R_I;
 
-            helper::inv<scalar, index>(R, R_I);
+            helper::inv2<scalar, index>(R, R_I);
             b_matrix Q_Z;
             prod(B_T, R_I, Q_Z);
             b_matrix Q_T = trans(Q_Z);
@@ -209,51 +209,13 @@ namespace cils {
         }
 
 
-        /**
-         * Evaluating the QR decomposition for column orientation
-         * @tparam scalar
-         * @tparam index
-         * @tparam n
-         * @param B
-         * @param Q
-         * @param R
-         * @param eval
-         * @return
-         */
-        scalar qr_validation_col() {
-            index i, j, k;
-            scalar sum, error = 0;
-
-            if (eval == 1) {
-                b_matrix B_T;
-                prod(Q, R, B_T); //helper::mtimes_col<scalar, index>(m, n, Q, R, B_T);
-
-                if (verbose) {
-                    printf("\n[ Print Q:]\n");
-                    helper::display<scalar, index>(Q, "Q");
-                    printf("\n[ Print R:]\n");
-                    helper::display<scalar, index>(R, "R");
-                    printf("\n[ Print B:]\n");
-                    helper::display<scalar, index>(B, "B");
-                    printf("\n[ Print Q*R:]\n");
-                    helper::display<scalar, index>(B_T, "Q*R");
-                }
-
-                for (i = 0; i < m * n; i++) {
-                    error += fabs(B_T(i) - B(i));
-                }
-            }
-
-            return error;
-        }
-
     public:
         //B --> A
         b_eye_matrix I{};
         b_matrix B{}, R{}, Q{}, Z{}, P{}, R_A{};
         b_vector y{}, y_r{}, p{};
 
-        CILS_Reduction(){}
+        CILS_Reduction() {}
 
         explicit CILS_Reduction(CILS<scalar, index> &cils) : CILS_Reduction(cils.A, cils.y, cils.lower, cils.upper) {}
 
@@ -315,7 +277,7 @@ namespace cils {
             R.resize(n, n, false);
             Q.resize(m, n, false);
             y_r.resize(m);
-            p.resize(m);
+            p.resize(n);
 
             I.resize(n, n, false);
             Z.resize(n, n, false);
@@ -325,6 +287,44 @@ namespace cils {
             Z.assign(I);
             P.assign(I);
             this->upper = up;
+        }
+
+        /**
+         * Evaluating the QR decomposition for column orientation
+         * @tparam scalar
+         * @tparam index
+         * @tparam n
+         * @param B
+         * @param Q
+         * @param R
+         * @param eval
+         * @return
+         */
+        scalar qr_validation_col() {
+            index i, j, k;
+            scalar sum, error = 0;
+
+            if (eval == 1) {
+                b_matrix B_T;
+                prod(Q, R, B_T); //helper::mtimes_col<scalar, index>(m, n, Q, R, B_T);
+
+                if (verbose) {
+                    printf("\n[ Print Q:]\n");
+                    helper::display<scalar, index>(Q, "Q");
+                    printf("\n[ Print R:]\n");
+                    helper::display<scalar, index>(R, "R");
+                    printf("\n[ Print B:]\n");
+                    helper::display<scalar, index>(B, "B");
+                    printf("\n[ Print Q*R:]\n");
+                    helper::display<scalar, index>(B_T, "Q*R");
+                }
+
+                for (i = 0; i < m * n; i++) {
+                    error += fabs(B_T[i] - B[i]);
+                }
+            }
+
+            return error;
         }
 
         /**
@@ -380,7 +380,7 @@ namespace cils {
             sd_vector s1(n, 0);
             sd_vector s2(n, 0);
             //  ------------------------------------------------------------------
-            cout << "--------  Perform the QR factorization: MGS Row-------------------";
+//            cout << "--------  Perform the QR factorization: MGS Row-------------------";
             //  ------------------------------------------------------------------
             scalar t_qr = omp_get_wtime();
             scalar sum = 0;
@@ -442,7 +442,7 @@ namespace cils {
                     }
                 }
             }
-            cout << endl;
+//            cout << endl;
             b_matrix Q_T = trans(Q);
             prod(Q_T, y, y_r);
             y.assign(y_r);
@@ -473,8 +473,6 @@ namespace cils {
             index i, j, k, l;
             auto Q_d = Q.data();
             auto R_d = R.data();
-#pragma omp parallel default(shared) num_threads(n_proc)
-            {}
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
@@ -509,7 +507,7 @@ namespace cils {
                                 temp = R_d[i + l * n];
                                 R_d[i + l * n] = R_d[i + k * n];
                                 R_d[i + k * n] = temp;
-                                temp = R_d[i + l * n];
+                                temp = P[i + l * n];
                                 P[i + l * n] = P[i + k * n];
                                 P[i + k * n] = temp;
                                 temp = Q_d[i + l * n];
@@ -560,66 +558,46 @@ namespace cils {
          * Parallel version of FULL QR-factorization using modified Gram-Schmidt algorithm, row-oriented
          * Results are stored in the class object.
          */
-        returnType<scalar, index> pmgs(const index n_proc) {
+        returnType<scalar, index> pmgs_qr_col(const index n_proc) {
 
+            b_matrix B_t(B);
+
+            R.resize(B.size2(), B.size2());
             R.clear();
-            Q.clear();
+            Q.resize(B.size1(), B.size2());
             Q.assign(B);
 
-            auto lock = new omp_lock_t[n]();
-            for (index i = 0; i < n; i++) {
-                omp_init_lock((&lock[i]));
-                omp_set_lock(&lock[i]);
-            }
+            auto Q_d = Q.data();
+            auto R_d = R.data();
+
+            scalar sum = 0;
             index i, j, k;
-#pragma omp parallel default(shared) num_threads(n_proc)
-            {}
-            //  ------------------------------------------------------------------
-            //  --------  Perform the QR factorization: MGS Row-------------------
-            //  ------------------------------------------------------------------
-            scalar t_qr = omp_get_wtime(), sum;
+
+            scalar t_qr = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_proc) private(sum, i, j, k)
             {
-                sum = 0;
-                if (omp_get_thread_num() == 0) {
-                    // Calculation of ||A||
-                    for (i = 0; i < n; i++) {
-                        sum += Q[i] * Q[i];
+                for (k = 0; k < n; k++) {
+#pragma omp single
+                    {
+                        sum = 0;
+                        for (i = 0; i < m; i++) {
+                            sum += pow(Q_d[i + k * m], 2);
+                        }
+                        R_d[k + k * n] = sqrt(sum);
+                        for (i = 0; i < m; i++) {
+                            Q_d[i + k * m] = Q_d[i + k * m] / R_d[k + k * n];
+                        }
                     }
-                    R[0] = sqrt(sum);
-                    for (i = 0; i < n; i++) {
-                        Q[i] = Q[i] / R[0];
-                    }
-                    omp_unset_lock(&lock[0]);
-                }
-
-                for (k = 1; k < n; k++) {
-                    //Check if Q[][i-1] (the previous column) is computed.
-                    omp_set_lock(&lock[k - 1]);
-                    omp_unset_lock(&lock[k - 1]);
-#pragma omp for schedule(static, 1) nowait
+//#pragma omp barrier
+#pragma omp for schedule(static, 1)
                     for (j = 0; j < n; j++) {
-                        if (j >= k) {
-                            R(k - 1, j) = 0;
-                            for (i = 0; i < n; i++) {
-                                R(k - 1, j) += Q(i, k - 1) * Q(i, j);
+                        if (j > k) {
+                            R_d[k + j * n] = 0;
+                            for (i = 0; i < m; i++) {
+                                R_d[k + j * n] += Q_d[i + k * m] * Q_d[i + j * m];
                             }
-                            for (i = 0; i < n; i++) {
-                                Q(i, j) -= R(k - 1, j) * Q(i, k - 1);
-                            }
-
-                            //Only one thread calculates the norm(A)
-                            //and unsets the lock for the next column.
-                            if (j == k) {
-                                sum = 0;
-                                for (i = 0; i < n; i++) {
-                                    sum = sum + pow(Q(i, j), 2);
-                                }
-                                R(j, j) = sqrt(sum);
-                                for (i = 0; i < n; i++) {
-                                    Q(i, j) = Q(i, j) / R(j, j);
-                                }
-                                omp_unset_lock(&lock[k]);
+                            for (i = 0; i < m; i++) {
+                                Q_d[i + j * m] -= R_d[k + j * n] * Q_d[i + k * m];
                             }
                         }
                     }
@@ -628,18 +606,10 @@ namespace cils {
             b_matrix Q_T = trans(Q);
             prod(Q_T, y, y_r);
             y.assign(y_r);
+
             t_qr = omp_get_wtime() - t_qr;
 
-            scalar error = -1;
-            if (eval || verbose) {
-                error = qr_validation();
-                cout << "[  QR ERROR OMP:]" << error << endl;
-            }
-            for (i = 0; i < n; i++) {
-                omp_destroy_lock(&lock[i]);
-            }
-            delete[] lock;
-            return {{}, t_qr, error};
+            return {{}, t_qr, 0};
 
         }
 
@@ -693,6 +663,7 @@ namespace cils {
          * @return
          */
         returnType<scalar, index> aip() {
+            scalar time = omp_get_wtime();
             b_matrix C;
             b_matrix G;
             b_matrix R0;
@@ -906,7 +877,7 @@ namespace cils {
                         R[i2 + (nrowx + 1) * i1] = R[i2 + R.size1() * i1];
                     }
                 }
-                R.size2( loop_ub + 1);
+                R.size2(loop_ub + 1);
                 // 'obils_reduction:82' G(:,j) = [];
                 nrowx = G.size1();
                 i1 = G.size2();
@@ -1076,8 +1047,354 @@ namespace cils {
             reduction_.mgs_qr_col();
             R.assign(reduction_.R);
             y.assign(reduction_.y);
+            time = omp_get_wtime() - time;
+            return {{}, time, 0};
+        }
 
-            return {{}, 0 ,0};
+        returnType<scalar, index> paip(index n_t) {
+            scalar time = omp_get_wtime();
+            b_matrix C, G, R0, b, b_R, c_y, d_y;
+            b_vector b_y, b_G;
+            double x_j;
+            int i, i1, j, loop_ub, ncols;
+            pmgs_qr_col(n_t);
+            b_y.assign(y);
+            R0.assign(R);
+            // y = Q' * y;
+            // 'obils_reduction:43' R0 = R;
+            // 'obils_reduction:44' y0 = y;
+            //  Permutation vector
+            // 'obils_reduction:47' p = 1:n;
+            p.resize(n);
+            for (i = 0; i < n; i++) {
+                p[i] = i;
+            }
+
+            //  Inverse transpose of R
+            // 'obils_reduction:50' G = inv(R)';
+            helper::inv2<scalar, index>(R0, G);
+//            cout << omp_get_wtime() - time;
+            G = trans(G);
+            // 'obils_reduction:51' j = 0;
+            j = 0;
+            // 'obils_reduction:52' x_j = 0;
+            x_j = 0.0;
+            //  Determine the column permutatons
+            // 'obils_reduction:54' for k = n : -1 : 2
+            i = n;
+            for (int k{0}; k <= i - 2; k++) {
+                double dist;
+                double maxDist;
+                double x_i;
+                int b_i;
+                int b_k;
+                int i2;
+                int nrowx;
+                b_k = B.size2() - k;
+                // 'obils_reduction:55' maxDist = -1;
+                maxDist = -1.0;
+                //  Determine the k-th column
+                // 'obils_reduction:58' for i = 1:k
+                for (b_i = 0; b_i < b_k; b_i++) {
+                    // 'obils_reduction:59' alpha = y(i:k)' * G(i:k,i);
+                    if (b_i + 1 > b_k) {
+                        i1 = 0;
+                        i2 = 0;
+                        ncols = 0;
+                    } else {
+                        i1 = b_i;
+                        i2 = b_k;
+                        ncols = b_i;
+                    }
+                    dist = 0.0;
+                    loop_ub = i2 - i1;
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        dist += y[i1 + i2] * G[(ncols + i2) + G.size1() * b_i];
+                    }
+                    // 'obils_reduction:60' x_i = max(min(round(alpha),u(i)),l(i));
+                    x_i = std::fmax(std::fmin(std::round(dist), upper), 0);
+                    // 'obils_reduction:61' if (alpha < l(i) || alpha > u(i) || alpha == x_i)
+                    if ((dist < 0) || (dist > upper) || (dist == x_i)) {
+                        // 'obils_reduction:62' dist = 1 + abs(alpha - x_i);
+                        dist = std::abs(dist - x_i) + 1.0;
+                    } else {
+                        // 'obils_reduction:63' else
+                        // 'obils_reduction:64' dist = 1 - abs(alpha - x_i);
+                        dist = 1.0 - std::abs(dist - x_i);
+                    }
+                    // 'obils_reduction:66' dist_i = dist / norm(G(i:k,i));
+                    if (b_i + 1 > b_k) {
+                        i1 = 0;
+                        i2 = 0;
+                    } else {
+                        i1 = b_i;
+                        i2 = b_k;
+                    }
+                    loop_ub = i2 - i1;
+                    b_G.resize(loop_ub);
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        b_G[i2] = G[(i1 + i2) + G.size1() * b_i];
+                    }
+                    dist /= norm_2(b_G);
+                    // 'obils_reduction:67' if dist_i > maxDist
+                    if (dist > maxDist) {
+                        // 'obils_reduction:68' maxDist = dist_i;
+                        maxDist = dist;
+                        // 'obils_reduction:69' j = i;
+                        j = b_i + 1;
+                        // 'obils_reduction:70' x_j = x_i;
+                        x_j = x_i;
+                    }
+                }
+                //  Perform permutations
+                // 'obils_reduction:75' p(j:k) = p([j+1:k,j]);
+                if (j > b_k) {
+                    i1 = 1;
+                } else {
+                    i1 = j;
+                }
+                if (b_k < static_cast<double>(j) + 1.0) {
+                    c_y.resize(1, 0);
+                } else {
+                    i2 = b_k - j;
+                    c_y.resize(1, i2);
+                    loop_ub = i2 - 1;
+                    for (i2 = 0; i2 <= loop_ub; i2++) {
+                        c_y[i2] = (static_cast<unsigned int>(j) + i2) + 1U;
+                    }
+                }
+                d_y.resize(1, c_y.size2() + 1);
+                loop_ub = c_y.size2();
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    d_y[i2] = static_cast<int>(c_y[i2]) - 1;
+                }
+                d_y[c_y.size2()] = j - 1;
+                c_y.resize(1, d_y.size2());
+                loop_ub = d_y.size2();
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    c_y[i2] = p[d_y[i2]];
+                }
+                loop_ub = c_y.size2();
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    p[(i1 + i2) - 1] = c_y[i2];
+                }
+                // 'obils_reduction:76' l(j:k) = l([j+1:k,j]);
+                // 'obils_reduction:77' u(j:k) = u([j+1:k,j]);
+                //  Update y, R and G for the new dimension-reduced problem
+                // 'obils_reduction:80' y(1:k-1) = y(1:k-1) - R(1:k-1,j) * x_j;
+                if (b_k - 1 < 1) {
+                    i1 = 0;
+                    i2 = 0;
+                    loop_ub = 0;
+                } else {
+                    i1 = b_k - 1;
+                    i2 = b_k - 1;
+                    loop_ub = b_k - 1;
+                }
+                if (i1 == i2) {
+                    c_y.resize(1, loop_ub);
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        c_y[i1] = y[i1] - R[i1 + R.size1() * (j - 1)] * x_j;
+                    }
+                    loop_ub = c_y.size2();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        y[i1] = c_y[i1];
+                    }
+                }
+                // 'obils_reduction:81' R(:,j) = [];
+                nrowx = R.size1();
+                i1 = R.size2();
+                ncols = R.size2() - 1;
+                for (loop_ub = j; loop_ub <= ncols; loop_ub++) {
+                    for (b_i = 0; b_i < nrowx; b_i++) {
+                        R[b_i + R.size1() * (loop_ub - 1)] = R[b_i + R.size1() * loop_ub];
+                    }
+                }
+                if (i1 - 1 < 1) {
+                    loop_ub = -1;
+                } else {
+                    loop_ub = i1 - 2;
+                }
+                nrowx = R.size1() - 1;
+                ncols = R.size1();
+                for (i1 = 0; i1 <= loop_ub; i1++) {
+                    for (i2 = 0; i2 < ncols; i2++) {
+                        R[i2 + (nrowx + 1) * i1] = R[i2 + R.size1() * i1];
+                    }
+                }
+                R.size2(loop_ub + 1);
+                // 'obils_reduction:82' G(:,j) = [];
+                nrowx = G.size1();
+                i1 = G.size2();
+                ncols = G.size2() - 1;
+                for (loop_ub = j; loop_ub <= ncols; loop_ub++) {
+                    for (b_i = 0; b_i < nrowx; b_i++) {
+                        G[b_i + G.size1() * (loop_ub - 1)] = G[b_i + G.size1() * loop_ub];
+                    }
+                }
+                if (i1 - 1 < 1) {
+                    loop_ub = -1;
+                } else {
+                    loop_ub = i1 - 2;
+                }
+                nrowx = G.size1() - 1;
+                ncols = G.size1();
+                for (i1 = 0; i1 <= loop_ub; i1++) {
+                    for (i2 = 0; i2 < ncols; i2++) {
+                        G[i2 + (nrowx + 1) * i1] = G[i2 + G.size1() * i1];
+                    }
+                }
+                G.size2(loop_ub + 1);
+                // 'obils_reduction:83' for t = j : k - 1
+                i1 = b_k - j;
+                for (int t{0}; t < i1; t++) {
+                    double W_idx_0;
+                    double W_idx_2;
+                    double W_idx_3;
+                    double unnamed_idx_0;
+                    double unnamed_idx_1;
+                    unsigned int b_t;
+                    int i3;
+                    b_t = static_cast<unsigned int>(j) + t;
+                    //  Triangularize R and G by Givens rotation
+                    // 'obils_reduction:85' [W, R([t,t+1],t)] = planerot(R([t,t+1],t));
+                    b_i = static_cast<int>(b_t) - 1;
+                    unnamed_idx_0 =
+                            R[(static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)) -
+                              1];
+                    unnamed_idx_1 =
+                            R[static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)];
+                    W_idx_3 =
+                            R[static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)];
+                    if (W_idx_3 != 0.0) {
+                        double r;
+                        dist = 3.3121686421112381E-170;
+                        maxDist = std::abs(R[(static_cast<int>(b_t) +
+                                              R.size1() * (static_cast<int>(b_t) - 1)) -
+                                             1]);
+                        if (maxDist > 3.3121686421112381E-170) {
+                            r = 1.0;
+                            dist = maxDist;
+                        } else {
+                            x_i = maxDist / 3.3121686421112381E-170;
+                            r = x_i * x_i;
+                        }
+                        maxDist = std::abs(
+                                R[static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)]);
+                        if (maxDist > dist) {
+                            x_i = dist / maxDist;
+                            r = r * x_i * x_i + 1.0;
+                            dist = maxDist;
+                        } else {
+                            x_i = maxDist / dist;
+                            r += x_i * x_i;
+                        }
+                        r = dist * std::sqrt(r);
+                        W_idx_0 = unnamed_idx_0 / r;
+                        W_idx_2 = unnamed_idx_1 / r;
+                        x_i = -W_idx_3 / r;
+                        W_idx_3 = R[(static_cast<int>(b_t) +
+                                     R.size1() * (static_cast<int>(b_t) - 1)) -
+                                    1] /
+                                  r;
+                        unnamed_idx_0 = r;
+                        unnamed_idx_1 = 0.0;
+                    } else {
+                        x_i = 0.0;
+                        W_idx_2 = 0.0;
+                        W_idx_0 = 1.0;
+                        W_idx_3 = 1.0;
+                    }
+                    R[(static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)) - 1] =
+                            unnamed_idx_0;
+                    R[static_cast<int>(b_t) + R.size1() * (static_cast<int>(b_t) - 1)] =
+                            unnamed_idx_1;
+                    // 'obils_reduction:86' R([t,t+1],t+1:k-1) = W * R([t,t+1],t+1:k-1);
+                    if (static_cast<int>(b_t) + 1 > b_k - 1) {
+                        i2 = 0;
+                        ncols = 0;
+                        i3 = 0;
+                    } else {
+                        i2 = static_cast<int>(b_t);
+                        ncols = b_k - 1;
+                        i3 = static_cast<int>(b_t);
+                    }
+                    loop_ub = ncols - i2;
+                    b.resize(2, loop_ub);
+                    for (ncols = 0; ncols < loop_ub; ncols++) {
+                        nrowx = i2 + ncols;
+                        b[2 * ncols] = R[(static_cast<int>(b_t) + R.size1() * nrowx) - 1];
+                        b[2 * ncols + 1] = R[static_cast<int>(b_t) + R.size1() * nrowx];
+                    }
+                    ncols = loop_ub - 1;
+                    C.resize(2, loop_ub);
+                    for (loop_ub = 0; loop_ub <= ncols; loop_ub++) {
+                        nrowx = loop_ub << 1;
+                        dist = b[nrowx + 1];
+                        C[nrowx] = W_idx_0 * b[nrowx] + W_idx_2 * dist;
+                        C[nrowx + 1] = x_i * b[nrowx] + W_idx_3 * dist;
+                    }
+                    loop_ub = C.size2();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        nrowx = i3 + i2;
+                        R[(static_cast<int>(b_t) + R.size1() * nrowx) - 1] = C[2 * i2];
+                        R[static_cast<int>(b_t) + R.size1() * nrowx] = C[2 * i2 + 1];
+                    }
+                    // 'obils_reduction:87' G([t,t+1],1:t) = W * G([t,t+1],1:t);
+                    loop_ub = static_cast<int>(b_t);
+                    b.resize(2, static_cast<int>(b_t));
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        b[2 * i2] = G[(static_cast<int>(b_t) + G.size1() * i2) - 1];
+                        b[2 * i2 + 1] = G[static_cast<int>(b_t) + G.size1() * i2];
+                    }
+                    C.resize(2, static_cast<int>(b_t));
+                    for (loop_ub = 0; loop_ub <= b_i; loop_ub++) {
+                        nrowx = loop_ub << 1;
+                        dist = b[nrowx + 1];
+                        C[nrowx] = W_idx_0 * b[nrowx] + W_idx_2 * dist;
+                        C[nrowx + 1] = x_i * b[nrowx] + W_idx_3 * dist;
+                    }
+                    loop_ub = C.size2();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        G[(static_cast<int>(b_t) + G.size1() * i2) - 1] = C[2 * i2];
+                        G[static_cast<int>(b_t) + G.size1() * i2] = C[2 * i2 + 1];
+                    }
+                    //  Apply the Givens rotation W to y
+                    // 'obils_reduction:89' y(t:t+1) = W * y(t:t+1);
+                    dist = y[static_cast<int>(b_t) - 1];
+                    maxDist = y[static_cast<int>(static_cast<double>(b_t) + 1.0) - 1];
+                    y[static_cast<int>(b_t) - 1] = W_idx_0 * dist + W_idx_2 * maxDist;
+                    y[static_cast<int>(static_cast<double>(b_t) + 1.0) - 1] =
+                            x_i * dist + W_idx_3 * maxDist;
+                }
+            }
+            //  Reorder the columns of R0 according to p
+            // 'obils_reduction:95' R0 = R0(:,p);
+
+            loop_ub = b_R.size1();
+            b_R.assign(R0);
+            R0.clear();
+            for (i = 0; i < n; i++) {
+                for (i1 = 0; i1 < n; i1++) {
+                    R0[i1 + R0.size1() * i] = b_R[i1 + b_R.size1() * p[i]];
+                    P[i1 + P.size1() * i] = I[i1 + I.size1() * p[i]];
+                }
+            }
+
+            //  Transform R0 and y0 by the QR factorization
+            // 'obils_reduction:98' [Q, R, y] = qrmgs(R0, y0);
+//            y.resize(m);
+//            for (i = 0; i < m; i++) {
+//                y[i] = b_y[i];
+//            }
+            CILS_Reduction reduction_;
+            reduction_.reset(R0, b_y, upper);
+            reduction_.pmgs_qr_col(n_t);
+//            cout<< reT.run_time;/
+            R.assign(reduction_.R);
+            y.assign(reduction_.y);
+            time = omp_get_wtime() - time;
+            return {{}, time, 0};
         }
 
         /**
@@ -1395,12 +1712,14 @@ namespace cils {
             //  ------------------------------------------------------------------
             //  --------  Perform the QR factorization: MGS Row-------------------
             //  ------------------------------------------------------------------
-            cils::returnType<scalar, index> reT = mgs_qrp();
-            Z.assign(P);
+//            cils::returnType<scalar, index> reT = mgs_qrp();
+            cils::returnType<scalar, index> reT = mgs_qr_col();
+//            Z.assign(P);
+            Z.assign(I);
             t_qr = reT.run_time;
 
             //  ------------------------------------------------------------------
-            cout << "--------  Perform the all-swap LLL-P reduction -------------------" << endl;
+//            cout << "--------  Perform the all-swap LLL-P reduction -------------------" << endl;
             //  ------------------------------------------------------------------
 
             index k, k1, i, j, e, b_k;
@@ -1537,7 +1856,7 @@ namespace cils {
 
 //            init_R_A();
             //  ------------------------------------------------------------------
-            cout << "--------  Perform the PASPL reduction -------------------" << endl;
+//            cout << "--------  Perform the PASPL reduction -------------------" << endl;
             //  ------------------------------------------------------------------
 
 
@@ -1722,11 +2041,12 @@ namespace cils {
             //  ------------------------------------------------------------------
 
             auto reT = pmgs_qrp(n_c);
+//            cout << R.size1() << "," << R.size2();
             t_qr = reT.run_time;
             Z.assign(P);
 
             //  ------------------------------------------------------------------
-            cout << "--------  Perform the PASPL reduction -------------------" << endl;
+//            cout << "--------  Perform the PASPL reduction -------------------" << endl;
             //  ------------------------------------------------------------------
 
             auto s = new int[n]();
@@ -1753,8 +2073,7 @@ namespace cils {
 #pragma omp for schedule(static)
                     for (k = start; k < n; k += 2) {
                         k1 = k - 1;
-                        if (pow(R_d[k1 + k1 * n], 2) >
-                            (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
+                        if (pow(R_d[k1 + k1 * n], 2) > (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
                             f = true;
                             s[k] = 1;
                             for (i = 0; i < n; i++) {
@@ -1808,8 +2127,7 @@ namespace cils {
                         for (k = start; k < n; k += 2) {
                             k1 = k - 1;
 
-                            if (pow(R_d[k1 + k1 * n], 2) >
-                                (1 + 1.e-10) * (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
+                            if (pow(R_d[k1 + k1 * n], 2) > (pow(R_d[k1 + k * n], 2) + pow(R_d[k + k * n], 2))) {
                                 f = true;
                                 s[k] = 1;
                                 for (i = 0; i < n; i++) {
@@ -1850,15 +2168,15 @@ namespace cils {
 
             t_plll = omp_get_wtime() - t_plll;
 
-            k = 1;
-            while (k < n) {
-                k1 = k - 1;
-
-                if (pow(R(k1, k1), 2) > (1 + 1.e-10) * (pow(R(k1, k), 2) + pow(R(k, k), 2))) {
-                    cerr << "Failed:" << k1 << endl;
-                }
-                k++;
-            }
+//            k = 1;
+//            while (k < n) {
+//                k1 = k - 1;
+//
+//                if (pow(R(k1, k1), 2) > (pow(R(k1, k), 2) + pow(R(k, k), 2))) {
+//                    cerr << "Failed:" << k1 << endl;
+//                }
+//                k++;
+//            }
             delete[] s;
 //            verbose = true;
 //            lll_validation();
