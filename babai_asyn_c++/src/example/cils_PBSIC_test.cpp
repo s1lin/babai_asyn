@@ -262,7 +262,7 @@ long test_pbsic(int size_m, bool is_local) {
     cout.flush();
 
     index num_trial = 1, m = size_m, n = 64;
-    scalar t_pbsic[200][4][6][2] = {}, t_ber[200][4][6][2] = {}, run_time, ber, berm, bergp, bsic_time;
+    scalar t_pbsic[200][4][7][2] = {}, t_ber[200][4][7][2] = {}, run_time, ber, berm, bergp, bsic_time;
     index s = 0, qam = 3;
 
     cils::CILS<scalar, index> cils;
@@ -272,7 +272,7 @@ long test_pbsic(int size_m, bool is_local) {
     cils::returnType<scalar, index> reT;
 
     cils.is_local = is_local;
-    b_vector x_bsicm, x_gp;
+    b_vector x_cgsic1, x_bsicm, x_gp;
     for (int t = 0; t < num_trial; t++) {
         run_time = omp_get_wtime();
         s = 0;
@@ -287,26 +287,33 @@ long test_pbsic(int size_m, bool is_local) {
                 printf("BSIC_BNPM: ber: %8.5f\n", ber);
 
                 ublm.x_hat.clear();
+                reT = ublm.cgsic();
+                ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+                t_pbsic[t][s][0][c - 1] = reT.run_time;
+                t_ber[t][s][0][c - 1] = ber;
+                printf("CGSIC: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
+
+                ublm.x_hat.clear();
                 reT = ublm.gp();
                 cils::projection(cils.I, ublm.x_hat, x_gp, 0, cils.upper);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_gp, cils.qam);
-                t_pbsic[t][s][0][c - 1] = reT.run_time;
-                t_ber[t][s][0][c - 1] = ber;
+                t_pbsic[t][s][1][c - 1] = reT.run_time;
+                t_ber[t][s][1][c - 1] = ber;
                 printf("GP: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.bsic(false, m);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-                t_pbsic[t][s][1][c - 1] = reT.run_time;
-                t_ber[t][s][1][c - 1] = fmax(ber, berm);
+                t_pbsic[t][s][2][c - 1] = reT.run_time;
+                t_ber[t][s][2][c - 1] = fmax(ber, berm);
                 printf("BSIC_BNP: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.bsic(true, m);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 bsic_time = reT.run_time;
-                t_pbsic[t][s][2][c - 1] = reT.run_time;
-                t_ber[t][s][2][c - 1] = ber;
+                t_pbsic[t][s][3][c - 1] = reT.run_time;
+                t_ber[t][s][3][c - 1] = ber;
                 printf("BSIC_BBB: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
@@ -314,8 +321,8 @@ long test_pbsic(int size_m, bool is_local) {
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC|05-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
-                t_pbsic[t][s][3][c - 1] = reT.run_time;
-                t_ber[t][s][3][c - 1] = ber;
+                t_pbsic[t][s][4][c - 1] = reT.run_time;
+                t_ber[t][s][4][c - 1] = ber;
                 cout.flush();
 
                 ublm.x_hat.assign(x_gp);
@@ -323,8 +330,8 @@ long test_pbsic(int size_m, bool is_local) {
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC|10-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
-                t_pbsic[t][s][4][c - 1] = reT.run_time;
-                t_ber[t][s][4][c - 1] = ber;
+                t_pbsic[t][s][5][c - 1] = reT.run_time;
+                t_ber[t][s][5][c - 1] = ber;
                 cout.flush();
 
                 ublm.x_hat.assign(x_gp);
@@ -332,8 +339,8 @@ long test_pbsic(int size_m, bool is_local) {
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC|05-04: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
-                t_pbsic[t][s][5][c - 1] = reT.run_time;
-                t_ber[t][s][5][c - 1] = ber;
+                t_pbsic[t][s][6][c - 1] = reT.run_time;
+                t_ber[t][s][6][c - 1] = ber;
                 cout.flush();
             }
             s++;
@@ -350,7 +357,7 @@ long test_pbsic(int size_m, bool is_local) {
         if (_import_array() < 0)
             PyErr_Print();
 
-        npy_intp di5[4] = {200, 4, 6, 2};
+        npy_intp di5[4] = {200, 4, 7, 2};
 
         PyObject * pT = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, t_pbsic);
         PyObject * pB = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, t_ber);
