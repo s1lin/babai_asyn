@@ -139,7 +139,7 @@ namespace cils {
             run_time = omp_get_wtime() - run_time;
             helper::display<index, index>(df, nstep, "df");
             cout << idx << endl;
-            returnType<scalar, index> reT = {{}, run_time, (scalar) t};
+            returnType < scalar, index > reT = {{}, run_time, (scalar) t};
             return reT;
         }
 
@@ -368,7 +368,7 @@ namespace cils {
             }
 //            cout << z_hat;
             run_time = omp_get_wtime() - run_time;
-            returnType<scalar, index> reT = {{}, run_time, 0};
+            returnType < scalar, index > reT = {{}, run_time, 0};
             return reT;
         }
 
@@ -379,6 +379,12 @@ namespace cils {
 //            cout << R;
             CILS_SECH_Search<scalar, index> search(n, n, qam, search_iter);
             scalar run_time = omp_get_wtime();
+            if (ds == 1) {
+                search.ch(0, n, 1, R, y_b, z_hat);
+                run_time = omp_get_wtime() - run_time;
+                return {{}, run_time, 0};
+            }
+            run_time = omp_get_wtime();
 
             for (index i = 0; i < ds; i++) {
                 n_dx_q_1 = d[i];
@@ -404,7 +410,7 @@ namespace cils {
             }
 //            cout << z_hat;
             run_time = omp_get_wtime() - run_time;
-            returnType<scalar, index> reT = {{}, run_time, 0};
+            returnType < scalar, index > reT = {{}, run_time, 0};
             return reT;
         }
 
@@ -417,6 +423,8 @@ namespace cils {
                 search.mch2(0, n, 0, 1, R_A, y_bar, z_hat);
                 run_time2 = omp_get_wtime() - run_time2;
                 return {{}, run_time2, 0};
+            } else if (m == 44) {
+                return bocb2();
             }
 
             index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {};
@@ -502,7 +510,7 @@ namespace cils {
             run_time2 = omp_get_wtime() - run_time2;
 #pragma parallel omp cancellation point
 
-            returnType<scalar, index> reT;
+            returnType < scalar, index > reT;
 
 
             scalar time = 0; //(run_time3 + run_time2) * 0.5;
@@ -707,7 +715,7 @@ namespace cils {
 
 
             //Matlab Partial Reduction needs to do the permutation
-            returnType<scalar, index> reT = {time, run_time, 0};
+            returnType < scalar, index > reT = {time, run_time, 0};
             return reT;
         }
 

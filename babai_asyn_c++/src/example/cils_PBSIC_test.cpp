@@ -261,7 +261,7 @@ long test_pbsic(int size_m, bool is_local) {
     printf("====================[ TEST | INITPT | %s ]==================================\n", time_str);
     cout.flush();
 
-    index num_trial = 1, m = size_m, n = 64;
+    index num_trial = 200, m = size_m, n = 64;
     scalar t_pbsic[200][4][7][2] = {}, t_ber[200][4][7][2] = {}, run_time, ber, berm, bergp, bsic_time;
     index s = 0, qam = 3;
 
@@ -272,7 +272,7 @@ long test_pbsic(int size_m, bool is_local) {
     cils::returnType<scalar, index> reT;
 
     cils.is_local = is_local;
-    b_vector x_cgsic1, x_bsicm, x_gp;
+    b_vector x_cgsic1, x_bsicm(n, 0), x_gp;
     for (int t = 0; t < num_trial; t++) {
         run_time = omp_get_wtime();
         s = 0;

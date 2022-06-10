@@ -906,7 +906,13 @@ namespace cils {
                 b_i++;
             }
             d.resize(2, b_i - 1, true);
-
+            int block_size[2] = {};
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else{
+                block_size[0] = block_size[1] = 8;
+            }
             time = omp_get_wtime();
             for (index itr = 0; itr < search_iter - 1; itr++) {
                 iter = itr;
@@ -954,7 +960,8 @@ namespace cils {
                         reduction.aip();
                     else
                         reduction.aspl_p();
-                    olm.reset(reduction.R, reduction.y, upper, m == 44 ? 11 : 8, true);
+                    olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
+
                     if (is_bocb) {
                         olm.bocb();
                         prod(reduction.P, olm.z_hat, z);
@@ -1034,7 +1041,13 @@ namespace cils {
             scalar rho;
             b_matrix A_P(m, n), I_P(n, n), A_T;
             b_vector x_t, htx, y_hat(m, 0);
-
+            int block_size[2] = {};
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else{
+                block_size[0] = block_size[1] = 8;
+            }
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
 
@@ -1085,8 +1098,9 @@ namespace cils {
                         reduction.reset(A_T, y_hat, upper);
                         reduction.paip(n_c);
 
-                        olm.reset(reduction.R, reduction.y, upper, m == 44 ? 11 : 8, true);
+                        olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
                         if (is_bocb) {
+
                             olm.pbocb(n_c, 20, 0);
 
                         } else {
