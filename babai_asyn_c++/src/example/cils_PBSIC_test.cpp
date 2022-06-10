@@ -249,7 +249,7 @@ long test_init(int size_m, bool is_local) {
 }
 
 template<typename scalar, typename index>
-long test_pbsic(int size_m, bool is_local) {
+long test_pbsic(int size_m, bool is_local, index info) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -268,7 +268,7 @@ long test_pbsic(int size_m, bool is_local) {
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
     cils.is_constrained = true;
-    cils.search_iter = 2e3;
+    cils.search_iter = 3e3;
     cils::returnType<scalar, index> reT;
 
     cils.is_local = is_local;
@@ -282,9 +282,9 @@ long test_pbsic(int size_m, bool is_local) {
                 cils::init_ublm(cils, m, n, snr, qam, c);
                 cils::CILS_UBLM<scalar, index> ublm(cils);
 
-                x_bsicm.assign_col(cils.B, 3);
-                berm = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_bsicm, cils.qam);
-                printf("BSIC_BNPM: ber: %8.5f\n", ber);
+//                x_bsicm.assign_col(cils.B, 3);
+//                berm = helper::find_bit_error_rate<scalar, index>(cils.x_t, x_bsicm, cils.qam);
+//                printf("BSIC_BNPM: ber: %8.5f\n", ber);
 
                 ublm.x_hat.clear();
                 reT = ublm.cgsic();
@@ -388,7 +388,7 @@ long test_pbsic(int size_m, bool is_local) {
                 if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", t + 1)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", 0)) != 0) {
+                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", info)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 4, pT) != 0) {

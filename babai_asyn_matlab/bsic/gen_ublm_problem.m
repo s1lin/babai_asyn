@@ -87,20 +87,20 @@ end
 permutation = permutation';    
 permutation(:,1) = (1:n)';
 
-l = repelem(0, n)';
-u = repelem(2^k-1, n)';
-
-[x_cg, ~, ~] = cgsic(A, y, 0, 2^k-1);
-x_gp = gradproj(A,y,l,u,zeros(n, 1),max_iter);
-for i = 1:n
-    x_gp(i) = max(min(x_gp(i), u(i)), l(i));
-end
-
-[s_bar_cur, ~] = bsic(x_gp, inf, A, 0, max_iter, y, k, permutation, false);
+%l = repelem(0, n)';
+%u = repelem(2^k-1, n)';
+%
+%[x_cg, ~, ~] = cgsic(A, y, 0, 2^k-1);
+%x_gp = gradproj(A,y,l,u,zeros(n, 1),max_iter);
+%for i = 1:n
+%    x_gp(i) = max(min(x_gp(i), u(i)), l(i));
+%end
+%
+%%[s_bar_cur, ~] = bsic(x_gp, inf, A, 0, max_iter, y, k, permutation, false);
 
 R0 = zeros(n);
-R0(:,1) = x_cg;
-R0(:,2) = x_gp;
-R0(:,3) = s_bar_cur;
+%R0(:,1) = x_cg;
+%R0(:,2) = x_gp;
+%R0(:,3) = s_bar_cur;
 
 end
