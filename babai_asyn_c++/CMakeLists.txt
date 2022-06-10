@@ -26,7 +26,7 @@ if (CXX_COMPILER_GNUCLANG OR CXX_COMPILER_INTEL)
     set(CMAKE_CXX_FLAGS "-std=c++17")
     set(CMAKE_C_FLAGS "-std=c17")
     set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O1")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif ()
 
 # to compile with OpenMP
