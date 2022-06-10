@@ -26,7 +26,10 @@ function [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(k, m, n, SNR
  
 rng('shuffle')
 %Initialize Variables
-sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
+if m == 56
+    sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
+else
+    sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
 
 if c==1
     Ar = randn(m/2, n/2);
@@ -90,15 +93,15 @@ u = repelem(2^k-1, n)';
 
 [x_cg, ~, ~] = cgsic(A, y, 0, 2^k-1);
 x_gp = gradproj(A,y,l,u,zeros(n, 1),max_iter);
-% tic
-% [s_bar_cur, v_norm_cur] = bsic(x_hat, inf, A, 0, max_iter-1, y, k, permutation, false);
-% toc
-% s_bar_cur'
-% x_t'
-% sum(s_bar_cur)
+for i = 1:n
+    x_gp(i) = max(min(x_gp(i), u(i)), l(i));
+end
+
+[s_bar_cur, ~] = bsic(x_gp, inf, A, 0, max_iter, y, k, permutation, false);
 
 R0 = zeros(n);
 R0(:,1) = x_cg;
 R0(:,2) = x_gp;
+R0(:,3) = s_bar_cur;
 
 end

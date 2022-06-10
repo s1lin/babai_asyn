@@ -55,22 +55,22 @@ for i = 1:max_iter
         if optimal
             z = obils(H_adj, y_hat, l, u);
         else
-            z = obils_2_block_search(H_adj, y_hat, l, u);
-%             [~, R, y_bar,~ ,~ , p] = obils_reduction(H_adj,y_hat,l,u);
-%             z = zeros(t, 1);            
-%             for h=t:-1:1
-%                 if h==t
-%                     s_temp=y_bar(h)/(R(h,h));
-%                 else
-%                     s_temp=(y_bar(h)- R(h,h+1:t)*z(h+1:t))/(R(h,h));
-%                 end
-%                 z(h) = max(min(round(s_temp),u(h)),l(h));
-%             end
-%             x = zeros(t, 1);
-%             for h = 1 : t
-%                 x(p(h)) = z(h); 
-%             end
-%             z = x;
+            %z = obils_2_block_search(H_adj, y_hat, l, u);
+            [~, R, y_bar,~ ,~ , p] = obils_reduction(H_adj,y_hat,l,u);
+            z = zeros(t, 1);            
+            for h=t:-1:1
+                if h==t
+                    s_temp=y_bar(h)/(R(h,h));
+                else
+                    s_temp=(y_bar(h)- R(h,h+1:t)*z(h+1:t))/(R(h,h));
+                end
+                z(h) = max(min(round(s_temp),u(h)),l(h));
+            end
+            x = zeros(t, 1);
+            for h = 1 : t
+                x(p(h)) = z(h); 
+            end
+            z = x;
         end
         x_t(cur_1st:cur_end) = z;
         y_hat = y_hat - H_adj * z;

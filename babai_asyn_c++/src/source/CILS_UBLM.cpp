@@ -302,8 +302,7 @@ namespace cils {
                 // 'ubils:248' if (k1 & k2 & k3)
                 if ((k1 != 0) && (k2 != 0) && (k3 != 0)) {
                     break;
-                }
-                else {
+                } else {
                     scalar x_tmp;
                     //  Find the Cauchy poindex
                     // 'ubils:253' t_bar = 1.e5*ones(n,1);
@@ -951,15 +950,19 @@ namespace cils {
 
                     b_vector z(t, 0);
                     reduction.reset(A_T, y_hat, upper);
-                    reduction.aip();
-//                    reduction.aspl_p();
-                    olm.reset(reduction.R, reduction.y, upper, 10, true);
+                    if (is_bocb)
+                        reduction.aip();
+                    else
+                        reduction.aspl_p();
+                    olm.reset(reduction.R, reduction.y, upper, 8, true);
                     if (is_bocb) {
                         olm.bocb();
+                        prod(reduction.P, olm.z_hat, z);
                     } else {
                         olm.bnp();
+                        prod(reduction.Z, olm.z_hat, z);
                     }
-                    prod(reduction.P, olm.z_hat, z);
+
                     for (index col = cur_1st; col <= cur_end; col++) {
                         x_tmp[col] = z[col - cur_1st];
                     }
@@ -994,7 +997,7 @@ namespace cils {
         }
 
 
-        returnType<scalar, index> pbsic(index is_bocb, index c, index n_t) {
+        returnType<scalar, index> pbsic(index is_bocb, index c, index n_t, index n_c) {
 
             b_vector x_tmp(x_hat);
             b_matrix P(I), d(2, n); //A could be permuted based on the init point
@@ -1031,14 +1034,11 @@ namespace cils {
             scalar rho;
             b_matrix A_P(m, n), I_P(n, n), A_T;
             b_vector x_t, htx, y_hat(m, 0);
-            CILS_Reduction<scalar, index> reduction;
-            CILS_OLM<scalar, index> olm;
+
 
             time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
+#pragma omp parallel default(shared) num_threads(n_t) private(t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
             {
-//#pragma omp single nowait
-//#pragma omp taskloop nogroup grainsize(500)
 #pragma omp for nowait
                 for (iter = 0; iter < search_iter - 1; iter++) {
                     A_P.clear();
@@ -1078,21 +1078,20 @@ namespace cils {
                         for (i = 0; i < m; i++) {
                             y_hat[i] = y_hat[i] + htx[i];
                         }
-
+                        CILS_Reduction<scalar, index> reduction;
+                        CILS_OLM<scalar, index> olm;
                         b_vector z(t, 0);
                         reduction.reset(A_T, y_hat, upper);
-//                        reduction.aip();
-                        reduction.paip(10);
-//                        reduction.paspl_p(4);
-                        olm.reset(reduction.R, reduction.y, upper, 10, true);
+                        reduction.paip(n_c);
+
+                        olm.reset(reduction.R, reduction.y, upper, 8, true);
                         if (is_bocb) {
-//                            olm.pbocb(5, 20, 0);
-                            olm.bocb();
+                            olm.pbocb(n_c, 20, 0);
+
                         } else {
-                            olm.pbnp2(5, 20, 0);
+                            olm.pbnp2(n_c, 20, 0);
                         }
                         prod(reduction.P, olm.z_hat, z);
-//                        prod(reduction.Z, olm.z_hat, z);
                         for (index col = cur_1st; col <= cur_end; col++) {
                             x_tmp[col] = z[col - cur_1st];
                         }
@@ -1129,155 +1128,3 @@ namespace cils {
         }
     };
 }
-
-//scalar pabsic(b_matrix &d, b_vector &x_tmp, index is_bocb, index iter, index nthreads) {
-////            cout << iter << "," << omp_get_thread_num() << endl;
-//            b_matrix A_P(m, n), A_T;
-//            b_vector x_t, htx, y_hat(m, 0);
-//            x_tmp.clear();
-//            CILS_Reduction<scalar, index> reduction;
-//            CILS_OLM<scalar, index> olm;
-//            index p, i;
-//            for (index col = 0; col < n; col++) {
-//                p = permutation[iter][col] - 1;
-//                for (index row = 0; row < m; row++) {
-//                    A_P(row, col) = A(row, p);
-//                }
-//                x_tmp[col] = x_hat[p];
-//            }
-//            prod(A_P, x_tmp, htx);
-//            for (i = 0; i < m; i++) {
-//                y_hat[i] = y[i] - htx[i];
-//            }
-//
-//            for (int j = 0; j < d.size2(); j++) {
-//                index cur_1st = d(0, j) - 1;
-//                index cur_end = d(1, j) - 1;
-//                index t = cur_end - cur_1st + 1;
-//                A_T.resize(m, t);
-//
-//                x_t.resize(t);
-//                for (index col = cur_1st; col <= cur_end; col++) {
-//                    for (index row = 0; row < m; row++) {
-//                        A_T(row, col - cur_1st) = A_P(row, col);
-//                    }
-//                    x_t[col - cur_1st] = x_tmp[col];
-//                }
-//                prod(A_T, x_t, htx);
-//                for (i = 0; i < m; i++) {
-//                    y_hat[i] = y_hat[i] + htx[i];
-//                }
-//
-//                b_vector z(t, 0);
-//                reduction.reset(A_T, y_hat, upper);
-//                reduction.paip(5);
-////                reduction.paspl_p(5);
-////                reduction.aspl_p();
-//                if (is_bocb) {
-//                    //todo
-//                } else {
-//
-//                    olm.reset(reduction.R, reduction.y, upper, 10, true);
-////                    olm.bnp();
-//                    olm.pbnp2(5, 20, 0);
-////                    olm.bocb2();
-////                    cout<<reduction.Z;
-//                    prod(reduction.Z, olm.z_hat, z);
-//                }
-//                for (index col = cur_1st; col <= cur_end; col++) {
-//                    x_tmp[col] = z[col - cur_1st];
-//                }
-//
-//
-//                prod(A_T, z, htx);
-//                for (i = 0; i < m; i++) {
-//                    y_hat[i] = y_hat[i] - htx[i];
-//                }
-//            }
-//            return helper::find_residual<scalar, index>(A_P, x_tmp, y);
-//        }
-//
-////        returnType<scalar, index> pabsic(b_matrix &d, b_vector &x_tmp, index is_bocb, index iter, index n_t) {
-//////            cout << d << endl;
-//////            cout << iter << "," << omp_get_thread_num() << endl;
-////            b_matrix A_P(m, n), A_T;
-////            b_vector x_t, htx, htx1, y_hat(m, 0), y_bar(m, 0);
-////            x_tmp.clear();
-////
-////            index p, i;
-////            for (index col = 0; col < n; col++) {
-////                p = permutation[iter][col] - 1;
-////                for (index row = 0; row < m; row++) {
-////                    A_P(row, col) = A(row, p);
-////                }
-////                x_tmp[col] = x_hat[p];
-////            }
-////            prod(A_P, x_tmp, htx);
-////            for (i = 0; i < m; i++) {
-////                y_hat[i] = y[i] - htx[i];
-////            }
-////            scalar rho = norm_2(y_hat);
-////            index ct = 0, flag = 0;
-////            si_vector diff(d.size2(), 0);
-////            CILS_Reduction<scalar, index> reduction;
-////            CILS_OLM<scalar, index> olm;
-////            scalar time = omp_get_wtime();
-////#pragma omp parallel default(shared) num_threads(2) private(A_T, x_t, htx, p, i, reduction, olm) firstprivate(y_bar)
-////            {
-////                for (int u = 0; u < 5 && !flag; u++) {
-////#pragma omp for nowait
-////                    for (index j = 0; j < d.size2(); j++) {
-////                        index cur_1st = d(0, j) - 1;
-////                        index cur_end = d(1, j) - 1;
-////                        index t = cur_end - cur_1st + 1;
-////                        A_T.resize(m, t);
-////
-////                        x_t.resize(t);
-////                        for (index col = cur_1st; col <= cur_end; col++) {
-////                            for (index row = 0; row < m; row++) {
-////                                A_T(row, col - cur_1st) = A_P(row, col);
-////                            }
-////                            x_t[col - cur_1st] = x_tmp[col];
-////                        }
-////
-////                        prod(A_T, x_t, htx1);
-////                        for (i = 0; i < m; i++) {
-////                            y_bar[i] = y_hat[i] + htx1[i];
-////                        }
-////
-////                        b_vector z(t, 0);
-////
-////                        reduction.reset(A_T, y_bar, upper);
-////                        reduction.aip();
-////                        if (is_bocb) {
-////                            //todo
-////                        } else {
-////                            olm.reset(reduction.R, reduction.y, upper, true);
-////                            olm.bnp();
-////                            prod(reduction.P, olm.z_hat, z);
-////                        }
-////                        for (index col = cur_1st; col <= cur_end; col++) {
-////                            diff[j] += x_tmp[col] != z[col - cur_1st];
-////                            x_tmp[col] = z[col - cur_1st];
-////                        }
-////
-////                        prod(A_T, z, htx);
-////
-////                        for (i = 0; i < m; i++) {
-////                            y_hat[i] = y_hat[i] + htx1[i] - htx[i];
-////                        }
-////                    }
-////#pragma omp single
-////                    {
-////                        cout << diff[0] << " ";
-////                        diff[0] = 0;
-////                    }
-////                    if (!flag)
-////                        flag = rho - norm_2(y_hat) < 1e-2;
-////                }
-////            }
-////            time = omp_get_wtime() - time;
-////            rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
-//////            cout << "rho=" << rho << endl;
-////            return {{}, time, rho};
-////        }

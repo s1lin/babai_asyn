@@ -340,9 +340,14 @@ namespace cils {
             scalar sum = 0;
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
-//            cout << R;
             CILS_SECH_Search<scalar, index> search(n, n, qam, search_iter);
+
             scalar run_time = omp_get_wtime();
+            if (ds == 1) {
+                search.ch(0, n, 1, R, y_b, z_hat);
+                run_time = omp_get_wtime() - run_time;
+                return {{}, run_time, 0};
+            }
 
             for (index i = 0; i < ds; i++) {
                 n_dx_q_1 = d[i];
@@ -406,6 +411,13 @@ namespace cils {
 
         returnType<scalar, index> pbocb(const index n_proc, const index nstep, const index init) {
             index ds = d.size();
+            CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
+            scalar run_time2 = omp_get_wtime();
+            if (ds == 1) {
+                search.mch2(0, n, 0, 1, R_A, y_bar, z_hat);
+                run_time2 = omp_get_wtime() - run_time2;
+                return {{}, run_time2, 0};
+            }
 
             index diff = 0, num_iter = 0, flag = 0, temp, R_S_1[ds] = {};
             index test, row_n, check = 0, r, _nswp = nstep, end = 0;
@@ -418,9 +430,7 @@ namespace cils {
 #pragma omp parallel default(none) num_threads(n_proc)
             {}
 
-            CILS_SECH_Search<scalar, index> search(m, n, qam, search_iter);
-
-            scalar run_time2 = omp_get_wtime();
+            run_time2 = omp_get_wtime();
             n_dx_q_2 = d[0];
             n_dx_q_0 = d[1];
 
