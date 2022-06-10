@@ -954,7 +954,7 @@ namespace cils {
                         reduction.aip();
                     else
                         reduction.aspl_p();
-                    olm.reset(reduction.R, reduction.y, upper, 8, true);
+                    olm.reset(reduction.R, reduction.y, upper, m == 44 ? 11 : 8, true);
                     if (is_bocb) {
                         olm.bocb();
                         prod(reduction.P, olm.z_hat, z);
@@ -1035,9 +1035,11 @@ namespace cils {
             b_matrix A_P(m, n), I_P(n, n), A_T;
             b_vector x_t, htx, y_hat(m, 0);
 
+            CILS_Reduction<scalar, index> reduction;
+            CILS_OLM<scalar, index> olm;
 
             time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_t) private(t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
+#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
             {
 #pragma omp for nowait
                 for (iter = 0; iter < search_iter - 1; iter++) {
@@ -1078,13 +1080,12 @@ namespace cils {
                         for (i = 0; i < m; i++) {
                             y_hat[i] = y_hat[i] + htx[i];
                         }
-                        CILS_Reduction<scalar, index> reduction;
-                        CILS_OLM<scalar, index> olm;
+
                         b_vector z(t, 0);
                         reduction.reset(A_T, y_hat, upper);
                         reduction.paip(n_c);
 
-                        olm.reset(reduction.R, reduction.y, upper, 8, true);
+                        olm.reset(reduction.R, reduction.y, upper, m == 44 ? 11 : 8, true);
                         if (is_bocb) {
                             olm.pbocb(n_c, 20, 0);
 

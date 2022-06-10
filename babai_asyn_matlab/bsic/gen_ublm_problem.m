@@ -26,10 +26,9 @@ function [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(k, m, n, SNR
  
 rng('shuffle')
 %Initialize Variables
-if m == 56
-    sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
-else
-    sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
+% sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
+% if m == 56
+sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
 
 if c==1
     Ar = randn(m/2, n/2);

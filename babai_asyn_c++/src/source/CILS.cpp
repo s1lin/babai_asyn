@@ -385,6 +385,8 @@ namespace cils {
             // Call the MATLAB addpath function
             if (cils.is_local)
                 matlabPtr->eval(u"addpath('/home/shilei/CLionProjects/babai_asyn/babai_asyn_matlab/bsic/')");
+            else
+                matlabPtr->eval(u"addpath('~/scratch/bsic/')");
             matlabPtr->eval(u" [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(qam, m, n, SNR, c, max_iter);");
 
             matlab::data::TypedArray<scalar> const A_A = matlabPtr->getVariable(u"A");

@@ -312,7 +312,7 @@ long test_pbsic(int size_m, bool is_local) {
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.pbsic(true, m, 5, 2);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-                printf("PBSIC|5-2: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
+                printf("PBSIC|05-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
                 t_pbsic[t][s][3][c - 1] = reT.run_time;
                 t_ber[t][s][3][c - 1] = ber;
@@ -321,7 +321,7 @@ long test_pbsic(int size_m, bool is_local) {
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.pbsic(true, m, 10, 2);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-                printf("PBSIC|10-2: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
+                printf("PBSIC|10-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
                 t_pbsic[t][s][4][c - 1] = reT.run_time;
                 t_ber[t][s][4][c - 1] = ber;
@@ -330,7 +330,7 @@ long test_pbsic(int size_m, bool is_local) {
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.pbsic(true, m, 5, 4);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
-                printf("PBSIC|5-4: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
+                printf("PBSIC|05-04: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
                 t_pbsic[t][s][5][c - 1] = reT.run_time;
                 t_ber[t][s][5][c - 1] = ber;
