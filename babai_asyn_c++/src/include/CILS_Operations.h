@@ -44,13 +44,14 @@ namespace cils {
     projection(CILS_Matrix <Integer, Scalar> &A, CILS_Vector <Integer, Scalar> &x, CILS_Vector <Integer, Scalar> &b,
                Integer lower, Integer upper) {
         Scalar sum;
+        b.resize(x.size(), false);
         b.clear();
         for (Integer row = 0; row < A.size1(); row++) {
             sum = 0;
             for (Integer col = 0; col < A.size2(); col++) {
                 sum += A(row, col) * x[col];
             }
-            b[row] = std::max(std::min((Integer) sum, upper), lower);
+            b[row] = std::max(std::min((Integer) round(sum), upper), lower);
         }
     }
 

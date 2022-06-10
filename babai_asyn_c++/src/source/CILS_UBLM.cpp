@@ -298,13 +298,12 @@ namespace cils {
                         k3 = 0;
                     }
                 }
+                x_hat.assign(x_cur);
                 // 'ubils:248' if (k1 & k2 & k3)
                 if ((k1 != 0) && (k2 != 0) && (k3 != 0)) {
-                    k1 = k2 = k3 = 0;
-                    for (i = 0; i < n; i++) {
-                        x_hat[i] = x_cur[i];
-                    }
-                } else {
+                    break;
+                }
+                else {
                     scalar x_tmp;
                     //  Find the Cauchy poindex
                     // 'ubils:253' t_bar = 1.e5*ones(n,1);
@@ -462,6 +461,7 @@ namespace cils {
                     }
                 }
             }
+
             time = omp_get_wtime() - time;
             return {{}, time, v_norm};
         }
@@ -956,7 +956,7 @@ namespace cils {
                     olm.reset(reduction.R, reduction.y, upper, 10, true);
                     if (is_bocb) {
                         olm.bocb();
-                    } else{
+                    } else {
                         olm.bnp();
                     }
                     prod(reduction.P, olm.z_hat, z);
@@ -1088,8 +1088,8 @@ namespace cils {
                         if (is_bocb) {
 //                            olm.pbocb(5, 20, 0);
                             olm.bocb();
-                        } else{
-                            olm.pbnp2(5,20,0);
+                        } else {
+                            olm.pbnp2(5, 20, 0);
                         }
                         prod(reduction.P, olm.z_hat, z);
 //                        prod(reduction.Z, olm.z_hat, z);

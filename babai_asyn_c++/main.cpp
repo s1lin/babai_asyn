@@ -24,29 +24,29 @@ int main(int argc, char *argv[]) {
     double t = omp_get_wtime();
 
     int size_n = stoi(argv[1]);
-    int nob = stoi(argv[2]);
-    int c = stoi(argv[3]);
-    int T = stoi(argv[4]);
-    int is_local = stoi(argv[5]);
+//    int nob = stoi(argv[2]);
+//    int c = stoi(argv[3]);
+//    int T = stoi(argv[4]);
+//    int is_local = stoi(argv[5]);
 
 //    test_PBOB<double, int>(size_n, nob, c, T, is_local);
-    test_init_pt<double, int>();
+    test_init<double, int>(size_n, 1);
 
 
-    omp_set_nested(1);   /* make sure nested parallism is on */
-    int nprocs = omp_get_num_procs();
-    auto nthreads = new int[2]{4, 4};
+//    omp_set_nested(1);   /* make sure nested parallism is on */
+//    int nprocs = omp_get_num_procs();
+//    auto nthreads = new int[2]{4, 4};
 
-#pragma omp parallel default(none) shared(nthreads) num_threads(4)
-    {
-#pragma omp single
-        {
-            for (int i = 0; i < 6; i++)
-#pragma omp task
-                functiona(i, nthreads[i]);
-        }
-
-    }
+//#pragma omp parallel default(none) shared(nthreads) num_threads(4)
+//    {
+//#pragma omp single
+//        {
+//            for (int i = 0; i < 6; i++)
+//#pragma omp task
+//                functiona(i, nthreads[i]);
+//        }
+//
+//    }
 
     t = omp_get_wtime() - t;
 

@@ -34,16 +34,20 @@ if c==1
 else 
     a = rand(1);
     b = rand(1);
-    psi = zeros(m/2,n/2);
-    phi = zeros(m/2,n/2);
+    psi = zeros(m/2, m/2);
+    phi = zeros(n/2, n/2);
     for i = 1:m/2
-        for j = 1:n/2
-            phi(i, j) = a^abs(i-j);
-            psi(i, j) = b^abs(i-j);
+        for j = 1:m/2
+            psi(i, j) = a^abs(i-j);            
         end
     end
-    Ar = sqrtm(phi) * randn(n/2) * sqrtm(psi);
-    Ai = sqrtm(phi) * randn(n/2) * sqrtm(psi);
+    for i = 1:n/2
+        for j = 1:n/2
+            phi(i, j) = b^abs(i-j);
+        end
+    end
+    Ar = (sqrtm(psi) * randn(m/2, n/2)) * sqrtm(phi);
+    Ai = (sqrtm(psi) * randn(m/2, n/2)) * sqrtm(phi);
 end
 
 Abar = [Ar -Ai; Ai, Ar];
@@ -81,7 +85,11 @@ end
 permutation = permutation';    
 permutation(:,1) = (1:n)';
 
-% [x_hat, ~, ~] = cgsic(A, y, 0, 2^k-1);
+l = repelem(0, n)';
+u = repelem(2^k-1, n)';
+
+[x_cg, ~, ~] = cgsic(A, y, 0, 2^k-1);
+x_gp = gradproj(A,y,l,u,zeros(n, 1),max_iter);
 % tic
 % [s_bar_cur, v_norm_cur] = bsic(x_hat, inf, A, 0, max_iter-1, y, k, permutation, false);
 % toc
@@ -90,5 +98,7 @@ permutation(:,1) = (1:n)';
 % sum(s_bar_cur)
 
 R0 = zeros(n);
+R0(:,1) = x_cg;
+R0(:,2) = x_gp;
 
 end

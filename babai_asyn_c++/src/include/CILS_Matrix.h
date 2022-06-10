@@ -13,6 +13,8 @@
 
 
 namespace cils {
+    template<typename Integer, typename Scalar>
+    class CILS_Vector;
 
     template<typename Integer, typename Scalar>
     class CILS_Matrix {

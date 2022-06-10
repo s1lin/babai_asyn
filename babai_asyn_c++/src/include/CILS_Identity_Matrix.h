@@ -2,8 +2,6 @@
 #ifndef CILS_IDENTITY_MATRIX_H
 #define CILS_IDENTITY_MATRIX_H
 
-#include "CILS_Matrix.h"
-
 namespace cils {
     template<typename Integer, typename Scalar>
     class CILS_Identity_Matrix : public CILS_Matrix<Integer, Scalar> {

@@ -2,6 +2,8 @@
 // Created by shilei on 2/28/22.
 //
 
+#include "CILS_Matrix.h"
+
 #ifndef CILS_CILS_VECTOR_H
 #define CILS_CILS_VECTOR_H
 
@@ -74,6 +76,15 @@ namespace cils {
             this->x.resize(n);
             for (int i = 0; i < n; i++){
                 this->x[i] = y.x[i];
+            }
+        }
+
+        void assign_col(CILS_Matrix<Integer, Scalar> &B, int col) {
+            this->resize(B.size2(), false);
+            this->n = B.size2();
+            this->x.resize(n);
+            for (int i = 0; i < n; i++){
+                this->x[i] = B(i, col);
             }
         }
 
