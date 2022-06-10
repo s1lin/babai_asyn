@@ -268,7 +268,7 @@ long test_pbsic(int size_m, bool is_local, index info) {
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
     cils.is_constrained = true;
-    cils.search_iter = 3e3;
+    cils.search_iter = info;
     cils::returnType<scalar, index> reT;
 
     cils.is_local = is_local;
