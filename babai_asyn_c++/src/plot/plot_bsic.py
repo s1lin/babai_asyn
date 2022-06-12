@@ -29,7 +29,7 @@ def save_data(m, n, i, info, bsicT, berb):
              berb=berb)
 
 
-def plot_ber():
+def plot_ber(iter):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
@@ -38,9 +38,11 @@ def plot_ber():
     n = 64
     d = 0
     for m in ms:
-        a = np.load(f'./test_result/{m}_{n}_report_plot_0_bsic.npz')
+        a = np.load(f'./past_results/{m}_{n}_report_plot_0_{iter}_bsic.npz')
         i = a['i']
         berb = a['berb']
+        if iter == 10000:
+            print(m, i)
 
         for k in range(0, 2):
             axes[d, k].set_ylabel('BER', fontweight="bold")
@@ -76,12 +78,12 @@ def plot_ber():
     order = [0, 3, 1, 4, 2, 5]
     fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
         bbox_to_anchor=(0.92, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
-    plt.savefig(f'./{n}_report_plot_bsic_ber.eps', format='eps', dpi=1200)
-    plt.savefig(f'./{n}_report_plot_bsic_ber.png')
+    plt.savefig(f'./report_plot_bsic_ber_{n}_{iter}.eps', format='eps', dpi=1200)
+    plt.savefig(f'./report_plot_bsic_ber_{n}_{iter}.png')
     plt.close()
 
 
-def plot_bsic_time(k):
+def plot_bsic_time(k, iter):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 14)
     fig, axes = plt.subplots(2, 2, constrained_layout=True)
@@ -93,7 +95,7 @@ def plot_bsic_time(k):
     for s in SNRS:
         d = 0
         for m in ms:
-            a = np.load(f'./test_result/{m}_{n}_report_plot_0_bsic.npz')
+            a = np.load(f'./past_results/{m}_{n}_report_plot_0_{iter}_bsic.npz')
             i = a['i']
             bsicT = a['bsicT']
             time = []
@@ -138,11 +140,15 @@ def plot_bsic_time(k):
 
     fig.suptitle("\n\n\n\n")
     fig.legend(bbox_to_anchor=(0.85, 0.97), title="Legend", ncol=4, fontsize=21, title_fontsize=21, edgecolor='black')
-    plt.savefig(f'./{n}_report_plot_bsic_time.eps', format='eps', dpi=1200)
-    plt.savefig(f'./{n}_report_plot_bsic_time.png')
+    plt.savefig(f'./report_plot_bsic_time_{n}_{k}_{iter}.eps', format='eps', dpi=1200)
+    plt.savefig(f'./report_plot_bsic_time_{n}_{k}_{iter}.png')
     plt.close()
 
 
 if __name__ == "__main__":
-    plot_ber()
-    plot_bsic_time(0)
+    plot_ber(3000)
+    plot_ber(10000)
+    plot_bsic_time(0, 3000)
+    plot_bsic_time(0, 10000)
+    plot_bsic_time(1, 3000)
+    plot_bsic_time(1, 10000)

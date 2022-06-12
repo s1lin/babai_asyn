@@ -249,7 +249,7 @@ long test_init(int size_m, bool is_local) {
 }
 
 template<typename scalar, typename index>
-long test_pbsic(int size_m, bool is_local, index info) {
+long test_pbsic(int size_m, bool is_local, index info, index sec) {
 
     time_t t0 = time(nullptr);
     struct tm *lt = localtime(&t0);
@@ -388,7 +388,7 @@ long test_pbsic(int size_m, bool is_local, index info) {
                 if (PyTuple_SetItem(pArgs, 2, Py_BuildValue("i", t + 1)) != 0) {
                     return false;
                 }
-                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", info)) != 0) {
+                if (PyTuple_SetItem(pArgs, 3, Py_BuildValue("i", info + sec)) != 0) {
                     return false;
                 }
                 if (PyTuple_SetItem(pArgs, 4, pT) != 0) {
