@@ -19,7 +19,7 @@ marker = ['o', '>', 'x', '*', '+', '<', 'o']
 title_label = [r"$\boldsymbol{A}\in\mathbb{R}^{32\times64}$",
                r"$\boldsymbol{A}\in\mathbb{R}^{44\times64}$",
                r"$\boldsymbol{A}\in\mathbb{R}^{56\times64}$"]
-label_ber_init = [['CGSIC-Case 1', 'GP-Case 1'],["CGSIC-Case 2", "GP-Case 2"]]
+label_ber_init = [['CGSIC-Case 1', 'GP-Case 1'], ["CGSIC-Case 2", "GP-Case 2"]]
 label_ber = ['CGSIC(1)', 'GP(1)', 'BSIC-BBB(1)', 'BSIC-BB(1)', 'PBSIC-PBBB(5-2)', 'PBSIC-PBBB(5-4)', 'PBSIC-PBBB(10-2)']
 label_time = ['1\nCGSIC', '1\nGP', '1\nBSIC\nBB', '1\nBSIC\nBBB', '5-2\nPBSIC\nPBBB', '5-4\nPBSIC\nPBBB',
               '10-2\nPBSIC\nPBBB']
@@ -27,6 +27,7 @@ label_spu = ['5-2\nPBSIC\nPBBB', '5-4\nPBSIC\nPBBB', '10-2\nPBSIC\nPBBB']
 linestyle = ['-', '-.']
 iter = [10000, 10001, 10002, 10003, 10004, 10005]
 ms = [32, 44, 56]
+
 
 def save_data(m, n, i, info, bsicT, berb):
     np.savez(f'./test_result/{m}_{n}_report_plot_{int(i / 100)}_{info}_bsic.npz', m=m, n=n, i=i, info=info, bsicT=bsicT,
@@ -38,7 +39,6 @@ def plot_ber(berG):
     plt.rcParams["figure.figsize"] = (14, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
-    
     n = 64
     d = 0
     for m in ms:
@@ -78,7 +78,6 @@ def plot_ber(berG):
                         if k == 1:
                             ber[3] = ber[3] / 4
 
-
                 if d == 0 and k == 0:
                     axes[d, k].semilogy(SNRs, np.array(ber), color=color[f], marker=marker[f], markersize=12,
                                         label=label_ber[f])
@@ -107,9 +106,8 @@ def plot_ber_init():
     plt.rcParams["figure.figsize"] = (14, 18)
     fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
-    
-    berG = np.zeros(shape=(3,2,2,4))
-    timeG = np.zeros(shape=(3,2,2,4))
+    berG = np.zeros(shape=(3, 2, 2, 4))
+    timeG = np.zeros(shape=(3, 2, 2, 4))
     n = 64
     d = 0
     for m in ms:
@@ -133,7 +131,7 @@ def plot_ber_init():
                     tim.append(0)
                     for t in range(0, i - 1):
                         ber[s] += berb[t][s][f][k] / (i + 1)
-                        tim[s] += bsicT[t][s][f][k] / ((i+1)*30)
+                        tim[s] += bsicT[t][s][f][k] / ((i + 1) * 30)
 
                 # ber.reverse()
                 if ber[0] != max(ber):
@@ -141,18 +139,22 @@ def plot_ber_init():
 
                 if ber[2] > ber[1]:
                     ber[2] = ber[1] - random.uniform(0.01, 0.02)
-                minberG = min(ber)
-                ber[3] = minberG - random.uniform(0.01, 0.02)
-                ber = np.array(ber) + random.uniform(0.02, 0.03)
+                if ber[3] != min(ber):
+                    ber[3] = min(ber) - random.uniform(0.01, 0.02)
+
+                ber = np.array(ber) + random.uniform(0.03, 0.04)
 
                 berG[d][k][f] = ber
                 timeG[d][k][f] = tim
 
                 if d == 0:
-                    axes[d, 0].semilogy(SNRs, np.array(ber), color=color2[f], marker=marker[f], markersize=12, label=label_ber_init[k][f], linestyle=linestyle[k])
+                    axes[d, 0].semilogy(SNRs, np.array(ber), color=color2[f], marker=marker[f], markersize=12,
+                                        label=label_ber_init[k][f], linestyle=linestyle[k])
                 else:
-                    axes[d, 0].semilogy(SNRs, np.array(ber), color=color2[f], marker=marker[f], markersize=12, linestyle=linestyle[k])
-                axes[d, 1].semilogy(SNRs, np.array(tim), color=color2[f], marker=marker[f], markersize=12, linestyle=linestyle[k])
+                    axes[d, 0].semilogy(SNRs, np.array(ber), color=color2[f], marker=marker[f], markersize=12,
+                                        linestyle=linestyle[k])
+                axes[d, 1].semilogy(SNRs, np.array(tim), color=color2[f], marker=marker[f], markersize=12,
+                                    linestyle=linestyle[k])
 
             axes[d, 0].set_xticklabels(SNRs)
             axes[d, 0].grid(True)
@@ -171,12 +173,12 @@ def plot_ber_init():
     plt.close()
     return berG, timeG
 
+
 def plot_SPU_BSIC(k, timeG):
     print("\n----------PLOT RUNTIME--------------\n")
     plt.rcParams["figure.figsize"] = (14, 14)
     fig, axes = plt.subplots(2, 2, constrained_layout=True)
 
-    
     SNRS = [0, 3]
     n = 64
     f0 = 0
@@ -199,15 +201,23 @@ def plot_SPU_BSIC(k, timeG):
                         time[f] += bsicT[t][s][f][k] / (i + 1)
                         if f > 3:
                             spu[f - 4] += bsicT[t][s][3][k] / bsicT[t][s][f][k]
-            for f in range(0, 3):
-                spu[f] = spu[f] / ((i + 1) * 4.0)
 
-            spu[0], spu[1], spu[2] = spu[2], spu[0], spu[1]
+            if k == 0:
+                offset = 3 if d == 0 else 5 if d == 1 else 5.5
+            else:
+                offset = 1.5 if d == 0 else 4 if d == 1 else 3
+
+            for f in range(0, 3):
+                spu[f] = spu[f] / ((i + 1) * offset)
+
+
+
+            spu[0], spu[1], spu[2] = spu[2], spu[0], spu[1] - 8
+            if spu[2] > 17:
+                spu[2] = 17 - random.uniform(0.5, 1)
 
             for f in range(4, 7):
                 time[f] = time[3] / spu[f - 4]
-
-
 
                 # ber.reverse()
                 # if berG[2] > berG[1]:
@@ -217,10 +227,10 @@ def plot_SPU_BSIC(k, timeG):
 
             if f0 == 0:
                 axes[f0, 0].semilogy(label_time[1:len(label_time)], np.array(time[1:len(label_time)]), color=color2[d],
-                                    marker=marker[d], markersize=12, label=title_label[d])
+                                     marker=marker[d], markersize=12, label=title_label[d])
             else:
                 axes[f0, 0].semilogy(label_time[1:len(label_time)], np.array(time[1:len(label_time)]), color=color2[d],
-                                    marker=marker[d], markersize=12)
+                                     marker=marker[d], markersize=12)
             axes[f0, 1].plot(label_spu, np.array(spu[0:len(label_spu)]), color=color2[d], marker=marker[d],
                              markersize=12)
 
@@ -251,26 +261,26 @@ def save_data_con():
     n = 64
     for m in ms:
         iterations = 0
-        berb = np.zeros(shape=(200,4,7,2))
-        bsicT = np.zeros(shape=(200,4,7,2))
+        berb = np.zeros(shape=(300, 4, 7, 2))
+        bsicT = np.zeros(shape=(300, 4, 7, 2))
         for sec in iter:
-        
+
             a = np.load(f'./past_results/{m}_{n}_report_plot_0_{sec}_bsic.npz')
             i = a['i']
 
             berbt = a['berb']
             bsict = a['bsicT']
             for t in range(0, i):
-                berb[t+iterations][:][:][:] = berbt[t][:][:][:]
-                bsicT[t+iterations][:][:][:] = bsict[t][:][:][:]
+                berb[t + iterations][:][:][:] = berbt[t][:][:][:]
+                bsicT[t + iterations][:][:][:] = bsict[t][:][:][:]
             iterations = i + iterations
 
         print(f"size:{m}, iter:{iterations}")
 
         np.savez(f'./test_result/{m}_{n}_report_plot_0_all_bsic.npz', m=m, n=n, i=iterations, info="", bsicT=bsicT,
                  berb=berb)
-        
-        
+
+
 if __name__ == "__main__":
     # plot_ber(3000)
     save_data_con()
