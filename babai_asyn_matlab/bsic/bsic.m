@@ -76,8 +76,8 @@ for i = 1:max_iter
         y_hat = y_hat - H_adj * z;
         
     end
-    
-    rho = norm(y - H_t * x_t);
+    norm(y_hat)
+    rho = norm(y - H_t * x_t)
     
     if rho < v_norm        
         P = I(:, permutation(:, i)) * Piv_cum; % 
