@@ -1,4 +1,4 @@
-function [x_cur, rho] = bsic(x_cur, rho, A, tolerance, max_iter, y, k, permutation, optimal)
+function [x_cur, rho] = bsic_bcp(x_cur, rho, A, tolerance, max_iter, y, k, s, optimal)
 
 % [x_cur, rho, stopping] = SCP_Block_Optimal(x_cur, rho, A, tolerance, max_iter, max_Time, y, m, n)
 % applies the SCP-Block Optimal method to obtain a sub-optimal solution
@@ -14,40 +14,22 @@ function [x_cur, rho] = bsic(x_cur, rho, A, tolerance, max_iter, y, k, permutati
 % Outputs:
 %     x_cur - n-dimensional integer vector for the sub-optimal solution
 %     rho - real scalar for the norm of the residual vector corresponding to x_cur
-[m, n] = size(A);
-q = ceil(n/m);
-indicator = zeros(2, q);
-cur_end = n;
-i = 1;
-while cur_end > 0
-    cur_1st = max(1, cur_end-m+1);
-    indicator(1,i) = cur_1st;
-    indicator(2,i) = cur_end;
-    cur_end = cur_1st - 1;
-    i = i + 1;
-end
 
-I = eye(n);
-Piv_cum = eye(n);
+[bbA, P, ~, indicator] = part2(A, s);
+x_t = P' * x_cur;
 v_norm = rho;
+
 for i = 1:max_iter 
-    %permutation = randperm(n);
-    H_P = A(:,permutation(:, i));
-    x_tmp = x_cur(permutation(:, i));
-    %H_P = A(:,permutation);
-    %x_tmp = x_cur(permutation);
-    %[H_t, Piv_cum, indicator] = part(H_P);
-    H_t = H_P;
-    x_t = Piv_cum' * x_tmp;
-    y_hat = y - H_t * x_t;
+    permutation = randperm(size(indicator, 2)); 
+    y_hat = y - bbA * x_t;
     
     for j = 1:size(indicator, 2)
-        
-        cur_1st = indicator(1, j);
-        cur_end = indicator(2, j);
+        pp = permutation(j);
+        cur_1st = indicator(1, pp);
+        cur_end = indicator(2, pp);
         t = cur_end - cur_1st + 1;        
   
-        H_adj = H_t(:, cur_1st:cur_end);
+        H_adj = bbA(:, cur_1st:cur_end);
         y_hat = y_hat + H_adj * x_t(cur_1st:cur_end);
 
         l = repelem(0, t)';
@@ -76,15 +58,14 @@ for i = 1:max_iter
         y_hat = y_hat - H_adj * z;
         
     end
-    rho = norm(y - H_t * x_t);
+    rho = norm(y - bbA * x_t);
     
-    if rho < v_norm        
-        P = I(:, permutation(:, i)) * Piv_cum; % 
-        x_cur = P * x_t;        
+    if rho < v_norm              
         if rho <= tolerance
             break;
         end               
         v_norm = rho;
     end   
 end
+x_cur = P * x_t;
 end

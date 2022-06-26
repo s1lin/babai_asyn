@@ -76,6 +76,7 @@ for i = 1:max_iter
         y_hat = y_hat - H_adj * z;
         
     end
+    norm(y_hat)
     rho = norm(y - H_t * x_t);
     
     if rho < v_norm        
