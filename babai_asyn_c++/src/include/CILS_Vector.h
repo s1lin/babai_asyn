@@ -14,6 +14,9 @@ namespace cils {
     class CILS_Vector {
 
     public:
+        ~CILS_Vector() {
+
+        }
 
         std::vector<Scalar> x;
         Integer n;

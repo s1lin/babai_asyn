@@ -47,10 +47,10 @@ namespace cils {
             this->x.resize(s1 * s2);
             std::copy(B.begin(), B.end(), this->begin());
         }
-
-        ~CILS_Matrix() {
-//            delete[] x;
-        }
+//
+//        ~CILS_Matrix() {
+////            delete[] x;
+//        }
 
         Integer size1() {
             return s1;
@@ -77,7 +77,7 @@ namespace cils {
             this->s2 = new_size2;
             this->x.resize(s1 * s2);
             if (!keep)
-                this->x.clear();
+                std::fill_n(this->x.begin(), s1 * s2, 0);
         }
 
         void assign(Scalar value) {

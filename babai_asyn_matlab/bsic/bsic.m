@@ -30,14 +30,15 @@ end
 I = eye(n);
 Piv_cum = eye(n);
 v_norm = rho;
+%permutation = 1:n;
 for i = 1:max_iter 
     %permutation = randperm(n);
     H_P = A(:,permutation(:, i));
     x_tmp = x_cur(permutation(:, i));
     %H_P = A(:,permutation);
     %x_tmp = x_cur(permutation);
-    %[H_t, Piv_cum, indicator] = part(H_P);
-    H_t = H_P;
+    [H_t, Piv_cum, indicator] = part(H_P);
+    %H_t = H_P;
     x_t = Piv_cum' * x_tmp;
     y_hat = y - H_t * x_t;
     
