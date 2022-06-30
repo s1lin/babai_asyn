@@ -98,6 +98,9 @@ permutation(:,1) = (1:n)';
 %end
 %
 %%[s_bar_cur, ~] = bsic(x_gp, inf, A, 0, max_iter, y, k, permutation, false);
+x_hat = zeros(n, 1);
+[s_bar_cur, ~] = bsic_bcp(x_hat, inf, A, 0, max_iter, y, k, 10, false);
+s_bar_cur'
 
 R0 = zeros(n);
 %R0(:,1) = x_cg;

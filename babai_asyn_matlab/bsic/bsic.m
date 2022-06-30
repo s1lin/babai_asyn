@@ -31,6 +31,7 @@ I = eye(n);
 Piv_cum = eye(n);
 rhos = zeros(max_iter, 1);
 v_norm = rho;
+%permutation = 1:n;
 for i = 1:max_iter 
     %permutation = randperm(n);
     H_P = A(:,permutation(:, i));

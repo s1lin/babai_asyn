@@ -1,3 +1,5 @@
+#include <random>
+
 /** \file
  * \brief Computation of Block Babai Algorithm
  * \author Shilei Lin
@@ -488,386 +490,458 @@ namespace cils {
          * @param d
          * @return
          */
-//        returnType<scalar, index> partition(b_matrix &A_t, b_matrix &P_t, b_vector &d) {
-//            b_matrix A_bar_p, P_tmp, P_hat, P_tilde, b_A_bar_p, b_A_tilde, b_p, R;
-//            b_vector b_d, y_tmp;
-//            si_vector b_x;
-//            int q, i, input_sizes_idx_1, k, loop_ub, sizes_idx_1, t, vlen;
-//
-//            //  A_ = A;
-//            //  x_ = x;
-//            // 'partition:23' [m, n] = size(A);
-//            // 'partition:24' A_t = A;
-//            A_t.assign(A);
-//            // 'partition:25' q = n;
-//            q = A.size2();
-//            // 'partition:26' P_tmp = eye(n);
-//            t = A.size2();
-//            P_tmp.assign(I);
-//
-//            // 'partition:29' d = zeros(n, 1);
-//            d.resize(A.size2(), false);
-//            // 'partition:30' k = 0;
-//            k = 0;
-//            // 'partition:32' while q >= 1
-//            while (q >= 1) {
-//                double c_d;
-//                int b_loop_ub, i1, i2, i3, r, p;
-//                // 'partition:33' k = k + 1;
-//                k++;
-//                // 'partition:34' p = max(1, q-m+1);
-//                p = std::max(1, q - A.size1() + 1);
-//                // 'partition:35' A_bar = A_t(:, p:q);
-//                if (p > q) {
-//                    i = 0;
-//                    i1 = 0;
-//                } else {
-//                    i = p - 1;
-//                    i1 = q;
-//                }
-//                // 'partition:36' P_tilde = eye(n);
-//                t = A.size2();
-//                P_tilde.assign(I);
-//
-//
-//                // Find the rank of A_bar
-//                // 'partition:39' [Q,R,P_hat]=qr(A_bar);
-//                loop_ub = A_t.size1();
-//                b_loop_ub = i1 - i;
-//                b_A_tilde.resize(A_t.size1(), b_loop_ub);
-//                for (i1 = 0; i1 < b_loop_ub; i1++) {
-//                    for (i2 = 0; i2 < loop_ub; i2++) {
-//                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-//                                A_t[i2 + A_t.size1() * (i + i1)];
-//                    }
-//                }
-//                helper::qrp(b_A_tilde,  R, b_p, true, true);
-//                P_hat.resize(b_p.size1(), b_p.size2());
-//                loop_ub = b_p.size1() * b_p.size2();
-//                for (i1 = 0; i1 < loop_ub; i1++) {
-//                    P_hat[i1] = b_p[i1];
-//                }
-//                // 'partition:40' if size(R,2)>1
-//                if (R.size2() > 1) {
-//                    // 'partition:41' r = sum(abs(diag(R)) > 10^(-6));
-//                    t = R.size1();
-//                    vlen = R.size2();
-//                    if (t < vlen) {
-//                        vlen = t;
-//                    }
-//                    b_d.resize(vlen);
-//                    i1 = vlen - 1;
-//                    for (sizes_idx_1 = 0; sizes_idx_1 <= i1; sizes_idx_1++) {
-//                        b_d[sizes_idx_1] = R[sizes_idx_1 + R.size1() * sizes_idx_1];
-//                    }
-//                    t = b_d.size();
-//                    y_tmp.resize(b_d.size());
-//                    for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
-//                        y_tmp[sizes_idx_1] = std::abs(b_d[sizes_idx_1]);
-//                    }
-//                    b_x.resize(y_tmp.size());
-//                    loop_ub = y_tmp.size();
-//                    for (i1 = 0; i1 < loop_ub; i1++) {
-//                        b_x[i1] = (y_tmp[i1] > 1.0E-6);
-//                    }
-//                    vlen = b_x.size();
-//                    if (b_x.size() == 0) {
-//                        r = 0;
-//                    } else {
-//                        r = b_x[0];
-//                        for (sizes_idx_1 = 2; sizes_idx_1 <= vlen; sizes_idx_1++) {
-//                            r += b_x[sizes_idx_1 - 1];
-//                        }
-//                    }
-//                } else {
-//                    // 'partition:42' else
-//                    // 'partition:43' r = sum(abs(R(1,1)) > 10^(-6));
-//                    r = (std::abs(R[0]) > 1.0E-6);
-//                }
-//                // 'partition:45' A_bar_p = A_bar * P_hat;
-//                loop_ub = A_t.size1();
-//                b_A_tilde.resize(A_t.size1(), b_loop_ub);
-//                for (i1 = 0; i1 < b_loop_ub; i1++) {
-//                    for (i2 = 0; i2 < loop_ub; i2++) {
-//                        b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-//                                A_t[i2 + A_t.size1() * (i + i1)];
-//                    }
-//                }
-//                prod(b_A_tilde, b_p, A_bar_p);
-//                // 'partition:46' d(k) = size(A_bar, 2);
-//                d[k - 1] = b_loop_ub;
-//                // The case where A_bar is rank deficient
-//                // 'partition:49' if r < d(k)
-//                c_d = d[k - 1];
-//                if (r < c_d) {
-//                    double b_t;
-//                    bool empty_non_axis_sizes;
-//                    // Permute the columns of A_t and the entries of x_tilde
-//                    // 'partition:51' A_t(:, p:q) = [A_bar_p(:,r+1:d(k)), A_bar_p(:,
-//                    // 1:r)];
-//                    if (r + 1.0 > c_d) {
-//                        i = -1;
-//                        i1 = -1;
-//                    } else {
-//                        i = r - 1;
-//                        i1 = static_cast<int>(c_d) - 1;
-//                    }
-//                    if (1 > r) {
-//                        loop_ub = 0;
-//                    } else {
-//                        loop_ub = r;
-//                    }
-//                    if (p > q) {
-//                        i2 = 0;
-//                    } else {
-//                        i2 = p - 1;
-//                    }
-//                    b_loop_ub = i1 - i;
-//                    if ((A_bar_p.size1() != 0) && (b_loop_ub != 0)) {
-//                        t = A_bar_p.size1();
-//                    } else if ((A_bar_p.size1() != 0) && (loop_ub != 0)) {
-//                        t = A_bar_p.size1();
-//                    } else {
-//                        if (A_bar_p.size1() > 0) {
-//                            t = A_bar_p.size1();
-//                        } else {
-//                            t = 0;
-//                        }
-//                        if (A_bar_p.size1() > t) {
-//                            t = A_bar_p.size1();
-//                        }
-//                    }
-//                    empty_non_axis_sizes = (t == 0);
-//                    if (empty_non_axis_sizes ||
-//                        ((A_bar_p.size1() != 0) && (b_loop_ub != 0))) {
-//                        input_sizes_idx_1 = i1 - i;
-//                    } else {
-//                        input_sizes_idx_1 = 0;
-//                    }
-//                    if (empty_non_axis_sizes || ((A_bar_p.size1() != 0) && (loop_ub != 0))) {
-//                        sizes_idx_1 = loop_ub;
-//                    } else {
-//                        sizes_idx_1 = 0;
-//                    }
-//                    vlen = A_bar_p.size1();
-//                    b_A_tilde.resize(A_bar_p.size1(), b_loop_ub);
-//                    for (i1 = 0; i1 < b_loop_ub; i1++) {
-//                        for (i3 = 0; i3 < vlen; i3++) {
-//                            b_A_tilde[i3 + b_A_tilde.size1() * i1] =
-//                                    A_bar_p[i3 + A_bar_p.size1() * ((i + i1) + 1)];
-//                        }
-//                    }
-//                    b_loop_ub = A_bar_p.size1();
-//                    b_A_bar_p.resize(A_bar_p.size1(), loop_ub);
-//                    for (i = 0; i < loop_ub; i++) {
-//                        for (i1 = 0; i1 < b_loop_ub; i1++) {
-//                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] =
-//                                    A_bar_p[i1 + A_bar_p.size1() * i];
-//                        }
-//                    }
-//                    for (i = 0; i < input_sizes_idx_1; i++) {
-//                        for (i1 = 0; i1 < t; i1++) {
-//                            A_t[i1 + A_t.size1() * (i2 + i)] = b_A_tilde[i1 + t * i];
-//                        }
-//                    }
-//                    for (i = 0; i < sizes_idx_1; i++) {
-//                        for (i1 = 0; i1 < t; i1++) {
-//                            A_t[i1 + A_t.size1() * ((i2 + i) + input_sizes_idx_1)] =
-//                                    b_A_bar_p[i1 + t * i];
-//                        }
-//                    }
-//                    // Update the permutation matrix P_tilde
-//                    // 'partition:54' I_d = eye(d(k));
-//                    if (c_d < 0.0) {
-//                        b_t = 0.0;
-//                    } else {
-//                        b_t = c_d;
-//                    }
-//                    t = static_cast<int>(b_t);
-//                    P_hat.resize(t, t);
-//                    loop_ub = static_cast<int>(b_t) * static_cast<int>(b_t);
-//                    for (i = 0; i < loop_ub; i++) {
-//                        P_hat[i] = 0.0;
-//                    }
-//                    if (static_cast<int>(b_t) > 0) {
-//                        for (sizes_idx_1 = 0; sizes_idx_1 < t; sizes_idx_1++) {
-//                            P_hat[sizes_idx_1 + P_hat.size1() * sizes_idx_1] = 1.0;
-//                        }
-//                    }
-//                    // 'partition:55' P_d = [I_d(:, r+1:d(k)), I_d(:, 1:r)];
-//                    if (r + 1.0 > c_d) {
-//                        i = -1;
-//                        i1 = -1;
-//                    } else {
-//                        i = r - 1;
-//                        i1 = static_cast<int>(d[k - 1]) - 1;
-//                    }
-//                    if (1 > r) {
-//                        loop_ub = 0;
-//                    } else {
-//                        loop_ub = r;
-//                    }
-//                    b_loop_ub = i1 - i;
-//                    if ((P_hat.size1() != 0) && (b_loop_ub != 0)) {
-//                        t = P_hat.size1();
-//                    } else if ((P_hat.size1() != 0) && (loop_ub != 0)) {
-//                        t = P_hat.size1();
-//                    } else {
-//                        if (P_hat.size1() > 0) {
-//                            t = P_hat.size1();
-//                        } else {
-//                            t = 0;
-//                        }
-//                        if (P_hat.size1() > t) {
-//                            t = P_hat.size1();
-//                        }
-//                    }
-//                    empty_non_axis_sizes = (t == 0);
-//                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (b_loop_ub != 0))) {
-//                        input_sizes_idx_1 = i1 - i;
-//                    } else {
-//                        input_sizes_idx_1 = 0;
-//                    }
-//                    if (empty_non_axis_sizes || ((P_hat.size1() != 0) && (loop_ub != 0))) {
-//                        sizes_idx_1 = loop_ub;
-//                    } else {
-//                        sizes_idx_1 = 0;
-//                    }
-//                    // 'partition:56' P_hat = P_hat * P_d;
-//                    vlen = P_hat.size1() - 1;
-//                    b_A_tilde.resize(P_hat.size1(), b_loop_ub);
-//                    for (i1 = 0; i1 < b_loop_ub; i1++) {
-//                        for (i2 = 0; i2 <= vlen; i2++) {
-//                            b_A_tilde[i2 + b_A_tilde.size1() * i1] =
-//                                    P_hat[i2 + P_hat.size1() * ((i + i1) + 1)];
-//                        }
-//                    }
-//                    vlen = P_hat.size1() - 1;
-//                    b_A_bar_p.resize(P_hat.size1(), loop_ub);
-//                    for (i = 0; i < loop_ub; i++) {
-//                        for (i1 = 0; i1 <= vlen; i1++) {
-//                            b_A_bar_p[i1 + b_A_bar_p.size1() * i] = P_hat[i1 + P_hat.size1() * i];
-//                        }
-//                    }
-//                    A_bar_p.resize(t, input_sizes_idx_1 + sizes_idx_1);
-//                    for (i = 0; i < input_sizes_idx_1; i++) {
-//                        for (i1 = 0; i1 < t; i1++) {
-//                            A_bar_p[i1 + A_bar_p.size1() * i] = b_A_tilde[i1 + t * i];
-//                        }
-//                    }
-//                    for (i = 0; i < sizes_idx_1; i++) {
-//                        for (i1 = 0; i1 < t; i1++) {
-//                            A_bar_p[i1 + A_bar_p.size1() * (i + input_sizes_idx_1)] =
-//                                    b_A_bar_p[i1 + t * i];
-//                        }
-//                    }
-//                    prod(b_p, A_bar_p, P_hat);
-//                    // 'partition:58' d(k) = r;
-//                    d[k - 1] = r;
-//                } else {
-//                    // 'partition:59' else
-//                    // Permute the columns of A_t and the entries of x_tilde
-//                    // 'partition:61' A_t(:, p:q) = A_bar_p;
-//                    if (p > q) {
-//                        i = 1;
-//                    } else {
-//                        i = p;
-//                    }
-//                    loop_ub = A_bar_p.size2();
-//                    for (i1 = 0; i1 < loop_ub; i1++) {
-//                        b_loop_ub = A_bar_p.size1();
-//                        for (i2 = 0; i2 < b_loop_ub; i2++) {
-//                            A_t[i2 + A_t.size1() * ((i + i1) - 1)] =
-//                                    A_bar_p[i2 + A_bar_p.size1() * i1];
-//                        }
-//                    }
-//                }
-//                // Update the permutation matrix P_tilde
-//                // 'partition:64' P_tilde(p:q, p:q) = P_hat;
-//                if (p > q) {
-//                    i = 1;
-//                    i1 = 1;
-//                } else {
-//                    i = p;
-//                    i1 = p;
-//                }
-//                loop_ub = P_hat.size2();
-//                for (i2 = 0; i2 < loop_ub; i2++) {
-//                    b_loop_ub = P_hat.size1();
-//                    for (i3 = 0; i3 < b_loop_ub; i3++) {
-//                        P_tilde[((i + i3) + P_tilde.size1() * ((i1 + i2) - 1)) - 1] =
-//                                P_hat[i3 + P_hat.size1() * i2];
-//                    }
-//                }
-//                // 'partition:65' P_tmp = P_tmp * P_tilde;
-//                b_A_tilde.resize(P_tmp.size1(), P_tmp.size2());
-//                loop_ub = P_tmp.size1() * P_tmp.size2() - 1;
-//                for (i = 0; i <= loop_ub; i++) {
-//                    b_A_tilde[i] = P_tmp[i];
-//                }
-//                prod(b_A_tilde, P_tilde, P_tmp);
-//                // 'partition:67' p = q - r + 1;
-//                p = q - r + 1;
-//                // 'partition:68' R_t(:, p:q) = R(:, 1:r);
-//                if (1 > r) {
-//                    loop_ub = 0;
-//                } else {
-//                    loop_ub = r;
-//                }
-//                if (p > q) {
-//                    i = 1;
-//                } else {
-//                    i = p;
-//                }
-//                b_loop_ub = R.size1();
-//                for (i1 = 0; i1 < loop_ub; i1++) {
-//                    for (i2 = 0; i2 < b_loop_ub; i2++) {
-//                        R_t[i2 + R_t.size1() * ((i + i1) - 1)] = R[i2 + R.size1() * i1];
-//                    }
-//                }
-//                // 'partition:69' Q_t(:, p:q) = Q(:, 1:r);
-//                if (1 > r) {
-//                    loop_ub = 0;
-//                } else {
-//                    loop_ub = r;
-//                }
-//                if (p > q) {
-//                    i = 1;
-//                } else {
-//                    i = p;
-//                }
-//                b_loop_ub = Q.size1();
-//                for (i1 = 0; i1 < loop_ub; i1++) {
-//                    for (i2 = 0; i2 < b_loop_ub; i2++) {
-//                        Q_t[i2 + Q_t.size1() * ((i + i1) - 1)] = Q[i2 + Q.size1() * i1];
-//                    }
-//                }
-//                // 'partition:71' q = q - r;
-//                q -= r;
-//            }
-//            // 'partition:73' d = d(1:k);
-//            if (1 > k) {
-//                i = 0;
-//            } else {
-//                i = k;
-//            }
-//            d.resize(i);
-//            // Remove the extra columns of the d
-//
-//            //  %Test
-//            //  [H, P_H, x_H, Q_H, R_H, i_H] = partition_H(A_, x_, m, n);
-//            //  size(A_t)
-//            //  size(H)
-//            //  AD=norm(A_t-H, 2)
-//            //  PD=norm(P_tmp-P_H,2)
-//            //  xD=norm(x_H-x_tilde,2)
-//            //  QD=norm(Q_t-Q_H,2)
-//            //  RD=norm(R_t-R_H,2)
-//            //
-//
-//            //  dk
-//            //  i_H
-//        }
+        void part2(index s, b_matrix &A_bar, b_matrix &P, b_matrix &indicator) {
+            b_matrix A_hat;
+            b_matrix P_bar;
+            b_matrix R;
+            b_matrix acc;
+            b_vector b_d;
+            b_vector bb, d;
+            si_vector x;
+            double f;
+            int N;
+            int i;
+            unsigned int k;
+            int loop_ub;
+            int t;
+            int vlen;
+            // Corresponds to Algorithm 6.4 (Block Partition) in Thesis
+            //  [A_bar, P, d] = part2(A, s)
+            //  permutes and partitions A so that A_bar submatrices A_bar_i are
+            //  full-column rank
+            //
+            //  Inputs:
+            //      A - K-by-N real matrix
+            //      s - Number of columns of each block
+            //
+            //  Outputs:
+            //      A_bar - K-by-N real matrix,
+            //      P - N-by-N permutation such A*P = A_bar
+            //      d - 1-by-k integer matrix (indicates submatrices of A_hat)
+            N = n;
+            A_bar.resize(m, n);
+            loop_ub = m * n;
+            for (i = 0; i < loop_ub; i++) {
+                A_bar[i] = 0.0;
+            }
+            A_hat.assign(A);
+
+            t = n;
+            P.resize(n, n);
+            loop_ub = n * n;
+            for (i = 0; i < loop_ub; i++) {
+                P[i] = 0.0;
+            }
+            if (n > 0) {
+                for (loop_ub = 0; loop_ub < t; loop_ub++) {
+                    P[loop_ub + P.size1() * loop_ub] = 1.0;
+                }
+            }
+            d.resize(n);
+            loop_ub = n;
+            for (i = 0; i < loop_ub; i++) {
+                d[i] = s;
+            }
+            k = 1U;
+            f = 1.0;
+            CILS_Reduction<scalar, index> reduction;
+
+            while (f <= N) {
+                double r;
+                int i1;
+                bool empty_non_axis_sizes;
+                acc.resize(A_hat.size1(), A_hat.size2());
+                loop_ub = A_hat.size1() * A_hat.size2();
+                for (i = 0; i < loop_ub; i++) {
+                    acc[i] = A_hat[i];
+                }
+
+                reduction.reset(acc);
+                reduction.mgs_max();//qrmgs_max(acc, R, P_bar);
+                R.assign(reduction.R);
+                P_bar.assign(reduction.P);
+//                f = N + 1;
+                if (R.size2() > 1) {
+                    t = R.size1();
+                    vlen = R.size2();
+                    if (t <= vlen) {
+                        vlen = t;
+                    }
+                    b_d.resize(vlen);
+                    i = vlen - 1;
+                    for (loop_ub = 0; loop_ub <= i; loop_ub++) {
+                        b_d[loop_ub] = R[loop_ub + R.size1() * loop_ub];
+                    }
+                    t = b_d.size();
+                    bb.resize(b_d.size());
+                    for (loop_ub = 0; loop_ub < t; loop_ub++) {
+                        bb[loop_ub] = std::abs(b_d[loop_ub]);
+                    }
+                    x.resize(bb.size());
+                    loop_ub = bb.size();
+                    for (i = 0; i < loop_ub; i++) {
+                        x[i] = (bb[i] > 1.0E-6);
+                    }
+                    vlen = x.size();
+                    if (x.size() == 0) {
+                        t = 0;
+                    } else {
+                        t = x[0];
+                        for (loop_ub = 2; loop_ub <= vlen; loop_ub++) {
+                            t += x[loop_ub - 1];
+                        }
+                    }
+                    r = t;
+                }
+                else {
+                    r = (std::abs(R[0]) > 1.0E-6);
+                }
+                acc.resize(A_hat.size1(), A_hat.size2());
+                loop_ub = A_hat.size1() * A_hat.size2() - 1;
+                for (i = 0; i <= loop_ub; i++) {
+                    acc[i] = A_hat[i];
+                }
+
+                prod(acc, P_bar, A_hat);
+                // TA_hate case wA_hatere A_hat_p is rank deficient
+                if (r < s) {
+                    double c_d;
+                    // Permute tA_hate columns of A_hat and tA_hate entries of s_bar_output
+                    if (r < 1.0) {
+                        loop_ub = 0;
+                    } else {
+                        loop_ub = static_cast<int>(r);
+                    }
+                    c_d = f + r;
+                    if (f > c_d - 1.0) {
+                        i = 1;
+                    } else {
+                        i = static_cast<int>(f);
+                    }
+                    vlen = A_hat.size1();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        for (int i2{0}; i2 < vlen; i2++) {
+                            A_bar[i2 + A_bar.size1() * ((i + i1) - 1)] =
+                                    A_hat[i2 + A_hat.size1() * i1];
+                        }
+                    }
+                    if (r + 1.0 > P_bar.size2()) {
+                        i = 0;
+                        i1 = 0;
+                    } else {
+                        i = static_cast<int>(r);
+                        i1 = P_bar.size2();
+                    }
+                    vlen = A_hat.size1() - 1;
+                    loop_ub = A_hat.size1();
+                    t = i1 - i;
+                    for (i1 = 0; i1 < t; i1++) {
+                        for (int i2{0}; i2 < loop_ub; i2++) {
+                            A_hat[i2 + (vlen + 1) * i1] = A_hat[i2 + A_hat.size1() * (i + i1)];
+                        }
+                    }
+                    A_hat.resize(vlen + 1, t, true);
+                    d[static_cast<int>(k) - 1] = r;
+                    f = c_d;
+                    k++;
+                }
+                else {
+                    double c_d;
+                    double j;
+                    int i2;
+                    j = 0.0;
+                    while (r >= s) {
+                        double d1;
+                        c_d = j * s + 1.0;
+                        d1 = (j + 1.0) * s;
+                        if (c_d > d1) {
+                            i = 0;
+                            i1 = 0;
+                        } else {
+                            i = static_cast<int>(c_d) - 1;
+                            i1 = static_cast<int>(d1);
+                        }
+                        c_d = f + s;
+                        if (f > c_d - 1.0) {
+                            i2 = 1;
+                        } else {
+                            i2 = static_cast<int>(f);
+                        }
+                        loop_ub = A_hat.size1();
+                        vlen = i1 - i;
+                        for (i1 = 0; i1 < vlen; i1++) {
+                            for (t = 0; t < loop_ub; t++) {
+                                A_bar[t + A_bar.size1() * ((i2 + i1) - 1)] =
+                                        A_hat[t + A_hat.size1() * (i + i1)];
+                            }
+                        }
+                        d[static_cast<int>(k) - 1] = s;
+                        f = c_d;
+                        r -= s;
+                        k++;
+                        j++;
+                    }
+                    c_d = j * s + 1.0;
+                    if (c_d > P_bar.size2()) {
+                        i = 0;
+                        i1 = 0;
+                    } else {
+                        i = static_cast<int>(c_d) - 1;
+                        i1 = P_bar.size2();
+                    }
+                    vlen = A_hat.size1() - 1;
+                    loop_ub = A_hat.size1();
+                    t = i1 - i;
+                    for (i1 = 0; i1 < t; i1++) {
+                        for (i2 = 0; i2 < loop_ub; i2++) {
+                            A_hat[i2 + (vlen + 1) * i1] = A_hat[i2 + A_hat.size1() * (i + i1)];
+                        }
+                    }
+                    A_hat.resize(vlen + 1, t, true);
+                }
+                t = N - P_bar.size2();
+                if (t < 0) {
+                    t = 0;
+                }
+                acc.resize(t, t);
+                loop_ub = t * t;
+                for (i = 0; i < loop_ub; i++) {
+                    acc[i] = 0.0;
+                }
+                if (t > 0) {
+                    for (loop_ub = 0; loop_ub < t; loop_ub++) {
+                        acc[loop_ub + acc.size1() * loop_ub] = 1.0;
+                    }
+                }
+                if ((acc.size1() != 0) && (acc.size2() != 0)) {
+                    loop_ub = acc.size1();
+                } else if ((N - P_bar.size2() != 0) && (P_bar.size2() != 0)) {
+                    loop_ub = N - P_bar.size2();
+                } else {
+                    loop_ub = acc.size1();
+                    if (N - P_bar.size2() > acc.size1()) {
+                        loop_ub = N - P_bar.size2();
+                    }
+                }
+                empty_non_axis_sizes = (loop_ub == 0);
+                if (empty_non_axis_sizes || ((acc.size1() != 0) && (acc.size2() != 0))) {
+                    vlen = acc.size2();
+                } else {
+                    vlen = 0;
+                }
+                if (empty_non_axis_sizes ||
+                    ((N - P_bar.size2() != 0) && (P_bar.size2() != 0))) {
+                    t = P_bar.size2();
+                } else {
+                    t = 0;
+                }
+                R.resize(loop_ub, vlen + t);
+                for (i = 0; i < vlen; i++) {
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        R[i1 + R.size1() * i] = acc[i1 + loop_ub * i];
+                    }
+                }
+                for (i = 0; i < t; i++) {
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        R[i1 + R.size1() * (i + vlen)] = 0.0;
+                    }
+                }
+                if ((P_bar.size2() != 0) && (N - P_bar.size2() != 0)) {
+                    loop_ub = P_bar.size2();
+                } else if ((P_bar.size1() != 0) && (P_bar.size2() != 0)) {
+                    loop_ub = P_bar.size1();
+                } else {
+                    loop_ub = P_bar.size2();
+                    if (P_bar.size1() > P_bar.size2()) {
+                        loop_ub = P_bar.size1();
+                    }
+                }
+                empty_non_axis_sizes = (loop_ub == 0);
+                if (empty_non_axis_sizes ||
+                    ((P_bar.size2() != 0) && (N - P_bar.size2() != 0))) {
+                    vlen = N - P_bar.size2();
+                } else {
+                    vlen = 0;
+                }
+                if (empty_non_axis_sizes ||
+                    ((P_bar.size1() != 0) && (P_bar.size2() != 0))) {
+                    t = P_bar.size2();
+                } else {
+                    t = 0;
+                }
+                acc.resize(loop_ub, vlen + t);
+                for (i = 0; i < vlen; i++) {
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        acc[i1 + acc.size1() * i] = 0.0;
+                    }
+                }
+                for (i = 0; i < t; i++) {
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        acc[i1 + acc.size1() * (i + vlen)] = P_bar[i1 + loop_ub * i];
+                    }
+                }
+                if ((R.size1() != 0) && (R.size2() != 0)) {
+                    loop_ub = R.size2();
+                } else if ((acc.size1() != 0) && (acc.size2() != 0)) {
+                    loop_ub = acc.size2();
+                } else {
+                    loop_ub = R.size2();
+                    if (acc.size2() > R.size2()) {
+                        loop_ub = acc.size2();
+                    }
+                }
+                empty_non_axis_sizes = (loop_ub == 0);
+                if (empty_non_axis_sizes || ((R.size1() != 0) && (R.size2() != 0))) {
+                    vlen = R.size1();
+                } else {
+                    vlen = 0;
+                }
+                if (empty_non_axis_sizes || ((acc.size1() != 0) && (acc.size2() != 0))) {
+                    t = acc.size1();
+                } else {
+                    t = 0;
+                }
+                P_bar.resize(vlen + t, loop_ub);
+                for (i = 0; i < loop_ub; i++) {
+                    for (i1 = 0; i1 < vlen; i1++) {
+                        P_bar[i1 + P_bar.size1() * i] = R[i1 + vlen * i];
+                    }
+                }
+                for (i = 0; i < loop_ub; i++) {
+                    for (i1 = 0; i1 < t; i1++) {
+                        P_bar[(i1 + vlen) + P_bar.size1() * i] = acc[i1 + t * i];
+                    }
+                }
+                acc.resize(P.size1(), P.size2());
+                loop_ub = P.size1() * P.size2() - 1;
+                for (i = 0; i <= loop_ub; i++) {
+                    acc[i] = P[i];
+                }
+                prod(acc, P_bar, P);
+            }
+            if (static_cast<int>(k - 1U) < 1) {
+                N = 0;
+            } else {
+                N = static_cast<int>(k - 1U);
+            }
+//            d.resize(N, true);
+            indicator.resize(2, static_cast<int>(k - 1U));
+            loop_ub = static_cast<int>(k - 1U) << 1;
+            for (i = 0; i < loop_ub; i++) {
+                indicator[i] = 0.0;
+            }
+            f = 1.0;
+            i = static_cast<int>(k);
+            for (vlen = 0; vlen <= i - 2; vlen++) {
+                indicator[2 * vlen] = f;
+                f += d[vlen];
+                indicator[2 * vlen + 1] = f - 1.0;
+            }
+            b_matrix A_temp;
+            prod(A, P, A_temp);
+            scalar sum = 0;
+            for (index i = 0; i < m * n; i++){
+                sum += A_bar[i] - A_temp[i];
+            }
+            cout << sum;
+            cout.flush();
+        }
+
+        returnType<scalar, index> bsic_bcp(index is_bocb, index c) {
+
+            b_vector x_tmp, htx(m, 0), y_hat(m, 0), x_t, x_bar(n, 0);
+            b_matrix A_T, A_P, P, d(2, n); //A could be permuted based on the init point
+            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y);
+
+            scalar time = omp_get_wtime();
+            if (v_norm <= tolerance) {
+                time = omp_get_wtime() - time;
+                return {{}, time, v_norm};
+            }
+
+            CILS_Reduction<scalar, index> reduction;
+            CILS_OLM<scalar, index> olm;
+
+            index i, j, p, iter, cur_end , cur_1st;
+
+            // Partition:
+            part2(c, A_P, P, d);
+            b_matrix P_trans = trans(P);
+            prod(P_trans, x_hat, x_tmp);
+            std::vector<int> pp;
+            for (i = 0; i < d.size2(); i++){
+                pp.push_back(i);
+            }
+            cout << A;
+            cout << A_P;
+            time = omp_get_wtime();
+            for (index itr = 0; itr < 2 - 1; itr++) {
+//                std::shuffle(pp.begin(), pp.end(), std::mt19937(std::random_device()()));
+                prod(A_P, x_tmp, htx);
+                for (i = 0; i < m; i++) {
+                    y_hat[i] = y[i] - htx[i];
+                }
+
+                for (j = 0; j < d.size2(); j++) {
+                    cur_1st = d(0, pp[j]) - 1;
+                    cur_end = d(1, pp[j]) - 1;
+                    index t = cur_end - cur_1st + 1;
+                    A_T.resize(m, t);
+
+                    x_t.resize(t);
+                    for (index col = cur_1st; col <= cur_end; col++) {
+                        for (index row = 0; row < m; row++) {
+                            A_T(row, col - cur_1st) = A_P(row, col);
+                        }
+                        x_t[col - cur_1st] = x_tmp[col];
+                    }
+                    cout << A_T;
+                    prod(A_T, x_t, htx);
+                    for (i = 0; i < m; i++) {
+                        y_hat[i] = y_hat[i] + htx[i];
+                    }
+
+                    b_vector z(t, 0);
+                    reduction.reset(A_T, y_hat, upper);
+                    if (is_bocb)
+                        reduction.aip();
+                    else
+//                        reduction.aip();
+                        reduction.aspl_p();
+//                    cout << reduction.R;
+                    olm.reset(reduction.R, reduction.y, upper, 5, true);
+
+                    if (is_bocb) {
+                        olm.bocb();
+                        prod(reduction.P, olm.z_hat, z);
+                    } else {
+                        olm.bnp();
+                        prod(reduction.Z, olm.z_hat, z);
+                    }
+
+                    for (index col = cur_1st; col <= cur_end; col++) {
+                        x_tmp[col] = z[col - cur_1st];
+                    }
+                    prod(A_T, z, htx);
+                    for (i = 0; i < m; i++) {
+                        y_hat[i] = y_hat[i] - htx[i];
+                    }
+                }
+
+                scalar rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
+
+                if (rho < v_norm) {
+//                    x_tmp.assign(x_bar);
+                    if (rho <= tolerance) {
+                        break;
+                    }
+                    v_norm = rho;
+                }
+            }
+            time = omp_get_wtime() - time;
+            prod(P, x_tmp, x_hat);
+            return {{}, time, v_norm};
+        }
 
         returnType<scalar, index> bsic(index is_bocb, index c) {
 
@@ -910,8 +984,8 @@ namespace cils {
             if (m == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
-            } else{
-                block_size[0] = block_size[1] = 8;
+            } else {
+                block_size[0] = block_size[1] = 5;
             }
             time = omp_get_wtime();
             for (index itr = 0; itr < search_iter - 1; itr++) {
@@ -1045,7 +1119,7 @@ namespace cils {
             if (m == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
-            } else{
+            } else {
                 block_size[0] = block_size[1] = 8;
             }
             CILS_Reduction<scalar, index> reduction;

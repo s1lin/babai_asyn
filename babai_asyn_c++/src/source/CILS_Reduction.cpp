@@ -24,50 +24,6 @@ namespace cils {
         index m, n, upper, lower;
         bool verbose{}, eval{};
 
-//        void init_R_A() {
-//            R_A.resize(n / 2 * (1 + n), false);
-//            index idx = 0;
-//            for (index row = 0; row < R.size1(); row++) {
-//                for (index col = row; col < R.size2(); col++) {
-//                    R_A[idx] = R(row, col);
-//                    idx++;
-//                }
-//            }
-//        }
-
-//        double b_norm(const b_vector &x) {
-//            double norm_x;
-//            if (x.size() == 0) {
-//                norm_x = 0.0;
-//            } else {
-//                norm_x = 0.0;
-//                if (x.size() == 1) {
-//                    norm_x = std::abs(x[0]);
-//                } else {
-//                    double scale;
-//                    int kend;
-//                    scale = 3.3121686421112381E-170;
-//                    kend = x.size();
-//                    for (int k{0}; k < kend; k++) {
-//                        double absxk;
-//                        absxk = std::abs(x[k]);
-//                        if (absxk > scale) {
-//                            double t;
-//                            t = scale / absxk;
-//                            norm_x = norm_x * t * t + 1.0;
-//                            scale = absxk;
-//                        } else {
-//                            double t;
-//                            t = absxk / scale;
-//                            norm_x += t * t;
-//                        }
-//                    }
-//                    norm_x = scale * std::sqrt(norm_x);
-//                }
-//            }
-//            return norm_x;
-//        }
-
         /**
          * Evaluating the LLL decomposition
          * @return
@@ -267,7 +223,7 @@ namespace cils {
         }
 
         void reset(b_matrix &A, b_vector &y_t, index up) {
-            m = A.size1();
+            m = n;
             n = A.size2();
             B.resize(m, n);
             B.assign(A);
@@ -287,6 +243,28 @@ namespace cils {
             Z.assign(I);
             P.assign(I);
             this->upper = up;
+        }
+
+        void reset(b_matrix &A) {
+            m = n;
+            n = A.size2();
+            B.resize(m, n);
+            B.assign(A);
+            y.resize(m);
+            y.assign(0);
+
+            R.resize(n, n, false);
+            Q.resize(m, n, false);
+            y_r.resize(m);
+            p.resize(n);
+
+            I.resize(n, n, false);
+            Z.resize(n, n, false);
+            P.resize(n, n, false);
+
+            I.reset();
+            Z.assign(I);
+            P.assign(I);
         }
 
         /**
@@ -622,7 +600,8 @@ namespace cils {
          * @param y : m-by-1 input right hand vector
          */
         returnType<scalar, index> mgs_qr_col() {
-
+            m = B.size1();
+            n = B.size2();
             b_matrix B_t(B);
 
             R.resize(B.size2(), B.size2());
@@ -659,6 +638,223 @@ namespace cils {
             return {{}, t_qr, 0};
         }
 
+        returnType<scalar, index> mgs_max()
+        {
+            b_matrix b_P;
+            b_matrix s;
+            b_matrix varargin_1;
+            b_vector b_A;
+            double l;
+            int iv[2];
+            int i;
+            int i1;
+            int k;
+            int loop_ub;
+            int nn;
+            int t;
+            nn = n;
+            R.resize(n, n);
+            R.clear();
+
+            s.resize(2, n);
+            s.clear();
+
+            t = n;
+            P.resize(t, t);
+            loop_ub = t * t;
+            for (i = 0; i < loop_ub; i++) {
+                P[i] = 0.0;
+            }
+            if (t > 0) {
+                for (k = 0; k < t; k++) {
+                    P[k + P.size1() * k] = 1.0;
+                }
+            }
+            i = n;
+            for (k = 0; k < i; k++) {
+                loop_ub = n;
+                b_A.resize(loop_ub);
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    b_A[i1] = B[i1 + n * k];
+                }
+                l = norm_2(b_A); //coder::b_norm(b_A);
+                s[2 * k] = l * l;
+            }
+            i = n;
+            for (int j{0}; j < i; j++) {
+                double s_idx_2;
+                int i2;
+                int idx;
+                if (j + 1 > nn) {
+                    i1 = 0;
+                    i2 = 0;
+                    t = 0;
+                    idx = 0;
+                } else {
+                    i1 = j;
+                    i2 = nn;
+                    t = j;
+                    idx = nn;
+                }
+                loop_ub = i2 - i1;
+                if (loop_ub == idx - t) {
+                    varargin_1.resize(1, loop_ub);
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        varargin_1[i2] = s[2 * (i1 + i2)] - s[2 * (t + i2) + 1];
+                    }
+                } 
+                t = varargin_1.size2();
+                if (varargin_1.size2() <= 2) {
+                    if (varargin_1.size2() == 1) {
+                        idx = 1;
+                    } else if ((varargin_1[0] < varargin_1[varargin_1.size2() - 1]) ||
+                               (std::isnan(varargin_1[0]) &&
+                                (!std::isnan(varargin_1[varargin_1.size2() - 1])))) {
+                        idx = varargin_1.size2();
+                    } else {
+                        idx = 1;
+                    }
+                } else {
+                    if (!std::isnan(varargin_1[0])) {
+                        idx = 1;
+                    } else {
+                        bool exitg1;
+                        idx = 0;
+                        k = 2;
+                        exitg1 = false;
+                        while ((!exitg1) && (k <= t)) {
+                            if (!std::isnan(varargin_1[k - 1])) {
+                                idx = k;
+                                exitg1 = true;
+                            } else {
+                                k++;
+                            }
+                        }
+                    }
+                    if (idx == 0) {
+                        idx = 1;
+                    } else {
+                        l = varargin_1[idx - 1];
+                        i1 = idx + 1;
+                        for (k = i1; k <= t; k++) {
+                            s_idx_2 = varargin_1[k - 1];
+                            if (l < s_idx_2) {
+                                l = s_idx_2;
+                                idx = k;
+                            }
+                        }
+                    }
+                }
+                l = (static_cast<double>(idx) + (static_cast<double>(j) + 1.0)) - 1.0;
+                if (l > static_cast<double>(j) + 1.0) {
+                    int b_l[2];
+                    iv[0] = j;
+                    idx = static_cast<int>(l) - 1;
+                    iv[1] = idx;
+                    t = P.size1() - 1;
+                    b_l[0] = idx;
+                    b_l[1] = j;
+                    b_P.resize(P.size1(), 2);
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 <= t; i2++) {
+                            b_P[i2 + b_P.size1() * i1] = P[i2 + P.size1() * b_l[i1]];
+                        }
+                    }
+                    loop_ub = b_P.size1();
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 < loop_ub; i2++) {
+                            P[i2 + P.size1() * iv[i1]] = b_P[i2 + b_P.size1() * i1];
+                        }
+                    }
+                    double s_idx_3;
+                    l = s[2 * idx + 1];
+                    s_idx_2 = s[2 * j];
+                    s_idx_3 = s[2 * j + 1];
+                    s[2 * j] = s[2 * idx];
+                    s[2 * j + 1] = l;
+                    s[2 * idx] = s_idx_2;
+                    s[2 * idx + 1] = s_idx_3;
+                    iv[0] = j;
+                    iv[1] = idx;
+                    t = n - 1;
+                    b_l[0] = idx;
+                    b_l[1] = j;
+                    b_P.resize(t + 1, 2);
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 <= t; i2++) {
+                            b_P[i2 + b_P.size1() * i1] = B[i2 + n * b_l[i1]];
+                        }
+                    }
+                    loop_ub = b_P.size1();
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 < loop_ub; i2++) {
+                            B[i2 + n * iv[i1]] = b_P[i2 + b_P.size1() * i1];
+                        }
+                    }
+                    iv[0] = j;
+                    iv[1] = idx;
+                    t = R.size1() - 1;
+                    b_l[0] = idx;
+                    b_l[1] = j;
+                    b_P.resize(R.size1(), 2);
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 <= t; i2++) {
+                            b_P[i2 + b_P.size1() * i1] = R[i2 + R.size1() * b_l[i1]];
+                        }
+                    }
+                    loop_ub = b_P.size1();
+                    for (i1 = 0; i1 < 2; i1++) {
+                        for (i2 = 0; i2 < loop_ub; i2++) {
+                            R[i2 + R.size1() * iv[i1]] = b_P[i2 + b_P.size1() * i1];
+                        }
+                    }
+                }
+                loop_ub = n;
+                b_A.resize(loop_ub);
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    b_A[i1] = B[i1 + n * j];
+                }
+                R[j + R.size1() * j] = norm_2(b_A);
+                t = n - 1;
+                l = R[j + R.size1() * j];
+                b_A.resize(t + 1);
+                for (i1 = 0; i1 <= t; i1++) {
+                    b_A[i1] = B[i1 + n * j] / l;
+                }
+                loop_ub = b_A.size();
+                for (i1 = 0; i1 < loop_ub; i1++) {
+                    B[i1 + n * j] = b_A[i1];
+                }
+                i1 = nn - j;
+                for (k = 0; k <= i1 - 2; k++) {
+                    unsigned int b_k;
+                    b_k = (static_cast<unsigned int>(j) + k) + 2U;
+                    loop_ub = n;
+                    l = 0.0;
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        l += B[i2 + n * j] *
+                             B[i2 + n * (static_cast<int>(b_k) - 1)];
+                    }
+                    R[j + R.size1() * (static_cast<int>(b_k) - 1)] = l;
+                    l = R[j + R.size1() * (static_cast<int>(b_k) - 1)];
+                    s[2 * (static_cast<int>(b_k) - 1) + 1] =
+                            s[2 * (static_cast<int>(b_k) - 1) + 1] + l * l;
+                    t = n - 1;
+                    b_A.resize(t + 1);
+                    for (i2 = 0; i2 <= t; i2++) {
+                        b_A[i2] = B[i2 + n * (static_cast<int>(b_k) - 1)] -
+                                  B[i2 + n * j] * l;
+                    }
+                    loop_ub = b_A.size();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        B[i2 + n * (static_cast<int>(b_k) - 1)] = b_A[i2];
+                    }
+                }
+            }
+
+            return {{}, 0, 0};
+        }
+        
         /**
          * @return
          */

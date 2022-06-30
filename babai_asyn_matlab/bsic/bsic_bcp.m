@@ -18,7 +18,7 @@ function [x_cur, rho] = bsic_bcp(x_cur, rho, A, tolerance, max_iter, y, k, s, op
 [bbA, P, ~, indicator] = part2(A, s);
 x_t = P' * x_cur;
 v_norm = rho;
-
+permutation = 1:size(indicator, 2);
 for i = 1:max_iter 
     permutation = randperm(size(indicator, 2)); 
     y_hat = y - bbA * x_t;
