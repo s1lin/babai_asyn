@@ -1,4 +1,4 @@
-function [x_cur, rho] = bsic(x_cur, rho, A, tolerance, max_iter, y, k, permutation, optimal)
+function [x_cur, rhos] = bsic(x_cur, rho, A, tolerance, max_iter, y, k, permutation, optimal)
 
 % [x_cur, rho, stopping] = SCP_Block_Optimal(x_cur, rho, A, tolerance, max_iter, max_Time, y, m, n)
 % applies the SCP-Block Optimal method to obtain a sub-optimal solution
@@ -29,6 +29,7 @@ end
 
 I = eye(n);
 Piv_cum = eye(n);
+rhos = zeros(max_iter, 1);
 v_norm = rho;
 for i = 1:max_iter 
     %permutation = randperm(n);
@@ -36,8 +37,8 @@ for i = 1:max_iter
     x_tmp = x_cur(permutation(:, i));
     %H_P = A(:,permutation);
     %x_tmp = x_cur(permutation);
-    %[H_t, Piv_cum, indicator] = part(H_P);
-    H_t = H_P;
+    [H_t, Piv_cum, indicator] = part(H_P);
+    %H_t = H_P;
     x_t = Piv_cum' * x_tmp;
     y_hat = y - H_t * x_t;
     
@@ -57,15 +58,17 @@ for i = 1:max_iter
         else
             %z = obils_2_block_search(H_adj, y_hat, l, u);
             [~, R, y_bar,~ ,~ , p] = obils_reduction(H_adj,y_hat,l,u);
-            z = zeros(t, 1);            
-            for h=t:-1:1
-                if h==t
-                    s_temp=y_bar(h)/(R(h,h));
-                else
-                    s_temp=(y_bar(h)- R(h,h+1:t)*z(h+1:t))/(R(h,h));
-                end
-                z(h) = max(min(round(s_temp),u(h)),l(h));
-            end
+            R
+            %z = random_babai(R,y_bar,l,u,10);
+            z = zeros(t, 1);
+            for h=t:-1:1   
+                if h==t                                                        
+                   s_temp=y_bar(h)/(R(h,h));                                    
+                else                                                             
+                   s_temp=(y_bar(h)- R(h,h+1:t)*z(h+1:t))/(R(h,h));            
+                end                                  
+                z(h) = max(min(round(s_temp),u(h)),l(h));                       
+            end                     
             x = zeros(t, 1);
             for h = 1 : t
                 x(p(h)) = z(h); 
@@ -76,8 +79,11 @@ for i = 1:max_iter
         y_hat = y_hat - H_adj * z;
         
     end
+    H_t
+    z_hat = I(:, permutation(:, i)) * Piv_cum * x_t;
+    z_hat'
     rho = norm(y - H_t * x_t);
-    
+    rhos(i) = rho;
     if rho < v_norm        
         P = I(:, permutation(:, i)) * Piv_cum; % 
         x_cur = P * x_t;        

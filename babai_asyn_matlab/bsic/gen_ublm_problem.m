@@ -65,6 +65,7 @@ x_t = (2^k - 1 + xbar)./2;
 
 %Noise vector v:
 v = sigma * randn(m, 1);
+tol = sqrt(sigma*m)
 
 %Get Upper triangular matrix
 y = A * x_t + v;
