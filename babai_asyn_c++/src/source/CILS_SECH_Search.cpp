@@ -78,12 +78,12 @@ namespace cils {
 //            cout << z[row_k] << endl;
             gamma = R_kk * (c[row_k] - z[row_k]);
             //ILS search process
-            while (iter < max_thre) {
+            while (true) {
                 iter++;
-                if (omp_get_wtime() - time > 10) {
-                    cout << "BREAK DUE TO RUNTIME";
-                    break;
-                }
+//                if (omp_get_wtime() - time > 10) {
+//                    cout << "BREAK DUE TO RUNTIME";
+//                    break;
+//                }
                 if (dflag) {
                     newprsd = p[row_k] + gamma * gamma;
                     if (newprsd < beta) {

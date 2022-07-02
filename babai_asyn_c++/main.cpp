@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
 
 //    test_PBOB<double, int>(size_n, nob, c, T, is_local);
 //    test_init<double, int>(size_n, 1);
-//    test_pbsic<double, int>(size_n, is_local, info, sec);
-    test_init_pt<double, int>();
+    test_pbsic<double, int>(size_n, is_local, info, size_n, sec);
+//    test_init_pt<double, int>();
 
 //    omp_set_nested(1);   /* make sure nested parallism is on */
 //    int nprocs = omp_get_num_procs();

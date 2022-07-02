@@ -1253,7 +1253,7 @@ namespace cils {
             b_vector b_y, b_G;
             double x_j;
             int i, i1, j, loop_ub, ncols;
-            pmgs_qr_col(n_t);
+            mgs_qr_col();
             b_y.assign(y);
             R0.assign(R);
             // y = Q' * y;
@@ -1585,7 +1585,7 @@ namespace cils {
 //            }
             CILS_Reduction reduction_;
             reduction_.reset(R0, b_y, upper);
-            reduction_.pmgs_qr_col(n_t);
+            reduction_.mgs_qr_col();
 //            cout<< reT.run_time;/
             R.assign(reduction_.R);
             y.assign(reduction_.y);

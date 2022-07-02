@@ -14,11 +14,7 @@ x_temp = zeros(n,1);
 
 for j = 1:k
     for i = n:-1:1
-        if i == n
-            c = y(i)/R(i,i);
-        else
-            c = (y(i)-R(i,i+1:n)*x_temp(i+1:n))/R(i,i);
-        end
+        c = (y(i)-R(i,i+1:n)*x_temp(i+1:n))/R(i,i);        
         [domain,range] = klein_dist(G*R(i,i)^2,c,l(i),u(i));
         x_temp(i) = randsample(domain,1,true,range);
     end

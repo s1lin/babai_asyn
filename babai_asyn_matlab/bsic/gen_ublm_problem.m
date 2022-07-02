@@ -26,8 +26,7 @@ function [A, x_t, y, R0, permutation, size_perm] = gen_ublm_problem(k, m, n, SNR
  
 rng('shuffle')
 %Initialize Variables
-% sigma = sqrt((4^k-1)/(3*k*10^(SNR/10)));
-% if m == 56
+
 sigma = sqrt((4^k-1)*n/(3*k*10^(SNR/10)));
 
 if c==1
@@ -65,7 +64,6 @@ x_t = (2^k - 1 + xbar)./2;
 
 %Noise vector v:
 v = sigma * randn(m, 1);
-tol = sqrt(sigma*m)
 
 %Get Upper triangular matrix
 y = A * x_t + v;
@@ -90,17 +88,18 @@ permutation(:,1) = (1:n)';
 
 %l = repelem(0, n)';
 %u = repelem(2^k-1, n)';
-%
+
 %[x_cg, ~, ~] = cgsic(A, y, 0, 2^k-1);
 %x_gp = gradproj(A,y,l,u,zeros(n, 1),max_iter);
 %for i = 1:n
 %    x_gp(i) = max(min(x_gp(i), u(i)), l(i));
 %end
 %
-%%[s_bar_cur, ~] = bsic(x_gp, inf, A, 0, max_iter, y, k, permutation, false);
-x_hat = zeros(n, 1);
-[s_bar_cur, ~] = bsic_bcp(x_hat, inf, A, 0, max_iter, y, k, 10, false);
-s_bar_cur'
+%rho = norm(y)
+%[s_bar_cur, ~] = bsic(zeros(n, 1), rho, A, 0, max_iter, y, k, permutation, true);
+%ber(s_bar_cur, x_t, 3, n)
+% x_hat = zeros(n, 1);
+% [s_bar_cur, ~] = bsic_bcp(x_hat, inf, A, 0, max_iter, y, k, 10, false);
 
 R0 = zeros(n);
 %R0(:,1) = x_cg;

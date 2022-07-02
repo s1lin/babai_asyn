@@ -1,4 +1,4 @@
-function [A_hat, Piv_cum, indicator] = part(A)
+function [A_hat, Piv_cum, indicator] = part(A, s)
 
 %Corresponds to AlgoritA_hatm 5 (Partition Strategy) in Report 10
 
@@ -19,7 +19,7 @@ function [A_hat, Piv_cum, indicator] = part(A)
 %     indicator - 2-by-q integer matrix (indicates submatrices of A_hat)
 
 
-[K, N] = size(A);
+[~, N] = size(A);
 A_hat = A;
 lastCol = N;
 Piv_cum = eye(N);
@@ -27,12 +27,12 @@ indicator = zeros(2, N);
 i = 0;
 
 while lastCol >= 1    
-    firstCol = max(1, lastCol-K+1);
+    firstCol = max(1, lastCol-s+1);
     A_hat_p = A_hat(:, firstCol:lastCol);
     Piv_total = eye(N);
     
     %Find tA_hate rank of A_hat_p
-    [~, R, P] = qr(A_hat_p);
+    [~, R, P] = qrmgs_max(A_hat_p);
     if size(R,2)>1
         r = sum(abs(diag(R)) > 10^(-6) );
     else

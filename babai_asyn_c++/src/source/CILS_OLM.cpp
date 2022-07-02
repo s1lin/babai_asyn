@@ -243,6 +243,352 @@ namespace cils {
             return {{}, time, 0};
         }
 
+
+        returnType<scalar, index> rbb(index k) {
+            b_matrix domain, edges, range;
+            b_vector dd, x_temp(n, 0);
+            double g, bsum, r, sumw;
+            int aoffset, b_k, i, idx, nn, nx;
+
+            // Input:  R is upper triangular
+            //         y is the target REAL vector in the lattice.
+            //         l is the lower bound of the box
+            //         u is the upper bound of the box
+            //         k is the number of runs to obtain the optimal one
+            // Output: x is an estimate
+            // 'random_babai:9' g = 10/min(abs(diag(R)))^2;
+            sumw = INFINITY;
+            for (i = 0; i < n; i++) {
+                if (abs(R(i, i)) < sumw)
+                    sumw = abs(R(i, i));
+            }
+            g = 10.0 / (sumw * sumw);
+            //  This is a parameter used in the algorithm
+            // 'random_babai:10' nn = size(R,2);
+            // 'random_babai:11' x = l;
+            // 'random_babai:12' r = norm(y-R*x);
+            r = helper::find_residual<scalar, index>(R, x_temp, y);
+            // 'random_babai:13' x_temp = zeros(nn,1);
+            // 'random_babai:15' for j = 1:k
+            scalar time = omp_get_wtime();
+            for (int j = 0; j < k; j++) {
+                int lastBlockLength;
+                // 'random_babai:16' for i = nn:-1:1
+                for (i = n - 1; i >= 0; i--) {
+                    scalar sum = 0;
+                    for (int t = i + 1; t < n; t++) {
+                        sum += R(i, t) * z_hat[t];
+                    }
+                    scalar c = round((y_bar[i] - sum) / R(i, i));
+                    z_hat[i] = !is_constrained ? c : max(min((index) c, upper), 0);
+                    // 'random_babai:22' [domain,range] = klein_dist(g*R(i,i)^2,c,l(i),u(i));
+                    sumw = R[i + R.size1() * i];
+                    sumw = g * (sumw * sumw);
+                    bsum = 0;
+                    // Input: g is the parameter controlling the distribution. As g->0 the
+                    // distribution tends to a discrete uniform.
+                    //        c is the real-valued input to be rounded.
+                    //        bl and bu are the lower and upper ends of the constraint
+                    //        interval
+                    //
+                    // Output: domain - candidates with probability > 0 (in MATLAB)
+                    //         range - probabilities of each element in the domain
+
+                    // 'klein_dist:11' domain = zeros(1,bu-bl+1);
+                    nx = upper + 1.0;
+                    domain.resize(1, nx, false);
+                    // 'klein_dist:12' range = zeros(1,bu-bl+1);
+                    range.resize(1, nx, false);
+
+                    // 'klein_dist:13' index=0;
+                    // 'klein_dist:14' for i=bl:bu
+                    lastBlockLength = static_cast<int>(upper + (1.0 - 0));
+                    for (nx = 0; nx < lastBlockLength; nx++) {
+                        double d_i = bsum + static_cast<double>(nx);
+                        // 'klein_dist:15' index = index+1;
+                        // 'klein_dist:16' s = 0;
+                        double s = 0.0;
+                        // 'klein_dist:17' for j = bl:bu
+                        for (idx = 0; idx < lastBlockLength; idx++) {
+                            double b_j = bsum + static_cast<double>(idx);
+                            // 'klein_dist:18' s = s+exp(-g*(2*c-j-i)*(i-j));
+                            s += std::exp(-sumw * ((2.0 * c - b_j) - d_i) * (d_i - b_j));
+                        }
+                        // 'klein_dist:20' prob = 1/s;
+                        range[nx] = 1.0 / s;
+                        // 'klein_dist:21' domain(index) = i;
+                        domain[nx] = d_i;
+                        // 'klein_dist:22' range(index) = prob;
+                    }
+                    // 'random_babai:23' x_temp(i) = randsample(domain,1,true,range);
+                    if (range.size2() != 0) {
+                        if (range.size2() <= 1024) {
+                            nx = range.size2();
+                            lastBlockLength = 0;
+                            aoffset = 1;
+                        } else {
+                            nx = 1024;
+                            aoffset = range.size2() / 1024;
+                            lastBlockLength = range.size2() - (aoffset << 10);
+                            if (lastBlockLength > 0) {
+                                aoffset++;
+                            } else {
+                                lastBlockLength = 1024;
+                            }
+                        }
+                        sumw = range[0];
+                        for (b_k = 2; b_k <= nx; b_k++) {
+                            sumw += range[b_k - 1];
+                        }
+                        for (int ib{2}; ib <= aoffset; ib++) {
+                            nx = (ib - 1) << 10;
+                            bsum = range[nx];
+                            if (ib == aoffset) {
+                                idx = lastBlockLength;
+                            } else {
+                                idx = 1024;
+                            }
+                            for (b_k = 2; b_k <= idx; b_k++) {
+                                bsum += range[(nx + b_k) - 1];
+                            }
+                            sumw += bsum;
+                        }
+                        edges.resize(1, domain.size2() + 1);
+                        edges[0] = 0.0;
+                        edges[domain.size2()] = 1.0;
+                        lastBlockLength = domain.size2();
+                        for (idx = 0; idx <= lastBlockLength - 2; idx++) {
+                            edges[idx + 1] = std::fmin(edges[idx] + range[idx] / sumw, 1.0);
+                        }
+                    } else {
+                        edges.resize(1, 1);
+                        edges[0] = 0.0;
+                    }
+                    std::random_device rd;
+                    std::mt19937 e2(rd());
+                    std::uniform_real_distribution<> dist(0, 1);
+
+                    if (range.size2() == 0) {
+                        sumw = dist(e2);
+                        sumw = std::floor(sumw * static_cast<double>(domain.size2())) + 1.0;
+                    } else {
+                        sumw = dist(e2);
+                        idx = 0;
+                        if (!std::isnan(sumw)) {
+                            if ((sumw >= edges[0]) && (sumw < edges[edges.size2() - 1])) {
+                                nx = edges.size2();
+                                idx = 1;
+                                aoffset = 2;
+                                while (nx > aoffset) {
+                                    lastBlockLength = (idx >> 1) + (nx >> 1);
+                                    if (((idx & 1) == 1) && ((nx & 1) == 1)) {
+                                        lastBlockLength++;
+                                    }
+                                    if (sumw >= edges[lastBlockLength - 1]) {
+                                        idx = lastBlockLength;
+                                        aoffset = lastBlockLength + 1;
+                                    } else {
+                                        nx = lastBlockLength;
+                                    }
+                                }
+                            }
+                            if (sumw == edges[edges.size2() - 1]) {
+                                idx = edges.size2();
+                            }
+                        }
+                        sumw = idx;
+                    }
+                    x_temp[i] = domain[static_cast<int>(sumw) - 1];
+                }
+                // 'random_babai:25' r_temp = norm(y-R*x_temp);
+                bsum = helper::find_residual<scalar, index>(R, x_temp, y);
+                // 'random_babai:26' if r_temp < r
+                if (bsum < r) {
+                    // 'random_babai:27' x = x_temp;
+                    z_hat.assign(x_temp);
+                    // 'random_babai:28' r = r_temp;
+                    r = bsum;
+                }
+            }
+            time = omp_get_wtime() - time;
+            return {{}, time, 0};
+        }
+
+        returnType<scalar, index> prbb(index k, index n_t) {
+            b_matrix domain, edges, range;
+            b_vector dd, x_temp(n, 0);
+            double g, bsum, r, sumw;
+            int aoffset, b_k, i, idx, nx;
+
+            // Input:  R is upper triangular
+            //         y is the target REAL vector in the lattice.
+            //         l is the lower bound of the box
+            //         u is the upper bound of the box
+            //         k is the number of runs to obtain the optimal one
+            // Output: x is an estimate
+            // 'random_babai:9' g = 10/min(abs(diag(R)))^2;
+            sumw = INFINITY;
+            for (i = 0; i < n; i++) {
+                if (abs(R(i, i)) < sumw)
+                    sumw = abs(R(i, i));
+            }
+            g = 10.0 / (sumw * sumw);
+            //  This is a parameter used in the algorithm
+            // 'random_babai:10' nn = size(R,2);
+            // 'random_babai:11' x = l;
+            // 'random_babai:12' r = norm(y-R*x);
+            r = helper::find_residual<scalar, index>(R, x_temp, y);
+            // 'random_babai:13' x_temp = zeros(nn,1);
+            // 'random_babai:15' for j = 1:k
+
+            scalar time = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_t) private(domain, edges, range, dd, bsum, sumw, i, idx, nx, aoffset) firstprivate(x_temp)
+            {
+#pragma omp for nowait
+                for (int j = 0; j < k; j++) {
+                    int lastBlockLength;
+                    // 'random_babai:16' for i = nn:-1:1
+                    for (i = n - 1; i >= 0; i--) {
+                        scalar sum = 0;
+                        for (int t = i + 1; t < n; t++) {
+                            sum += R(i, t) * z_hat[t];
+                        }
+                        scalar c = round((y_bar[i] - sum) / R(i, i));
+                        z_hat[i] = !is_constrained ? c : max(min((index) c, upper), 0);
+                        // 'random_babai:22' [domain,range] = klein_dist(g*R(i,i)^2,c,l(i),u(i));
+                        sumw = R[i + R.size1() * i];
+                        sumw = g * (sumw * sumw);
+                        bsum = 0;
+                        // Input: g is the parameter controlling the distribution. As g->0 the
+                        // distribution tends to a discrete uniform.
+                        //        c is the real-valued input to be rounded.
+                        //        bl and bu are the lower and upper ends of the constraint
+                        //        interval
+                        //
+                        // Output: domain - candidates with probability > 0 (in MATLAB)
+                        //         range - probabilities of each element in the domain
+
+                        // 'klein_dist:11' domain = zeros(1,bu-bl+1);
+                        nx = upper + 1.0;
+                        domain.resize(1, nx, false);
+                        // 'klein_dist:12' range = zeros(1,bu-bl+1);
+                        range.resize(1, nx, false);
+
+                        // 'klein_dist:13' index=0;
+                        // 'klein_dist:14' for i=bl:bu
+                        lastBlockLength = static_cast<int>(upper + (1.0 - 0));
+                        for (nx = 0; nx < lastBlockLength; nx++) {
+                            double d_i = bsum + static_cast<double>(nx);
+                            // 'klein_dist:15' index = index+1;
+                            // 'klein_dist:16' s = 0;
+                            double s = 0.0;
+                            // 'klein_dist:17' for j = bl:bu
+                            for (idx = 0; idx < lastBlockLength; idx++) {
+                                double b_j = bsum + static_cast<double>(idx);
+                                // 'klein_dist:18' s = s+exp(-g*(2*c-j-i)*(i-j));
+                                s += std::exp(-sumw * ((2.0 * c - b_j) - d_i) * (d_i - b_j));
+                            }
+                            // 'klein_dist:20' prob = 1/s;
+                            range[nx] = 1.0 / s;
+                            // 'klein_dist:21' domain(index) = i;
+                            domain[nx] = d_i;
+                            // 'klein_dist:22' range(index) = prob;
+                        }
+                        // 'random_babai:23' x_temp(i) = randsample(domain,1,true,range);
+                        if (range.size2() != 0) {
+                            if (range.size2() <= 1024) {
+                                nx = range.size2();
+                                lastBlockLength = 0;
+                                aoffset = 1;
+                            } else {
+                                nx = 1024;
+                                aoffset = range.size2() / 1024;
+                                lastBlockLength = range.size2() - (aoffset << 10);
+                                if (lastBlockLength > 0) {
+                                    aoffset++;
+                                } else {
+                                    lastBlockLength = 1024;
+                                }
+                            }
+                            sumw = range[0];
+                            for (b_k = 2; b_k <= nx; b_k++) {
+                                sumw += range[b_k - 1];
+                            }
+                            for (int ib{2}; ib <= aoffset; ib++) {
+                                nx = (ib - 1) << 10;
+                                bsum = range[nx];
+                                if (ib == aoffset) {
+                                    idx = lastBlockLength;
+                                } else {
+                                    idx = 1024;
+                                }
+                                for (b_k = 2; b_k <= idx; b_k++) {
+                                    bsum += range[(nx + b_k) - 1];
+                                }
+                                sumw += bsum;
+                            }
+                            edges.resize(1, domain.size2() + 1);
+                            edges[0] = 0.0;
+                            edges[domain.size2()] = 1.0;
+                            lastBlockLength = domain.size2();
+                            for (idx = 0; idx <= lastBlockLength - 2; idx++) {
+                                edges[idx + 1] = std::fmin(edges[idx] + range[idx] / sumw, 1.0);
+                            }
+                        } else {
+                            edges.resize(1, 1);
+                            edges[0] = 0.0;
+                        }
+                        std::random_device rd;
+                        std::mt19937 e2(rd());
+                        std::uniform_real_distribution<> dist(0, 1);
+
+                        if (range.size2() == 0) {
+                            sumw = dist(e2);
+                            sumw = std::floor(sumw * static_cast<double>(domain.size2())) + 1.0;
+                        } else {
+                            sumw = dist(e2);
+                            idx = 0;
+                            if (!std::isnan(sumw)) {
+                                if ((sumw >= edges[0]) && (sumw < edges[edges.size2() - 1])) {
+                                    nx = edges.size2();
+                                    idx = 1;
+                                    aoffset = 2;
+                                    while (nx > aoffset) {
+                                        lastBlockLength = (idx >> 1) + (nx >> 1);
+                                        if (((idx & 1) == 1) && ((nx & 1) == 1)) {
+                                            lastBlockLength++;
+                                        }
+                                        if (sumw >= edges[lastBlockLength - 1]) {
+                                            idx = lastBlockLength;
+                                            aoffset = lastBlockLength + 1;
+                                        } else {
+                                            nx = lastBlockLength;
+                                        }
+                                    }
+                                }
+                                if (sumw == edges[edges.size2() - 1]) {
+                                    idx = edges.size2();
+                                }
+                            }
+                            sumw = idx;
+                        }
+                        x_temp[i] = domain[static_cast<int>(sumw) - 1];
+                    }
+                    // 'random_babai:25' r_temp = norm(y-R*x_temp);
+                    bsum = helper::find_residual<scalar, index>(R, x_temp, y);
+                    // 'random_babai:26' if r_temp < r
+                    if (bsum < r) {
+                        // 'random_babai:27' x = x_temp;
+                        z_hat.assign(x_temp);
+                        // 'random_babai:28' r = r_temp;
+                        r = bsum;
+                    }
+                }
+            }
+            time = omp_get_wtime() - time;
+            return {{}, time, 0};
+        }
+
         returnType<scalar, index> sic(const index nstep) {
             b_vector sum(n, 0), z(z_hat);
             b_vector a_t(n, 0);
@@ -339,7 +685,7 @@ namespace cils {
         returnType<scalar, index> bocb() {
             scalar sum = 0;
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
-            b_vector y_b(n);
+            b_vector y_b(n, 0);
             CILS_SECH_Search<scalar, index> search(n, n, qam, search_iter);
 
             scalar run_time = omp_get_wtime();
@@ -360,15 +706,18 @@ namespace cils {
                     }
                     y_b[row] = y_bar[row] - sum;
                 }
-//                cout << y_b;
                 if (is_constrained)
                     search.ch(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
                 else
                     search.se(n_dx_q_0, n_dx_q_1, 1, R, y_b, z_hat);
+//                for (index tt = n_dx_q_0; tt < n_dx_q_1; tt++){
+//                    cout << z_hat[tt] << ", ";
+//                }
+//                cout << endl;
             }
 //            cout << z_hat;
             run_time = omp_get_wtime() - run_time;
-            returnType < scalar, index > reT = {{}, run_time, 0};
+            returnType<scalar, index> reT = {{}, run_time, 0};
             return reT;
         }
 
@@ -659,6 +1008,10 @@ namespace cils {
         }
 
 
+    };
+}
+/*
+ *
         returnType<scalar, index> bocb_CPU() {
             index ds = d.size(), n_dx_q_0, n_dx_q_1;
             b_vector y_b(n);
@@ -719,9 +1072,7 @@ namespace cils {
             return reT;
         }
 
-    };
-}
-
+ */
 //                scalar prod_time = omp_get_wtime();
 //                prod_time = omp_get_wtime() - prod_time;
 //                scalar prod_time2 = omp_get_wtime();

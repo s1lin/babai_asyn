@@ -26,7 +26,7 @@ namespace cils {
     public:
         index m, n, upper, lower, search_iter;
         scalar tolerance;
-        b_vector x_hat{}, y{};
+        b_vector x_hat{}, y{}, x_true{};
         b_matrix A{}, I{};
         std::vector<std::vector<double>> permutation;
 
@@ -41,9 +41,10 @@ namespace cils {
             this->A.resize(m, n, false);
             this->A.assign(cils.A);
             this->I.assign(cils.I);
+            this->x_true.assign(cils.x_t);
 
             //TODO:
-//            this->tolerance = cils.tolerance;
+            this->tolerance = cils.tolerance;
             this->permutation = cils.permutation;
             this->upper = cils.upper;
             this->lower = cils.lower;
@@ -467,29 +468,465 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        /**
-         * // Corresponds to Algorithm 5 (Partition Strategy) in Report 10
-            //  [A_t, P_tmp, x_tilde, Q_t, R_t, t] = partition_H(A, x, m, n)
-            //  permutes and partitions A_t so that the submatrices H_i are
-            //  full-column rank
+        void part(double s, b_matrix &A_P, b_matrix &A_hat, b_matrix &Piv_cum, b_matrix &indicator, index n_c = 1) {
+            b_matrix A_hat_permuted;
+            b_matrix P;
+            b_matrix Piv;
+            b_matrix Piv_total;
+            b_matrix b_A_hat;
+            b_matrix b_P;
+            b_matrix b_s;
+            b_matrix varargin_1;
+            b_vector b_A_hat_permuted;
+            b_vector bb;
+            std::vector<bool> x;
+            double lastCol;
+            int iv[2];
+            unsigned int b_i;
+            int i;
+            int loop_ub;
+            // Corresponds to AlgoritA_hatm 5 (Partition Strategy) in Report 10
+            //  [A_hat, Piv_cum, s_bar_output, Q_tilde, R_tilde, indicator] =
+            //  partition_A_hat(A_P, s_bar_input, K, N) permutes and partitions A_hat so
+            //  tA_hatat tA_hate submatrices A_hat_i are full-column rank
             //
             //  Inputs:
-            //      A - m-by-n real matrix
-            //      x - n-dimensional integer vector
-            //      m - integer scalar
-            //      n - integer scalar
+            //      A_P - K-by-N real matrix
+            //      s_bar_input - N-dimensional integer vector
+            //      K - integer scalar
+            //      N - integer scalar
             //
             //  Outputs:
-            //      P_tmp - n-by-n real matrix, permutation such that A_t*P_tmp=A
-            //      x_tilde - n-dimensional integer vector (x permuted to correspond to
-            //      A_t) Q_t - m-by-n real matrix (Q factors) R_t - m-by-n
-            //      real matrix (R factors) t - 2-by-q integer matrix (indicates
-            //      submatrices of A_t)
-         * @param A_t
-         * @param P_t
-         * @param d
-         * @return
-         */
+            //      Piv_cum - N-by-N real matrix, permutation sucA_hat tA_hatat
+            //      A_hat*Piv_cum=A_P s_bar_output - N-dimensional integer vector
+            //      (s_bar_input permuted to correspond to A_hat) Q_tilde - K-by-N real
+            //      matrix (Q factors) R_tilde - K-by-N real matrix (R factors) indicator
+            //      - 2-by-q integer matrix (indicates submatrices of A_hat)
+            A_hat.resize(m, n);
+            loop_ub = m * n;
+            for (i = 0; i < loop_ub; i++) {
+                A_hat[i] = A_P[i];
+            }
+            lastCol = n;
+            Piv_cum.assign(I);
+            indicator.resize(2, n);
+            loop_ub = n << 1;
+            for (i = 0; i < loop_ub; i++) {
+                indicator[i] = 0.0;
+            }
+            b_i = 0U;
+            while (lastCol >= 1.0) {
+                double firstCol, l, s_idx_2;
+                int A_hat_p_size_idx_1_tmp, i1, i2, i3, k, last, nz, vlen;
+                firstCol = std::fmax(1.0, (lastCol - s) + 1.0);
+                if (firstCol > lastCol) {
+                    i = -1;
+                    i1 = -1;
+                } else {
+                    i = static_cast<int>(firstCol) - 2;
+                    i1 = static_cast<int>(lastCol) - 1;
+                }
+                A_hat_p_size_idx_1_tmp = i1 - i;
+                Piv_total.assign(I);
+                // Find tA_hate rank of A_hat_p
+                loop_ub = A_hat.size1();
+                A_hat_permuted.resize(A_hat.size1(), A_hat_p_size_idx_1_tmp);
+                for (i2 = 0; i2 < A_hat_p_size_idx_1_tmp; i2++) {
+                    for (i3 = 0; i3 < loop_ub; i3++) {
+                        A_hat_permuted[i3 + A_hat_permuted.size1() * i2] =
+                                A_hat[i3 + A_hat.size1() * ((i + i2) + 1)];
+                    }
+                }
+                Piv.resize(A_hat_p_size_idx_1_tmp, A_hat_p_size_idx_1_tmp);
+                loop_ub = A_hat_p_size_idx_1_tmp * A_hat_p_size_idx_1_tmp;
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    Piv[i2] = 0.0;
+                }
+                b_s.resize(2, A_hat_p_size_idx_1_tmp);
+                loop_ub = A_hat_p_size_idx_1_tmp << 1;
+                for (i2 = 0; i2 < loop_ub; i2++) {
+                    b_s[i2] = 0.0;
+                }
+//                coder::eye(static_cast<double>(A_hat_p_size_idx_1_tmp), P);
+                P.resize(A_hat_p_size_idx_1_tmp, A_hat_p_size_idx_1_tmp);
+                for (int ii = 0; ii < A_hat_p_size_idx_1_tmp; ii++) {
+                    P(ii, ii) = 1;
+                }
+                i2 = A_hat_p_size_idx_1_tmp - 1;
+                for (k = 0; k <= i2; k++) {
+                    loop_ub = A_hat.size1();
+                    b_A_hat_permuted.resize(A_hat.size1());
+                    for (i3 = 0; i3 < loop_ub; i3++) {
+                        b_A_hat_permuted[i3] = A_hat_permuted[i3 + A_hat_permuted.size1() * k];
+                    }
+                    l = norm_2(b_A_hat_permuted);
+                    b_s[2 * k] = l * l;
+                }
+                for (int j{0}; j <= i2; j++) {
+                    if (j + 1 > A_hat_p_size_idx_1_tmp) {
+                        i3 = 0;
+                        nz = 0;
+                        vlen = 0;
+                        last = 0;
+                    } else {
+                        i3 = j;
+                        nz = A_hat_p_size_idx_1_tmp;
+                        vlen = j;
+                        last = A_hat_p_size_idx_1_tmp;
+                    }
+                    loop_ub = nz - i3;
+                    if (loop_ub == last - vlen) {
+                        varargin_1.resize(1, loop_ub);
+                        for (nz = 0; nz < loop_ub; nz++) {
+                            varargin_1[nz] = b_s[2 * (i3 + nz)] - b_s[2 * (vlen + nz) + 1];
+                        }
+                    }
+                    last = varargin_1.size2();
+                    if (varargin_1.size2() <= 2) {
+                        if (varargin_1.size2() == 1) {
+                            vlen = 1;
+                        } else if ((varargin_1[0] < varargin_1[varargin_1.size2() - 1]) ||
+                                   (std::isnan(varargin_1[0]) &&
+                                    (!std::isnan(varargin_1[varargin_1.size2() - 1])))) {
+                            vlen = varargin_1.size2();
+                        } else {
+                            vlen = 1;
+                        }
+                    } else {
+                        if (!std::isnan(varargin_1[0])) {
+                            vlen = 1;
+                        } else {
+                            bool exitg1;
+                            vlen = 0;
+                            k = 2;
+                            exitg1 = false;
+                            while ((!exitg1) && (k <= last)) {
+                                if (!std::isnan(varargin_1[k - 1])) {
+                                    vlen = k;
+                                    exitg1 = true;
+                                } else {
+                                    k++;
+                                }
+                            }
+                        }
+                        if (vlen == 0) {
+                            vlen = 1;
+                        } else {
+                            l = varargin_1[vlen - 1];
+                            i3 = vlen + 1;
+                            for (k = i3; k <= last; k++) {
+                                s_idx_2 = varargin_1[k - 1];
+                                if (l < s_idx_2) {
+                                    l = s_idx_2;
+                                    vlen = k;
+                                }
+                            }
+                        }
+                    }
+                    l = (static_cast<double>(vlen) + (static_cast<double>(j) + 1.0)) - 1.0;
+                    if (l > static_cast<double>(j) + 1.0) {
+                        int b_l[2];
+                        iv[0] = j;
+                        last = static_cast<int>(l) - 1;
+                        iv[1] = last;
+                        vlen = P.size1() - 1;
+                        b_l[0] = last;
+                        b_l[1] = j;
+                        b_P.resize(P.size1(), 2);
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz <= vlen; nz++) {
+                                b_P[nz + b_P.size1() * i3] = P[nz + P.size1() * b_l[i3]];
+                            }
+                        }
+                        loop_ub = b_P.size1();
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz < loop_ub; nz++) {
+                                P[nz + P.size1() * iv[i3]] = b_P[nz + b_P.size1() * i3];
+                            }
+                        }
+                        double s_idx_3;
+                        l = b_s[2 * last + 1];
+                        s_idx_2 = b_s[2 * j];
+                        s_idx_3 = b_s[2 * j + 1];
+                        b_s[2 * j] = b_s[2 * last];
+                        b_s[2 * j + 1] = l;
+                        b_s[2 * last] = s_idx_2;
+                        b_s[2 * last + 1] = s_idx_3;
+                        iv[0] = j;
+                        iv[1] = last;
+                        vlen = A_hat_permuted.size1() - 1;
+                        b_l[0] = last;
+                        b_l[1] = j;
+                        b_P.resize(A_hat_permuted.size1(), 2);
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz <= vlen; nz++) {
+                                b_P[nz + b_P.size1() * i3] =
+                                        A_hat_permuted[nz + A_hat_permuted.size1() * b_l[i3]];
+                            }
+                        }
+                        loop_ub = b_P.size1();
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz < loop_ub; nz++) {
+                                A_hat_permuted[nz + A_hat_permuted.size1() * iv[i3]] =
+                                        b_P[nz + b_P.size1() * i3];
+                            }
+                        }
+                        iv[0] = j;
+                        iv[1] = last;
+                        vlen = Piv.size1() - 1;
+                        b_l[0] = last;
+                        b_l[1] = j;
+                        b_P.resize(Piv.size1(), 2);
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz <= vlen; nz++) {
+                                b_P[nz + b_P.size1() * i3] = Piv[nz + Piv.size1() * b_l[i3]];
+                            }
+                        }
+                        loop_ub = b_P.size1();
+                        for (i3 = 0; i3 < 2; i3++) {
+                            for (nz = 0; nz < loop_ub; nz++) {
+                                Piv[nz + Piv.size1() * iv[i3]] = b_P[nz + b_P.size1() * i3];
+                            }
+                        }
+                    }
+                    loop_ub = A_hat_permuted.size1();
+                    b_A_hat_permuted.resize(A_hat_permuted.size1());
+                    for (i3 = 0; i3 < loop_ub; i3++) {
+                        b_A_hat_permuted[i3] = A_hat_permuted[i3 + A_hat_permuted.size1() * j];
+                    }
+                    Piv[j + Piv.size1() * j] = norm_2(b_A_hat_permuted);
+                    vlen = A_hat_permuted.size1() - 1;
+                    l = Piv[j + Piv.size1() * j];
+                    b_A_hat_permuted.resize(A_hat_permuted.size1());
+                    for (i3 = 0; i3 <= vlen; i3++) {
+                        b_A_hat_permuted[i3] =
+                                A_hat_permuted[i3 + A_hat_permuted.size1() * j] / l;
+                    }
+                    loop_ub = b_A_hat_permuted.size();
+                    for (i3 = 0; i3 < loop_ub; i3++) {
+                        A_hat_permuted[i3 + A_hat_permuted.size1() * j] = b_A_hat_permuted[i3];
+                    }
+                    i3 = A_hat_p_size_idx_1_tmp - j;
+                    for (k = 0; k <= i3 - 2; k++) {
+                        unsigned int b_k;
+                        b_k = (static_cast<unsigned int>(j) + k) + 2U;
+                        loop_ub = A_hat_permuted.size1();
+                        l = 0.0;
+                        for (nz = 0; nz < loop_ub; nz++) {
+                            l += A_hat_permuted[nz + A_hat_permuted.size1() * j] *
+                                 A_hat_permuted[nz + A_hat_permuted.size1() *
+                                                     (static_cast<int>(b_k) - 1)];
+                        }
+                        Piv[j + Piv.size1() * (static_cast<int>(b_k) - 1)] = l;
+                        l = Piv[j + Piv.size1() * (static_cast<int>(b_k) - 1)];
+                        b_s[2 * (static_cast<int>(b_k) - 1) + 1] =
+                                b_s[2 * (static_cast<int>(b_k) - 1) + 1] + l * l;
+                        vlen = A_hat_permuted.size1() - 1;
+                        b_A_hat_permuted.resize(A_hat_permuted.size1());
+                        for (nz = 0; nz <= vlen; nz++) {
+                            b_A_hat_permuted[nz] =
+                                    A_hat_permuted[nz + A_hat_permuted.size1() *
+                                                        (static_cast<int>(b_k) - 1)] -
+                                    A_hat_permuted[nz + A_hat_permuted.size1() * j] * l;
+                        }
+                        loop_ub = b_A_hat_permuted.size();
+                        for (nz = 0; nz < loop_ub; nz++) {
+                            A_hat_permuted[nz +
+                                           A_hat_permuted.size1() * (static_cast<int>(b_k) - 1)] =
+                                    b_A_hat_permuted[nz];
+                        }
+                    }
+                }
+                if (Piv.size2() > 1) {
+                    last = Piv.size1();
+                    vlen = Piv.size2();
+                    if (last <= vlen) {
+                        vlen = last;
+                    }
+                    b_A_hat_permuted.resize(vlen);
+                    i2 = vlen - 1;
+                    for (k = 0; k <= i2; k++) {
+                        b_A_hat_permuted[k] = Piv[k + Piv.size1() * k];
+                    }
+                    last = b_A_hat_permuted.size();
+                    bb.resize(b_A_hat_permuted.size());
+                    for (k = 0; k < last; k++) {
+                        bb[k] = std::abs(b_A_hat_permuted[k]);
+                    }
+                    x.resize(bb.size());
+                    loop_ub = bb.size();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        x[i2] = (bb[i2] > 1.0E-6);
+                    }
+                    vlen = x.size();
+                    if (x.size() == 0) {
+                        nz = 0;
+                    } else {
+                        nz = x[0];
+                        for (k = 2; k <= vlen; k++) {
+                            nz += x[k - 1];
+                        }
+                    }
+                } else {
+                    nz = (std::abs(Piv[0]) > 1.0E-6);
+                }
+                // TA_hate case wA_hatere A_hat_p is rank deficient
+                if (nz < A_hat_p_size_idx_1_tmp) {
+                    // Permute tA_hate columns of A_hat and tA_hate entries of s_bar_output
+                    loop_ub = A_hat.size1();
+                    b_A_hat.resize(A_hat.size1(), A_hat_p_size_idx_1_tmp);
+                    for (i2 = 0; i2 < A_hat_p_size_idx_1_tmp; i2++) {
+                        for (i3 = 0; i3 < loop_ub; i3++) {
+                            b_A_hat[i3 + b_A_hat.size1() * i2] =
+                                    A_hat[i3 + A_hat.size1() * ((i + i2) + 1)];
+                        }
+                    }
+                    prod(b_A_hat, P, A_hat_permuted);
+                    if (nz + 1 > A_hat_p_size_idx_1_tmp) {
+                        i2 = 0;
+                        i3 = -1;
+                    } else {
+                        i2 = nz;
+                        i3 = (i1 - i) - 1;
+                    }
+                    s_idx_2 = i1 - i;
+                    l = firstCol + s_idx_2;
+                    if (firstCol > (l - 1.0) - static_cast<double>(nz)) {
+                        i = 1;
+                    } else {
+                        i = static_cast<int>(firstCol);
+                    }
+                    loop_ub = A_hat_permuted.size1();
+                    last = i3 - i2;
+                    for (i1 = 0; i1 <= last; i1++) {
+                        for (i3 = 0; i3 < loop_ub; i3++) {
+                            A_hat[i3 + A_hat.size1() * ((i + i1) - 1)] =
+                                    A_hat_permuted[i3 + A_hat_permuted.size1() * (i2 + i1)];
+                        }
+                    }
+                    if (nz < 1) {
+                        loop_ub = 0;
+                    } else {
+                        loop_ub = nz;
+                    }
+                    l -= static_cast<double>(nz);
+                    if (l > lastCol) {
+                        i = 1;
+                    } else {
+                        i = static_cast<int>(l);
+                    }
+                    last = A_hat_permuted.size1();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        for (i2 = 0; i2 < last; i2++) {
+                            A_hat[i2 + A_hat.size1() * ((i + i1) - 1)] =
+                                    A_hat_permuted[i2 + A_hat_permuted.size1() * i1];
+                        }
+                    }
+                    // Update tA_hate permutation matrix Piv_total
+//                    coder::eye(static_cast<double>(A_hat_p_size_idx_1_tmp), A_hat_permuted);
+                    A_hat_permuted.resize(A_hat_p_size_idx_1_tmp, A_hat_p_size_idx_1_tmp);
+                    for (int ii = 0; ii < A_hat_p_size_idx_1_tmp; ii++) {
+                        A_hat_permuted(ii, ii) = 1;
+                    }
+                    Piv.resize(A_hat_permuted.size1(), A_hat_permuted.size2());
+                    loop_ub = A_hat_permuted.size1() * A_hat_permuted.size2();
+                    for (i = 0; i < loop_ub; i++) {
+                        Piv[i] = A_hat_permuted[i];
+                    }
+                    if (nz < 1) {
+                        loop_ub = 0;
+                    } else {
+                        loop_ub = nz;
+                    }
+                    l = (static_cast<double>(A_hat_p_size_idx_1_tmp) -
+                         static_cast<double>(nz)) +
+                        1.0;
+                    if (l > s_idx_2) {
+                        i = 1;
+                    } else {
+                        i = static_cast<int>(l);
+                    }
+                    last = A_hat_permuted.size1();
+                    for (i1 = 0; i1 < loop_ub; i1++) {
+                        for (i2 = 0; i2 < last; i2++) {
+                            Piv[i2 + Piv.size1() * ((i + i1) - 1)] =
+                                    A_hat_permuted[i2 + A_hat_permuted.size1() * i1];
+                        }
+                    }
+                    if (nz + 1 > A_hat_p_size_idx_1_tmp) {
+                        i = 0;
+                        A_hat_p_size_idx_1_tmp = 0;
+                    } else {
+                        i = nz;
+                    }
+                    loop_ub = A_hat_permuted.size1();
+                    last = A_hat_p_size_idx_1_tmp - i;
+                    for (i1 = 0; i1 < last; i1++) {
+                        for (i2 = 0; i2 < loop_ub; i2++) {
+                            Piv[i2 + Piv.size1() * i1] =
+                                    A_hat_permuted[i2 + A_hat_permuted.size1() * (i + i1)];
+                        }
+                    }
+                    if (firstCol > lastCol) {
+                        i = 1;
+                        i1 = 1;
+                    } else {
+                        i = static_cast<int>(firstCol);
+                        i1 = static_cast<int>(firstCol);
+                    }
+                    prod(P, Piv, b_A_hat);
+                    loop_ub = b_A_hat.size2();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        last = b_A_hat.size1();
+                        for (i3 = 0; i3 < last; i3++) {
+                            Piv_total[((i + i3) + Piv_total.size1() * ((i1 + i2) - 1)) - 1] =
+                                    b_A_hat[i3 + b_A_hat.size1() * i2];
+                        }
+                    }
+                } else {
+                    if (firstCol > lastCol) {
+                        i = 1;
+                        i1 = 1;
+                    } else {
+                        i = static_cast<int>(firstCol);
+                        i1 = static_cast<int>(firstCol);
+                    }
+//                    coder::eye((lastCol - firstCol) + 1.0, b_A_hat);
+                    b_A_hat.resize((lastCol - firstCol) + 1.0, (lastCol - firstCol) + 1.0);
+                    for (int ii = 0; ii < (lastCol - firstCol) + 1.0; ii++) {
+                        b_A_hat(ii, ii) = 1;
+                    }
+                    loop_ub = b_A_hat.size2();
+                    for (i2 = 0; i2 < loop_ub; i2++) {
+                        last = b_A_hat.size1();
+                        for (i3 = 0; i3 < last; i3++) {
+                            Piv_total[((i + i3) + Piv_total.size1() * ((i1 + i2) - 1)) - 1] =
+                                    b_A_hat[i3 + b_A_hat.size1() * i2];
+                        }
+                    }
+                }
+                A_hat_permuted.resize(Piv_cum.size1(), Piv_cum.size2());
+                loop_ub = Piv_cum.size1() * Piv_cum.size2() - 1;
+                for (i = 0; i <= loop_ub; i++) {
+                    A_hat_permuted[i] = Piv_cum[i];
+                }
+                prod(A_hat_permuted, Piv_total, Piv_cum);
+                b_i++;
+                indicator[2 * (static_cast<int>(b_i) - 1)] =
+                        (lastCol - static_cast<double>(nz)) + 1.0;
+                indicator[2 * (static_cast<int>(b_i) - 1) + 1] = lastCol;
+                lastCol -= static_cast<double>(nz);
+            }
+            // Remove tA_hate extra columns of tA_hate indicator
+            if (static_cast<int>(b_i) < 1) {
+                loop_ub = 0;
+            } else {
+                loop_ub = static_cast<int>(b_i);
+            }
+            indicator.resize(2, loop_ub, true);
+        }
+
+
         void part2(index s, b_matrix &A_bar, b_matrix &P, b_matrix &indicator) {
             b_matrix A_hat;
             b_matrix P_bar;
@@ -557,6 +994,7 @@ namespace cils {
                 }
 
                 reduction.reset(acc);
+
                 reduction.mgs_max();//qrmgs_max(acc, R, P_bar);
                 R.assign(reduction.R);
                 P_bar.assign(reduction.P);
@@ -592,8 +1030,7 @@ namespace cils {
                         }
                     }
                     r = t;
-                }
-                else {
+                } else {
                     r = (std::abs(R[0]) > 1.0E-6);
                 }
                 acc.resize(A_hat.size1(), A_hat.size2());
@@ -644,8 +1081,7 @@ namespace cils {
                     d[static_cast<int>(k) - 1] = r;
                     f = c_d;
                     k++;
-                }
-                else {
+                } else {
                     double c_d;
                     double j;
                     int i2;
@@ -837,17 +1273,9 @@ namespace cils {
                 f += d[vlen];
                 indicator[2 * vlen + 1] = f - 1.0;
             }
-            b_matrix A_temp;
-            prod(A, P, A_temp);
-            scalar sum = 0;
-            for (index i = 0; i < m * n; i++){
-                sum += A_bar[i] - A_temp[i];
-            }
-            cout << sum;
-            cout.flush();
         }
 
-        returnType<scalar, index> bsic_bcp(index is_bocb, index c) {
+        returnType<scalar, index> bsic_bcp(index is_bocb, index c, bool permute = true) {
 
             b_vector x_tmp, htx(m, 0), y_hat(m, 0), x_t, x_bar(n, 0);
             b_matrix A_T, A_P, P, d(2, n); //A could be permuted based on the init point
@@ -862,21 +1290,27 @@ namespace cils {
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
 
-            index i, j, p, iter, cur_end , cur_1st;
+            index i, j, p, iter, cur_end, cur_1st;
 
             // Partition:
             part2(c, A_P, P, d);
             b_matrix P_trans = trans(P);
             prod(P_trans, x_hat, x_tmp);
             std::vector<int> pp;
-            for (i = 0; i < d.size2(); i++){
+            for (i = 0; i < d.size2(); i++) {
                 pp.push_back(i);
             }
-            cout << A;
-            cout << A_P;
+            int block_size[2] = {};
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else {
+                block_size[0] = block_size[1] = 8;
+            }
             time = omp_get_wtime();
-            for (index itr = 0; itr < 2 - 1; itr++) {
-//                std::shuffle(pp.begin(), pp.end(), std::mt19937(std::random_device()()));
+            for (index itr = 0; itr < search_iter - 1; itr++) {
+                if (permute)
+                    std::shuffle(pp.begin(), pp.end(), std::mt19937(std::random_device()()));
                 prod(A_P, x_tmp, htx);
                 for (i = 0; i < m; i++) {
                     y_hat[i] = y[i] - htx[i];
@@ -895,7 +1329,6 @@ namespace cils {
                         }
                         x_t[col - cur_1st] = x_tmp[col];
                     }
-                    cout << A_T;
                     prod(A_T, x_t, htx);
                     for (i = 0; i < m; i++) {
                         y_hat[i] = y_hat[i] + htx[i];
@@ -906,10 +1339,9 @@ namespace cils {
                     if (is_bocb)
                         reduction.aip();
                     else
-//                        reduction.aip();
                         reduction.aspl_p();
-//                    cout << reduction.R;
-                    olm.reset(reduction.R, reduction.y, upper, 5, true);
+
+                    olm.reset(reduction.R, reduction.y, upper, 8, true);
 
                     if (is_bocb) {
                         olm.bocb();
@@ -943,11 +1375,11 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> bsic(index is_bocb, index c) {
+        returnType<scalar, index> bsic(index is_bocb, index c, bool permute = true, bool partition = true) {
 
-            b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t;
-            b_matrix A_T, A_P(A), P(I), d(2, n); //A could be permuted based on the init point
-            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y);
+            b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t, x_bar;
+            b_matrix A_T, A_P(A), A_PT(A), P(I), Piv_cum(I), d(2, n); //A could be permuted based on the init point
+            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y), ber;
 
             scalar time = omp_get_wtime();
             if (v_norm <= tolerance) {
@@ -957,7 +1389,6 @@ namespace cils {
 
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
-//            CILS_SECH_Search<scalar,index> search;
 
             index i, j, p, iter = 0;
 
@@ -965,42 +1396,44 @@ namespace cils {
             // 'SCP_Block_Optimal_2:34' cur_end = n;
             index cur_end = n, cur_1st;
             // 'SCP_Block_Optimal_2:35' i = 1;
-            index b_i = 1;
-            // 'SCP_Block_Optimal_2:36' while cur_end > 0
-            while (cur_end > 0) {
-                // 'SCP_Block_Optimal_2:37' cur_1st = max(1, cur_end-m+1);
-                cur_1st = std::max(1, (cur_end - c) + 1);
-                // 'SCP_Block_Optimal_2:38' indicator(1,i) = cur_1st;
-                d[2 * (b_i - 1)] = cur_1st;
-                // 'SCP_Block_Optimal_2:39' indicator(2,i) = cur_end;
-                d[2 * (b_i - 1) + 1] = cur_end;
-                // 'SCP_Block_Optimal_2:40' cur_end = cur_1st - 1;
-                cur_end = cur_1st - 1;
-                // 'SCP_Block_Optimal_2:41' i = i + 1;
-                b_i++;
+
+            if (!partition) {
+                part(c, A, A_PT, Piv_cum, d);
+                A.assign(A_PT);
+                b_matrix P_trans = trans(Piv_cum);
+                prod(P_trans, x_tmp, x_bar);
+                x_tmp.assign(x_bar);
             }
-            d.resize(2, b_i - 1, true);
+
             int block_size[2] = {};
             if (m == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
             } else {
-                block_size[0] = block_size[1] = 5;
+                block_size[0] = block_size[1] = 8;
             }
             time = omp_get_wtime();
-            for (index itr = 0; itr < search_iter - 1; itr++) {
+            for (index itr = 0; itr < search_iter; itr++) {
                 iter = itr;
-                A_P.clear();
-                x_tmp.clear();
-                for (index col = 0; col < n; col++) {
-                    p = permutation[iter][col] - 1;
-                    for (index row = 0; row < m; row++) {
-                        A_P(row, col) = A(row, p);
+                if (permute) {
+                    A_P.clear();
+                    x_tmp.clear();
+                    for (index col = 0; col < n; col++) {
+                        p = permutation[iter][col] - 1;
+                        for (index row = 0; row < m; row++) {
+                            A_P(row, col) = A(row, p);
+                        }
+                        x_tmp[col] = x_hat[p];
                     }
-                    x_tmp[col] = x_hat[p];
                 }
 
-                //todo: [H_t, Piv_cum, indicator] = part(H_P);
+                if (partition) {
+                    part(c, A_P, A_PT, Piv_cum, d);
+                    A_P.assign(A_PT);
+                    b_matrix P_trans = trans(Piv_cum);
+                    prod(P_trans, x_tmp, x_bar);
+                    x_tmp.assign(x_bar);
+                }
 
                 // 'SCP_Block_Optimal_2:104' per = true;
                 // y_hat = y - H_t * x_t;
@@ -1030,20 +1463,21 @@ namespace cils {
 
                     b_vector z(t, 0);
                     reduction.reset(A_T, y_hat, upper);
-                    if (is_bocb)
-                        reduction.aip();
-                    else
-                        reduction.aspl_p();
+//                    if (is_bocb)
+                    reduction.aip();
+//                    else
+//                    reduction.aspl_p();
                     olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
 
                     if (is_bocb) {
                         olm.bocb();
-                        prod(reduction.P, olm.z_hat, z);
+//                        prod(reduction.P, olm.z_hat, z);
                     } else {
-                        olm.bnp();
-                        prod(reduction.Z, olm.z_hat, z);
+//                        olm.prbb(10, 10);
+                        olm.rbb(10);
                     }
 
+                    prod(reduction.P, olm.z_hat, z);
                     for (index col = cur_1st; col <= cur_end; col++) {
                         x_tmp[col] = z[col - cur_1st];
                     }
@@ -1055,15 +1489,17 @@ namespace cils {
 
                 scalar rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
 
-                if (rho < v_norm) {
-                    b_matrix I_P(n, n);
-                    for (i = 0; i < n; i++) {
-                        p = permutation[iter][i] - 1;
-                        for (index i1 = 0; i1 < n; i1++) {
-                            I_P[i1 + P.size1() * i] = I[i1 + I.size1() * p];
+                if (rho < v_norm || !permute) {
+                    b_matrix I_P(I);
+                    if (permute) {
+                        for (i = 0; i < n; i++) {
+                            p = permutation[iter][i] - 1;
+                            for (index i1 = 0; i1 < n; i1++) {
+                                I_P[i1 + P.size1() * i] = I[i1 + I.size1() * p];
+                            }
                         }
                     }
-                    P.assign(I_P);
+                    prod(I_P, Piv_cum, P);
                     prod(P, x_tmp, x_hat);
                     if (rho <= tolerance) {
                         break;
@@ -1072,13 +1508,152 @@ namespace cils {
                 }
             }
             time = omp_get_wtime() - time;
-//            x_hat.clear();
-//            x_hat.assign(x_cur);
-            return {{}, time, v_norm};
+            return {{}, time, (scalar) iter};
         }
 
+        returnType<scalar, index>
+        pbsic(index is_bocb, index c, index n_t, index n_c, bool permute = true, bool partition = true) {
 
-        returnType<scalar, index> pbsic(index is_bocb, index c, index n_t, index n_c) {
+            b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t, x_bar;
+            b_matrix A_T, A_P(A), A_PT(A), P(I), Piv_cum(I), d(2, n), I_P; //A could be permuted based on the init point
+            scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y), rho, ber;
+
+            scalar time = omp_get_wtime();
+            if (v_norm <= tolerance) {
+                time = omp_get_wtime() - time;
+                return {{}, time, v_norm};
+            }
+
+            CILS_Reduction<scalar, index> reduction;
+            CILS_OLM<scalar, index> olm;
+
+            index i, j, p, iter = 0;
+
+
+            // 'SCP_Block_Optimal_2:34' cur_end = n;
+            index cur_end = n, cur_1st, t;
+            // 'SCP_Block_Optimal_2:35' i = 1;
+
+            if (!partition) {
+                part(c, A, A_PT, Piv_cum, d);
+                A.assign(A_PT);
+                b_matrix P_trans = trans(Piv_cum);
+                prod(P_trans, x_tmp, x_bar);
+                x_tmp.assign(x_bar);
+            }
+
+            int block_size[2] = {};
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else {
+                block_size[0] = block_size[1] = 8;
+            }
+            time = omp_get_wtime();
+#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j, I_P) firstprivate(y_hat, d, A_P, A_PT, x_tmp, rho, p, cur_end, cur_1st)
+            {
+#pragma omp for nowait
+                for (index itr = 0; itr < search_iter; itr++) {
+                    iter = itr;
+                    if (permute) {
+                        A_P.clear();
+                        x_tmp.clear();
+                        for (index col = 0; col < n; col++) {
+                            p = permutation[iter][col] - 1;
+                            for (index row = 0; row < m; row++) {
+                                A_P(row, col) = A(row, p);
+                            }
+                            x_tmp[col] = x_hat[p];
+                        }
+                    }
+
+                    if (partition) {
+                        part(c, A_P, A_PT, Piv_cum, d);
+                        A_P.assign(A_PT);
+                        b_matrix P_trans = trans(Piv_cum);
+                        prod(P_trans, x_tmp, x_bar);
+                        x_tmp.assign(x_bar);
+                    }
+
+                    // 'SCP_Block_Optimal_2:104' per = true;
+                    // y_hat = y - H_t * x_t;
+                    prod(A_P, x_tmp, htx);
+                    for (i = 0; i < m; i++) {
+                        y_hat[i] = y[i] - htx[i];
+                    }
+
+                    for (j = 0; j < d.size2(); j++) {
+                        cur_1st = d(0, j) - 1;
+                        cur_end = d(1, j) - 1;
+                        t = cur_end - cur_1st + 1;
+                        A_T.resize(m, t);
+
+                        x_t.resize(t);
+                        for (index col = cur_1st; col <= cur_end; col++) {
+                            for (index row = 0; row < m; row++) {
+                                A_T(row, col - cur_1st) = A_P(row, col);
+                            }
+                            x_t[col - cur_1st] = x_tmp[col];
+                        }
+
+                        prod(A_T, x_t, htx);
+                        for (i = 0; i < m; i++) {
+                            y_hat[i] = y_hat[i] + htx[i];
+                        }
+
+                        b_vector z(t, 0);
+                        reduction.reset(A_T, y_hat, upper);
+                        reduction.paip(n_t);
+
+                        olm.reset(reduction.R, reduction.y, upper, t / 4, true);
+
+                        if (is_bocb) {
+
+//                            olm.pbocb(n_c, 20, 0);
+                            olm.bocb();
+
+                        } else {
+                            olm.prbb(10, n_c);
+//                            olm.rbb(10);
+                        }
+
+                        prod(reduction.P, olm.z_hat, z);
+                        for (index col = cur_1st; col <= cur_end; col++) {
+                            x_tmp[col] = z[col - cur_1st];
+                        }
+                        prod(A_T, z, htx);
+                        for (i = 0; i < m; i++) {
+                            y_hat[i] = y_hat[i] - htx[i];
+                        }
+                    }
+
+                    rho = helper::find_residual<scalar, index>(A_P, x_tmp, y);
+
+                    if (rho < v_norm || !permute) {
+                        I_P.assign(I);
+                        if (permute) {
+                            for (i = 0; i < n; i++) {
+                                p = permutation[iter][i] - 1;
+                                for (index i1 = 0; i1 < n; i1++) {
+                                    I_P[i1 + P.size1() * i] = I[i1 + I.size1() * p];
+                                }
+                            }
+                        }
+                        prod(I_P, Piv_cum, P);
+                        prod(P, x_tmp, x_hat);
+                        v_norm = rho;
+                    }
+                    if (rho <= tolerance) {
+                        iter = search_iter;
+                    }
+                }
+            }
+            time = omp_get_wtime() - time;
+
+            return {{}, time, (scalar) iter};
+        }
+
+        returnType<scalar, index> pbsic2(index is_bocb, index c, index n_t, index n_c) {
 
             b_vector x_tmp(x_hat);
             b_matrix P(I), d(2, n); //A could be permuted based on the init point
@@ -1174,11 +1749,9 @@ namespace cils {
 
                         olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
                         if (is_bocb) {
-
                             olm.pbocb(n_c, 20, 0);
-
                         } else {
-                            olm.pbnp2(n_c, 20, 0);
+                            olm.prbb(10, n_c);
                         }
                         prod(reduction.P, olm.z_hat, z);
                         for (index col = cur_1st; col <= cur_end; col++) {
@@ -1204,10 +1777,11 @@ namespace cils {
                         }
                         P.assign(I_P);
                         prod(P, x_tmp, x_hat);
-//                        if (rho <= tolerance) {
-//                            break;
-//                        }
                         v_norm = rho;
+                    }
+
+                    if (rho <= tolerance) {
+                        iter = search_iter;
                     }
                 }
             }
