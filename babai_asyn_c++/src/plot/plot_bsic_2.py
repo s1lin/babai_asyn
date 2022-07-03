@@ -257,7 +257,7 @@ def plot_SPU_BSIC(k, timeG):
     # ffs = ['3000', 'all']
     label2 = [', RBB', ', BBB']
     #for ff in range(0, 2):
-    #f0 = 0#
+    f0 = 0
     for s in SNRS:
         d = 0
         for m in ms:
@@ -306,18 +306,18 @@ def plot_SPU_BSIC(k, timeG):
                 # minberG = min(berG)
                 # berG[3] = minberG - random.uniform(0.01, 0.02)
 
-            if d == 0:
-                axes[d, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
+            if f0 == 0:
+                axes[f0, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
                                      color=color2[d], marker=marker[d], markersize=12,
                                      label=title_label[d])
             else:
-                axes[d, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
+                axes[f0, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
                                      color=color2[d], marker=marker[d], markersize=12)
-            axes[d, 1].plot(label_spu, np.array(spu[0:len(label_spu)]), color=color2[d], marker=marker[d],
+            axes[f0, 1].plot(label_spu, np.array(spu[0:len(label_spu)]), color=color2[d], marker=marker[d],
                              markersize=12)
 
             d = d + 1
-        #f0 = f0 + 1
+        f0 = f0 + 1
 
     axes[0, 0].set_title('SNR 10(dB)', fontweight="bold")
     axes[0, 1].set_title('SNR 10(dB)', fontweight="bold")
@@ -334,9 +334,10 @@ def plot_SPU_BSIC(k, timeG):
 
     fig.suptitle("\n\n\n\n\n")
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    order = [0, 3, 1, 4, 2, 5]
-    fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
-               bbox_to_anchor=(0.96, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
+    # order = [0, 3, 1, 4, 2, 5]
+    # fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
+    #            bbox_to_anchor=(0.96, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
+    fig.legend(bbox_to_anchor=(1, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
     plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.eps', format='eps', dpi=1200)
     plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.png')
     plt.close()
