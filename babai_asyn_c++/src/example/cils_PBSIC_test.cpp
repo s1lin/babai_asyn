@@ -190,7 +190,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
                 cout.flush();
 
                 ublm.x_hat.assign(x_gp);
-                reT = ublm.pbsic2(true, block_size, 5, 2);
+                reT = ublm.pbsic2(true, block_size, 5, 2, true, false);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC-PBBB|05-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
@@ -199,7 +199,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
                 cout.flush();
 
                 ublm.x_hat.assign(x_gp);
-                reT = ublm.pbsic2(true, block_size, 10, 2);
+                reT = ublm.pbsic2(true, block_size, 10, 2, true, false);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC-PBBB|10-02: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
@@ -208,7 +208,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
                 cout.flush();
 
                 ublm.x_hat.assign(x_gp);
-                reT = ublm.pbsic2(true, block_size, 5, 4);
+                reT = ublm.pbsic2(true, block_size, 5, 4, true, false);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 printf("PBSIC-PBBB|05-04: ber: %8.5f, time: %8.4f, speedup: %8.4f\n",
                        ber, reT.run_time, bsic_time / reT.run_time);
