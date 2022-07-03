@@ -107,3 +107,6 @@ R0 = zeros(n);
 %R0(:,3) = s_bar_cur;
 
 end
+
+
+
