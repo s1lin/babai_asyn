@@ -1704,7 +1704,7 @@ namespace cils {
 #pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
             {
 #pragma omp for nowait
-                for (iter = 0; iter < search_iter - 1; iter++) {
+                for (iter = 0; iter < search_iter; iter++) {
                     A_P.clear();
                     x_tmp.clear();
                     for (index col = 0; col < n; col++) {

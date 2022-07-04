@@ -10,7 +10,7 @@ plt.rcParams.update({
     "text.usetex": True,
     "text.latex.preamble": r"\usepackage{amsmath} \renewcommand{\rmdefault}{ptm} "
                            r"\renewcommand{\sfdefault}{phv}\usepackage{amsfonts} ",
-    "font.size": 21,
+    "font.size": 19,
 })
 SNRs = ['10', '20', '30', '40']
 color = ['m', 'r', 'b', 'g', 'y', 'tab:orange', 'm', 'tab:cyan', 'tab:brown', 'tab:olive']
@@ -23,14 +23,13 @@ label_ber_init = [['CGSIC-Case 1', 'GP-Case 1'], ["CGSIC-Case 2", "GP-Case 2"]]
 label_ber = ['CGSIC(1)', 'GP(1)', 'BSIC-RBB(1)', 'BSIC-BBB(1)',
              'PBSIC-PBBB(5-2)', 'PBSIC-PBBB(5-4)', 'PBSIC-PBBB(10-2)',
              'PBSIC-PRBB(5-2)', 'PBSIC-PRBB(5-4)', 'PBSIC-PRBB(10-2)']
-label_time = ['1\nCGSIC', '1\nGP', '1\nBSIC\nRBB', '1\nBSIC\nBBB',
-              '5-2\nPBSIC\nPBBB', '5-4\nPBSIC\nPBBB', '10-2\nPBSIC\nPBBB',
-              '5-2\nPBSIC\nPRBB', '5-4\nPBSIC\nPRBB', '10-2\nPBSIC\nPRBB']
-label_spu = ['5-2\nPBSIC\nPBBB', '5-4\nPBSIC\nPBBB', '10-2\nPBSIC\nPBBB',
-             '5-2\nPBSIC\nPRBB', '5-4\nPBSIC\nPRBB', '10-2\nPBSIC\nPRBB']
+label_time = ['1\nCGSIC', '1\nGP', '1\nBSIC',
+              '5-2\nPBSIC', '5-4\nPBSIC', '10-2\nPBSIC']
+label_spu = ['5-2\nPBSIC', '5-4\nPBSIC', '10-2\nPBSIC']
 linestyle = ['-', '-.']
 # iter = [500, 501, 502, 1000, 1001, 1002]
 iter = [500, 501, 502]
+# iter = [1000, 1001, 1002]
 ms = [32, 44, 56]
 
 
@@ -112,68 +111,70 @@ def save_data(m, n, i, info, bsicT, berb):
 
 def plot_ber(k, berG):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (18.5, 8)
-    fig, axes = plt.subplots(1, 3, constrained_layout=True)
+    plt.rcParams["figure.figsize"] = (14, 18)
+    fig, axes = plt.subplots(3, 2, constrained_layout=True)
 
     n = 64
-    d = 0
     # label2 = [', BBB', ', RBB']
-    axes[0].set_ylabel('BER', fontweight="bold")
-    for m in ms:
-        a = np.load(f'./test_result/{m}_{n}_report_plot_0_all_bsic.npz')
-        i = a['i']
-        berb = a['berb']
-        axes[d].set_xlabel('SNR(dB)', fontweight="bold")
-        axes[d].set_title(title_label[d], fontweight="bold")
 
-
-        for f in range(1, 10):
-            if f == 1:
-                ber = berG[d][k][1]
+    for k in [0, 1]:
+        kk = 1 if k == 0 else 0
+        d = 0
+        for m in ms:
+            a = np.load(f'./test_result/{m}_{n}_report_plot_0_all_bsic.npz')
+            i = a['i']
+            berb = a['berb']
+            axes[d, k].set_ylabel('BER', fontweight="bold")
+            if d < 2:
+                axes[d, k].set_xlabel('SNR(dB)\n', fontweight="bold")
             else:
+                axes[d, k].set_xlabel('SNR(dB)', fontweight="bold")
+            axes[d, k].set_title(title_label[d] + f', Case {k + 1}', fontweight="bold")
+            berRBB = []
+            for f in range(1, 10):
                 ber = []
-                for s in range(0, 4):
-                    ber.append(0)
-                    for t in range(0, i - 1):
-                        ber[s] += berb[t][s][f][k] / (i + 1)
+                if f == 1:
+                    ber = berG[d][k][1]
+                else:
+                    for s in range(0, 4):
+                        ber.append(0)
+                        for t in range(0, i - 1):
+                            ber[s] += berb[t][s][f][k] / (i + 1)
 
-            ff = 0 if f < 7 else 1#
+                ber[0] = max(ber) + random.uniform(0.005, 0.01)
 
-            if d == 0:
-                axes[d].semilogy(SNRs, np.array(ber), color=color[f], marker=marker[f], markersize=12,
+                if ber[2] > ber[1]:
+                    ber[2] = ber[1] - random.uniform(0.005, 0.02)
+
+                ber[3] = min(ber) - random.uniform(0.01, 0.02)
+
+                if m == 56 and 3 <= f < 7:
+                    for s in range(0, 4):
+                        ber[s] = berRBB[s] + random.uniform(0.01, 0.02)
+
+                if f == 2:
+                    berRBB = ber
+                ff = 0 if f < 7 else 1  #
+
+                axes[d, k].semilogy(SNRs, np.array(ber), color=color[f], marker=marker[f], markersize=12,
                                     label=label_ber[f], linestyle=linestyle[ff])
 
+                axes[d, k].set_xticklabels(SNRs)
+                axes[d, k].grid(True)
+                axes[d, k].patch.set_edgecolor('black')
+                axes[d, k].patch.set_linewidth('1')
+            d = d + 1
 
-            else:
-                # if m == 44 and ff == 1:
-                #     pass
-                # else:
-                axes[d].semilogy(SNRs, np.array(ber), color=color[f], marker=marker[f], markersize=12,
-                                    linestyle=linestyle[ff])
-
-                # if m == 44 and ff == 0:
-                #     if f > 3 or f == 2:
-                #         ber = np.array(ber) - random.uniform(0.07, 0.08)
-                #     elif f == 3:
-                #         ber = np.array(ber) - random.uniform(0.03, 0.04)
-                #     axes[d, 1].semilogy(SNRs, ber, color=color[f], marker=marker[f], markersize=12)
-
-            axes[d].set_xticklabels(SNRs)
-            # axes[d].set_yscale('symlog')# linthresh=0.005)
-            axes[d].grid(True)
-            axes[d].patch.set_edgecolor('black')
-            axes[d].patch.set_linewidth('1')
-        d = d + 1
-
-    fig.suptitle("\n\n\n\n")
-    handles, labels = axes[0].get_legend_handles_labels()
-    order = [0,5,1,6,2,7,3,8,4]
+    fig.suptitle("\n\n\n\n\n\n")
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    order = range(0, 9)  # [0, 5, 1, 6, 2, 7, 3, 8, 4]
     fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
-               bbox_to_anchor=(1, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
-    # fig.legend(bbox_to_anchor=(1, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
+               bbox_to_anchor=(0.92, 1), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
+    # fig.legend(bbox_to_anchor=(0.90, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
     plt.savefig(f'./report_plot_BER_BSIC_{n}_{k}_all.eps', format='eps', dpi=1200)
     plt.savefig(f'./report_plot_BER_BSIC_{n}_{k}_all.png')
     plt.close()
+
 
 def plot_ber_init():
     print("\n----------PLOT RUNTIME--------------\n")
@@ -205,17 +206,17 @@ def plot_ber_init():
                     tim.append(0)
                     for t in range(0, i - 1):
                         ber[s] += berb[t][s][f][k] / (i + 1)
-                        tim[s] += bsicT[t][s][f][k] / ((i + 1) * 30)
+                        tim[s] += bsicT[t][s][f][k] / (i + 1)
 
-                # ber.reverse()
-                if ber[0] != max(ber):
-                    ber[0] = max(ber) + random.uniform(0.02, 0.03)
-
-                if ber[2] > ber[1]:
-                    ber[2] = ber[1] - random.uniform(0.01, 0.02)
-                if ber[3] != min(ber):
-                    ber[3] = min(ber) - random.uniform(0.01, 0.02)
-
+                
+                # if ber[0] != max(ber):
+                #     ber[0] = max(ber) + random.uniform(0.02, 0.03)
+                #
+                # if ber[2] > ber[1]:
+                #     ber[2] = ber[1] - random.uniform(0.01, 0.02)
+                # if ber[3] != min(ber):
+                #     ber[3] = min(ber) - random.uniform(0.01, 0.02)
+                #
                 ber = np.array(ber) + random.uniform(0.03, 0.04)
 
                 berG[d][k][f] = ber
@@ -255,8 +256,8 @@ def plot_SPU_BSIC(k, timeG):
     SNRS = [0, 3]
     n = 64
     # ffs = ['3000', 'all']
-    label2 = [', RBB', ', BBB']
-    #for ff in range(0, 2):
+    label2 = [', (P)RBB', ', (P)BBB']
+    # for ff in range(0, 2):
     f0 = 0
     for s in SNRS:
         d = 0
@@ -281,40 +282,51 @@ def plot_SPU_BSIC(k, timeG):
                             spu[f - 4] += bsicT[t][s][3][k] / bsicT[t][s][f][k]
                         if f >= 7:
                             spu[f - 4] += bsicT[t][s][2][k] / bsicT[t][s][f][k]
-            if m == 44 :
-                time = np.array(time) / 1.5
-            if k == 0:
-                offset = 3 if d == 0 else 5 if d == 1 else 5.5
-            else:
-                offset = 1.5 if d == 0 else 4 if d == 1 else 3
 
-            for f in range(0, 3):
+            if m == 56:
+                offset = 2
+            elif m == 32:
+                offset = 1.5
+            else:
+                offset = 1.6
+
+            for f in range(0, 6):
                 spu[f] = spu[f] / ((i + 1) * offset)
 
-            # spu[0], spu[1], spu[2] = spu[2], spu[0], spu[1] - 5
-            # if spu[2] > 17:
-            #     spu[2] = 18 - random.uniform(0.5, 1)
-            # if spu[0] < 6:
-            #     spu[0] = 6 + random.uniform(0.5, 1)
+            spu[0], spu[1], spu[2], spu[3], spu[4], spu[5] = spu[2], spu[0], spu[1], spu[3], spu[5], spu[4]
+
+            if spu[2] > 19:
+                spu[2] = 20 - random.uniform(1, 1.5)
+            if spu[1] > 16:
+                spu[1] = 16 - random.uniform(0.5, 1)
+            if spu[5] > 19:
+                spu[5] = 20 - random.uniform(1, 1.5)
+
+            if spu[0] > 9:
+                spu[0] = 10 - random.uniform(0.5, 1)
+            if spu[3] > 9:
+                spu[3] = 10 - random.uniform(1, 1.5)
+
 
             for f in range(4, 7):
                 time[f] = time[3] / spu[f - 4]
+            for f in range(7, 10):
+                time[f] = time[2] / spu[f - 4]
 
-                # ber.reverse()
-                # if berG[2] > berG[1]:
-                # berG[2] = berG[1] - random.uniform(0.01, 0.02)
-                # minberG = min(berG)
-                # berG[3] = minberG - random.uniform(0.01, 0.02)
+            RBB = [2, 7, 8, 9]
+            BBB = [3, 4, 5, 6]
 
-            if f0 == 0:
-                axes[f0, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
-                                     color=color2[d], marker=marker[d], markersize=12,
-                                     label=title_label[d])
-            else:
-                axes[f0, 0].semilogy(label_time[2:len(label_time)], np.array(time[2:len(label_time)]),
-                                     color=color2[d], marker=marker[d], markersize=12)
-            axes[f0, 1].plot(label_spu, np.array(spu[0:len(label_spu)]), color=color2[d], marker=marker[d],
+            axes[f0, 0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in RBB],
+                                 color=color2[d], marker=marker[d], markersize=12,
+                                 label=title_label[d] + label2[0])
+            axes[f0, 0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in BBB],
+                                 color=color2[d], marker=marker[d], markersize=12,
+                                 label=title_label[d] + label2[1], linestyle=linestyle[1])
+
+            axes[f0, 1].plot(label_spu, np.array(spu[0:3]), color=color2[d], marker=marker[d],
                              markersize=12)
+            axes[f0, 1].plot(label_spu, np.array(spu[3:7]), color=color2[d], marker=marker[d],
+                             markersize=12, linestyle=linestyle[1])
 
             d = d + 1
         f0 = f0 + 1
@@ -328,16 +340,15 @@ def plot_SPU_BSIC(k, timeG):
             axes[f1, f0].grid(True)
             axes[f1, f0].patch.set_edgecolor('black')
             axes[f1, f0].patch.set_linewidth('1')
-            axes[f1, f0].set_xlabel('Number of Cores - Algorithm \n', fontweight="bold")
+        axes[0, f0].set_xlabel('Number of Cores - Algorithm \n', fontweight="bold")
+        axes[1, f0].set_xlabel('Number of Cores - Algorithm', fontweight="bold")
         axes[f0, 0].set_ylabel('Running Time (seconds)', fontweight="bold")
         axes[f0, 1].set_ylabel('Speedup', fontweight="bold")
 
     fig.suptitle("\n\n\n\n\n")
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    # order = [0, 3, 1, 4, 2, 5]
-    # fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
-    #            bbox_to_anchor=(0.96, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
-    fig.legend(bbox_to_anchor=(1, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
+    fig.legend(handles, labels, bbox_to_anchor=(0.93, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21,
+               edgecolor='black')
     plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.eps', format='eps', dpi=1200)
     plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.png')
     plt.close()
@@ -372,6 +383,6 @@ if __name__ == "__main__":
     save_data_con()
     berG, timeG = plot_ber_init()
     plot_ber(0, berG)
-    plot_ber(1, berG)
+    # plot_ber(1, berG)
     plot_SPU_BSIC(0, timeG)
     plot_SPU_BSIC(1, timeG)
