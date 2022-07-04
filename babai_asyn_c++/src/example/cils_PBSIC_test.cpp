@@ -109,7 +109,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
     cout.flush();
 
     index num_trial = 200, m = size_m, n = 64, qam = 3, s = 0;
-    scalar t_pbsic[200][4][10][2] = {}, t_ber[200][4][10][2] = {}, run_time, ber, berm, bergp, bsic_time;
+    scalar t_pbsic[200][4][11][2] = {}, t_ber[200][4][11][2] = {}, run_time, ber, berm, bergp, bsic_time;
 
     cils::CILS<scalar, index> cils;
     cils.is_local = true;
@@ -148,11 +148,18 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
                 printf("GP: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
-                reT = ublm.bsic(false, block_size, true, false);
+                reT = ublm.bsic(false, block_size, true, false, 1);
+                ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
+                t_pbsic[t][s][10][c - 1] = reT.run_time;
+                t_ber[t][s][10][c - 1] = fmax(ber, berm);
+                printf("BSIC_RBB-1: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
+
+                ublm.x_hat.assign(x_gp);
+                reT = ublm.bsic(false, block_size, true, false, 10);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 t_pbsic[t][s][2][c - 1] = reT.run_time;
                 t_ber[t][s][2][c - 1] = fmax(ber, berm);
-                printf("BSIC_RBB: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
+                printf("BSIC_RBB-10: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
                 reT = ublm.bsic(true, block_size, true, false);
@@ -230,7 +237,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
         if (_import_array() < 0)
             PyErr_Print();
 
-        npy_intp di5[4] = {200, 4, 10, 2};
+        npy_intp di5[4] = {200, 4, 11, 2};
 
         PyObject * pT = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, t_pbsic);
         PyObject * pB = PyArray_SimpleNewFromData(4, di5, NPY_DOUBLE, t_ber);

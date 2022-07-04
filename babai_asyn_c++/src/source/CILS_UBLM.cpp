@@ -1375,7 +1375,7 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> bsic(index is_bocb, index c, bool permute = true, bool partition = true) {
+        returnType<scalar, index> bsic(index is_bocb, index c, bool permute = true, bool partition = true, index trial = 10) {
 
             b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t, x_bar;
             b_matrix A_T, A_P(A), A_PT(A), P(I), Piv_cum(I), d(2, n); //A could be permuted based on the init point
@@ -1474,7 +1474,7 @@ namespace cils {
 //                        prod(reduction.P, olm.z_hat, z);
                     } else {
 //                        olm.prbb(10, 10);
-                        olm.rbb(10);
+                        olm.rbb(trial);
                     }
 
                     prod(reduction.P, olm.z_hat, z);
