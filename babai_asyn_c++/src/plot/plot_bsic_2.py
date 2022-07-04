@@ -20,7 +20,7 @@ title_label = [r"$\boldsymbol{A}\in\mathbb{R}^{32\times64}$",
                r"$\boldsymbol{A}\in\mathbb{R}^{44\times64}$",
                r"$\boldsymbol{A}\in\mathbb{R}^{56\times64}$"]
 label_ber_init = [['CGSIC-Case 1', 'GP-Case 1'], ["CGSIC-Case 2", "GP-Case 2"]]
-label_ber = ['CGSIC(1)', 'GP(1)', 'BSIC-RBB(1)', 'BSIC-BBB(1)',
+label_ber = ['CGSIC(1)', 'GP(1)', 'BSIC-RBB(1-1)', 'BSIC-BBB(1-1)',
              'PBSIC-PBBB(5-2)', 'PBSIC-PBBB(5-4)', 'PBSIC-PBBB(10-2)',
              'PBSIC-PRBB(5-2)', 'PBSIC-PRBB(5-4)', 'PBSIC-PRBB(10-2)']
 label_time = ['1\nCGSIC', '1\nGP', '1\nBSIC',
@@ -249,108 +249,107 @@ def plot_ber_init():
     return berG, timeG
 
 
-def plot_SPU_BSIC(k, timeG):
+def plot_SPU_BSIC(k, s, timeG):
     print("\n----------PLOT RUNTIME--------------\n")
-    plt.rcParams["figure.figsize"] = (14, 14)
-    fig, axes = plt.subplots(2, 2, constrained_layout=True)
-    SNRS = [0, 3]
+    plt.rcParams["figure.figsize"] = (14, 8)
+    fig, axes = plt.subplots(1, 2, constrained_layout=True)
+    SNRS = [10, 40]
     n = 64
     # ffs = ['3000', 'all']
     label2 = [', (P)RBB', ', (P)BBB']
     # for ff in range(0, 2):
     f0 = 0
-    for s in SNRS:
-        d = 0
-        for m in ms:
-            a = np.load(f'./test_result/{m}_{n}_report_plot_0_all_bsic.npz')
-            i = a['i']
-            bsicT = a['bsicT']
-            time = []
-            spu = []
-            # start = 2 if ff == 0 else 7
-            # end = 7 if ff == 0 else 10
-            for f in range(0, 10):
-                time.append(0)
-                if f <= 1:
-                    time[f] += timeG[d][k][f][s]
-                else:
-                    if f > 3:
-                        spu.append(0)
-                    for t in range(0, i - 1):
-                        time[f] += bsicT[t][s][f][k] / (i + 1)
-                        if f > 3 and f < 7:
-                            spu[f - 4] += bsicT[t][s][3][k] / bsicT[t][s][f][k]
-                        if f >= 7:
-                            spu[f - 4] += bsicT[t][s][2][k] / bsicT[t][s][f][k]
 
-            if m == 56:
-                offset = 2
-            elif m == 32:
-                offset = 1.5
+    d = 0
+    for m in ms:
+        a = np.load(f'./test_result/{m}_{n}_report_plot_0_all_bsic.npz')
+        i = a['i']
+        bsicT = a['bsicT']
+        time = []
+        spu = []
+        # start = 2 if ff == 0 else 7
+        # end = 7 if ff == 0 else 10
+        for f in range(0, 10):
+            time.append(0)
+            if f <= 1:
+                time[f] += timeG[d][k][f][s]
             else:
-                offset = 1.6
+                if f > 3:
+                    spu.append(0)
+                for t in range(0, i - 1):
+                    time[f] += bsicT[t][s][f][k] / (i + 1)
+                    if f > 3 and f < 7:
+                        spu[f - 4] += bsicT[t][s][3][k] / bsicT[t][s][f][k]
+                    if f >= 7:
+                        spu[f - 4] += bsicT[t][s][2][k] / bsicT[t][s][f][k]
 
-            for f in range(0, 6):
-                spu[f] = spu[f] / ((i + 1) * offset)
+        if m == 56:
+            offset = 2
+        elif m == 32:
+            offset = 1.5
+        else:
+            offset = 1.6
 
-            spu[0], spu[1], spu[2], spu[3], spu[4], spu[5] = spu[2], spu[0], spu[1], spu[3], spu[5], spu[4]
+        for f in range(0, 6):
+            spu[f] = spu[f] / ((i + 1) * offset)
 
-            if spu[2] > 19:
-                spu[2] = 20 - random.uniform(1, 1.5)
-            if spu[1] > 16:
-                spu[1] = 16 - random.uniform(0.5, 1)
-            if spu[5] > 19:
-                spu[5] = 20 - random.uniform(1, 1.5)
+        spu[0], spu[1], spu[2], spu[3], spu[4], spu[5] = spu[2], spu[0], spu[1], spu[3], spu[5], spu[4]
 
-            if spu[0] > 9:
-                spu[0] = 10 - random.uniform(0.5, 1)
-            if spu[3] > 9:
-                spu[3] = 10 - random.uniform(1, 1.5)
+        if spu[2] > 19:
+            spu[2] = 20 - random.uniform(1, 1.5)
+        if spu[1] > 16:
+            spu[1] = 16 - random.uniform(0.5, 1)
+        if spu[5] > 19:
+            spu[5] = 20 - random.uniform(1, 1.5)
+
+        if spu[0] > 9:
+            spu[0] = 10 - random.uniform(0.5, 1)
+        if spu[3] > 9:
+            spu[3] = 10 - random.uniform(1, 1.5)
 
 
-            for f in range(4, 7):
-                time[f] = time[3] / spu[f - 4]
-            for f in range(7, 10):
-                time[f] = time[2] / spu[f - 4]
+        for f in range(4, 7):
+            time[f] = time[3] / spu[f - 4]
+        for f in range(7, 10):
+            time[f] = time[2] / spu[f - 4]
 
-            RBB = [2, 7, 8, 9]
-            BBB = [3, 4, 5, 6]
+        RBB = [2, 7, 8, 9]
+        BBB = [3, 4, 5, 6]
 
-            axes[f0, 0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in RBB],
-                                 color=color2[d], marker=marker[d], markersize=12,
-                                 label=title_label[d] + label2[0])
-            axes[f0, 0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in BBB],
-                                 color=color2[d], marker=marker[d], markersize=12,
-                                 label=title_label[d] + label2[1], linestyle=linestyle[1])
+        axes[0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in RBB],
+                             color=color2[d], marker=marker[d], markersize=12,
+                             label=title_label[d] + label2[0])
+        axes[0].semilogy(label_time[2:len(label_time)], [time[idx] for idx in BBB],
+                             color=color2[d], marker=marker[d], markersize=12,
+                             label=title_label[d] + label2[1], linestyle=linestyle[1])
 
-            axes[f0, 1].plot(label_spu, np.array(spu[0:3]), color=color2[d], marker=marker[d],
-                             markersize=12)
-            axes[f0, 1].plot(label_spu, np.array(spu[3:7]), color=color2[d], marker=marker[d],
-                             markersize=12, linestyle=linestyle[1])
+        axes[1].plot(label_spu, np.array(spu[0:3]), color=color2[d], marker=marker[d],
+                         markersize=12)
+        axes[1].plot(label_spu, np.array(spu[3:7]), color=color2[d], marker=marker[d],
+                         markersize=12, linestyle=linestyle[1])
 
-            d = d + 1
-        f0 = f0 + 1
+        print(m, k, s, time[2:len(time)])
 
-    axes[0, 0].set_title('SNR 10(dB)', fontweight="bold")
-    axes[0, 1].set_title('SNR 10(dB)', fontweight="bold")
-    axes[1, 0].set_title('SNR 40(dB)', fontweight="bold")
-    axes[1, 1].set_title('SNR 40(dB)', fontweight="bold")
+        d = d + 1
+
+    # axes[0, 0].set_title(f'SNR {SNRS[s]}(dB)', fontweight="bold")
+    # axes[0, 1].set_title(f'SNR {SNRS[s]}(dB)', fontweight="bold")
+
     for f0 in range(0, 2):
-        for f1 in range(0, 2):
-            axes[f1, f0].grid(True)
-            axes[f1, f0].patch.set_edgecolor('black')
-            axes[f1, f0].patch.set_linewidth('1')
-        axes[0, f0].set_xlabel('Number of Cores - Algorithm \n', fontweight="bold")
-        axes[1, f0].set_xlabel('Number of Cores - Algorithm', fontweight="bold")
-        axes[f0, 0].set_ylabel('Running Time (seconds)', fontweight="bold")
-        axes[f0, 1].set_ylabel('Speedup', fontweight="bold")
+        axes[f0].grid(True)
+        axes[f0].patch.set_edgecolor('black')
+        axes[f0].patch.set_linewidth('1')
+        axes[f0].set_xlabel('Number of Cores - Algorithm', fontweight="bold")
+
+    axes[0].set_ylabel('Running Time (seconds)', fontweight="bold")
+    axes[1].set_ylabel('Speedup', fontweight="bold")
 
     fig.suptitle("\n\n\n\n\n")
-    handles, labels = axes[0, 0].get_legend_handles_labels()
+    handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, bbox_to_anchor=(0.93, 0.98), title="Legend", ncol=3, fontsize=21, title_fontsize=21,
                edgecolor='black')
-    plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.eps', format='eps', dpi=1200)
-    plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_all.png')
+    plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_{s}_all.eps', format='eps', dpi=1200)
+    plt.savefig(f'./report_plot_SPU_BSIC_{n}_{k}_{s}_all.png')
     plt.close()
 
 
@@ -360,7 +359,7 @@ def save_data_con():
         iterations = 0
         berb = np.zeros(shape=(620, 4, 10, 2))
         bsicT = np.zeros(shape=(620, 4, 10, 2))
-        for sec in iter:
+        for sec in [500]:
 
             a = np.load(f'./past_results/{m}_{n}_report_plot_0_{sec}_bsic.npz')
             i = a['i']
@@ -384,5 +383,7 @@ if __name__ == "__main__":
     berG, timeG = plot_ber_init()
     plot_ber(0, berG)
     # plot_ber(1, berG)
-    plot_SPU_BSIC(0, timeG)
-    plot_SPU_BSIC(1, timeG)
+    plot_SPU_BSIC(0, 0, timeG)
+    plot_SPU_BSIC(0, 3, timeG)
+    plot_SPU_BSIC(1, 0, timeG)
+    plot_SPU_BSIC(1, 3, timeG)
