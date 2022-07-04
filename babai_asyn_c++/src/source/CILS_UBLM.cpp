@@ -1382,10 +1382,10 @@ namespace cils {
             scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y), ber;
 
             scalar time = omp_get_wtime();
-            if (v_norm <= tolerance) {
-                time = omp_get_wtime() - time;
-                return {{}, time, v_norm};
-            }
+//            if (v_norm <= tolerance) {
+//                time = omp_get_wtime() - time;
+//                return {{}, time, v_norm};
+//            }
 
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
@@ -1519,10 +1519,10 @@ namespace cils {
             scalar v_norm = helper::find_residual<scalar, index>(A, x_hat, y), rho, ber;
 
             scalar time = omp_get_wtime();
-            if (v_norm <= tolerance) {
-                time = omp_get_wtime() - time;
-                return {{}, time, v_norm};
-            }
+//            if (v_norm <= tolerance) {
+//                time = omp_get_wtime() - time;
+//                return {{}, time, v_norm};
+//            }
 
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
