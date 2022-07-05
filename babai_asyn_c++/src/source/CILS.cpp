@@ -360,7 +360,7 @@ namespace cils {
             cils.snr = snr;
             cils.upper = pow(2, qam) - 1;
             cils.sigma = (scalar) sqrt(((pow(4, qam) - 1) * n) / (3 * qam * pow(10, ((scalar) snr / 10.0))));
-            cils.tolerance = sqrt(m * cils.sigma);
+            cils.tolerance = 0;//sqrt(m * cils.sigma);
 
             matlab::data::ArrayFactory factory;
 

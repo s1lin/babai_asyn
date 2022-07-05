@@ -1406,12 +1406,8 @@ namespace cils {
             }
 
             int block_size[2] = {};
-            if (m == 44) {
-                block_size[0] = 11;
-                block_size[1] = 12;
-            } else {
-                block_size[0] = block_size[1] = 8;
-            }
+            block_size[0] = block_size[1] = 8;
+
             time = omp_get_wtime();
             for (index itr = 0; itr < search_iter; itr++) {
                 iter = itr;
@@ -1543,12 +1539,8 @@ namespace cils {
             }
 
             int block_size[2] = {};
-            if (m == 44) {
-                block_size[0] = 11;
-                block_size[1] = 12;
-            } else {
-                block_size[0] = block_size[1] = 8;
-            }
+            block_size[0] = block_size[1] = 8;
+
             time = omp_get_wtime();
 #pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j, I_P) firstprivate(y_hat, d, A_P, A_PT, x_tmp, rho, p, cur_end, cur_1st)
             {
@@ -1690,13 +1682,10 @@ namespace cils {
             scalar rho;
             b_matrix A_P(m, n), I_P(n, n), A_T;
             b_vector x_t, htx, y_hat(m, 0);
+
             int block_size[2] = {};
-            if (m == 44) {
-                block_size[0] = 11;
-                block_size[1] = 12;
-            } else {
-                block_size[0] = block_size[1] = 8;
-            }
+            block_size[0] = block_size[1] = 8;
+
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
 
