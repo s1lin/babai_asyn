@@ -155,7 +155,7 @@ long test_pbsic(int size_m, bool is_local, index info, index block_size, index s
                 printf("BSIC_RBB-1: ber: %8.5f, time: %8.4f\n", ber, reT.run_time);
 
                 ublm.x_hat.assign(x_gp);
-                reT = ublm.bsic(false, block_size, true, false, 10);
+                reT = ublm.bsic(false, block_size, true, false, 4);
                 ber = helper::find_bit_error_rate<scalar, index>(cils.x_t, ublm.x_hat, cils.qam);
                 t_pbsic[t][s][2][c - 1] = reT.run_time;
                 t_ber[t][s][2][c - 1] = fmax(ber, berm);
