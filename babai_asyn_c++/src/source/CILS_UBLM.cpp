@@ -1375,7 +1375,8 @@ namespace cils {
             return {{}, time, v_norm};
         }
 
-        returnType<scalar, index> bsic(index is_bocb, index c, bool permute = true, bool partition = true, index trial = 10) {
+        returnType<scalar, index>
+        bsic(index is_bocb, index c, bool permute = true, bool partition = true, index trial = 10) {
 
             b_vector x_tmp(x_hat), htx(m, 0), y_hat(m, 0), x_t, x_bar;
             b_matrix A_T, A_P(A), A_PT(A), P(I), Piv_cum(I), d(2, n); //A could be permuted based on the init point
@@ -1391,6 +1392,7 @@ namespace cils {
             CILS_OLM<scalar, index> olm;
 
             index i, j, p, iter = 0;
+            bool per = true;
 
 
             // 'SCP_Block_Optimal_2:34' cur_end = n;
@@ -1406,8 +1408,15 @@ namespace cils {
             }
 
             int block_size[2] = {};
-            block_size[0] = 14;
-            block_size[1] = 8;
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else {
+                block_size[0] = block_size[1] = 16;
+            }
+            std::random_device rd;
+            std::mt19937 e2(rd());
+            std::uniform_int_distribution<> dist(0, 1), dist2(m, n - 1);
 
             time = omp_get_wtime();
             for (index itr = 0; itr < search_iter; itr++) {
@@ -1415,12 +1424,18 @@ namespace cils {
                 if (permute) {
                     A_P.clear();
                     x_tmp.clear();
+                    int n_p = dist2(e2);
                     for (index col = 0; col < n; col++) {
                         p = permutation[iter][col] - 1;
                         for (index row = 0; row < m; row++) {
                             A_P(row, col) = A(row, p);
                         }
-                        x_tmp[col] = x_hat[p];
+                        if (!per && n_p >= 0) {
+                            index ep = dist(e2);
+                            x_tmp[col] = fmax(fmin(x_hat[p] + ep == 0 ? -1 : 1, upper), 0);
+                            n_p--;
+                        } else
+                            x_tmp[col] = x_hat[p];
                     }
                 }
 
@@ -1464,7 +1479,7 @@ namespace cils {
                     reduction.aip();
 //                    else
 //                    reduction.aspl_p();
-                    olm.reset(reduction.R, reduction.y, upper, t / 4, true);
+                    olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
 
                     if (is_bocb) {
                         olm.bocb();
@@ -1498,10 +1513,13 @@ namespace cils {
                     }
                     prod(I_P, Piv_cum, P);
                     prod(P, x_tmp, x_hat);
+                    per = true;
                     if (rho <= tolerance) {
                         break;
                     }
                     v_norm = rho;
+                } else {
+                    per = false;
                 }
             }
             time = omp_get_wtime() - time;
@@ -1540,10 +1558,18 @@ namespace cils {
             }
 
             int block_size[2] = {};
-            block_size[0] = block_size[1] = 8;
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else {
+                block_size[0] = block_size[1] = 8;
+            }
+            std::random_device rd;
+            std::mt19937 e2(rd());
+            std::uniform_int_distribution<> dist(0, 1), dist2(m, n - 1);
 
             time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j, I_P) firstprivate(y_hat, d, A_P, A_PT, x_tmp, rho, p, cur_end, cur_1st)
+#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j, I_P) firstprivate(dist, dist2, y_hat, d, A_P, A_PT, x_tmp, rho, p, cur_end, cur_1st)
             {
 #pragma omp for nowait
                 for (index itr = 0; itr < search_iter; itr++) {
@@ -1551,12 +1577,18 @@ namespace cils {
                     if (permute) {
                         A_P.clear();
                         x_tmp.clear();
+                        int n_p = dist2(e2);
                         for (index col = 0; col < n; col++) {
                             p = permutation[iter][col] - 1;
                             for (index row = 0; row < m; row++) {
                                 A_P(row, col) = A(row, p);
                             }
-                            x_tmp[col] = x_hat[p];
+                            if (omp_get_thread_num() != 0 && n_p >= 0) {
+                                index ep = dist(e2);
+                                x_tmp[col] = fmax(fmin(x_hat[p] + (ep == 0 ? -1 : 1), upper), 0);
+                                n_p--;
+                            } else
+                                x_tmp[col] = x_hat[p];
                         }
                     }
 
@@ -1685,12 +1717,12 @@ namespace cils {
             b_vector x_t, htx, y_hat(m, 0);
 
             int block_size[2] = {};
-            if(n_c == 2) {
-                block_size[0] = 14;
-                block_size[1] = 8;
+            if (m == 44) {
+                block_size[0] = 11;
+                block_size[1] = 12;
+            } else {
+                block_size[0] = block_size[1] = 16;
             }
-            else
-                block_size[0] = block_size[1] = 8;
 
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
@@ -1742,7 +1774,7 @@ namespace cils {
                         reduction.reset(A_T, y_hat, upper);
                         reduction.paip(n_c);
 
-                        olm.reset(reduction.R, reduction.y, upper, t /4, true);
+                        olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
                         if (is_bocb) {
                             olm.pbocb(n_c, 20, 0);
                         } else {
