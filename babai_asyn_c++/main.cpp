@@ -30,11 +30,12 @@ int main(int argc, char *argv[]) {
     int is_local = stoi(argv[2]);
     int info = stoi(argv[3]);
     int sec = stoi(argv[4]);
+    int blk = stoi(argv[5]);
 
 //    test_PBOB<double, int>(size_n, nob, c, T, is_local);
 //    test_init<double, int>(size_n, 1);
 
-    test_pbsic<double, int>(size_n, is_local, info, 32, sec);
+    test_pbsic<double, int>(size_n, is_local, info, blk, sec);
 //    test_init_pt<double, int>();
 
 //    omp_set_nested(1);   /* make sure nested parallism is on */

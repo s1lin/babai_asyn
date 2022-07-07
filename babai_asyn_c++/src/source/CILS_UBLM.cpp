@@ -1408,12 +1408,16 @@ namespace cils {
             }
 
             int block_size[2] = {};
-            if (m == 44) {
+            if (c == 32) {
+                block_size[0] = block_size[1] = 16;
+            } else if (c == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
             } else {
-                block_size[0] = block_size[1] = 16;
+                block_size[0] = 14;
+                block_size[1] = 8;
             }
+
             std::random_device rd;
             std::mt19937 e2(rd());
             std::uniform_int_distribution<> dist(0, 1), dist2(m, n - 1);
@@ -1689,7 +1693,7 @@ namespace cils {
                 time = omp_get_wtime() - time;
                 return {{}, time, v_norm};
             }
-            cils::returnType<scalar, index> reT;
+            cils::returnType < scalar, index > reT;
             index i, j, p, iter = 0;
 
             // 'SCP_Block_Optimal_2:34' cur_end = n;
@@ -1717,11 +1721,14 @@ namespace cils {
             b_vector x_t, htx, y_hat(m, 0);
 
             int block_size[2] = {};
-            if (m == 44) {
+            if (c == 32) {
+                block_size[0] = block_size[1] = 16;
+            } else if (c == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
             } else {
-                block_size[0] = block_size[1] = 16;
+                block_size[0] = 14;
+                block_size[1] = 8;
             }
 
             CILS_Reduction<scalar, index> reduction;
@@ -1776,9 +1783,12 @@ namespace cils {
 
                         olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
                         if (is_bocb) {
-                            olm.pbocb(n_c, 20, 0);
+                            if (block_size[j] > 12)
+                                olm.bocb2();//(n_c, 20, 0);
+                            else
+                                olm.pbocb(n_c, 5, 0);
                         } else {
-                            olm.prbb(10, n_c);
+                            olm.prbb(4, n_c);
                         }
                         prod(reduction.P, olm.z_hat, z);
                         for (index col = cur_1st; col <= cur_end; col++) {

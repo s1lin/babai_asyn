@@ -828,7 +828,7 @@ namespace cils {
 
 //                        check = check || R_S_1[i - 1];
                             if (is_constrained) {
-                                R_S_1[i] = search.mch2(n_dx_q_0, n_dx_q_2, i, check, R_A, y_B, z_hat);
+                                R_S_1[i] = search.mch2(n_dx_q_0, n_dx_q_2, i, 0, R_A, y_B, z_hat);
 //                                R_S_1[i] = search.ch(n_dx_q_0, n_dx_q_2, check, R, y_B, z_hat);
                             }
 //                            else
