@@ -1,6 +1,8 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import os.path
+from os import path
 
 rc = {"font.family": "serif", "mathtext.fontset": "stix"}
 
@@ -141,19 +143,19 @@ def plot_ber(k, berG):
                         for t in range(0, i - 1):
                             ber[s] += berb[t][s][f][k] / (i + 1)
 
-                ber[0] = max(ber) + random.uniform(0.005, 0.01)
-
-                if ber[2] > ber[1]:
-                    ber[2] = ber[1] - random.uniform(0.005, 0.02)
-
-                ber[3] = min(ber) - random.uniform(0.01, 0.02)
-
-                if m == 56 and 3 <= f < 7:
-                    for s in range(0, 4):
-                        ber[s] = berRBB[s] + random.uniform(0.01, 0.02)
-
-                if f == 2:
-                    berRBB = ber
+                # ber[0] = max(ber) + random.uniform(0.005, 0.01)
+                #
+                # if ber[2] > ber[1]:
+                #     ber[2] = ber[1] - random.uniform(0.005, 0.02)
+                #
+                # ber[3] = min(ber) - random.uniform(0.01, 0.02)
+                #
+                # if m == 56 and 3 <= f < 7:
+                #     for s in range(0, 4):
+                #         ber[s] = berRBB[s] + random.uniform(0.01, 0.02)
+                #
+                # if f == 2:
+                #     berRBB = ber
                 ff = 0 if f < 7 else 1  #
 
                 axes[d, k].semilogy(SNRs, np.array(ber), color=color[f], marker=marker[f], markersize=12,
@@ -167,7 +169,7 @@ def plot_ber(k, berG):
 
     fig.suptitle("\n\n\n\n\n\n")
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    order = range(0, 9)  # [0, 5, 1, 6, 2, 7, 3, 8, 4]
+    order = [0, 1, 2, 6, 7, 8, 3, 4, 5]  # [0, 5, 1, 6, 2, 7, 3, 8, 4]
     fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order],
                bbox_to_anchor=(0.92, 1), title="Legend", ncol=3, fontsize=21, title_fontsize=21, edgecolor='black')
     # fig.legend(bbox_to_anchor=(0.90, 0.98), title="Legend", ncol=5, fontsize=21, title_fontsize=21, edgecolor='black')
@@ -357,20 +359,20 @@ def save_data_con():
     n = 64
     for m in [32, 44, 56]:
         iterations = 0
-        berb = np.zeros(shape=(620, 4, 10, 2))
-        bsicT = np.zeros(shape=(620, 4, 10, 2))
-        for sec in [500]:
+        berb = np.zeros(shape=(620, 4, 12, 2))
+        bsicT = np.zeros(shape=(620, 4, 12, 2))
+        for sec in [503, 504, 505]:
+            if path.exists(f'./new_results/{m}_{n}_report_plot_0_{sec}_bsic.npz'):
+                a = np.load(f'./new_results/{m}_{n}_report_plot_0_{sec}_bsic.npz')
+                i = a['i']
 
-            a = np.load(f'./past_results/{m}_{n}_report_plot_0_{sec}_bsic.npz')
-            i = a['i']
-
-            berbt = a['berb']
-            bsict = a['bsicT']
-            print(berbt.shape)
-            for t in range(0, i):
-                berb[t + iterations][:][:][:] = berbt[t][:][:][:]
-                bsicT[t + iterations][:][:][:] = bsict[t][:][:][:]
-            iterations = i + iterations
+                berbt = a['berb']
+                bsict = a['bsicT']
+                print(berbt.shape)
+                for t in range(0, i):
+                    berb[t + iterations][:][:][:] = berbt[t][:][:][:]
+                    bsicT[t + iterations][:][:][:] = bsict[t][:][:][:]
+                iterations = i + iterations
 
         print(f"size:{m}, iter:{iterations}")
 
@@ -381,8 +383,8 @@ def save_data_con():
 if __name__ == "__main__":
     save_data_con()
     berG, timeG = plot_ber_init()
-    plot_ber(0, berG)
-    # plot_ber(1, berG)
+    # plot_ber(0, berG)
+    plot_ber(1, berG)
     plot_SPU_BSIC(0, 0, timeG)
     plot_SPU_BSIC(0, 3, timeG)
     plot_SPU_BSIC(1, 0, timeG)

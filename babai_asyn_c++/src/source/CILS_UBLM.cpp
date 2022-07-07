@@ -1409,8 +1409,8 @@ namespace cils {
 
             int block_size[2] = {};
             if (c == 32) {
-                block_size[0] = block_size[1] = 16;
-            } else if (c == 44) {
+                block_size[0] = block_size[1] = 8;
+            } else if (m == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
             } else {
@@ -1722,8 +1722,8 @@ namespace cils {
 
             int block_size[2] = {};
             if (c == 32) {
-                block_size[0] = block_size[1] = 16;
-            } else if (c == 44) {
+                block_size[0] = block_size[1] = 8;
+            } else if (m == 44) {
                 block_size[0] = 11;
                 block_size[1] = 12;
             } else {
@@ -1734,22 +1734,30 @@ namespace cils {
             CILS_Reduction<scalar, index> reduction;
             CILS_OLM<scalar, index> olm;
 
+            std::random_device rd;
+            std::mt19937 e2(rd());
+            std::uniform_int_distribution<> dist(0, 1), dist2(m, n - 1);
+
             time = omp_get_wtime();
-#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j) firstprivate(y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
+#pragma omp parallel default(shared) num_threads(n_t) private(reduction, olm, t, A_T, x_t, htx, i, iter, j) firstprivate(dist, dist2, y_hat, A_P, I_P, x_tmp, rho, p, cur_end, cur_1st)
             {
 #pragma omp for nowait
                 for (iter = 0; iter < search_iter; iter++) {
                     A_P.clear();
                     x_tmp.clear();
+                    int n_p = dist2(e2);
                     for (index col = 0; col < n; col++) {
                         p = permutation[iter][col] - 1;
                         for (index row = 0; row < m; row++) {
                             A_P(row, col) = A(row, p);
                         }
-                        x_tmp[col] = x_hat[p];
+                        if (omp_get_thread_num() != 0 && n_p >= 0) {
+                            index ep = dist(e2);
+                            x_tmp[col] = fmax(fmin(x_hat[p] + (ep == 0 ? -1 : 1), upper), 0);
+                            n_p--;
+                        } else
+                            x_tmp[col] = x_hat[p];
                     }
-
-                    //todo: [H_t, Piv_cum, indicator] = part(H_P);
 
                     // 'SCP_Block_Optimal_2:104' per = true;
                     // y_hat = y - H_t * x_t;
@@ -1783,7 +1791,7 @@ namespace cils {
 
                         olm.reset(reduction.R, reduction.y, upper, block_size[j], true);
                         if (is_bocb) {
-                            if (block_size[j] > 12)
+                            if (block_size[j] > 10)
                                 olm.bocb2();//(n_c, 20, 0);
                             else
                                 olm.pbocb(n_c, 5, 0);
@@ -1828,3 +1836,4 @@ namespace cils {
         }
     };
 }
+
